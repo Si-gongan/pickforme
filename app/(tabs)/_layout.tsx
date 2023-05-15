@@ -1,6 +1,11 @@
+import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
+import { useRouter, Link, Tabs } from 'expo-router';
 import { Pressable, useColorScheme } from 'react-native';
+
+import { useAtomValue } from 'jotai';
+import { Text } from '../../components/Themed';
+import { userDataAtom } from '../../stores/auth/atoms';
 
 import Colors from '../../constants/Colors';
 
@@ -16,17 +21,38 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const userData = useAtomValue(userDataAtom);
+
+  React.useEffect(() => {
+    if (!userData) {
+      router.replace('register');
+    }                 
+  }, [userData]);             
+  if (!userData) {     
+    return null;
+  }                   
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        headerShadowVisible: false, // applied here
+        headerStyle: {
+        },
+        headerLeft: () => (
+          <Text>
+            픽포미
+          </Text>
+        ),
+        headerTintColor: 'transparent',
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
+          title: '홈',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          /*
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -41,12 +67,27 @@ export default function TabLayout() {
               </Pressable>
             </Link>
           ),
+          */
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="discover"
         options={{
-          title: 'Tab Two',
+          title: 'AI 포미',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: '의뢰 목록',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="mypage"
+        options={{
+          title: '마이페이지',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
