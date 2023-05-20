@@ -4,8 +4,8 @@ import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import { Button } from 'react-native';
 
-import { Text, View } from '../components/Themed';
-import { userDataAtom } from '../stores/auth/atoms';
+import { Text, View } from '../../components/Themed';
+import { userDataAtom } from '../../stores/auth/atoms';
 
 export default function RegisterScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);

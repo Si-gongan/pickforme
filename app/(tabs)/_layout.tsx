@@ -1,10 +1,10 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter, Link, Tabs } from 'expo-router';
-import { Pressable, useColorScheme } from 'react-native';
+import { Image, StyleSheet, Pressable, useColorScheme } from 'react-native';
 
 import { useAtomValue } from 'jotai';
-import { Text } from '../../components/Themed';
+import { View, Text } from '../../components/Themed';
 import { userDataAtom } from '../../stores/auth/atoms';
 
 import Colors from '../../constants/Colors';
@@ -24,26 +24,21 @@ export default function TabLayout() {
   const router = useRouter();
   const userData = useAtomValue(userDataAtom);
 
-  React.useEffect(() => {
-    if (!userData) {
-      router.replace('register');
-    }                 
-  }, [userData]);             
-  if (!userData) {     
-    return null;
-  }                   
-
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShadowVisible: false, // applied here
         headerStyle: {
+          height: 100,
         },
         headerLeft: () => (
-          <Text>
-            픽포미
-          </Text>
+          <View style={styles.logoWrap}>
+            <Image style={styles.logoImage} source={require('../../assets/images/icon.png')} />
+            <Text style={styles.logoText}>
+              픽포미
+            </Text>
+          </View>
         ),
         headerTintColor: 'transparent',
       }}>
@@ -94,3 +89,21 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+
+const styles = StyleSheet.create({
+  logoWrap: {
+    flexDirection: 'row',
+    marginLeft: 27,
+  },
+  logoImage: {
+    width: 29.32,
+    height: 28,
+  },
+  logoText: {
+    marginLeft: 6,
+    fontWeight: '700',
+    fontSize: 24,
+    lineHeight: 29,
+  },
+});
