@@ -54,6 +54,7 @@ export default function TabOneScreen() {
             style={styles.button}
             textStyle={styles.text}
             title={DATA[item as keyof typeof DATA].title}
+            checkLogin
           >
             <Image
               style={styles.image}

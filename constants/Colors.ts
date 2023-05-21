@@ -8,21 +8,63 @@ const buttonText = '#E9E9E9';
 
 export default {
   light: {
-    text: primary,
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
-    buttonBackground: primary,
-    buttonText, 
+    text: {
+      primary,
+      secondary,
+    },
+    background: {
+      primary: '#fff',
+      secondary: '#fff',
+    },
+    tint: {
+      primary: tintColorLight,
+      secondary: tintColorLight,
+    },
+    tabIconDefault: {
+      primary: '#ccc',
+      secondary: '#ccc',
+    },
+    tabIconSelected: {
+      primary: tintColorLight,
+      secondary: tintColorLight,
+    },
+    buttonBackground: {
+      primary,
+      secondary: tertiary,
+    },
+    buttonText: {
+      primary: buttonText,
+      secondary,
+    },
   },
   dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
-    buttonBackground: primary,
-    buttonText, 
+    text: {
+      primary,
+      secondary,
+    },
+    background: {
+      primary: '#fff',
+      secondary: '#fff',
+    },
+    tint: {
+      primary: tintColorDark,
+      secondary: tintColorDark,
+    },
+    tabIconDefault: {
+      primary: '#ccc',
+      secondary: '#ccc',
+    },
+    tabIconSelected: {
+      primary: tintColorDark,
+      secondary: tintColorDark,
+    },
+    buttonBackground: {
+      primary,
+      secondary: tertiary,
+    },
+    buttonText: {
+      primary: buttonText,
+      secondary,
+    },
   },
 };
