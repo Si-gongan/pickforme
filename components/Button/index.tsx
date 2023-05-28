@@ -8,9 +8,10 @@ import { userDataAtom } from '../../stores/auth/atoms';
 
 interface ButtonProps extends ThemeProps, Omit<PressableProps, 'children'>, Pick<ViewProps, 'children'> {
   title?: string;
+  variant?: 'contain' | 'text',
   textStyle?: TextProps['style'];
   checkLogin?: boolean;
-  color?: 'primary' | 'secondary';
+  color?: 'primary' | 'secondary' | 'tertiary';
   size?: 'large' | 'medium' | 'small',
 };
 
@@ -19,33 +20,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 15,
-    paddingVertical: 16,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowColor: 'rgba(17, 30, 79)',
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
   },
   large: {
     minHeight: 57,
+    paddingVertical: 16,
   },
   medium: {
+    minHeight: 36,
   },
   small: {
+    minHeight: 31,
   },
   pressed: {
   },
+  contain: {
+  },
   text: {
-    fontWeight: '600',
-    fontSize: 18,
-    lineHeight: 22,
+    minHeight: 0,
+    padding: 0,
+    margin: 0,
+    backgroundColor: 'transparent',
   },
 });
 
-const Button = ({ size = 'large', onPress, children, lightColor, darkColor, checkLogin = false, color = 'primary', ...props }: ButtonProps) => {
+const textStyles = StyleSheet.create({
+  base: {
+    fontWeight: '600',
+  },
+  large: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  medium: {
+    fontSize: 16,
+    lineHeight: 19,
+  },
+  small: {
+    fontSize: 14,
+    lineHeight: 17,
+  },
+});
+
+const Button = ({
+  variant = 'contain',
+  style,
+  size = 'large',
+  onPress,
+  children,
+  lightColor,
+  darkColor,
+  checkLogin = false,
+  color = 'primary',
+  textStyle,
+  ...props
+}: ButtonProps) => {
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonBackground', color);
+  const disabledBackgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'disabledButtonBackground', color);
   const buttonTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonText', color);
   const isLogin = !!useAtomValue(userDataAtom);
   const [visible, setVisible] = useState(false);
@@ -63,9 +93,9 @@ const Button = ({ size = 'large', onPress, children, lightColor, darkColor, chec
     <>
     <Pressable onPress={handlePress} {...props}>
       {({ pressed }) => (
-        <View style={[props.style, styles.button, styles[size], { backgroundColor }, pressed && styles.pressed]}>
+        <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
           {children}
-          <Text style={[props.textStyle, styles.text, { color: buttonTextColor }]}>{props.title}</Text>
+          <Text style={[textStyles.base, textStyles[size], { color: buttonTextColor }, textStyle]}>{props.title}</Text>
         </View>
       )}
     </Pressable>

@@ -1,19 +1,20 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { SplashScreen, Stack } from 'expo-router';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Redirect, SplashScreen, Stack } from 'expo-router';
+import { useAtomValue } from 'jotai';
+import { Suspense, useEffect } from 'react';
+import { useColorScheme, StyleSheet } from 'react-native';
+import { Provider as JotaiProvider } from 'jotai';
+
+import { settingAtom } from '../stores/auth/atoms';
+import HeaderLeft from '../components/HeaderLeft';
 
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -26,27 +27,69 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  return (
-    <>
-      {/* Keep the splash screen open until the assets have loaded. In the future, we should just support async font loading with a native version of font-display. */}
-      {!loaded && <SplashScreen />}
-      {loaded && <RootLayoutNav />}
-    </>
-  );
+  if (!loaded) {
+    return <SplashScreen />;
+  }
+  return <RootLayoutNav />
 }
 
+const hideHeaderOption = {
+  headerShadowVisible: false, // applied here
+  headerTitle: '',
+  headerLeft: HeaderLeft,
+}
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-
+  const setting = useAtomValue(settingAtom);
   return (
-    <>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(auths)" options={{ headerShown: false }} />
+    <JotaiProvider>
+    <Suspense>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      {setting ? (
+        <Stack initialRouteName='(tabs)'>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auths)" options={{ headerShown: false }} />
+          <Stack.Screen name="(settings)"
+            options={hideHeaderOption}
+          />
+          <Stack.Screen name="buy"
+            options={hideHeaderOption}
+          />
+          <Stack.Screen name="point"
+            options={hideHeaderOption}
+          />
+          <Stack.Screen name="recommend"
+            options={hideHeaderOption}
+          />
+          <Stack.Screen name="research"
+            options={hideHeaderOption}
+          />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
-      </ThemeProvider>
-    </>
+      ) : (
+        <Stack initialRouteName='(onboarding)'>
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      )}
+    </ThemeProvider>
+    </Suspense>
+    </JotaiProvider>
   );
 }
+const styles = StyleSheet.create({
+  logoWrap: {
+    flexDirection: 'row',
+    marginLeft: 27,
+  },
+  logoImage: {
+    width: 29.32,
+    height: 28,
+  },
+  logoText: {
+    marginLeft: 6,
+    fontWeight: '700',
+    fontSize: 24,
+    lineHeight: 29,
+  },
+});

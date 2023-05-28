@@ -1,5 +1,7 @@
-import { StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useAtomValue } from 'jotai';
+import { settingAtom } from '../../stores/auth/atoms';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
@@ -32,18 +34,21 @@ const images = {
 
 export default function TabOneScreen() {
   const router = useRouter();
+  const setting = useAtomValue(settingAtom);
   const onPress = (id: string) => {
     router.push(id);
   }
   return (
     <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.textWrap}>
-        <Text style={styles.title}>곰지님 안녕하세요,</Text>
+        <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
         <Text style={styles.title}>좋은 하루입니다!</Text>
         <Text style={styles.subtitle}>픽포미 쇼핑 도우미 서비스를 이용해보세요.</Text>
       </View>
       <View style={styles.save}>
       <FlatList<string>
+        scrollEnabled={false}
         contentContainerStyle={styles.list}
         data={Object.keys(DATA)}
         numColumns={2}
@@ -65,6 +70,7 @@ export default function TabOneScreen() {
         keyExtractor={(item) => item}
       />
       </View>
+    </ScrollView>
     </View>
   );
 }
@@ -93,13 +99,19 @@ const styles = StyleSheet.create({
   list: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -24,
   },
   button: {
     alignItems: 'center',
     margin: 12,
     width: 122,
     height: 172,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowColor: 'rgb(17, 30, 79)',
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
   },
   text: {
     textAlign: 'center',

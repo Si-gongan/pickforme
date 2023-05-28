@@ -1,13 +1,13 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useRouter, Link, Tabs } from 'expo-router';
-import { Image, StyleSheet, Pressable, useColorScheme } from 'react-native';
+import { useRouter, Link, Tabs, Redirect } from 'expo-router';
+import { Pressable, useColorScheme } from 'react-native';
 
 import { useAtomValue } from 'jotai';
-import { View, Text } from '../../components/Themed';
-import { userDataAtom } from '../../stores/auth/atoms';
+import { settingAtom } from '../../stores/auth/atoms';
 
 import Colors from '../../constants/Colors';
+import HeaderLeft from '../../components/HeaderLeft';
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -22,24 +22,29 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const userData = useAtomValue(userDataAtom);
+  const setting = useAtomValue(settingAtom);
+
+  if (!setting.isReady) {
+    return <Redirect href="(onboarding)/fontSize" />;
+  }
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint.primary,
+        tabBarStyle: {
+          backgroundColor: Colors[colorScheme ?? 'light'].buttonBackground.primary,
+          borderTopLeftRadius: 17,
+          borderTopRightRadius: 17,
+          paddingBottom: 30,
+          height: 84,
+        },
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].buttonText.primary,
+        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].buttonText.primary,
         headerShadowVisible: false, // applied here
         headerStyle: {
           height: 100,
         },
-        headerLeft: () => (
-          <View style={styles.logoWrap}>
-            <Image style={styles.logoImage} source={require('../../assets/images/icon.png')} />
-            <Text style={styles.logoText}>
-              픽포미
-            </Text>
-          </View>
-        ),
+        headerLeft: () => <HeaderLeft canGoBack={false} />,
         headerTintColor: 'transparent',
       }}>
       <Tabs.Screen
@@ -75,6 +80,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chat"
         options={{
+          headerShown: false, 
           title: '의뢰 목록',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
@@ -89,21 +95,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-
-const styles = StyleSheet.create({
-  logoWrap: {
-    flexDirection: 'row',
-    marginLeft: 27,
-  },
-  logoImage: {
-    width: 29.32,
-    height: 28,
-  },
-  logoText: {
-    marginLeft: 6,
-    fontWeight: '700',
-    fontSize: 24,
-    lineHeight: 29,
-  },
-});

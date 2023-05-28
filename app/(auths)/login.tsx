@@ -7,6 +7,13 @@ import { Button } from 'react-native';
 import { Text, View } from '../../components/Themed';
 import { userDataAtom } from '../../stores/auth/atoms';
 
+const MOCK_USER_DATA = {
+  id: '13qd1',
+  name: '곰지',
+  point: 4000,
+  token: '~~',
+}
+
 export default function RegisterScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
   const router = useRouter();
@@ -23,7 +30,7 @@ export default function RegisterScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Button onPress={() => setUserData(true)} title='Login' />
+      <Button onPress={() => setUserData(MOCK_USER_DATA)} title='Login' />
     </View>
   );
 }

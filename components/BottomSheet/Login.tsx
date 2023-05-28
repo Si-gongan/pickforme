@@ -19,20 +19,23 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
     lineHeight: 19,
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignContent: 'stretch',
+    gap: 19,
   },
   buttonWrap: {
-    flexDirection: 'row',
-    height: 57,
-    width: '100%',
-    justifyContent: 'space-between',
-    gap: 19,
-    marginTop: 33,
+    flex: 1,
   },
   bottomSheet: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 20,
-    paddingBottom: 23,
+    paddingBottom: 50,
     paddingHorizontal: 27,
   },
   button: {
@@ -59,9 +62,13 @@ const LoginBottomSheet: React.FC<Props> = ({ onClose, visible }) => {
           <View style={styles.bottomSheet}>
             <Text style={styles.title}>로그인 안내</Text>
             <Text style={styles.desc}>로그인이 필요한 서비스입니다.</Text>
-            <View style={styles.buttonWrap}>
-              <Button title='네!' onPress={handleClickYes} style={styles.button} />
-              <Button color='secondary' title='아니요' onPress={handleClickNo} style={styles.button}/>
+            <View style={styles.buttonRow}>
+              <View style={styles.buttonWrap}>
+                <Button title='네!' onPress={handleClickYes} style={styles.button} />
+              </View>
+              <View style={styles.buttonWrap}>
+                <Button color='tertiary' title='아니요' onPress={handleClickNo} style={styles.button}/>
+              </View>
             </View>
           </View>
         </BottomSheet>
