@@ -21,14 +21,14 @@ export default function ChatScreen() {
       <Text style={styles.subtitle}>아래 탭을 선택하여 채팅을 모아서 보세요.</Text>
       <View style={styles.tabWrap}>
         {Object.values(TABS).map((TAB) => (
-          <View style={styles.tab}>
-          <Button
-            style={styles.tabButton}
-            title={TAB}
-            size='medium'
-            color={tab === TAB ? 'primary' : 'tertiary'}
-            onPress={() => setTab(TAB)}
-          />
+          <View style={styles.tab} key={`Chat-Tab-${TAB}`}>
+            <Button
+              style={styles.tabButton}
+              title={TAB}
+              size='medium'
+              color={tab === TAB ? 'primary' : 'tertiary'}
+              onPress={() => setTab(TAB)}
+            />
           </View>
         ))}
       </View>

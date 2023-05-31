@@ -22,7 +22,7 @@ export default function MyPageScreen() {
           내 정보 수정
         </Text>
         <Text style={styles.menu}>
-          <Link href='(settings)/nickname'>
+          <Link href='(settings)/nickname?segment=(settings)' >
             기본 정보 수정
           </Link>
         </Text>
@@ -41,7 +41,7 @@ export default function MyPageScreen() {
       {!!userData && (
       <View style={styles.card}>
         <Text style={styles.title}>
-          내 포인트 {userData.point}p
+          내 포인트 {userData.point}P
         </Text>
         <Text style={styles.menu}>
           <Link href='/point'>
@@ -55,12 +55,12 @@ export default function MyPageScreen() {
           앱 설정
         </Text>
         <Text style={styles.menu}>
-          <Link href='(settings)/theme'>
+          <Link href='(settings)/theme?segment=(settings)'>
             화면 모드 변경
           </Link>
         </Text>
         <Text style={styles.menu}>
-          <Link href='(settings)/fontSize'>
+          <Link href='(settings)/fontSize?segment=(settings)'>
             글자 크기 변경
           </Link>
         </Text>

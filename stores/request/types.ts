@@ -24,13 +24,15 @@ export interface RecommendRequestParams {
   price: number,
 }
 
+export interface ResearchRequestParams {
+  type: 'RESEARCH',
+  link: string,
+  text: string,
+}
 interface RecommendRequest extends RequestBase, RecommendRequestParams {
-  type: 'RECOMMEND',
 }
 
-interface ResearchRequest extends RequestBase {
-  type: 'RESEARCH',
-  text: string
+interface ResearchRequest extends RequestBase, ResearchRequestParams {
 }
 
 interface BuyRequest extends RequestBase {
@@ -38,4 +40,4 @@ interface BuyRequest extends RequestBase {
 }
 
 export type Request = BuyRequest | RecommendRequest | ResearchRequest;
-export type RequestParams = RecommendRequestParams;
+export type RequestParams = RecommendRequestParams | ResearchRequestParams;

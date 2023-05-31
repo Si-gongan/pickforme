@@ -1,5 +1,15 @@
 {
   "expo": {
+    "plugins": [
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "",
+          "overrideKakaoSDKVersion": "2.11.1",
+          "kotlinVersion": "1.5.10"
+        }
+      ]
+    ],
     "name": "pickforme",
     "slug": "pickforme",
     "version": "1.0.0",
@@ -17,17 +27,24 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sigonggan.pickforme"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sigonggan.pickforme"
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e1838378-658e-46ee-b890-0e439a47e799"
+      }
     }
   }
 }

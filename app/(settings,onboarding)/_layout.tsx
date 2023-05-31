@@ -7,14 +7,12 @@ import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
 import { Stack } from 'expo-router';
 
-import { Params } from './_types';
-
 import { Text } from '../../components/Themed';
 
 import Colors from '../../constants/Colors';
 
 const SCREENS = ['fontSize', 'intro', 'nickname', 'theme', 'greeting'];
-export default function TabLayout(params: Params) {
+export default function TabLayout(params: any) {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const setting = useAtomValue(settingAtom);
@@ -22,7 +20,6 @@ export default function TabLayout(params: Params) {
   if (setting.isReady && segment === '(onboarding)') {
     return <Redirect href="/(tabs)" />;
   }
-
   return (
     <Stack>
       {SCREENS.map(name => (
@@ -30,7 +27,6 @@ export default function TabLayout(params: Params) {
           key={`setting-stack-screen-${name}`}
           name={name}
           options={{ headerShown: false }}
-          initialParams={{ segment }}
         />
       ))}
     </Stack>

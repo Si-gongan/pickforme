@@ -6,7 +6,7 @@ import LoginBottomSheet from '../BottomSheet/Login';
 import { useAtomValue } from 'jotai';
 import { userDataAtom } from '../../stores/auth/atoms';
 
-interface ButtonProps extends ThemeProps, Omit<PressableProps, 'children'>, Pick<ViewProps, 'children'> {
+interface ButtonProps extends ThemeProps, Omit<PressableProps, 'children'>, Pick<ViewProps, 'children'>, Pick<TextProps, 'numberOfLines'> {
   title?: string;
   variant?: 'contain' | 'text',
   textStyle?: TextProps['style'];
@@ -66,6 +66,7 @@ const Button = ({
   style,
   size = 'large',
   onPress,
+  numberOfLines,
   children,
   lightColor,
   darkColor,
@@ -95,7 +96,7 @@ const Button = ({
       {({ pressed }) => (
         <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
           {children}
-          <Text style={[textStyles.base, textStyles[size], { color: buttonTextColor }, textStyle]}>{props.title}</Text>
+          <Text numberOfLines={numberOfLines} style={[textStyles.base, textStyles[size], { color: buttonTextColor }, textStyle]}>{props.title}</Text>
         </View>
       )}
     </Pressable>

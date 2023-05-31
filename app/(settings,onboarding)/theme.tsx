@@ -4,26 +4,27 @@ import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../../components/Button';
 import { RadioButton } from 'react-native-paper';
+import { useLocalSearchParams } from "expo-router";
+
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import { settingAtom } from '../../stores/auth/atoms';
-import { Params } from './_types';
 
-export default function ThemeScreen(params: Params) {
+export default function ThemeScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
+  const { segment, ...params } = useLocalSearchParams();
   const [theme, setTheme] = React.useState<string>(setting.theme ?? 'default');
-
   const handleSubmit = () => {
     setSetting({
       ...setting,
       theme: theme as typeof setting['theme'],
     });
-    if (params.segment === '(onboarding)') {
-      router.push('greeting');
-    } else {
+    if (segment === '(settings)') {
       router.back();
+    } else {
+      router.push('(onboarding)/greeting');
     }
   }
 

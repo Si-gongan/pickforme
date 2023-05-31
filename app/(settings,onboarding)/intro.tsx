@@ -13,7 +13,7 @@ export default function RegisterScreen() {
   const [value, setValue] = React.useState('small');
 
   const handleSubmit = () => {
-    router.push('nickname');
+    router.push('(onboarding)/nickname');
   }
 
   return (

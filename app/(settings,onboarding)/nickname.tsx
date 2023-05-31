@@ -8,11 +8,13 @@ import { RadioButton } from 'react-native-paper';
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import { settingAtom } from '../../stores/auth/atoms';
-import { Params } from './_types';
+import { useLocalSearchParams } from "expo-router";
 
-export default function NicknameScreen(params: Params) {
+
+export default function NicknameScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
+  const { segment } = useLocalSearchParams();
   const [name, setName] = React.useState(setting.name ?? '');
   const [vision, setVision] = React.useState(setting.vision ?? 'none');
 
@@ -22,10 +24,10 @@ export default function NicknameScreen(params: Params) {
       name,
       vision: vision as typeof setting['vision'],
     });
-    if (params.segment === '(onboarding)') {
-      router.push('theme');
-    } else {
+    if (segment === '(settings)') {
       router.back();
+    } else {
+      router.push('(onboarding)/theme');
     }
   }
 

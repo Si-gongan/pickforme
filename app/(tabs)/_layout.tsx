@@ -6,6 +6,7 @@ import { Pressable, useColorScheme } from 'react-native';
 import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
 
+import { hexToRgb } from '../../utils/common';
 import Colors from '../../constants/Colors';
 import HeaderLeft from '../../components/HeaderLeft';
 
@@ -39,7 +40,7 @@ export default function TabLayout() {
           height: 84,
         },
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].buttonText.primary,
-        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].buttonText.primary,
+        tabBarInactiveTintColor: `rgba(${hexToRgb(Colors[colorScheme ?? 'light'].buttonText.primary)}, 0.7)`,
         headerShadowVisible: false, // applied here
         headerStyle: {
           height: 100,

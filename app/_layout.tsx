@@ -34,7 +34,7 @@ export default function RootLayout() {
 }
 
 const hideHeaderOption = {
-  headerShadowVisible: false, // applied here
+  headerShrdowVisible: false, // applied here
   headerTitle: '',
   headerLeft: HeaderLeft,
 }
@@ -45,10 +45,9 @@ function RootLayoutNav() {
     <JotaiProvider>
     <Suspense>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      {setting ? (
-        <Stack initialRouteName='(tabs)'>
+        <Stack initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auths)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auths)" options={hideHeaderOption} />
           <Stack.Screen name="(settings)"
             options={hideHeaderOption}
           />
@@ -65,13 +64,8 @@ function RootLayoutNav() {
             options={hideHeaderOption}
           />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
         </Stack>
-      ) : (
-        <Stack initialRouteName='(onboarding)'>
-          <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      )}
     </ThemeProvider>
     </Suspense>
     </JotaiProvider>
