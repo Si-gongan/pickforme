@@ -4,11 +4,12 @@
       [
         "@react-native-seoul/kakao-login",
         {
-          "kakaoAppKey": "",
+          "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
           "overrideKakaoSDKVersion": "2.11.1",
           "kotlinVersion": "1.5.10"
         }
-      ]
+      ],
+      "expo-apple-authentication"
     ],
     "name": "pickforme",
     "slug": "pickforme",

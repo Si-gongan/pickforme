@@ -103,8 +103,8 @@ export default {
     },
     buttonText: {
       primary: buttonText,
-      secondary,
-      tertiary,
+      secondary: buttonText,
+      tertiary: primary,
     },
     borderColor: {
       primary: tertiary,

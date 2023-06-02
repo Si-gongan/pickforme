@@ -7,6 +7,8 @@ import { Suspense, useEffect } from 'react';
 import { useColorScheme, StyleSheet } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 
+import Colors from '../constants/Colors';
+
 import { settingAtom } from '../stores/auth/atoms';
 import HeaderLeft from '../components/HeaderLeft';
 
@@ -45,7 +47,14 @@ function RootLayoutNav() {
     <JotaiProvider>
     <Suspense>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}>
+        <Stack
+          initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: Colors[colorScheme ?? 'light'].background.primary,
+            },
+          }}
+        >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auths)" options={hideHeaderOption} />
           <Stack.Screen name="(settings)"
@@ -72,18 +81,4 @@ function RootLayoutNav() {
   );
 }
 const styles = StyleSheet.create({
-  logoWrap: {
-    flexDirection: 'row',
-    marginLeft: 27,
-  },
-  logoImage: {
-    width: 29.32,
-    height: 28,
-  },
-  logoText: {
-    marginLeft: 6,
-    fontWeight: '700',
-    fontSize: 24,
-    lineHeight: 29,
-  },
 });

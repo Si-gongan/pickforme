@@ -4,6 +4,7 @@ import { Image, StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 
 import * as KakaoLogins from "@react-native-seoul/kakao-login";
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
@@ -15,16 +16,35 @@ export default function RegisterScreen() {
 
   React.useEffect(() => {
     if (userData) {
-      router.replace('(tabs)');
+      router.replace('/(tabs)');
     }
   }, [userData]);
   if (userData) {
     return null;
   }
   const loginWithKakao = async () => {
-    const token = await KakaoLogins.login();
+    const token = await KakaoLogins.login();  
     const profile = await KakaoLogins.getProfile();
-    console.log(token, profile)
+    console.log({ token, profile });
+  }
+
+  const loginWithApple = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      // signed in
+      console.log(credential);
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        // handle that the user canceled the sign-in flow
+      } else {
+        // handle other errors
+      }
+    }
   }
 
   return (
@@ -42,14 +62,15 @@ export default function RegisterScreen() {
         >
           <Image style={styles.icon} source={require('../../assets/images/auth/kakao.png')} />
         </Button>
-        <Button
-          title='애플로 시작하기'
-          onPress={loginWithKakao}
-          style={[styles.button, styles.appleButton]}
-          textStyle={[styles.buttonText, styles.appleButtonText]}
-        >
-          <Image style={styles.icon} source={require('../../assets/images/auth/kakao.png')} />
-        </Button>
+        <View style={styles.button}>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={15}
+          style={styles.appleButton}
+          onPress={loginWithApple}
+        />
+        </View>
         <Button
           title='구글로 시작하기'
           onPress={loginWithKakao}
@@ -103,7 +124,8 @@ const styles = StyleSheet.create({
     color: '#3B2929',
   },
   appleButton: {
-    backgroundColor: '#000000',
+    width: '100%',
+    height: 57,
   },
   appleButtonText: {
     color: '#EFEFEF',

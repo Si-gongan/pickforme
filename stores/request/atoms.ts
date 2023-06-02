@@ -13,7 +13,7 @@ export const addRequestAtom = atom(null, (get, set, request: RequestParams) => {
   // set(requestsAtom, get(requestsAtom).concat([request]))
   const data = {
     ...request,
-    id: 1,
+    id: '1',
     name: 'sample',
     status: RequestStatus.PENDING,
     createdAt: new Date().toISOString(),

@@ -9,16 +9,13 @@ const localStyles = StyleSheet.create({
   title: {
     marginBottom: 33,
   },
-  desc: {
-    marginBottom: 20,
-  },
 });
 
 const LoginBottomSheet: React.FC<Props> = ({ onClose, visible }) => {
   const router = useRouter();
 
   const handleClickYes = () => {
-    router.push('/(auths)/login');
+    router.push('/point');
     onClose();
   }
   const handleClickNo = () => {
@@ -31,8 +28,8 @@ const LoginBottomSheet: React.FC<Props> = ({ onClose, visible }) => {
       onBackdropPress={onClose}
     >
       <View style={styles.bottomSheet}>
-        <Text style={[styles.title, localStyles.title]}>로그인 안내</Text>
-        <Text style={[styles.desc, localStyles.desc]}>로그인이 필요한 서비스입니다.</Text>
+        <Text style={styles.title}>앗 !이용권이 부족해요</Text>
+        <Text style={[styles.title, localStyles.title]}>픽을 충전하시겠어요? </Text>
         <View style={styles.buttonRow}>
           <View style={styles.buttonWrap}>
             <Button title='네!' onPress={handleClickYes} style={styles.button} />

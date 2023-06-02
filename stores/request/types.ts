@@ -4,14 +4,18 @@ export enum RequestStatus {
   CLOSED = 'CLOSED',
 }
 
-interface Chat {
+export interface Chat {
   createdAt: string,
   text: string,
   isMine: boolean,
+  button?: {
+    text: string,
+    deeplink: string,
+  },
 }
 
 interface RequestBase {
-  id: number,
+  id: string,
   name: string,
   status: RequestStatus,
   createdAt: string,

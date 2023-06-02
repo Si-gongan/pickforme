@@ -44,6 +44,7 @@ export default function TabLayout() {
         headerShadowVisible: false, // applied here
         headerStyle: {
           height: 100,
+          backgroundColor: Colors[colorScheme ?? 'light'].background.primary,
         },
         headerLeft: () => <HeaderLeft canGoBack={false} />,
         headerTintColor: 'transparent',
