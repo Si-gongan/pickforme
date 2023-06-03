@@ -9,11 +9,14 @@ export interface Chat {
   createdAt: string,
   text: string,
   isMine: boolean,
+  requestId: string,
   button?: {
     text: string,
     deeplink: string,
   },
 }
+
+export interface SendChatParams extends Pick<Chat, 'text' | 'requestId'> {};
 
 interface RequestBase {
   id: string,

@@ -15,7 +15,7 @@ export default function RecommendScreen() {
   const addRequest = useSetAtom(addRequestAtom);
   const [data, setData] = useState<RecommendRequestParams>({
     type: 'RECOMMEND',
-    price: 0,
+    price: '',
     text: '',
   });
   const handleSubmit = () => {
@@ -40,6 +40,7 @@ export default function RecommendScreen() {
             underlineColorAndroid="transparent"
             numberOfLines={6}
             multiline={true}
+            onChangeText={(text) => setData({ ...data, text })}
           />
         </View>
         <Text style={styles.label}>
@@ -49,6 +50,7 @@ export default function RecommendScreen() {
           <TextInput
             style={styles.textArea}
             underlineColorAndroid="transparent"
+            onChangeText={(price) => setData({ ...data, price })}
           />
         </View>
         </View>
