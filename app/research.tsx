@@ -67,7 +67,7 @@ export default function ResearchScreen() {
   }
   const handleSubmit = () => {
     addRequest(data);
-    router.push('(tabs)/chat')
+    router.push('(tabs)/requests')
   }
   return (
     <View style={styles.container}>

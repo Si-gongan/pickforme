@@ -36,7 +36,7 @@ export default function RootLayout() {
 }
 
 const hideHeaderOption = {
-  headerShrdowVisible: false, // applied here
+  headerShadowVisible: false, // applied here
   headerTitle: '',
   headerLeft: HeaderLeft,
 }
@@ -70,6 +70,9 @@ function RootLayoutNav() {
             options={hideHeaderOption}
           />
           <Stack.Screen name="research"
+            options={hideHeaderOption}
+          />
+          <Stack.Screen name="chat"
             options={hideHeaderOption}
           />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />

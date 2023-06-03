@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import React from "react";
 import { StyleSheet, TextInput } from 'react-native';
 import { useAtom } from 'jotai';
@@ -8,13 +8,12 @@ import { RadioButton } from 'react-native-paper';
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import { settingAtom } from '../../stores/auth/atoms';
-import { useLocalSearchParams } from "expo-router";
-
 
 export default function NicknameScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
-  const { segment } = useLocalSearchParams();
+  const pathname = usePathname();
+  const isSetting = pathname.includes('settings');
   const [name, setName] = React.useState(setting.name ?? '');
   const [vision, setVision] = React.useState(setting.vision ?? 'none');
 
@@ -24,7 +23,7 @@ export default function NicknameScreen() {
       name,
       vision: vision as typeof setting['vision'],
     });
-    if (segment === '(settings)') {
+    if (isSetting) {
       router.back();
     } else {
       router.push('(onboarding)/theme');

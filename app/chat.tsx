@@ -15,13 +15,14 @@ export default function ChatScreen() {
   const request = useAtomValue(requestsAtom).find(({ id }) => id === `${requestId}`);
   if (!request) {
     // 잘못된 접근입니다
-    return null;
+    return <Text>??</Text>
   }
   return (
     <View style={styles.container}>
-    <ScrollView contentContainerStyle={styles.container}>
-      {request.chats.map((chat) => <Chat data={chat} />)}
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text>asdf</Text>
+        {request.chats.map((chat) => <Chat key={`Chat-${chat.id}`} data={chat} />)}
+      </ScrollView>
     </View>
   );
 }

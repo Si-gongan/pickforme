@@ -5,6 +5,7 @@ export enum RequestStatus {
 }
 
 export interface Chat {
+  id: string,
   createdAt: string,
   text: string,
   isMine: boolean,

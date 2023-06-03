@@ -1,17 +1,18 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet } from 'react-native';
-import { useAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 
 import * as KakaoLogins from "@react-native-seoul/kakao-login";
 import * as AppleAuthentication from 'expo-apple-authentication';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
-import { userDataAtom } from '../../stores/auth/atoms';
+import { loginAtom, userDataAtom } from '../../stores/auth/atoms';
 
 export default function RegisterScreen() {
-  const [userData, setUserData] = useAtom(userDataAtom);
+  const login = useSetAtom(loginAtom);
+  const userData = useAtomValue(userDataAtom);
   const router = useRouter();
 
   React.useEffect(() => {
@@ -25,7 +26,7 @@ export default function RegisterScreen() {
   const loginWithKakao = async () => {
     const token = await KakaoLogins.login();  
     const profile = await KakaoLogins.getProfile();
-    console.log({ token, profile });
+    login({ token: token.accessToken });
   }
 
   const loginWithApple = async () => {
@@ -36,8 +37,9 @@ export default function RegisterScreen() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      // signed in
-      console.log(credential);
+      if (credential.identityToken) {
+        login({ token: credential.identityToken });
+      }
     } catch (e: any) {
       if (e.code === 'ERR_REQUEST_CANCELED') {
         // handle that the user canceled the sign-in flow

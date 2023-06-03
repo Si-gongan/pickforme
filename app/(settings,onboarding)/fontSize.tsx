@@ -1,10 +1,9 @@
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import React from "react";
 import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../../components/Button';
 import { RadioButton } from 'react-native-paper';
-import { useLocalSearchParams } from "expo-router";
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -13,14 +12,15 @@ import { settingAtom } from '../../stores/auth/atoms';
 export default function FontSizeScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
+  const pathname = usePathname();
+  const isSetting = pathname.includes('settings');
   const [value, setValue] = React.useState(setting.fontSize ??' small');
-  const { segment } = useLocalSearchParams();
   const handleSubmit = () => {
     setSetting({
       ...setting,
       fontSize: value as typeof setting['fontSize'],
     });
-    if (segment === '(settings)') {
+    if (isSetting) {
       router.back();
     } else {
       router.push('(onboarding)/intro');

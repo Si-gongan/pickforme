@@ -80,7 +80,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="chat"
+        name="requests"
         options={{
           headerShown: false, 
           title: '의뢰 목록',
