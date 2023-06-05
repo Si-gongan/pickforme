@@ -3,16 +3,16 @@ import { StyleSheet, TextProps, Pressable, PressableProps, ViewProps } from 'rea
 import { useThemeColor, ThemeProps } from '../../hooks/useThemeColor';
 import { View, Text } from '../Themed';
 import LoginBottomSheet from '../BottomSheet/Login';
-import { useAtomValue } from 'jotai';
-import { userDataAtom } from '../../stores/auth/atoms';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { userDataAtom, isShowLoginModalAtom } from '../../stores/auth/atoms';
 
 interface ButtonProps extends ThemeProps, Omit<PressableProps, 'children'>, Pick<ViewProps, 'children'>, Pick<TextProps, 'numberOfLines'> {
   title?: string;
   variant?: 'contain' | 'text',
   textStyle?: TextProps['style'];
-  checkLogin?: boolean;
   color?: 'primary' | 'secondary' | 'tertiary';
   size?: 'large' | 'medium' | 'small',
+  checkLogin?: boolean,
 };
 
 const styles = StyleSheet.create({
@@ -79,11 +79,12 @@ const Button = ({
   const disabledBackgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'disabledButtonBackground', color);
   const buttonTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonText', color);
   const isLogin = !!useAtomValue(userDataAtom);
-  const [visible, setVisible] = useState(false);
+
+  const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
 
   const handlePress: PressableProps['onPress'] = (e) => {
     if (checkLogin && !isLogin) {
-      setVisible(true);
+      setIsShowLoginModal(true);
       return;
     }
     if (onPress) {
@@ -91,7 +92,6 @@ const Button = ({
     }
   }
   return (
-    <>
     <Pressable onPress={handlePress} {...props}>
       {({ pressed }) => (
         <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
@@ -100,8 +100,6 @@ const Button = ({
         </View>
       )}
     </Pressable>
-    <LoginBottomSheet onClose={() => setVisible(false)} visible={visible} />
-    </>
   );
 }
 export default Button;

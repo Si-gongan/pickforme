@@ -1,5 +1,7 @@
 import { useRouter } from "expo-router";
 import { BottomSheet } from 'react-native-btr';
+import { useAtom } from 'jotai';
+import { isShowLackModalAtom } from '../../stores/auth/atoms';
 import { View, Text } from '../Themed';
 import Button from '../Button';
 import { StyleSheet } from 'react-native';
@@ -11,8 +13,12 @@ const localStyles = StyleSheet.create({
   },
 });
 
-const LoginBottomSheet: React.FC<Props> = ({ onClose, visible }) => {
+const LoginBottomSheet: React.FC<Props> = () => {
   const router = useRouter();
+
+  const [visible, setVisible] = useAtom(isShowLackModalAtom);
+
+  const onClose = () => setVisible(false);
 
   const handleClickYes = () => {
     router.push('/point');

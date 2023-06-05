@@ -13,6 +13,12 @@ enum TABS {
   RECOMMEND = 'RECOMMEND',
   RESEARCH = 'RESEARCH',
 };
+
+const tabName = {
+  [TABS.ALL]: '전체',
+  [TABS.RECOMMEND]: '픽포미 추천',
+  [TABS.RESEARCH]: '픽포미 분석',
+}
 export default function RequestsScreen() {
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);
   const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? true : request.type === tab);
@@ -25,7 +31,7 @@ export default function RequestsScreen() {
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={styles.tabButton}
-              title={TAB}
+              title={tabName[TAB]}
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
               onPress={() => setTab(TAB)}

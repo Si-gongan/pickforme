@@ -13,12 +13,12 @@ export const addRequestAtom = atom(null, (get, set, request: RequestParams) => {
   // set(requestsAtom, get(requestsAtom).concat([request]))
   const data = {
     ...request,
-    id: '1',
+    _id: '1',
     name: 'sample',
     status: RequestStatus.PENDING,
     createdAt: new Date().toISOString(),
     chats: [{
-      id: '1',
+      _id: '1',
       requestId: '1',
       text: '픽포미 추천 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.',
       createdAt: new Date().toISOString(),
@@ -35,13 +35,13 @@ export const addRequestAtom = atom(null, (get, set, request: RequestParams) => {
 
 export const sendChatAtom = atom(null, (get, set, params: SendChatParams) => {
   const data = {
-    id: Math.random().toString(),
+    _id: Math.random().toString(),
     ...params,
     isMine: true,
     createdAt: new Date().toISOString(),
   }
   const requests = get(requestsAtom)
-  set(requestsAtom, requests.map((request) => request.id === params.requestId ? {
+  set(requestsAtom, requests.map((request) => request._id === params.requestId ? {
     ...request,
     chats: [...request.chats, data],
   } : request));

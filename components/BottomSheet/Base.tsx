@@ -3,8 +3,6 @@ import Button from '../Button';
 import { StyleSheet } from 'react-native';
 
 export interface Props {
-  visible: boolean;
-  onClose: () => void;
 }
 
 export const styles = StyleSheet.create({

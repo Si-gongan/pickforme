@@ -8,7 +8,7 @@ import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 
 interface Product {
-  id: string,
+  _id: string,
   name: string,
   point: number,
   price: number,
@@ -16,18 +16,18 @@ interface Product {
 export default function PointScreen() {
   const router = useRouter();
   const userData = useAtomValue(userDataAtom);
-  const products = [{
-    id: '1',
+  const products: Product[] = [{
+    _id: '1',
     name: '베이직 (10회 이용 가능) ',
     point: 5000,
     price: 4900,
   }, {
-    id: '2',
+    _id: '2',
     name: '스탠다드 (20회 이용 가능) ',
     point: 10000,
     price: 9500,
   }, {
-    id: '3',
+    _id: '3',
     name: '프리미엄 (40회 이용 가능) ',
     point: 20000,
     price: 18000,
@@ -49,7 +49,7 @@ export default function PointScreen() {
           충전 포인트 선택
         </Text>
         {products.map(product => (
-          <View key={`Point-Product-${product.id}`} style={styles.card}>
+          <View key={`Point-Product-${product._id}`} style={styles.card}>
             <Text style={styles.productName}>
               {product.name}
             </Text>

@@ -11,6 +11,8 @@ import Colors from '../constants/Colors';
 
 import { settingAtom } from '../stores/auth/atoms';
 import HeaderLeft from '../components/HeaderLeft';
+import LoginBottomSheet from '../components/BottomSheet/Login';
+import LackBottomSheet from '../components/BottomSheet/Lack';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -45,41 +47,43 @@ function RootLayoutNav() {
   const setting = useAtomValue(settingAtom);
   return (
     <JotaiProvider>
-    <Suspense>
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack
-          initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: Colors[colorScheme ?? 'light'].background.primary,
-            },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auths)" options={hideHeaderOption} />
-          <Stack.Screen name="(settings)"
-            options={hideHeaderOption}
-          />
-          <Stack.Screen name="buy"
-            options={hideHeaderOption}
-          />
-          <Stack.Screen name="point"
-            options={hideHeaderOption}
-          />
-          <Stack.Screen name="recommend"
-            options={hideHeaderOption}
-          />
-          <Stack.Screen name="research"
-            options={hideHeaderOption}
-          />
-          <Stack.Screen name="chat"
-            options={hideHeaderOption}
-          />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
-        </Stack>
-    </ThemeProvider>
-    </Suspense>
+      <Suspense>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack
+            initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background.primary,
+              },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auths)" options={hideHeaderOption} />
+            <Stack.Screen name="(settings)"
+              options={hideHeaderOption}
+            />
+            <Stack.Screen name="buy"
+              options={hideHeaderOption}
+            />
+            <Stack.Screen name="point"
+              options={hideHeaderOption}
+            />
+            <Stack.Screen name="recommend"
+              options={hideHeaderOption}
+            />
+            <Stack.Screen name="research"
+              options={hideHeaderOption}
+            />
+            <Stack.Screen name="chat"
+              options={hideHeaderOption}
+            />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
+          </Stack>
+          <LoginBottomSheet />
+          <LackBottomSheet />
+        </ThemeProvider>
+      </Suspense>
     </JotaiProvider>
   );
 }

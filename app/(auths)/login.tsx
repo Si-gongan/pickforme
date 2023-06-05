@@ -8,10 +8,15 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
-import { loginAtom, userDataAtom } from '../../stores/auth/atoms';
+import {
+  loginKakaoAtom,
+  loginAppleAtom,
+  userDataAtom,
+} from '../../stores/auth/atoms';
 
 export default function RegisterScreen() {
-  const login = useSetAtom(loginAtom);
+  const loginKakao = useSetAtom(loginKakaoAtom);
+  const loginApple = useSetAtom(loginAppleAtom);
   const userData = useAtomValue(userDataAtom);
   const router = useRouter();
 
@@ -25,8 +30,7 @@ export default function RegisterScreen() {
   }
   const loginWithKakao = async () => {
     const token = await KakaoLogins.login();  
-    const profile = await KakaoLogins.getProfile();
-    login({ token: token.accessToken });
+    loginKakao({ accessToken: token.accessToken });
   }
 
   const loginWithApple = async () => {
@@ -37,8 +41,9 @@ export default function RegisterScreen() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      if (credential.identityToken) {
-        login({ token: credential.identityToken });
+      const { identityToken } = credential;
+      if (identityToken) {
+        loginApple({ identityToken });
       }
     } catch (e: any) {
       if (e.code === 'ERR_REQUEST_CANCELED') {

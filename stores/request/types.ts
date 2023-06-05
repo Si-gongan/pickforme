@@ -5,7 +5,7 @@ export enum RequestStatus {
 }
 
 export interface Chat {
-  id: string,
+  _id: string,
   createdAt: string,
   text: string,
   isMine: boolean,
@@ -19,7 +19,7 @@ export interface Chat {
 export interface SendChatParams extends Pick<Chat, 'text' | 'requestId'> {};
 
 interface RequestBase {
-  id: string,
+  _id: string,
   name: string,
   status: RequestStatus,
   createdAt: string,

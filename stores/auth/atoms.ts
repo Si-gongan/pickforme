@@ -1,18 +1,35 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from '../utils';
-import { UserData, Setting } from './types';
+import {
+  UserData,
+  Setting,
+  AppleLoginParams,
+  KakaoLoginParams,
+} from './types';
+import { AppleLoginAPI, KakaoLoginAPI } from './apis';
 
 export const settingAtom = atomWithStorage<Setting>('setting', {
   isReady: false,
 });
 export const userDataAtom = atomWithStorage<UserData | void>('userData', undefined);
 
+export const handleLoginResultAtom = atom(null, (get, set, data: UserData) => {
+  set(userDataAtom, data);
+});
+
+export const loginAppleAtom = atom(null, async (get, set, params: AppleLoginParams) => {
+  const { data } = await AppleLoginAPI(params);
+  set(handleLoginResultAtom, data);
+});
+
 const MOCK_USER_DATA = {
-  id: '13qd1',
+  _id: '13qd1',
   point: 1200,
 }
-
-export const loginAtom = atom(null, (get, set, { token }: { token: string }) => {
-  // token으로 서버로그인
-  set(userDataAtom, { ...MOCK_USER_DATA, token });
+export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginParams) => {
+  const { data } = await KakaoLoginAPI(params);
+  set(handleLoginResultAtom, data);
 });
+
+export const isShowLoginModalAtom = atom(false);
+export const isShowLackModalAtom = atom(false);

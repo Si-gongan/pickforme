@@ -1,5 +1,5 @@
 export interface UserData {
-  id: string,
+  _id: string,
   token: string,
   point: number,
 }
@@ -10,4 +10,11 @@ export interface Setting {
   vision?: string,
   theme?: 'light' | 'dark' | 'default',
   isReady: boolean,
+}
+
+export interface AppleLoginParams {
+  identityToken: string,
+}
+export interface KakaoLoginParams {
+  accessToken: string,
 }
