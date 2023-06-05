@@ -7,8 +7,8 @@ export enum RequestStatus {
 export interface Chat {
   _id: string,
   createdAt: string,
-  text: string,
   isMine: boolean,
+  text: string,
   requestId: string,
   button?: {
     text: string,
@@ -49,3 +49,5 @@ interface BuyRequest extends RequestBase {
 
 export type Request = BuyRequest | RecommendRequest | ResearchRequest;
 export type RequestParams = RecommendRequestParams | ResearchRequestParams;
+
+export interface GetRequestsParams {};

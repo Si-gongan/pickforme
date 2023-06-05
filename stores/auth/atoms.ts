@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from '../utils';
+import { setClientToken } from '../../utils/axios';
 import {
   UserData,
   Setting,
@@ -14,6 +15,7 @@ export const settingAtom = atomWithStorage<Setting>('setting', {
 export const userDataAtom = atomWithStorage<UserData | void>('userData', undefined);
 
 export const handleLoginResultAtom = atom(null, (get, set, data: UserData) => {
+  setClientToken(data.token);
   set(userDataAtom, data);
 });
 

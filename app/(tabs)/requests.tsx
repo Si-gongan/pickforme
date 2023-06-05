@@ -1,10 +1,10 @@
 import React from 'react';
-import { useAtomValue } from 'jotai';
+import { useSetAtom, useAtomValue } from 'jotai';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
-import { requestsAtom } from '../../stores/request/atoms';
+import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 
@@ -21,7 +21,12 @@ const tabName = {
 }
 export default function RequestsScreen() {
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);
+  const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? true : request.type === tab);
+
+  React.useEffect(() => {
+    getRequests();
+  }, [getRequests]);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>의뢰 목록</Text>
@@ -43,8 +48,8 @@ export default function RequestsScreen() {
         <View>
           {requests.map((request) => (
             <Link
-              href={`/chat?requestId=${request.id}`}
-              key={`Request-card-${request.id}`}
+              href={`/chat?requestId=${request._id}`}
+              key={`Request-card-${request._id}`}
               style={styles.cardLink}
               asChild
             >
@@ -69,7 +74,7 @@ export default function RequestsScreen() {
                       />
                     </View>
                     <Text style={styles.preview} numberOfLines={1}>
-                      {request.chats[0]?.text || ''}
+                      {request.chats.slice(-1)?.[0]?.text || ''}
                     </Text>
                   </View>
                 )}

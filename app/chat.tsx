@@ -17,9 +17,9 @@ export default function ChatScreen() {
   const sendChat = useSetAtom(sendChatAtom);
   const [data, setData] = useState<SendChatParams>({
     text: '',
-    requestId: requestId as string,
+    requestId: requestId as string, // local search params 이슈
   });
-  const request = useAtomValue(requestsAtom).find(({ id }) => id === `${requestId}`);
+  const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
   const handleClickSend = () => {
     sendChat(data);
     setData({ ...data, text: '' });
@@ -30,7 +30,7 @@ export default function ChatScreen() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.inner}>
-        {request.chats.map((chat) => <Chat key={`Chat-${chat.id}`} data={chat} />)}
+        {request.chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
       </ScrollView>
       <View style={styles.inputView}>
         <View style={styles.inputWrap}>
