@@ -1,0 +1,14 @@
+# node modules
+node_modules
+
+# misc
+.env.local
+.env.development
+.env.production
+.DS_Store
+
+# vi
+*.swp
+
+# webpack
+.webpackCache

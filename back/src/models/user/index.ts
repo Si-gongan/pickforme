@@ -1,0 +1,58 @@
+import mongoose, {
+  Schema,
+} from 'mongoose';
+import crypto from 'crypto';
+import jwt from 'utils/jwt';
+
+import {
+  UserDocument,
+  UserModel,
+  LocalRegisterPayload,
+} from './types';
+
+const uniqueValidator = require('mongoose-unique-validator');
+
+const UserSchema: Schema<UserDocument> = new mongoose.Schema({
+  email: {
+    type: String,
+    unique: true,
+    required: [true, 'can\'t be blank'],
+    index: true,
+  },
+  point: {
+    type: Number,
+    default: 0,
+  },
+}, {
+  timestamps: true,
+});
+
+UserSchema.plugin(uniqueValidator, {
+  message: 'is already taken.',
+});
+
+UserSchema.methods.generateToken = async function generateToken() {
+  const {
+    _id, email,
+  } = this;
+  const payload = {
+    _id, email,
+  };
+  const token = await jwt(payload);
+  return token;
+};
+
+UserSchema.statics.localRegister = function localRegister({
+  email,
+}: LocalRegisterPayload) {
+  const user = new this({
+    email,
+  });
+
+  return user.save();
+};
+
+const model: UserModel = (mongoose.models.Users as UserModel)
+  || mongoose.model<UserDocument, UserModel>('Users', UserSchema);
+
+export default model;

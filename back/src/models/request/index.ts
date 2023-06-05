@@ -1,0 +1,49 @@
+import mongoose from 'mongoose';
+
+export enum RequestStatus {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+  CLOSED = 'CLOSED',
+}
+
+export enum RequestType {
+  RECOMMEND = 'RECOMMEND',
+  RESEARCH = 'RESEARCH',
+}
+
+const RequestSchema = new mongoose.Schema({
+  status: {
+    type: String,
+    enum: Object.values(RequestStatus),
+    default: RequestStatus.PENDING,
+  },
+  type: {
+    type: String,
+    enum: RequestType,
+    default: RequestType.RECOMMEND,
+  },
+  text: {
+    type: String,
+    required: [true, 'can\'t be blank'],
+  },
+  price: {
+    type: String,
+  },
+  link: {
+    type: String,
+  },
+  chats: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chats',
+  }],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+  },
+}, {
+  timestamps: true,
+});
+
+const model = mongoose.models.Requests || mongoose.model('Requests', RequestSchema);
+
+export default model;
