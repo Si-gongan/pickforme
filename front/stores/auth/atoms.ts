@@ -9,14 +9,23 @@ import {
 } from './types';
 import { AppleLoginAPI, KakaoLoginAPI } from './apis';
 
+export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
+
 export const settingAtom = atomWithStorage<Setting>('setting', {
   isReady: false,
 });
 export const userDataAtom = atomWithStorage<UserData | void>('userData', undefined);
 
+export const setClientTokenAtom = atom(null, (get, set) => {
+  const userData = get(userDataAtom);
+  if (!userData) {
+    return;
+  }
+  setClientToken(userData.token);
+});
 export const handleLoginResultAtom = atom(null, (get, set, data: UserData) => {
-  setClientToken(data.token);
   set(userDataAtom, data);
+  set(setClientTokenAtom);
 });
 
 export const loginAppleAtom = atom(null, async (get, set, params: AppleLoginParams) => {
@@ -24,10 +33,6 @@ export const loginAppleAtom = atom(null, async (get, set, params: AppleLoginPara
   set(handleLoginResultAtom, data);
 });
 
-const MOCK_USER_DATA = {
-  _id: '13qd1',
-  point: 1200,
-}
 export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginParams) => {
   const { data } = await KakaoLoginAPI(params);
   set(handleLoginResultAtom, data);

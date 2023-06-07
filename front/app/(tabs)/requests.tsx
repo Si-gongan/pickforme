@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
     borderRadius: 12,
     backgroundColor: Colors.light.card.primary,
+    marginBottom: 13,
   },
   row: {
     backgroundColor: 'transparent',

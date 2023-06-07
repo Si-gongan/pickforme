@@ -24,18 +24,19 @@ interface RequestBase {
   status: RequestStatus,
   createdAt: string,
   chats: Chat[],
+  text: string,                              
 }
 
 export interface RecommendRequestParams {
   type: 'RECOMMEND',                         
-  text: string,                              
   price: number,
+  text: string,                              
 }
 
 export interface ResearchRequestParams {
+  text: string,                              
   type: 'RESEARCH',
   link: string,
-  text: string,
 }
 interface RecommendRequest extends RequestBase, RecommendRequestParams {
 }

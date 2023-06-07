@@ -18,7 +18,7 @@ router.post("/", requireAuth, async (ctx) => {
     isMine: false,
     button: {
       text: '의뢰 내용 보기',
-      deeplink: '/',
+      deeplink: `/request?requestId=${request._id}`,
     },
   });
   request.chats = [chat._id];
@@ -28,7 +28,7 @@ router.post("/", requireAuth, async (ctx) => {
 });
 
 router.get("/", requireAuth, async (ctx) => {
-  const requests = await db.Request.find({ userId: ctx.state.user.userId });
+  const requests = await db.Request.find({ userId: ctx.state.user.userId }).populate('chats');
   ctx.body = requests;
 });
 
@@ -49,10 +49,14 @@ router.get("/detail", async (ctx) => {
 
 // 채팅 입력
 router.post("/chat", requireAuth, async (ctx) => {
+  const body = <{ requestId: string, text: string }>ctx.request.body;
   const chat = await db.Chat.create({
-    ...(ctx.request.body as Object),
+    ...(body as Object),
     isMine: true,
   });
+  const request = await db.Request.findById(body.requestId)
+  request.chats.push(chat._id);
+  await request.save();
   ctx.body = chat;
 });
 
