@@ -29,7 +29,7 @@ interface RequestBase {
 
 export interface RecommendRequestParams {
   type: 'RECOMMEND',                         
-  price: number,
+  price: string,
   text: string,                              
 }
 
@@ -50,5 +50,10 @@ interface BuyRequest extends RequestBase {
 
 export type Request = BuyRequest | RecommendRequest | ResearchRequest;
 export type RequestParams = RecommendRequestParams | ResearchRequestParams;
+
+export interface PostRequestResponse {
+  request: Request,
+  point: number,
+}
 
 export interface GetRequestsParams {};

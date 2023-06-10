@@ -5,6 +5,7 @@ import { useSetAtom } from 'jotai';
 import { addRequestAtom } from '../stores/request/atoms';
 import { RecommendRequestParams } from '../stores/request/types';
 import Colors from '../constants/Colors';
+import useCheckPoint from '../hooks/useCheckPoint';
 
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -18,10 +19,10 @@ export default function RecommendScreen() {
     price: '',
     text: '',
   });
-  const handleSubmit = () => {
+  const handleSubmit = useCheckPoint(1, () => {
     addRequest(data);
     router.push('(tabs)/requests')
-  }
+  });
   return (
     <View style={styles.container}>
       <ScrollView

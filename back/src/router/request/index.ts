@@ -11,6 +11,11 @@ const router = new Router({
 
 // 의뢰생성
 router.post("/", requireAuth, async (ctx) => {
+  const user = await db.User.findById(ctx.state.user.userId);
+  if (!user) {
+    return;
+  }
+  await user.usePoint(1);
   const request = await db.Request.create(ctx.request.body);
   const chat = await db.Chat.create({
     text: '픽포미 추천 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.',
@@ -23,7 +28,10 @@ router.post("/", requireAuth, async (ctx) => {
   });
   request.chats = [chat._id];
   await request.save();
-  ctx.body = await request.populate('chats');
+  ctx.body = {
+    request: await request.populate('chats'),
+    point: user.point,
+  };
   ctx.status = 200;
 });
 

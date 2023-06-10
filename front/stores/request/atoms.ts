@@ -11,8 +11,8 @@ export const addRequestAtom = atom(null, async (get, set, request: RequestParams
     return;
   }
   const { data } = await PostRequestAPI(request);
-  set(requestsAtom, get(requestsAtom).concat([data]))
-  set(userDataAtom, { ...userData, point: userData.point - 500 });
+  set(requestsAtom, get(requestsAtom).concat([data.request]))
+  set(userDataAtom, { ...userData, point: data.point });
 });
 
 export const getRequestsAtom = atom(null, async (get, set) => {

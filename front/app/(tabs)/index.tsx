@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native
 import { useRouter } from 'expo-router';
 import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
+import useCheckLogin from '../../hooks/useCheckLogin';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
@@ -35,9 +36,9 @@ const images = {
 export default function TabOneScreen() {
   const router = useRouter();
   const setting = useAtomValue(settingAtom);
-  const onPress = (id: string) => {
+  const onPress = useCheckLogin((id: string) => {
     router.push(id);
-  }
+  });
   return (
     <View style={styles.container}>
     <ScrollView contentContainerStyle={styles.container}>
@@ -59,7 +60,6 @@ export default function TabOneScreen() {
             style={styles.button}
             textStyle={styles.text}
             title={DATA[item as keyof typeof DATA].title}
-            checkLogin
           >
             <Image
               style={styles.image}

@@ -42,6 +42,15 @@ UserSchema.methods.generateToken = async function generateToken() {
   return token;
 };
 
+UserSchema.methods.usePoint = async function usePoint(payload: number) {
+  if (payload > this.point) {
+    throw new Error('pick error');
+  }
+  this.point -= payload;
+  await this.save();
+  return this.point;
+};
+
 UserSchema.statics.localRegister = function localRegister({
   email,
 }: LocalRegisterPayload) {

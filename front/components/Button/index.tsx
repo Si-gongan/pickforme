@@ -2,17 +2,15 @@ import { useState } from 'react';
 import { StyleSheet, TextProps, Pressable, PressableProps, ViewProps } from 'react-native';
 import { useThemeColor, ThemeProps } from '../../hooks/useThemeColor';
 import { View, Text } from '../Themed';
-import LoginBottomSheet from '../BottomSheet/Login';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { userDataAtom, isShowLoginModalAtom } from '../../stores/auth/atoms';
 
-interface ButtonProps extends ThemeProps, Omit<PressableProps, 'children'>, Pick<ViewProps, 'children'>, Pick<TextProps, 'numberOfLines'> {
+interface ButtonTextProps extends ThemeProps, Pick<TextProps, 'children' | 'numberOfLines'> {
+  textStyle?: TextProps['style'];
+}
+interface ButtonProps extends  Omit<PressableProps, 'children'>, ButtonTextProps {
   title?: string;
   variant?: 'contain' | 'text',
-  textStyle?: TextProps['style'];
   color?: 'primary' | 'secondary' | 'tertiary';
   size?: 'large' | 'medium' | 'small',
-  checkLogin?: boolean,
 };
 
 const styles = StyleSheet.create({
@@ -61,6 +59,11 @@ const textStyles = StyleSheet.create({
   },
 });
 
+export const ButtonText = ({ color = 'primary', textStyle, lightColor, darkColor, children, ...props }: ButtonTextProps) => {
+  const buttonTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonText', color);
+  return <Text style={[{ color: buttonTextColor }, textStyle]}>{children}</Text>
+}
+
 const Button = ({
   variant = 'contain',
   style,
@@ -70,7 +73,6 @@ const Button = ({
   children,
   lightColor,
   darkColor,
-  checkLogin = false,
   color = 'primary',
   textStyle,
   ...props
@@ -78,25 +80,27 @@ const Button = ({
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonBackground', color);
   const disabledBackgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'disabledButtonBackground', color);
   const buttonTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonText', color);
-  const isLogin = !!useAtomValue(userDataAtom);
-
-  const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
 
   const handlePress: PressableProps['onPress'] = (e) => {
-    if (checkLogin && !isLogin) {
-      setIsShowLoginModal(true);
-      return;
-    }
     if (onPress) {
       onPress(e);
     }
   }
+
   return (
     <Pressable onPress={handlePress} {...props}>
       {({ pressed }) => (
         <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
           {children}
-          <Text numberOfLines={numberOfLines} style={[textStyles.base, textStyles[size], { color: buttonTextColor }, textStyle]}>{props.title}</Text>
+          <ButtonText
+            numberOfLines={numberOfLines}
+            textStyle={[textStyles.base, textStyles[size], textStyle]}
+            lightColor={lightColor}
+            darkColor={darkColor}
+            color={color}
+          >
+            {props.title}
+          </ButtonText>
         </View>
       )}
     </Pressable>
