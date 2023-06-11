@@ -45,7 +45,7 @@ export default function RequestsScreen() {
         ))}
       </View>
       <ScrollView style={styles.scrollView}>
-        <View>
+        <View style={styles.cards}>
           {requests.map((request) => (
             <Link
               href={`/chat?requestId=${request._id}`}
@@ -118,6 +118,9 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flexDirection: 'row',
+  },
+  cards: {
+    flexDirection: 'column-reverse',
   },
   scrollView: {
     marginTop: 35,

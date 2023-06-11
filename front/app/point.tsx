@@ -1,20 +1,14 @@
 import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { userDataAtom } from '../stores/auth/atoms';
+import { getProductsAtom, purchaseProductAtom, productsAtom } from '../stores/purchase/atoms';
 import Colors from '../constants/Colors';
 
 import { numComma} from '../utils/common';
 import Button, { ButtonText } from '../components/Button';
 import { Text, View } from '../components/Themed';
-
-interface Product {
-  _id: string,
-  name: string,
-  point: number,
-  price: number,
-}
 
 const TERM = `
 유의사항
@@ -27,39 +21,25 @@ const TERM = `
 `;
 export default function PointScreen() {
   const router = useRouter();
+  const getProducts = useSetAtom(getProductsAtom);
+  const products = useAtomValue(productsAtom);
+  const purchaseProduct = useSetAtom(purchaseProductAtom);
   const userData = useAtomValue(userDataAtom);
-  const subscriptionProducts: Product[] = [{
-    _id: '1',
-    name: '베이직',
-    point: 10,
-    price: 4900,
-  }, {
-    _id: '2',
-    name: '스탠다드',
-    point: 20,
-    price: 9500,
-  }, {
-    _id: '3',
-    name: '프리미엄',
-    point: 30,
-    price: 14000,
-  }];
-  const purchaseProducts: Product[] = [{
-    _id: '4',
-    name: '1픽 (1회 의뢰가능)',
-    point: 1,
-    price: 550,
-  }, {
-    _id: '5',
-    name: '5픽 (5회 의뢰가능)',
-    point: 5,
-    price: 2750,
-  }];
-  const [selectedItem, setSelectedItem] = useState(subscriptionProducts[0]._id);
+  const subscriptionProducts = products.filter(({ type }) => type === 'SUBSCRIPTION');
+  const purchaseProducts = products.filter(({ type }) => type === 'PURCHASE');
+  const [selectedItem, setSelectedItem] = useState(subscriptionProducts[0]?._id);
   const handleClick = (_id: string) => {
     setSelectedItem(_id);
   };
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    purchaseProduct({ _id: selectedItem });
+  };
+  useEffect(() => {
+    getProducts();
+  }, [getProducts]);
+  useEffect(() => {
+    setSelectedItem(subscriptionProducts?.[0]?._id);
+  }, [products]);
   return (
     <View style={styles.container}>
       <ScrollView>

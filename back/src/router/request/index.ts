@@ -11,7 +11,7 @@ const router = new Router({
 
 // 의뢰생성
 router.post("/", requireAuth, async (ctx) => {
-  const user = await db.User.findById(ctx.state.user.userId);
+  const user = await db.User.findById(ctx.state.user._id);
   if (!user) {
     return;
   }

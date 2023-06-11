@@ -17,6 +17,9 @@ export default async (ctx: Context, next: () => Promise<any>) => {
     if (session) {
       ctx.state.socketId = session.connectionId;
     }
+  } else {
+    ctx.status = 401;
+    return;
   }
   await next();
 };
