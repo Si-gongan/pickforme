@@ -7,6 +7,7 @@ import { Suspense, useEffect } from 'react';
 import { useColorScheme, StyleSheet } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useInterceptor from '../hooks/useInterceptor';
 
 import Colors from '../constants/Colors';
 
@@ -53,6 +54,7 @@ function RootLayoutNav() {
   const setting = useAtomValue(settingAtom);
   const userData = useAtomValue(userDataAtom);
   const [isLoaded, setIsLoaded] = useAtom(isLoadedAtom);
+  useInterceptor();
   useEffect(() => {
     (async () => {
       const storageIsLoaded = await AsyncStorage.getItem('isLoaded');

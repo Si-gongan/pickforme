@@ -9,15 +9,22 @@ import {
 export default async (ctx: Context, next: () => Promise<any>) => {
   const token = ctx.header.authorization;
   if (token) {
-    const user = decodeJWT(token.replace(/^Bearer /, ''));
-    ctx.state.user = user;
-    const session = await db.Session.findOne({
-      userId: user._id,
-    });
-    if (session) {
-      ctx.state.socketId = session.connectionId;
+    try {
+      const user = decodeJWT(token.replace(/^Bearer /, ''));
+      ctx.state.user = user;
+      const session = await db.Session.findOne({
+        userId: user._id,
+      });
+      if (session) {
+        ctx.state.socketId = session.connectionId;
+      }
+    } catch (e) {
+      ctx.status = 401;
+      ctx.body = e.message;
+      return;
     }
   } else {
+    ctx.body = 'login required';
     ctx.status = 401;
     return;
   }
