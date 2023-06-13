@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
 import { useSetAtom } from 'jotai';
 import * as Clipboard from 'expo-clipboard';
-const cheerio = require('react-native-cheerio');
 
 import { addRequestAtom } from '../stores/request/atoms';
 import { ResearchRequestParams } from '../stores/request/types';
@@ -13,43 +11,9 @@ import Colors from '../constants/Colors';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 
-const fetchHtml = async (link: string) => {
-    return await axios.get(link);
-};
-
-type MetaData = any;
-const parseHtml = (html: string) => {
-    const properties = ['title', 'description', 'image', 'url'];
-    const meta: MetaData = {};
-    const cheerio = require('react-native-cheerio');
-    const $ = cheerio.load(html);
-    properties.forEach((p) => {
-        const content = $(`meta[property="og:${p}"]`).attr('content');
-        if (content) {
-          meta[p] = content;
-        }
-    });
-    return meta;
-};
-
-const findOGTags = async (link: string) => {
-    try{
-      const response = await fetchHtml(link);
-      console.log(response);
-      /*
-      const meta = await parseHtml(response);
-      return meta;
-      */
-      return {};
-    }catch(e){
-      console.log(e)
-    }
-}
-
 export default function ResearchScreen() {
   const router = useRouter();
   const addRequest = useSetAtom(addRequestAtom);
-  const [meta, setMeta] = useState<MetaData>();
   const [data, setData] = useState<ResearchRequestParams>({
     type: 'RESEARCH',
     link: '',
@@ -59,7 +23,6 @@ export default function ResearchScreen() {
     const text = await Clipboard.getStringAsync();
     if (text) {
       setData({ ...data, link: text });
-      setMeta(await findOGTags(text));
     }
   }
   const handleClickReset = () => {
@@ -69,6 +32,7 @@ export default function ResearchScreen() {
     addRequest(data);
     router.push('(tabs)/requests')
   }
+  const disabled = !data.link;
   return (
     <View style={styles.container}>
       <ScrollView
@@ -121,7 +85,7 @@ export default function ResearchScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
-        <Button title='분석 의뢰하기 500P' onPress={handleSubmit} />
+        <Button title='분석 의뢰하기 500P' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
   );

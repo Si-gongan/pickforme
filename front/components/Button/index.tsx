@@ -3,7 +3,7 @@ import { StyleSheet, TextProps, Pressable, PressableProps, ViewProps } from 'rea
 import { useThemeColor, ThemeProps } from '../../hooks/useThemeColor';
 import { View, Text } from '../Themed';
 
-interface ButtonTextProps extends ThemeProps, Pick<TextProps, 'children' | 'numberOfLines'> {
+interface ButtonTextProps extends ThemeProps, Pick<TextProps, 'children' | 'numberOfLines' | 'ellipsizeMode'> {
   textStyle?: TextProps['style'];
 }
 interface ButtonProps extends  Omit<PressableProps, 'children'>, ButtonTextProps {
@@ -61,7 +61,7 @@ const textStyles = StyleSheet.create({
 
 export const ButtonText = ({ color = 'primary', textStyle, lightColor, darkColor, children, ...props }: ButtonTextProps) => {
   const buttonTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonText', color);
-  return <Text style={[{ color: buttonTextColor }, textStyle]}>{children}</Text>
+  return <Text style={[{ color: buttonTextColor }, textStyle]} {...props}>{children}</Text>
 }
 
 const Button = ({
@@ -80,13 +80,15 @@ const Button = ({
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonBackground', color);
   const disabledBackgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'disabledButtonBackground', color);
   const buttonTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonText', color);
-
   const handlePress: PressableProps['onPress'] = (e) => {
+    if (props.disabled ){
+      return;
+    }
     if (onPress) {
       onPress(e);
     }
   }
-
+  console.log(props, numberOfLines);
   return (
     <Pressable onPress={handlePress} {...props}>
       {({ pressed }) => (

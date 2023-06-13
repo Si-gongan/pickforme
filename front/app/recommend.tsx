@@ -19,6 +19,7 @@ export default function RecommendScreen() {
     price: '',
     text: '',
   });
+  const disabled = !data.price || !data.text;
   const handleSubmit = useCheckPoint(1, () => {
     addRequest(data);
     router.push('(tabs)/requests')
@@ -57,7 +58,7 @@ export default function RecommendScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
-        <Button title='추천 의뢰하기 1P' onPress={handleSubmit} />
+        <Button title='추천 의뢰하기 1P' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
   );
