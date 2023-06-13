@@ -41,14 +41,15 @@ export default function ChatScreen() {
             value={data.text}
             onChangeText={(text) => setData({ ...data, text })}
           />
+          <Button
+            style={styles.sendButton}
+            onPress={handleClickSend}
+            size='small'
+            color='primary'
+          >
+            <Image style={styles.sendIcon} source={require('../assets/images/chat/send.png')} />
+          </Button>
         </View>
-        <Button
-          style={styles.sendButton}
-          title='전송'
-          onPress={handleClickSend}
-          size='small'
-          color='tertiary'
-        />
       </View>
     </View>
   );
@@ -75,16 +76,22 @@ const styles = StyleSheet.create({
   inputWrap: {
     flex: 1,
     minHeight: 31,
-    paddingHorizontal: 15,
-    paddingBottom: 5,
+    paddingLeft: 15,
+    paddingVertical: 3,
+    paddingRight: 4,
     borderRadius: 18,
-    justifyContent: 'center',
+    alignIntems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: 'white',
+    flexDirection: 'row',
   },
   sendButton: {
     width: 60,
     height: 37,
   },
   textArea: {
+    flex: 1,
+  },
+  sendIcon: {
   },
 });
