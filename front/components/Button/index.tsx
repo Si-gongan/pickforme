@@ -88,7 +88,6 @@ const Button = ({
       onPress(e);
     }
   }
-  console.log(props, numberOfLines);
   return (
     <Pressable onPress={handlePress} {...props}>
       {({ pressed }) => (
