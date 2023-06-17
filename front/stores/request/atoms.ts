@@ -1,9 +1,15 @@
 import { atom } from 'jotai';
-import { RequestStatus, Request, RequestParams, SendChatParams } from './types';
-import { PostRequestAPI, GetRequestsAPI, PostChatAPI } from './apis';
+import { RequestStatus, GetPreviewParams, Request, RequestParams, SendChatParams, Preview } from './types';
+import { PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
 
 export const requestsAtom = atom<Request[]>([]);
+
+export const previewAtom = atom<Preview | void>(undefined);
+export const getPreviewAtom = atom(null, async (get, set, request: GetPreviewParams) => {
+  const { data } = await GetPreviewAPI(request);
+  set(previewAtom, data);
+});
 
 export const addRequestAtom = atom(null, async (get, set, request: RequestParams) => {
   const userData = get(userDataAtom);

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
+import ogs from 'open-graph-scraper';
 
 const router = new Router({
   prefix: '/request'
@@ -40,6 +41,25 @@ router.get("/", requireAuth, async (ctx) => {
   ctx.body = requests;
 });
 
+router.get("/preview/:link", requireAuth, async (ctx) => {
+  const { link } = ctx.params;
+  const {
+    result: {
+      ogTitle: title,
+      ogDescription: desc,
+      ogImage: [{
+        url: image,
+      }] = [{ url: '' }],
+    },
+  } = await ogs({ url: link });
+
+  ctx.body = {
+    image,
+    title,
+    desc,
+    link,
+  };
+});
 /*
 // 추후 규모 커지면 퍼포먼스 개선을 위해 필요한 api들
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSetAtom } from 'jotai';
+import { useSetAtom, useAtomValue } from 'jotai';
 import * as Clipboard from 'expo-clipboard';
 
-import { addRequestAtom } from '../stores/request/atoms';
+import { previewAtom, getPreviewAtom, addRequestAtom } from '../stores/request/atoms';
 import { ResearchRequestParams } from '../stores/request/types';
 import Colors from '../constants/Colors';
 
@@ -14,6 +14,8 @@ import { Text, View } from '../components/Themed';
 export default function ResearchScreen() {
   const router = useRouter();
   const addRequest = useSetAtom(addRequestAtom);
+  const getPreview = useSetAtom(getPreviewAtom);
+  const preview = useAtomValue(previewAtom);
   const [data, setData] = useState<ResearchRequestParams>({
     type: 'RESEARCH',
     link: '',
@@ -22,6 +24,7 @@ export default function ResearchScreen() {
   const handleClickPaste = async () => {
     const text = await Clipboard.getStringAsync();
     if (text) {
+      getPreview({ link: text });
       setData({ ...data, link: text });
     }
   }

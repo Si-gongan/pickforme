@@ -12,7 +12,7 @@ export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
   const router = useRouter();
   const logout = () => {
-    setUserData(undefined);
+    setUserData('' as unknown as undefined);
   }
   return (
     <View style={styles.container}>

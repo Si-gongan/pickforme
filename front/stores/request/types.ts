@@ -16,6 +16,15 @@ export interface Chat {
   },
 }
 
+export interface Preview {
+  link: string,
+  image: string,
+  title: string,
+  desc: string,
+}
+
+export interface GetPreviewParams extends Pick<Preview, 'link'> {};
+
 export interface SendChatParams extends Pick<Chat, 'text' | 'requestId'> {};
 
 interface RequestBase {
