@@ -32,6 +32,28 @@ const RequestSchema = new mongoose.Schema({
   link: {
     type: String,
   },
+  answer: {
+    text: {
+      type: String,
+    },
+    products: [{
+      title: {
+        type: String,
+      },
+      desc: {
+        type: String,
+      },
+      price: {
+        type: Number,
+      },
+      tags: [{
+        type: String,
+      }],
+      url: {
+        type: String,
+      }
+    }],
+  },
   chats: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chats',

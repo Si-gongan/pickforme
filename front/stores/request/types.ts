@@ -27,6 +27,14 @@ export interface GetPreviewParams extends Pick<Preview, 'link'> {};
 
 export interface SendChatParams extends Pick<Chat, 'text' | 'requestId'> {};
 
+export interface Product {
+  title: string,
+  desc: string,
+  url: string,
+  price: number,
+  tags: string[],
+}
+
 interface RequestBase {
   _id: string,
   name: string,
@@ -34,6 +42,10 @@ interface RequestBase {
   createdAt: string,
   chats: Chat[],
   text: string,                              
+  answer: {
+    text: string,
+    products: Product[]
+  },
 }
 
 export interface RecommendRequestParams {

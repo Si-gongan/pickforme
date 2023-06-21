@@ -37,9 +37,11 @@ export default function RootLayout() {
     return <SplashScreen />;
   }
   return (
+        <Suspense fallback={null}>
     <JotaiProvider>
       <RootLayoutNav />
     </JotaiProvider>
+    </Suspense>
   );
 }
 
@@ -75,7 +77,7 @@ function RootLayoutNav() {
     return <SplashScreen />
   }
   return (
-      <Suspense>
+      <Suspense fallback={null}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack
             initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}

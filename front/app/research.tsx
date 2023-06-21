@@ -88,7 +88,7 @@ export default function ResearchScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
-        <Button title='분석 의뢰하기 500P' onPress={handleSubmit} disabled={disabled} />
+        <Button title='분석 의뢰하기 1P' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
   );

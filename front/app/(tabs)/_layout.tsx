@@ -1,5 +1,4 @@
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter, Link, Tabs, Redirect } from 'expo-router';
 import { Pressable, useColorScheme } from 'react-native';
 
@@ -10,15 +9,10 @@ import { hexToRgb } from '../../utils/common';
 import Colors from '../../constants/Colors';
 import HeaderLeft from '../../components/HeaderLeft';
 
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import IndexIcon from '../../assets/images/tabbar/index.svg';
+import DiscoverIcon from '../../assets/images/tabbar/discover.svg';
+import RequestsIcon from '../../assets/images/tabbar/requests.svg';
+import MypageIcon from '../../assets/images/tabbar/mypage.svg';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -53,30 +47,14 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '홈',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          /*
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-          */
+          tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
           title: 'AI 포미',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <DiscoverIcon style={{color}} />,
         }}
       />
       <Tabs.Screen
@@ -84,14 +62,14 @@ export default function TabLayout() {
         options={{
           headerShown: false, 
           title: '의뢰 목록',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <RequestsIcon style={{color}} />,
         }}
       />
       <Tabs.Screen
         name="mypage"
         options={{
           title: '마이페이지',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <MypageIcon style={{color}} />,
         }}
       />
     </Tabs>
