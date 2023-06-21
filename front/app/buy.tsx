@@ -11,11 +11,37 @@ export default function BuyScreen() {
   const userData = useAtomValue(userDataAtom);
   return (
     <View style={styles.container}>
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text>
-      buy (TBD)
-      </Text>
-    </ScrollView>
+      <ScrollView contentContainerStyle={[styles.scrollContainer, styles.container]}>
+        <Image
+          style={styles.img}
+          source={require('../assets/images/buy/TBD.png')}
+        />
+        <Text style={styles.title}>
+          서비스를 준비 중입니다.
+        </Text>
+        <Text style={[styles.desc, styles.marginBottomS]}>
+          결제 과정의 접근성이 낮아 상품 구매에 어려움을 겪으셨던 적이 있으신가요?
+          </Text>
+        <Text style={[styles.desc, styles.marginBottomL]}>
+이제 픽포미 매니저가 대신 안전하고 빠르게 구매해드릴게요. 상품 구매, 티켓 예매, 중고물품 거래까지 모두 맡겨보세요!
+        </Text>
+        <Text style={[styles.desc, styles.marginBottomS]}>
+          픽포미 구매 서비스가 필요하시다면 아래 ‘서비스가 필요해요’ 버튼을 눌러주세요. 
+        </Text>
+        <Button
+          style={[styles.button, styles.marginBottomS]}
+          title='서비스가 필요해요'
+          size='medium'
+        />
+        <Text style={[styles.desc, styles.marginBottomM]}>
+          픽포미 구매 대행 서비스에 의견이 있으신가요?
+        </Text>
+        <Button
+          style={styles.button}
+          title='문의하기'
+          size='medium'
+        />
+      </ScrollView>
     </View>
   );
 }
@@ -24,6 +50,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  scrollContainer: {
+    paddingHorizontal: 27,
+    paddingVertical: 50,
+  },
+  img: {
+    width: 70,
+    height: 70,
+    marginBottom: 19,
+  },
+  title: {
+    fontWeight: '600',
+    fontSize: 18,
+    lineHeight: 22,
+    marginBottom: 52,
+  },
+  desc: {
+    fontWeight: '500',
+    fontSize: 14,
+    lineHeight: 17,
+  },
+  marginBottomS: {
+    marginBottom: 33,
+  },
+  marginBottomM: {
+    marginBottom: 50,
+  },
+  marginBottomL: {
+    marginBottom: 75
+  },
+  button: {
+    paddingHorizontal: 28,
   },
 });

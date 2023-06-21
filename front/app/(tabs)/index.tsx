@@ -41,36 +41,38 @@ export default function TabOneScreen() {
   });
   return (
     <View style={styles.container}>
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.textWrap}>
-        <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
-        <Text style={styles.title}>좋은 하루입니다!</Text>
-        <Text style={styles.subtitle}>픽포미 쇼핑 도우미 서비스를 이용해보세요.</Text>
-      </View>
-      <View style={styles.save}>
-      <FlatList<string>
-        scrollEnabled={false}
-        contentContainerStyle={styles.list}
-        data={Object.keys(DATA)}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        renderItem={({ item }) => (
-          <Button
-            onPress={() => onPress(item)}
-            style={styles.button}
-            textStyle={styles.text}
-            title={DATA[item as keyof typeof DATA].title}
-          >
-            <Image
-              style={styles.image}
-              source={DATA[item as keyof typeof DATA].image}
-            />
-          </Button>
-        )}
-        keyExtractor={(item) => item}
-      />
-      </View>
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={[styles.container, styles.scrollContainer]}>
+          <View style={styles.textWrap}>
+            <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
+            <Text style={styles.title}>좋은 하루입니다!</Text>
+            <Text style={styles.subtitle}>픽포미 쇼핑 도우미 서비스를 이용해보세요.</Text>
+          </View>
+          <View style={styles.save}>
+          <FlatList<string>
+            scrollEnabled={false}
+            contentContainerStyle={styles.list}
+            data={Object.keys(DATA)}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            renderItem={({ item }) => (
+              <Button
+                onPress={() => onPress(item)}
+                style={styles.button}
+                textStyle={styles.text}
+                title={DATA[item as keyof typeof DATA].title}
+              >
+                <Image
+                  style={styles.image}
+                  source={DATA[item as keyof typeof DATA].image}
+                />
+              </Button>
+            )}
+            keyExtractor={(item) => item}
+          />
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -80,6 +82,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  scrollContainer: {
+    paddingVertical: 55,
   },
   textWrap: {
     alignItems: 'flex-start',

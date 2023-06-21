@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { useAtom } from 'jotai';
-import { userDataAtom } from '../../stores/auth/atoms';
+import { useAtom, useAtomValue } from 'jotai';
+import { settingAtom, userDataAtom } from '../../stores/auth/atoms';
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -10,13 +10,17 @@ import Button from '../../components/Button';
 
 export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
+  const setting = useAtomValue(settingAtom);
+
   const router = useRouter();
   const logout = () => {
     setUserData('' as unknown as undefined);
   }
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView style={styles.container}>
+      <View style={styles.scrollContainer}>
+      <Text style={styles.name}>{setting?.name}님 안녕하세요,</Text>
       <View style={styles.card}>
         <Text style={styles.title}>
           내 정보 수정
@@ -98,6 +102,7 @@ export default function MyPageScreen() {
           />
         </View>
       )}
+      </View>
       </ScrollView>
     </View>
   );
@@ -108,6 +113,17 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
   },
+  scrollContainer: {
+    paddingVertical: 32,
+    paddingHorizontal: 13,
+  },
+  name: {
+    fontWeight: '600',
+    fontSize: 20,
+    lineHeight: 24,
+    marginBottom: 31,
+    marginHorizontal: 14,
+  },
   card: {
     borderWidth: 1,
     borderStyle: 'solid',
@@ -115,7 +131,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 14,
     paddingVertical: 15,
-    marginHorizontal: 13,
     marginBottom: 14,
   },
   title: {
