@@ -3,6 +3,7 @@ import { atomWithStorage } from '../utils';
 import { setClientToken } from '../../utils/axios';
 import {
   UserData,
+  LoginResponse,
   Setting,
   AppleLoginParams,
   KakaoLoginParams,
@@ -16,15 +17,18 @@ export const settingAtom = atomWithStorage<Setting>('setting', {
 });
 export const userDataAtom = atomWithStorage<UserData | void>('userData', undefined);
 
-export const setClientTokenAtom = atom(null, (get, set) => {
-  const userData = get(userDataAtom);
+export const setClientTokenAtom = atom(null, async (get, set) => {
+  const userData = await get(userDataAtom);
   if (!userData) {
     return;
   }
   setClientToken(userData.token);
 });
-export const handleLoginResultAtom = atom(null, (get, set, data: UserData) => {
-  set(userDataAtom, data);
+export const handleLoginResultAtom = atom(null, (get, set, data: LoginResponse) => {
+  set(userDataAtom, data.user);
+  if (data.isRegister) {
+    set(isShowGreetingModalAtom, true);
+  }
   set(setClientTokenAtom);
 });
 
@@ -40,3 +44,4 @@ export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginPara
 
 export const isShowLoginModalAtom = atom(false);
 export const isShowLackModalAtom = atom(false);
+export const isShowGreetingModalAtom = atom(false);

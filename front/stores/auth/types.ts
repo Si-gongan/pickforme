@@ -18,3 +18,8 @@ export interface AppleLoginParams {
 export interface KakaoLoginParams {
   accessToken: string,
 }
+
+export interface LoginResponse {
+  user: UserData;
+  isRegister: boolean;
+}

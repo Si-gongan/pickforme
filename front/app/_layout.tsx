@@ -15,6 +15,7 @@ import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../
 import HeaderLeft from '../components/HeaderLeft';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import LackBottomSheet from '../components/BottomSheet/Lack';
+import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -101,6 +102,7 @@ function RootLayoutNav() {
           </Stack>
           <LoginBottomSheet />
           <LackBottomSheet />
+          <GreetingBottomSheet />
         </ThemeProvider>
       </Suspense>
   );

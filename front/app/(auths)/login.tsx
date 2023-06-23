@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Platform, Image, StyleSheet } from 'react-native';
+import { ViewProps, Platform, Image, StyleSheet } from 'react-native';
 import { useAtomValue, useSetAtom } from 'jotai';
 
 import * as AuthSession from 'expo-auth-session';
@@ -19,7 +19,8 @@ import {
 
 WebBrowser.maybeCompleteAuthSession();
 
-export default function RegisterScreen() {
+interface Props extends ViewProps {};
+const LoginScreen: React.FC<Props> = (props) => {
   const loginKakao = useSetAtom(loginKakaoAtom);
   const loginApple = useSetAtom(loginAppleAtom);
   const [loginGoogleReady, loginGoogleResult, loginGoogle] = Google.useAuthRequest({
@@ -79,7 +80,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, props.style]}>
       <View style={styles.titleWrap}>
         <Text style={styles.title}>로그인하면 픽포미의 모든</Text>
         <Text style={styles.title}>서비스를 이용할 수 있어요!</Text>
@@ -115,7 +116,7 @@ export default function RegisterScreen() {
       </View>
       <View style={styles.descWrap}>
         <Text style={styles.desc}>픽포미에 첫 회원가입하고</Text>
-        <Text style={styles.desc}>무료로 2000 포인트를 획득하세요!</Text>
+        <Text style={styles.desc}>3회 무료 이용권을 획득하세요!</Text>
       </View>
     </View>
   );
@@ -184,3 +185,5 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 });
+
+export default LoginScreen;

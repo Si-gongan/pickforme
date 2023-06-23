@@ -6,6 +6,7 @@ import { View, Text } from '../Themed';
 import Button from '../Button';
 import { StyleSheet } from 'react-native';
 import { Props, styles } from './Base';
+import Login from '../../app/(auths)/login';
 
 const localStyles = StyleSheet.create({
   title: {
@@ -13,6 +14,9 @@ const localStyles = StyleSheet.create({
   },
   desc: {
     marginBottom: 20,
+  },
+  bottomSheet: {
+    flex: 0,
   },
 });
 
@@ -35,7 +39,8 @@ const LoginBottomSheet: React.FC<Props> = () => {
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
     >
-      <View style={styles.bottomSheet}>
+      <Login style={[styles.bottomSheet, localStyles.bottomSheet]} />
+      {/*
         <Text style={[styles.title, localStyles.title]}>로그인 안내</Text>
         <Text style={[styles.desc, localStyles.desc]}>로그인이 필요한 서비스입니다.</Text>
         <View style={styles.buttonRow}>
@@ -46,7 +51,7 @@ const LoginBottomSheet: React.FC<Props> = () => {
             <Button color='tertiary' title='아니요' onPress={handleClickNo} style={styles.button}/>
           </View>
         </View>
-      </View>
+      */}
     </BottomSheet>
   );
 }
