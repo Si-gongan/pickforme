@@ -6,6 +6,8 @@ dotenv.config({
 import Koa from 'koa';
 import router from './router';
 import bodyParser from 'koa-bodyparser';
+import http from 'http';
+import socket from './socket';
 
 const PORT = 3000;
 const app = new Koa();
@@ -15,6 +17,9 @@ app
   .use(router.routes())
   .use(router.allowedMethods());
 
-app.listen(PORT, () => {
+const server = http.createServer(app.callback())
+socket.setServer(server);
+
+server.listen(PORT, () => {
   console.log(`server listen in port ${PORT}`);
 });

@@ -5,6 +5,7 @@ import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
 import ogs from 'open-graph-scraper';
+import socket from '../../socket';
 
 const router = new Router({
   prefix: '/request'
@@ -18,7 +19,7 @@ router.post("/", requireAuth, async (ctx) => {
   }
   await user.usePoint(1);
   const request = await db.Request.create({
-    ...<any>ctx.request.body,
+    ...(<any>ctx.request).body,
     // answer는 나중에 admin에서 생성
     answer: {
       text: '안녕하세요, 말씀해주신 ‘8만원 이하’ ‘휴대성’ ‘5시간 녹음 가능’ 조건을 반영한 녹음기를 쇼핑몰 플랫폼에서 리뷰와 평점, 가격이 좋은 세 상품을 시공간 해설진이 소개해드릴게요.',
@@ -100,13 +101,14 @@ router.get("/detail", async (ctx) => {
 
 // 채팅 입력
 router.post("/chat", requireAuth, async (ctx) => {
-  const body = <{ requestId: string, text: string }>ctx.request.body;
+  const body = (<any>ctx.request).body;
   const chat = await db.Chat.create({
     ...(body as Object),
     isMine: true,
   });
   const request = await db.Request.findById(body.requestId)
   request.chats.push(chat._id);
+  socket.emit(ctx.state.socketId, 'message', chat);
   await request.save();
   ctx.body = chat;
 });

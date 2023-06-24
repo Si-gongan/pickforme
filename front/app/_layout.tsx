@@ -8,6 +8,7 @@ import { useColorScheme, StyleSheet } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useInterceptor from '../hooks/useInterceptor';
+import useSocket from '../hooks/useSocket';
 
 import Colors from '../constants/Colors';
 
@@ -57,6 +58,7 @@ function RootLayoutNav() {
   const setting = useAtomValue(settingAtom);
   const userData = useAtomValue(userDataAtom);
   const [isLoaded, setIsLoaded] = useAtom(isLoadedAtom);
+  useSocket();
   useInterceptor();
   useEffect(() => {
     (async () => {

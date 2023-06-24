@@ -33,6 +33,8 @@
     "mongoose-unique-validator": "^4.0.0",
     "node-html-to-image": "^3.2.4",
     "open-graph-scraper": "^6.1.0",
+    "socket.io": "^4.7.0",
+    "socket.io-client": "^4.7.0",
     "ts-node": "^10.8.1",
     "verify-apple-id-token": "^3.0.1",
     "webpack": "^4.41.2",

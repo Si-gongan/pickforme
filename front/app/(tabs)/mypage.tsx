@@ -68,6 +68,9 @@ export default function MyPageScreen() {
             글자 크기 변경
           </Link>
         </Text>
+        <Text style={styles.menu}>
+          알림 설정
+        </Text>
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>
