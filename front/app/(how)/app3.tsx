@@ -34,11 +34,6 @@ export default function HowScreen() {
 지금 바로 픽포미 서비스를 이용해보세요!
           </Text>
         </View>
-        <View style={styles.section}>
-          <Text style={styles.desc}>
-결과 리포트 전송 후 24시간이 지나면, 해당 의뢰에 대한 서비스는 종료됩니다.
-          </Text>
-        </View>
         <View style={[styles.buttonWrap, styles.buttonLeft]}>
           <View style={styles.half}>
             <Button title='이전' onPress={() => router.back()} />
