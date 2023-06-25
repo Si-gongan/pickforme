@@ -4,7 +4,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useRef } from 'react';
 import { userDataAtom } from '../stores/auth/atoms';
 import { sendChatAtom, requestsAtom } from '../stores/request/atoms';
-import { SendChatParams } from '../stores/request/types';
+import { SendChatParams, RequestStatus } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -39,6 +39,23 @@ export default function ChatScreen() {
           {request.chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
         </View>
       </ScrollView>
+      {request.status === RequestStatus.CLOSED ? (
+        <>
+        <Text style={styles.closedText} color='secondary'>
+          채팅이 완료되었습니다.{`\n`}
+          새로운 의뢰를 원하실 경우 아래 ‘새로 의뢰하기’ 버튼을 눌러주세요.
+        </Text>
+        <View style={styles.buttonWrap}>
+          <View style={styles.buttonItem}>
+            <Button variant='text' title='새로 의뢰하기' color='tertiary' onPress={() => router.push(`/${request.type.toLowerCase()}`)} />
+          </View>
+          <View style={styles.buttonSeperator} />
+          <View style={styles.buttonItem}>
+            <Button variant='text' title='AI와 대화하기' color='tertiary' onPress={() => router.push('/ai')} />
+          </View>
+        </View>
+        </>
+      ) : (
       <View style={styles.inputView}>
         <View style={styles.inputWrap}>
           <TextInput
@@ -58,6 +75,7 @@ export default function ChatScreen() {
           </Button>
         </View>
       </View>
+      )}
     </View>
   );
 }
@@ -106,5 +124,29 @@ const styles = StyleSheet.create({
   },
   sendIcon: {
     marginTop: 12,
+  },
+  buttonWrap: {
+    borderTopWidth: 1,
+    borderColor: Colors.light.buttonBackground.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonItem: {
+    flex: 0.5,
+    paddingVertical: 10,
+  },
+  buttonSeperator: {
+    width: 1,
+    height: 49,
+    backgroundColor: Colors.light.borderColor.primary,
+  },
+  closedText: {
+    marginTop: 20,
+    textAlign: 'center',
+    alignItems: 'center',
+    fontWeight: '600',
+    fontSize: 12,
+    lineHeight: 15,
+    marginBottom: 39,
   },
 });
