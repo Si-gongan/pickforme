@@ -1,5 +1,6 @@
 {
   "expo": {
+    "owner": "sigonggan",
     "plugins": [
       [
         "@react-native-seoul/kakao-login",
