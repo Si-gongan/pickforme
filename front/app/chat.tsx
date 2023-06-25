@@ -1,7 +1,7 @@
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { userDataAtom } from '../stores/auth/atoms';
 import { sendChatAtom, requestsAtom } from '../stores/request/atoms';
 import { SendChatParams } from '../stores/request/types';
@@ -11,6 +11,8 @@ import { Text, View } from '../components/Themed';
 import Chat from '../components/Chat';
 
 export default function ChatScreen() {
+  const scrollViewRef = useRef<ScrollView | null>(null);
+
   const router = useRouter();
   const userData = useAtomValue(userDataAtom);
   const { requestId } = useLocalSearchParams();
@@ -29,8 +31,13 @@ export default function ChatScreen() {
   }
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.inner}>
-        {request.chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
+      <ScrollView
+        ref={scrollViewRef}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
+      >
+        <View style={styles.inner}>
+          {request.chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
+        </View>
       </ScrollView>
       <View style={styles.inputView}>
         <View style={styles.inputWrap}>
@@ -58,10 +65,11 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
   },
   inner: {
-    flex: 1,
     padding: 20,
+    flexDirection: 'column',
     justifyContent: 'flex-end',
   },
   inputView: {
@@ -80,18 +88,23 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingRight: 4,
     borderRadius: 18,
-    alignIntems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     backgroundColor: 'white',
     flexDirection: 'row',
   },
   sendButton: {
-    width: 60,
-    height: 37,
+    width: 52,
+    height: 31,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   textArea: {
     flex: 1,
+    marginBottom: 8,
+    fontSize: 14,
   },
   sendIcon: {
+    marginTop: 12,
   },
 });
