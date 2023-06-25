@@ -4,6 +4,7 @@ import { View, Text } from './Themed';
 import Button from './Button';
 
 import Colors from '../constants/Colors';
+import { formatTime } from '../utils/common';
 import { Chat as IChat } from '../stores/request/types';
 import { Image, StyleSheet, Pressable, useColorScheme } from 'react-native';
 
@@ -31,7 +32,7 @@ const Chat: React.FC<Props> = ({ data }) => {
       </View>
       <View style={styles.dateWrap}>
         <Text style={styles.dateText}>
-          {data.createdAt}
+          {formatTime(data.createdAt)}
         </Text>
       </View> 
     </View>

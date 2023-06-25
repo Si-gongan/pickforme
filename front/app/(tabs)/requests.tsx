@@ -7,6 +7,7 @@ import Colors from '../../constants/Colors';
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
+import { formatDate } from '../../utils/common';
 
 enum TABS {
   ALL = 'ALL',
@@ -62,7 +63,7 @@ export default function RequestsScreen() {
                           {request.name}
                         </Text>
                         <Text style={styles.date}>
-                          {new Date(request.createdAt).toLocaleDateString()}
+                          {formatDate(request.createdAt)}
                         </Text>
                       </View>
                       <Button
