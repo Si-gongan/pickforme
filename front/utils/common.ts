@@ -5,4 +5,4 @@ export const numComma = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?
 
 export const formatDate = (date: string | Date) => new Date(date).toLocaleDateString();
 
-export const formatTime = (date: string | Date) => new Date(date).toLocaleTimeString();
+export const formatTime = (date: string | Date) => new Date(date).toLocaleTimeString().replace(/...$/,'');
