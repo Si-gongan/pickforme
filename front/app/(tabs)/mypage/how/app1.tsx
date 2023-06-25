@@ -2,8 +2,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, ScrollView } from 'react-native';
 import { useAtom } from 'jotai';
-import Button from '../../components/Button';
-import { Text, View } from '../../components/Themed';
+import Button from '../../../../components/Button';
+import { Text, View } from '../../../../components/Themed';
 import styles from './styles';
 
 export default function HowScreen() {
@@ -36,7 +36,7 @@ AI 포미 탭에서는 쇼핑을 돕는 인공지능, 포미와 대화할 수 �
         </View>
         <View style={[styles.buttonWrap, styles.buttonRight]}>
           <View style={styles.half}>
-            <Button title='다음' onPress={() => router.push('app2')} />
+            <Button title='다음' onPress={() => router.push('./app2')} />
           </View>
         </View>
       </View>

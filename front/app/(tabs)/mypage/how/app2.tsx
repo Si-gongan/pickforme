@@ -2,8 +2,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, ScrollView } from 'react-native';
 import { useAtom } from 'jotai';
-import Button from '../../components/Button';
-import { Text, View } from '../../components/Themed';
+import Button from '../../../../components/Button';
+import { Text, View } from '../../../../components/Themed';
 import styles from './styles';
 
 export default function HowScreen() {
@@ -44,7 +44,7 @@ export default function HowScreen() {
             <Button title='이전' onPress={() => router.back()} />
           </View>
           <View style={styles.full}>
-            <Button title='다음' onPress={() => router.push('app3')} />
+            <Button title='다음' onPress={() => router.push('./app3')} />
           </View>
         </View>
       </View>

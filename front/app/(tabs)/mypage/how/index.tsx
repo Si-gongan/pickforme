@@ -2,15 +2,14 @@ import { useRouter , Link } from "expo-router";
 import React from "react";
 import { StyleSheet, ScrollView } from 'react-native';
 import { useAtom } from 'jotai';
-import Button from '../../components/Button';
-import { Text, View } from '../../components/Themed';
+import Button from '../../../../components/Button';
+import { Text, View } from '../../../../components/Themed';
 import styles from './styles';
 import { BUTTONS } from './constants';
 
 export default function HowScreen() {
   const router = useRouter();
   const [value, setValue] = React.useState('small');
-
 
   return (
     <View style={styles.container}>
@@ -29,7 +28,7 @@ export default function HowScreen() {
       </View>
       <View style={localStyles.buttonWrap}>
         {BUTTONS.map(({ name, label }) => (
-          <Button key={`how-button-${name}`} title={label} onPress={() => router.push(name)} />
+          <Button key={`how-button-${name}`} title={label} onPress={() => router.push(`/(tabs)/mypage/how/${name}`)} />
         ))}
       </View>
       </ScrollView>

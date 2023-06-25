@@ -68,6 +68,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="mypage"
         options={{
+          headerShown: false, 
           title: '마이페이지',
           tabBarIcon: ({ color }) => <MypageIcon style={{color}} />,
         }}
