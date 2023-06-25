@@ -99,6 +99,7 @@ function RootLayoutNav() {
             <Stack.Screen name="research" options={hideHeaderOption} />
             <Stack.Screen name="chat" options={hideHeaderOption} />
             <Stack.Screen name="request" options={hideHeaderOption} />
+            <Stack.Screen name="(how)" options={hideHeaderOption} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
           </Stack>

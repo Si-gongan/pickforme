@@ -80,10 +80,14 @@ export default function MyPageScreen() {
           1:1 문의
         </Text>
         <Text style={styles.menu}>
-          사용 설명서
+          <Link href='/(how)' >
+            사용 설명서
+          </Link>
         </Text>
         <Text style={styles.menu}>
-          자주 묻는 질문 (FAQ)
+          <Link href='/faq'>
+            자주 묻는 질문 (FAQ)
+          </Link>
         </Text>
         <Text style={styles.menu}>
           개인정보처리방침
