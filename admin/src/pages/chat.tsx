@@ -1,8 +1,8 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useRouter } from 'next/router';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { userDataAtom } from '@/stores/auth/atoms';
-import { sendChatAtom, requestsAtom } from '@/stores/request/atoms';
+import { sendChatAtom, requestsAtom, getRequestAtom } from '@/stores/request/atoms';
 import { SendChatParams, RequestStatus } from '@/stores/request/types';
 import styled from '@emotion/styled';
 import Chat from '@/components/Chat';
@@ -10,21 +10,27 @@ import Chat from '@/components/Chat';
 export default function ChatScreen() {
   const router = useRouter();
   const scrollDivRef = useRef<HTMLDivElement | null>(null);
+  const getRequest = useSetAtom(getRequestAtom);
 
   const userData = useAtomValue(userDataAtom);
-  const requestId = router.query.request_id;
+  const requestId = router.query.requestId as string;
   const sendChat = useSetAtom(sendChatAtom);
   const [data, setData] = useState<SendChatParams>({
     text: '',
-    requestId: requestId as string, // local search params 이슈
+    requestId, // local search params 이슈
   });
   const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
   const handleClickSend = () => {
     sendChat(data);
     setData({ ...data, text: '' });
   }
+  useEffect(() => {
+    if (requestId) {
+      getRequest({ requestId });
+    }
+  }, [requestId, getRequest]);
   if (!request) {
-    return <div>잘못된 접근입니다</div>
+    return null;
   }
   return (
     <Container>

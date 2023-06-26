@@ -1,3 +1,8 @@
+[role="button"], [role="button"]:focus, [role="button"]:active, button, button:focus, button:active, a, a:focus, a:active {
+  outline: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;

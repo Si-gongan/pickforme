@@ -1,9 +1,9 @@
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { userDataAtom } from '../stores/auth/atoms';
-import { sendChatAtom, requestsAtom } from '../stores/request/atoms';
+import { sendChatAtom, getRequestAtom, requestsAtom } from '../stores/request/atoms';
 import { SendChatParams, RequestStatus } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
@@ -12,7 +12,7 @@ import Chat from '../components/Chat';
 
 export default function ChatScreen() {
   const scrollViewRef = useRef<ScrollView | null>(null);
-
+  const getRequest = useSetAtom(getRequestAtom);
   const router = useRouter();
   const userData = useAtomValue(userDataAtom);
   const { requestId } = useLocalSearchParams();
@@ -26,8 +26,13 @@ export default function ChatScreen() {
     sendChat(data);
     setData({ ...data, text: '' });
   }
+  useEffect(() => {
+    if (requestId) {
+      getRequest({ requestId });
+    }
+  }, [getRequest, requestId]);
   if (!request) {
-    return <Text>잘못된 접근입니다</Text>
+    return null;
   }
   return (
     <View style={styles.container}>

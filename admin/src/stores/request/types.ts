@@ -26,6 +26,7 @@ export interface Preview {
 export interface GetPreviewParams extends Pick<Preview, 'link'> {};
 
 export interface SendChatParams extends Pick<Chat, 'text' | 'requestId'> {};
+export interface GetRequestParams extends Pick<Chat, 'requestId'> {};
 
 export interface Product {
   title: string,

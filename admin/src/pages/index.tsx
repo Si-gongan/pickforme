@@ -41,7 +41,7 @@ export default function RequestsScreen() {
       <Cards>
         {requests.map((request) => (
           <Link
-            href={`/chat/${request._id}`}
+            href={`/chat/?requestId=${request._id}`}
             key={`Request-card-${request._id}`}
           >
             <Card>

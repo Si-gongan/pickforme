@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
-import { RequestStatus, GetPreviewParams, Request, RequestParams, SendChatParams, Preview } from './types';
-import { PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI } from './apis';
+import { RequestStatus, GetPreviewParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams } from './types';
+import { PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
 
 export const requestsAtom = atom<Request[]>([]);
@@ -21,6 +21,10 @@ export const addRequestAtom = atom(null, async (get, set, request: RequestParams
   set(userDataAtom, { ...userData, point: data.point });
 });
 
+export const getRequestAtom = atom(null, async (get, set, params: GetRequestParams) => {
+  const { data } = await GetRequestAPI(params); // 추후 last chat_id 추가하여 성능 개선
+  set(requestsAtom, [...get(requestsAtom), data]);
+});
 export const getRequestsAtom = atom(null, async (get, set) => {
   const { data } = await GetRequestsAPI({}); // 추후 last chat_id 추가하여 성능 개선
   set(requestsAtom, data);

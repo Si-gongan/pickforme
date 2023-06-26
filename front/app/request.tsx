@@ -9,7 +9,7 @@ import Colors from '../constants/Colors';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 import Collapsible from 'react-native-collapsible';
-
+import * as WebBrowser from 'expo-web-browser';
 
 const tabName = {
   'RECOMMEND': '픽포미 추천',
@@ -19,7 +19,8 @@ const tabName = {
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const handleOpenUrl = (url: string) => {
+  const handleOpenUrl = async (url: string) => {
+    await WebBrowser.openBrowserAsync(url);
   }
   return (
     <Pressable onPress={() => setIsOpen(true)}>

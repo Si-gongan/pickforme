@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import styled from '@emotion/styled';
 
 import { formatTime } from '../utils/common';
@@ -16,7 +17,9 @@ const Chat: React.FC<Props> = ({ data }) => {
           {data.text}
         </Text>
         {button && (
-          <button>답변 보기</button>
+          <Link href={button.deeplink}>
+            <button>{button.text}</button>
+          </Link>
         )}
       </Card>
       <div>
