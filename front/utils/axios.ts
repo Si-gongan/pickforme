@@ -1,7 +1,5 @@
 import axios from 'axios';
-
-// export const API_HOST = process.env.API_HOST;
-export const API_HOST = 'http://ec2-3-14-136-232.us-east-2.compute.amazonaws.com:3000';
+import { API_HOST } from '@env';
 
 const client = axios.create({
   baseURL: API_HOST,

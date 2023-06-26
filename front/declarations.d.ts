@@ -10,3 +10,7 @@ declare module "*.svg" {
   const content: React.FC<Props>;
   export default content;
 }
+
+declare module '@env' {
+  export const API_HOST: string;
+}

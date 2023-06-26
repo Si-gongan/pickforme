@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import React from 'react';
-import { API_HOST } from '../utils/axios';
+import { API_HOST } from '@env';
 import { userDataAtom } from '../stores/auth/atoms';
 import { useAtomValue } from 'jotai';
 
