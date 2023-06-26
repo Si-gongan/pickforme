@@ -8,6 +8,7 @@ export interface LocalRegisterPayload {
 
 export interface User extends LocalRegisterPayload {
   point: number;
+  level: number;
 }
 
 export interface UserDocument extends User, Document {

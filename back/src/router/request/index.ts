@@ -1,8 +1,5 @@
 import Router from '@koa/router';
-import axios from 'axios';
-import jwt from 'jsonwebtoken';
 import db from 'models';
-import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
 import ogs from 'open-graph-scraper';
 import socket from '../../socket';
@@ -108,8 +105,8 @@ router.post("/chat", requireAuth, async (ctx) => {
   });
   const request = await db.Request.findById(body.requestId)
   request.chats.push(chat._id);
-  socket.emit(ctx.state.socketId, 'message', chat);
   await request.save();
+  // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
   ctx.body = chat;
 });
 

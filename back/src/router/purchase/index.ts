@@ -1,8 +1,5 @@
 import Router from '@koa/router';
-import axios from 'axios';
-import jwt from 'jsonwebtoken';
 import db from 'models';
-import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
 
 const router = new Router({

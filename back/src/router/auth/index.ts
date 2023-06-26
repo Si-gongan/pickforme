@@ -27,6 +27,21 @@ const handleLogin = async (email: string) => {
   };
 }
 
+router.post('/google', async (ctx) => {
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
+  const { data } = await axios.get<{ email: string, verified_email: boolean }>(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+  const { email, verified_email } = data;
+  if (
+    !verified_email || 
+    !email
+  ) {
+    ctx.body = { error: '잘못된 접근입니다'  };
+    return;
+  }
+
+  ctx.body = await handleLogin(email);
+});
+
 router.post("/kakao", async (ctx) => {
   const { accessToken } = <{ accessToken: string }>ctx.request.body;
   const data = await axios.get('https://kapi.kakao.com/v2/user/me', {

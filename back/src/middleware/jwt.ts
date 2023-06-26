@@ -7,6 +7,7 @@ import {
 } from 'utils/jwt';
 
 export default async (ctx: Context, next: () => Promise<any>) => {
+  console.log(ctx.header);
   const token = ctx.header.authorization;
   if (token) {
     try {

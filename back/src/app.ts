@@ -4,15 +4,17 @@ dotenv.config({
 });
 
 import Koa from 'koa';
+import cors from '@koa/cors';
 import router from './router';
 import bodyParser from 'koa-bodyparser';
 import http from 'http';
 import socket from './socket';
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const app = new Koa();
 
 app
+  .use(cors())
   .use(bodyParser())
   .use(router.routes())
   .use(router.allowedMethods());
