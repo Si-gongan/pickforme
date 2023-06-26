@@ -49,6 +49,9 @@ interface RequestBase {
   },
 }
 
+export interface PostAnswerParams extends Pick<Request, 'answer'>, Pick<Chat, 'requestId'> {
+};
+
 export interface RecommendRequestParams {
   type: 'RECOMMEND',                         
   price: string,

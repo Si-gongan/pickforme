@@ -5,8 +5,8 @@ import ExternalLink from '@/components/ExternalLink';
 import { useState } from 'react';
 import styled from '@emotion/styled';
 import { numComma } from '@/utils/common';
-import { requestsAtom, getRequestAtom } from '@/stores/request/atoms';
-import { Product } from '@/stores/request/types';
+import { postAnswerAtom, requestsAtom, getRequestAtom } from '@/stores/request/atoms';
+import { PostAnswerParams, Product } from '@/stores/request/types';
 
 const tabName = {
   'RECOMMEND': '픽포미 추천',
@@ -14,11 +14,39 @@ const tabName = {
   'BUY': '',
 }
 
-const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
+const ProductNew: React.FC<{ product: Product, setProduct: (product: Product) => void  }> = ({ product, setProduct }) => {
+  const handleChangeInput: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
+    setProduct({
+      ...product,
+      [e.target.name]: e.target.name === 'tags' ? e.target.value.split('\n') : e.target.value,
+    });
+  }
+  return (
+      <ProductCard>
+        <Row>
+        제목: <input name='title' type='text' value={product.title} onChange={handleChangeInput} />
+        </Row>
+        <Row>
+        가격: <input name='price' type='number' value={product.price} onChange={handleChangeInput}/>
+        </Row>
+        <Row>
+        태그: <textarea name='tags' value={product.tags.join('\n')} placeholder='줄바꿈으로 구분' onChange={handleChangeInput}/>
+        </Row>
+        <Row>
+        설명: <textarea name='desc' value={product.desc} onChange={handleChangeInput}/>
+        </Row>
+        <Row>
+        구매링크: <input name='url' type='text' value={product.url} onChange={handleChangeInput}/>
+        </Row>
+      </ProductCard>
+  );
+}
+
+const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <Root onClick={() => setIsOpen(true)}>
-      <Product key={`answer-product-${product.url}}`}>
+      <ProductCard>
         <Row>
           <ProductTitle>
             {product.title}
@@ -58,55 +86,101 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           </ButtonWrap>
           </>
         )}
-      </Product>
+      </ProductCard>
     </Root>
   );
 }
 
+const initialProduct = {
+  title: '',
+  desc: '',
+  url: '',
+  price: 0,
+  tags: [''],
+}
+
+const initialAnswer = { text: '', products: [] };
 export default function RequestScreen() {
   const router = useRouter();
   const requestId = router.query.requestId as string;
   const getRequest = useSetAtom(getRequestAtom);
+  const postAnswer = useSetAtom(postAnswerAtom);
   const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
+  const [answer, setAnswer] = useState<PostAnswerParams['answer']>({ ...initialAnswer });
   useEffect(() => {
     if (requestId) {
       getRequest({ requestId });
     }
   }, [requestId, getRequest]);
+
+  const handleSubmitAnswer = () => {
+    postAnswer({
+      answer,
+      requestId,
+    });
+    setAnswer({ ...initialAnswer });
+  }
+
+  const handleChangeAnswerText: React.ChangeEventHandler<HTMLTextAreaElement> = (e) => {
+    setAnswer((prev) => ({ ...prev, text: e.target.value }));
+  }
+
+  const handleClickAddProduct = () => {
+    setAnswer((prev) => ({ ...prev, products: [...prev.products, { ...initialProduct }] }));
+  }
+
+  const handleChangeProduct = (i: number) => (product: Product) => {
+    setAnswer((prev) => ({
+      ...prev,
+      products: prev.products.map((prevProduct, idx) => i === idx ? product : prevProduct),
+    }));
+  }
+
   if (!request) {
     return null;
   }
 
   return (
     <Container>
-        <Title>
-          {tabName[request.type]}
-        </Title>
-        <Subtitle>
-          의뢰 내용
-        </Subtitle>
-        <Desc>
-          {request.text}
-        </Desc>
-        <Subtitle>
-          추천 결과
-        </Subtitle>
-        {request.answer ? (
-          <>
-            <Desc>
-              {request.answer.text}
-            </Desc>
-            <ProductWrap>
-              {request.answer.products.map((product) => (
-                <ProductCard key={`answer-product-${product.url}}`} product={product} />
-              ))}
-            </ProductWrap>
-          </>
-        ) : (
+      <Title>
+        {tabName[request.type]}
+      </Title>
+      <Subtitle>
+        의뢰 내용
+      </Subtitle>
+      <Desc>
+        {request.text}
+      </Desc>
+      <Subtitle>
+        추천 결과
+      </Subtitle>
+      {request.answer ? (
+        <>
           <Desc>
-            매니저가 답변을 작성중입니다. 조금만 기다려주세요.
+            {request.answer.text}
           </Desc>
-        )}
+          <ProductWrap>
+            {request.answer.products.map((product) => (
+              <ProductItem key={`answer-product-${product.url}}`} product={product} />
+            ))}
+          </ProductWrap>
+        </>
+      ) : (null)}
+
+        <>
+          <Desc>
+            답변을 작성해주세요
+          </Desc>
+          <textarea onChange={handleChangeAnswerText} value={answer.text} />
+          {answer.products.map((product, i) => (
+            <ProductNew key={`answer-product-edit-${i}}`} product={product} setProduct={handleChangeProduct(i)} />
+          ))}
+          <br />
+          <button onClick={() => handleClickAddProduct()}>상품 추가</button>
+          <br />
+          <br />
+          <button onClick={handleSubmitAnswer}>답변전송</button>
+        </>
     </Container>
   );
 }
@@ -144,7 +218,7 @@ const ProductWrap = styled.div`
   margin-top: 9px;
   flex-direction: column;
 `;
-const Product = styled.div`
+const ProductCard = styled.div`
   border: 2px solid black;
   border-radius: 13px;
   padding: 16px 13px;
