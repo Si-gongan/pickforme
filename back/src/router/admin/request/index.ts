@@ -14,18 +14,20 @@ const router = new Router({
 router.post("/answer", async (ctx) => {
   const body = (<any>ctx.request).body;
   const request = await db.Request.findById(body.requestId)
+  if (!request.answer) {
+    const chat = await db.Chat.create({
+      text: '결과 리포트가 도착했습니다. 확인 후 문의사항이 있으실 경우 채팅을 남겨주세요. 1일 뒤 자동으로 의뢰가 종료됩니다.',
+      createdAt: new Date(),
+      isMine: false,
+      button: {
+        text: '결과물 보기',
+        deeplink: `/request?requestId=${request._id}`,
+      },
+    });
+    request.chats.push(chat._id);
+  }
   request.answer = body.answer;
-  const chat = await db.Chat.create({
-    text: '결과 리포트가 도착했습니다. 확인 후 문의사항이 있으실 경우 채팅을 남겨주세요. 1일 뒤 자동으로 의뢰가 종료됩니다.',
-    createdAt: new Date(),
-    isMine: false,
-    button: {
-      text: '결과물 보기',
-      deeplink: `/request?requestId=${request._id}`,
-    },
-  });
   request.status = RequestStatus.SUCCESS;
-  request.chats.push(chat._id);
   await request.save();
   ctx.body = await request.populate('chats');
 });
