@@ -24,6 +24,10 @@ router.post("/answer", async (ctx) => {
         deeplink: `/request?requestId=${request._id}`,
       },
     });
+    const connectionId = await db.Session.findOne({ userId: request.userId });
+    if (connectionId) {
+      socket.emit(connectionId, 'message', chat);
+    }
     request.chats.push(chat._id);
   }
   request.answer = body.answer;
