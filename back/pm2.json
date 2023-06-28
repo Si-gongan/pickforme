@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "name": "Server",
+      "cwd": "src",
+      "script": "NODE_PATH=./src ts-node src/app.ts",
+      "watch": false,
+      "autorestart": true
+    }
+  ]
+}
