@@ -5,6 +5,7 @@ import {
   decodeJWT,
 } from './utils/jwt';
 
+db.Session.deleteMany({});
 
 class Socket {
   private io: socketio.Server | void = undefined;
@@ -17,7 +18,7 @@ class Socket {
       return;
     }
     const user = decodeJWT(token);
-    db.Session.deleteMany({
+    await db.Session.deleteMany({
       userId: user._id,
     });
     const session = await db.Session.create({

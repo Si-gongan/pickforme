@@ -9,6 +9,7 @@ export enum RequestStatus {
 export enum RequestType {
   RECOMMEND = 'RECOMMEND',
   RESEARCH = 'RESEARCH',
+  AI = 'AI',
 }
 
 const RequestSchema = new mongoose.Schema({
@@ -21,6 +22,9 @@ const RequestSchema = new mongoose.Schema({
     type: String,
     enum: RequestType,
     default: RequestType.RECOMMEND,
+  },
+  name: {
+    type: String,
   },
   text: {
     type: String,
@@ -54,6 +58,7 @@ const RequestSchema = new mongoose.Schema({
       }
     }],
   },
+  aiData: mongoose.Schema.Types.Mixed,
   chats: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chats',

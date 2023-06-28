@@ -1,9 +1,9 @@
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom, useAtom } from 'jotai';
 import { useEffect, useState, useRef } from 'react';
 import { userDataAtom } from '../stores/auth/atoms';
-import { sendChatAtom, getRequestAtom, requestsAtom } from '../stores/request/atoms';
+import { sendChatParamsAtom, sendChatAtom, getRequestAtom, requestsAtom } from '../stores/request/atoms';
 import { SendChatParams, RequestStatus } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
@@ -15,25 +15,24 @@ export default function ChatScreen() {
   const getRequest = useSetAtom(getRequestAtom);
   const router = useRouter();
   const userData = useAtomValue(userDataAtom);
-  const { requestId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
   const sendChat = useSetAtom(sendChatAtom);
-  const [data, setData] = useState<SendChatParams>({
-    text: '',
-    requestId: requestId as string, // local search params 이슈
-  });
-  const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
+  const [data, setData] = useAtom(sendChatParamsAtom)
+  const requests = useAtomValue(requestsAtom);
+  const request = requests.find(({ _id }) => _id === `${data.requestId}`);
   const handleClickSend = () => {
-    sendChat(data);
-    setData({ ...data, text: '' });
+    sendChat();
   }
   useEffect(() => {
-    if (requestId) {
-      getRequest({ requestId });
+    setData({ text: '', requestId: (params.requestId as string || '') });
+  }, [params.requestId, setData]);
+  useEffect(() => {
+    if (data.requestId) {
+      getRequest({ requestId: data.requestId });
     }
-  }, [getRequest, requestId]);
-  if (!request) {
-    return null;
-  }
+  }, [getRequest, data.requestId]);
+  const chats = request?.chats || [];
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -41,10 +40,10 @@ export default function ChatScreen() {
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
       >
         <View style={styles.inner}>
-          {request.chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
+          {chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
         </View>
       </ScrollView>
-      {request.status === RequestStatus.CLOSED ? (
+      {request?.status === RequestStatus.CLOSED ? (
         <>
         <Text style={styles.closedText} color='secondary'>
           채팅이 완료되었습니다.{`\n`}

@@ -60,18 +60,27 @@ export interface ResearchRequestParams {
   type: 'RESEARCH',
   link: string,
 }
+
+export interface AIRequestParams {
+  type: 'AI',
+  text: string,
+}
+
 interface RecommendRequest extends RequestBase, RecommendRequestParams {
 }
 
 interface ResearchRequest extends RequestBase, ResearchRequestParams {
 }
 
+interface AIRequest extends RequestBase, AIRequestParams {
+}
+
 interface BuyRequest extends RequestBase {
   type: 'BUY',
 }
 
-export type Request = BuyRequest | RecommendRequest | ResearchRequest;
-export type RequestParams = RecommendRequestParams | ResearchRequestParams;
+export type Request = BuyRequest | RecommendRequest | ResearchRequest | AIRequest;
+export type RequestParams = RecommendRequestParams | ResearchRequestParams | AIRequestParams;
 
 export interface PostRequestResponse {
   request: Request,

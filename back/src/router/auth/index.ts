@@ -17,7 +17,7 @@ const handleLogin = async (email: string) => {
     isRegister = true;
   }
   const token = await user.generateToken();
-
+  console.log(user.toObject());
   return {
     user: {
       ...user.toObject(),

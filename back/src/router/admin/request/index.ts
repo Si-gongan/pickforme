@@ -24,9 +24,9 @@ router.post("/answer", async (ctx) => {
         deeplink: `/request?requestId=${request._id}`,
       },
     });
-    const connectionId = await db.Session.findOne({ userId: request.userId });
-    if (connectionId) {
-      socket.emit(connectionId, 'message', chat);
+    const session = await db.Session.findOne({ userId: request.userId });
+    if (session) {
+      socket.emit(session.connectionId, 'message', chat);
     }
     request.chats.push(chat._id);
   }
@@ -59,16 +59,17 @@ router.get("/detail/:requestId", async (ctx) => {
 // 채팅 입력
 router.post("/chat", async (ctx) => {
   const body = (<any>ctx.request).body;
+  const request = await db.Request.findById(body.requestId)
   const chat = await db.Chat.create({
     ...(body as Object),
     isMine: false,
+    userId: request.userId,
   });
-  const request = await db.Request.findById(body.requestId)
   request.chats.push(chat._id);
   await request.save();
-  const connectionId = await db.Session.findOne({ userId: request.userId });
-  if (connectionId) {
-    socket.emit(connectionId, 'message', chat);
+  const session = await db.Session.findOne({ userId: request.userId });
+  if (session) {
+    socket.emit(session.connectionId, 'message', chat);
   }
   ctx.body = chat;
 });

@@ -11,5 +11,8 @@ export const getProductsAtom = atom(null, async (get, set) => {
 });
 export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseProductParams) => {
   const { data } = await PurchaseProductAPI(params);
-  set(userDataAtom, { ...get(userDataAtom), point: data });
+  const userData = await get(userDataAtom)
+  if (userData) {
+    set(userDataAtom, { ...userData, point: data });
+  }
 });

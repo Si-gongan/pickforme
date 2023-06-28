@@ -8,7 +8,6 @@ import {
 
 export default async (ctx: Context, next: () => Promise<any>) => {
   const user = ctx.state.user;
-  console.log(user);
   if (user?.level !== 9) {
     ctx.body = 'login required';
     ctx.status = 401;

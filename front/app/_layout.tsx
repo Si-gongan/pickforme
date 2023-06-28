@@ -65,7 +65,6 @@ function RootLayoutNav() {
       const storageIsLoaded = await AsyncStorage.getItem('isLoaded');
       if (!storageIsLoaded) {
         setIsLoaded('true');
-        // await AsyncStorage.setItem('isLoaded', 'true');
       }
     })();
   }, []);

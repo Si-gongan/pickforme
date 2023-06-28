@@ -20,6 +20,7 @@ const ChatSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Users',
+    required: [true, 'can\'t be null'],
   },
 }, {
   timestamps: true,

@@ -20,7 +20,7 @@ const DATA = {
     title: '픽포미 구매',
     image: require('../../assets/images/main/buy.png'),
   },
-  AI: {
+  chat: {
     title: 'AI 포미',
     image: require('../../assets/images/main/AI.png'),
   },
@@ -30,7 +30,7 @@ const images = {
   recommend: '픽포미 추천',
   research: '픽포미 분석',
   buy: '픽포미 구매',
-  AI: 'AI 포미',
+  chat: 'AI 포미',
 }
 
 export default function TabOneScreen() {
