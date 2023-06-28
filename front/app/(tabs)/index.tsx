@@ -41,7 +41,7 @@ export default function TabOneScreen() {
   });
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView>
         <View style={[styles.container, styles.scrollContainer]}>
           <View style={styles.textWrap}>
             <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>

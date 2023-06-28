@@ -14,6 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 const tabName = {
   'RECOMMEND': '픽포미 추천',
   'RESEARCH': '픽포미 분석',
+  'AI': 'AI 포미',
   'BUY': '',
 }
 
@@ -91,7 +92,7 @@ export default function RequestScreen() {
         <Text style={styles.subtitle}>
           추천 결과
         </Text>
-        {request.answer ? (
+        {request.answer.text ? (
           <>
             <Text style={styles.desc}>
               {request.answer.text}
