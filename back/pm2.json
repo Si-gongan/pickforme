@@ -3,7 +3,7 @@
     {
       "name": "Server",
       "cwd": "src",
-      "script": "NODE_PATH=./src ts-node src/app.ts",
+      "script": "NODE_PATH=./src src/app.ts",
       "watch": false,
       "autorestart": true
     }
