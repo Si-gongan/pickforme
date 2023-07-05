@@ -27,19 +27,12 @@ export default function PointScreen() {
   const userData = useAtomValue(userDataAtom);
   const subscriptionProducts = products.filter(({ type }) => type === 'SUBSCRIPTION');
   const purchaseProducts = products.filter(({ type }) => type === 'PURCHASE');
-  const [selectedItem, setSelectedItem] = useState(subscriptionProducts[0]?._id);
   const handleClick = (_id: string) => {
-    setSelectedItem(_id);
-  };
-  const handleSubmit = () => {
-    purchaseProduct({ _id: selectedItem });
+    purchaseProduct({ _id });
   };
   useEffect(() => {
     getProducts();
   }, [getProducts]);
-  useEffect(() => {
-    setSelectedItem(subscriptionProducts?.[0]?._id);
-  }, [products]);
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -60,7 +53,7 @@ export default function PointScreen() {
             매월 편하게 자동 충전할게요!
           </Text>
           {subscriptionProducts.map(product => {
-            const color: 'primary' | 'tertiary' = selectedItem === product._id ? 'primary' : 'tertiary';
+            const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
             return (
               <Button
@@ -91,7 +84,7 @@ export default function PointScreen() {
             필요할 때마다 구매할게요!
           </Text>
           {purchaseProducts.map(product => {
-            const color: 'primary' | 'tertiary' = selectedItem === product._id ? 'primary' : 'tertiary';
+            const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
             return (
               <Button
@@ -117,9 +110,6 @@ export default function PointScreen() {
           </Text>
         </View>
       </ScrollView>
-      <View style={styles.buttonWrap}>
-        <Button title='확인' onPress={handleSubmit} />
-      </View>
     </View>
   );
 }
