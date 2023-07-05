@@ -42,7 +42,7 @@ export default function PointScreen() {
               내 픽
             </Text>
             <Text style={styles.myPointNumber}>
-              {userData?.point}P
+              {userData?.point}픽
             </Text>
           </View>
           <View style={styles.seperator} />

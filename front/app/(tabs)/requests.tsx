@@ -31,7 +31,7 @@ export default function RequestsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>의뢰 목록</Text>
-      <Text style={styles.subtitle}>아래 탭을 선택하여 채팅을 모아서 보세요.</Text>
+      <Text style={styles.subtitle}>채팅방에 입장하여 의뢰 진행상황을 확인하세요</Text>
       <View style={styles.tabWrap}>
         {Object.values(TABS).map((TAB) => (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>

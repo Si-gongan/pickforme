@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { ImageSourcePropType, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
@@ -7,31 +7,28 @@ import useCheckLogin from '../../hooks/useCheckLogin';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 
-const DATA = {
-  recommend: {
-    title: '픽포미 추천',
-    image: require('../../assets/images/main/recommend.png'),
-  },
-  research: {
-    title: '픽포미 분석',
-    image: require('../../assets/images/main/research.png'),
-  },
-  buy: {
-    title: '픽포미 구매',
-    image: require('../../assets/images/main/buy.png'),
-  },
-  chat: {
-    title: 'AI 포미',
-    image: require('../../assets/images/main/AI.png'),
-  },
+interface TDATA {
+  path: string;
+  title: string;
+  image: ImageSourcePropType;
 }
-
-const images = {
-  recommend: '픽포미 추천',
-  research: '픽포미 분석',
-  buy: '픽포미 구매',
-  chat: 'AI 포미',
-}
+const DATA: TDATA[] = [{
+  path: '/recommend',
+  title: '픽포미 추천',
+  image: require('../../assets/images/main/recommend.png'),
+}, {
+  path: '/research',
+  title: '픽포미 분석',
+  image: require('../../assets/images/main/research.png'),
+}, {
+  path: '/buy',
+  title: '픽포미 구매',
+  image: require('../../assets/images/main/buy.png'),
+}, {
+  path: '/(tabs)/mypage/how',
+  title: '픽포미 사용설명서',
+  image: require('../../assets/images/main/how.png'),
+}];
 
 export default function TabOneScreen() {
   const router = useRouter();
@@ -49,26 +46,26 @@ export default function TabOneScreen() {
             <Text style={styles.subtitle}>픽포미 쇼핑 도우미 서비스를 이용해보세요.</Text>
           </View>
           <View style={styles.save}>
-          <FlatList<string>
+          <FlatList<TDATA>
             scrollEnabled={false}
             contentContainerStyle={styles.list}
-            data={Object.keys(DATA)}
+            data={DATA}
             numColumns={2}
             columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
               <Button
-                onPress={() => onPress(item)}
+                onPress={() => onPress(item.path)}
                 style={styles.button}
                 textStyle={styles.text}
-                title={DATA[item as keyof typeof DATA].title}
+                title={item.title}
               >
                 <Image
                   style={styles.image}
-                  source={DATA[item as keyof typeof DATA].image}
+                  source={item.image}
                 />
               </Button>
             )}
-            keyExtractor={(item) => item}
+            keyExtractor={(item) => item.path}
           />
           </View>
         </View>

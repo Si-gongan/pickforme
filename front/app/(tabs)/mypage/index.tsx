@@ -44,11 +44,11 @@ export default function MyPageScreen() {
       {!!userData && (
       <View style={styles.card}>
         <Text style={styles.title}>
-          내 포인트 {userData.point}P
+          내 픽 {userData.point}픽
         </Text>
         <Text style={styles.menu}>
           <Link href='/point'>
-            포인트 충전
+            픽 충전
           </Link>
         </Text>
       </View>

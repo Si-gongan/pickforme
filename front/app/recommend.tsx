@@ -58,7 +58,7 @@ export default function RecommendScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
-        <Button title='추천 의뢰하기 1P' onPress={handleSubmit} disabled={disabled} />
+        <Button title='1픽 사용하여 추천 의뢰하기' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
   );
