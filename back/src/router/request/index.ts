@@ -20,7 +20,11 @@ router.post("/", requireAuth, async (ctx) => {
   if (body.type !== RequestType.AI) {
     await user.usePoint(1);
   }
-  const { data: { title: name } } = await client.get<{ title: string }>(`/report/title/${encodeURIComponent(body.text)}`);
+  const { data: { title: name } } = await client.post<{ title: string }>('/report/title', {
+    url: body.link,
+	  text: body.text,
+    // "messages" : list(string)
+  });
   const request = await db.Request.create({
     ...body,
     userId: user._id,
