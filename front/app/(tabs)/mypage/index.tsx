@@ -24,11 +24,11 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 정보 수정
         </Text>
-        <Text style={styles.menu}>
-          <Link href='(settings)/nickname'>
+        <Link href='(settings)/nickname'>
+          <Text style={styles.menu}>
             기본 정보 수정
-          </Link>
-        </Text>
+          </Text>
+        </Link>
         {!userData && (
           <Button
             variant='text'
@@ -46,30 +46,32 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 픽 {userData.point}픽
         </Text>
-        <Text style={styles.menu}>
-          <Link href='/point'>
+        <Link href='/point'>
+          <Text style={styles.menu}>
             픽 충전
-          </Link>
-        </Text>
+          </Text>
+        </Link>
       </View>
       )}
       <View style={styles.card}>
         <Text style={styles.title}>
           앱 설정
         </Text>
-        <Text style={styles.menu}>
-          <Link href='(settings)/theme'>
+        <Link href='(settings)/theme'>
+          <Text style={styles.menu}>
             화면 모드 변경
-          </Link>
-        </Text>
-        <Text style={styles.menu}>
-          <Link href='(settings)/fontSize'>
+          </Text>
+        </Link>
+        <Link href='(settings)/fontSize'>
+          <Text style={styles.menu}>
             글자 크기 변경
-          </Link>
-        </Text>
-        <Text style={styles.menu}>
-          알림 설정
-        </Text>
+          </Text>
+        </Link>
+        <Link href='/(tabs)/mypage/notificiation'>
+          <Text style={styles.menu}>
+            알림 설정
+          </Text>
+        </Link>
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>
@@ -78,16 +80,16 @@ export default function MyPageScreen() {
         <Text style={styles.menu}>
           1:1 문의
         </Text>
-        <Text style={styles.menu}>
-          <Link href='/(tabs)/mypage/how' >
+        <Link href='/(tabs)/mypage/how' >
+          <Text style={styles.menu}>
             사용 설명서
-          </Link>
-        </Text>
-        <Text style={styles.menu}>
-          <Link href='/faq'>
+         </Text>
+        </Link>
+        <Link href='/faq'>
+          <Text style={styles.menu}>
             자주 묻는 질문 (FAQ)
-          </Link>
-        </Text>
+          </Text>
+        </Link>
         <Text style={styles.menu}>
           개인정보처리방침
         </Text>
@@ -136,6 +138,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.light.borderColor.primary,
     borderRadius: 15,
     paddingHorizontal: 14,
+    gap: 14,
     paddingVertical: 15,
     marginBottom: 14,
   },
@@ -149,7 +152,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontSize: 14,
     lineHeight: 17,
-    marginTop: 14,
     alignItems: 'flex-start',
   },
   solo: {
