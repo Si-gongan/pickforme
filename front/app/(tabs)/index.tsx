@@ -26,7 +26,7 @@ const DATA: TDATA[] = [{
   image: require('../../assets/images/main/buy.png'),
 }, {
   path: '/(tabs)/mypage/how',
-  title: '픽포미 사용설명서',
+  title: `픽포미\n사용설명서`,
   image: require('../../assets/images/main/how.png'),
 }];
 
