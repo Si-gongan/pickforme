@@ -51,8 +51,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="discover"
+        name="AI"
         options={{
+          headerShown: false, 
           title: 'AI 포미',
           tabBarIcon: ({ color }) => <DiscoverIcon style={{color}} />,
         }}

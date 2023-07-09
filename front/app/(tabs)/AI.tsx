@@ -9,42 +9,16 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
 
-enum TABS {
-  ALL = 'ALL',
-  RECOMMEND = 'RECOMMEND',
-  RESEARCH = 'RESEARCH',
-};
-
-const tabName = {
-  [TABS.ALL]: '전체',
-  [TABS.RECOMMEND]: '픽포미 추천',
-  [TABS.RESEARCH]: '픽포미 분석',
-}
 export default function RequestsScreen() {
-  const [tab, setTab] = React.useState<TABS>(TABS.ALL);
   const getRequests = useSetAtom(getRequestsAtom);
-  const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? true : request.type === tab);
+  const requests = useAtomValue(requestsAtom).filter(request => request.type === 'AI');
 
   React.useEffect(() => {
     getRequests();
   }, [getRequests]);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>의뢰 목록</Text>
-      <Text style={styles.subtitle}>채팅방에 입장하여 의뢰 진행상황을 확인하세요</Text>
-      <View style={styles.tabWrap}>
-        {Object.values(TABS).map((TAB) => (
-          <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
-            <Button
-              style={styles.tabButton}
-              title={tabName[TAB]}
-              size='medium'
-              color={tab === TAB ? 'primary' : 'tertiary'}
-              onPress={() => setTab(TAB)}
-            />
-          </View>
-        ))}
-      </View>
+      <Text style={styles.title}>대화 목록</Text>
       <ScrollView style={styles.scrollView}>
         <View style={styles.cards}>
           {requests.map((request) => (
@@ -66,13 +40,6 @@ export default function RequestsScreen() {
                           {formatDate(request.chats.slice(-1)?.[0]?.createdAt)}
                         </Text>
                       </View>
-                      <Button
-                        style={styles.status}
-                        title={request.status}
-                        size='small'
-                        color={request.status !== 'CLOSED' ? 'secondary' : 'primary'}
-                        disabled={request.status === 'CLOSED'}
-                      />
                     </View>
                     <Text style={styles.preview} numberOfLines={1}>
                       {request.chats.slice(-1)?.[0]?.text || ''}
@@ -83,6 +50,7 @@ export default function RequestsScreen() {
             </Link>
           ))}
         </View>
+        <Button></Button>
       </ScrollView>
     </View>
   );
@@ -168,5 +136,7 @@ const styles = StyleSheet.create({
   },
   status: {
     paddingHorizontal: 18,
+  },
+  newRequest: {
   },
 });
