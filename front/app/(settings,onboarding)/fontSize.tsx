@@ -9,6 +9,12 @@ import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import { settingAtom } from '../../stores/auth/atoms';
 
+const translationMap = {
+  small: '작게',
+  medium: '중간',
+  large: '크게',
+};
+
 export default function FontSizeScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
@@ -31,20 +37,21 @@ export default function FontSizeScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>글자 크기를 선택해주세요.</Text>
-        {['small','medium','large'].map((size) => (
+        {Object.entries(translationMap).map(([size, label]) => (
         <View style={styles.row} key={`Onboard-fontSize-${size}`}>
-          <Text style={[styles.label, styles[size as keyof typeof styles]]}>{size}</Text>
+          <Text style={[styles.label, styles[size as keyof typeof styles]]} accessible={false}>{label}</Text>
           <RadioButton.Android
             color={Colors.light.buttonBackground.primary}
             value={size}
             status={value === size ? 'checked' : 'unchecked'}
             onPress={() => setValue(size)}
+            accessibilityLabel={`${label} 선택 버튼`}
           />
         </View>
         ))}
       </View>
       <View style={styles.buttonWrap}>
-        <Button title='확인' onPress={handleSubmit} />
+        <Button title='확인' accessibilityLabel="확인버튼" onPress={handleSubmit} />
       </View>
     </View>
   );

@@ -41,7 +41,7 @@ export default function RequestsScreen() {
                         </Text>
                       </View>
                     </View>
-                    <Text style={styles.preview} numberOfLines={1}>
+                    <Text style={styles.preview} numberOfLines={1} accessible={false}>
                       {request.chats.slice(-1)?.[0]?.text || ''}
                     </Text>
                   </View>

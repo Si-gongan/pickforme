@@ -67,6 +67,8 @@ export default function ChatScreen() {
             underlineColorAndroid="transparent"
             multiline
             value={data.text}
+            accessible
+            accessibilityLabel="메세지 입력창"
             onChangeText={(text) => setData({ ...data, text })}
           />
           <Button
@@ -74,6 +76,8 @@ export default function ChatScreen() {
             onPress={handleClickSend}
             size='small'
             color='primary'
+            accessible
+            accessibilityLabel="전송버튼"
           >
             <Image style={styles.sendIcon} source={require('../assets/images/chat/send.png')} />
           </Button>

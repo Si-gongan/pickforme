@@ -5,6 +5,7 @@ import { Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
+import { RequestStatus } from '../../stores/request/types';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
@@ -19,6 +20,12 @@ const tabName = {
   [TABS.ALL]: '전체',
   [TABS.RECOMMEND]: '픽포미 추천',
   [TABS.RESEARCH]: '픽포미 분석',
+}
+
+const statusName = {
+  [RequestStatus.CLOSED]: '의뢰 종료',
+  [RequestStatus.PENDING]: '리포트 작성중',
+  [RequestStatus.SUCCESS]: '리포트 도착',
 }
 export default function RequestsScreen() {
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);
@@ -41,6 +48,7 @@ export default function RequestsScreen() {
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
               onPress={() => setTab(TAB)}
+              accessibilityLabel={`${tabName[TAB]} 의뢰목록 보기`}
             />
           </View>
         ))}
@@ -54,27 +62,33 @@ export default function RequestsScreen() {
               style={styles.cardLink}
               asChild
             >
-              <Pressable>
+              <Pressable
+                accessible
+                accessibilityLabel={`${request.name} 채팅방에 입장하려면 이중탭하세요`}
+              >
                 {({ pressed }) => (
                   <View style={styles.card}>
                     <View style={styles.row}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.name}>
+                        <Text style={styles.name} accessible={false}>
                           {request.name}
                         </Text>
-                        <Text style={styles.date}>
+                        <Text style={styles.date}
+                          accessibilityHint={'마지막 채팅 날짜'}
+                        >
                           {formatDate(request.chats.slice(-1)?.[0]?.createdAt)}
                         </Text>
                       </View>
                       <Button
                         style={styles.status}
-                        title={request.status}
                         size='small'
                         color={request.status !== 'CLOSED' ? 'secondary' : 'primary'}
                         disabled={request.status === 'CLOSED'}
+                        title={statusName[request.status]}
+                        accessibilityHint={'의뢰 상태 텍스트'}
                       />
                     </View>
-                    <Text style={styles.preview} numberOfLines={1}>
+                    <Text style={styles.preview} numberOfLines={1} accessible={false}>
                       {request.chats.slice(-1)?.[0]?.text || ''}
                     </Text>
                   </View>

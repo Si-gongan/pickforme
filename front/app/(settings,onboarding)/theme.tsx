@@ -9,6 +9,12 @@ import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import { settingAtom } from '../../stores/auth/atoms';
 
+const translationMap = {
+  default: '휴대폰 설정과 동일하게',
+  light: '밝은 모드',
+  dark: '어두운 모드',
+}
+
 export default function ThemeScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
@@ -31,17 +37,20 @@ export default function ThemeScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>화면 모드를 선택해주세요.</Text>
-        {['default', 'light', 'dark'].map((key) => (
-        <View style={styles.row} key={`Onboard-theme-${key}`}>
-          <Text style={styles.label}>{key}</Text>
-          <RadioButton.Android
-            color={Colors.light.buttonBackground.primary}
-            value={key}
-            status={key === theme ? 'checked' : 'unchecked'}
-            onPress={() => setTheme(key)}
-          />
-        </View>
-        ))}
+        {Object.entries(translationMap).map(([key, label]) => {
+          return (
+            <View style={styles.row} key={`Onboard-theme-${key}`}>
+              <Text style={styles.label} accessible={false}>{label}</Text>
+              <RadioButton.Android
+                color={Colors.light.buttonBackground.primary}
+                value={key}
+                accessibilityLabel={`${label} 선택 버튼`}
+                status={key === theme ? 'checked' : 'unchecked'}
+                onPress={() => setTheme(key)}
+              />
+            </View>
+          )
+        })}
       </View>
       <View style={styles.buttonWrap}>
         <Button title='확인' onPress={handleSubmit} />

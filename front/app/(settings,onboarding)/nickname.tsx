@@ -9,13 +9,19 @@ import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import { settingAtom } from '../../stores/auth/atoms';
 
+const translationMap = {
+  none: '비장애',
+  low: '저시력',
+  blind: '전맹',
+}
+
 export default function NicknameScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
   const pathname = usePathname();
   const isSetting = pathname.includes('settings');
   const [name, setName] = React.useState(setting.name ?? '');
-  const [vision, setVision] = React.useState(setting.vision ?? 'none');
+  const [vision, setVision] = React.useState<typeof setting.vision>(setting.vision ?? 'none');
 
   const handleSubmit = () => {
     setSetting({
@@ -39,25 +45,29 @@ export default function NicknameScreen() {
             style={styles.textArea}
             underlineColorAndroid="transparent"
             onChangeText={setName}
+            accessibilityLabel="닉네임 입력창"
             value={name}
           />
         </View>
         <Text style={styles.title}>시각장애 정도를 선택해주세요.</Text>
           <View style={styles.row}>
-          {['none', 'low', 'blind'].map((key, i) => (
-            <React.Fragment key={`Onboard-vision-${key}`}>
-              {i !== 0 && <View style={styles.bar} />}
-              <View style={styles.item}>
-                <Text style={styles.label}>{key}</Text>
-                <RadioButton.Android
-                  color={Colors.light.buttonBackground.primary}
-                  value={key}
-                  status={key === vision ? 'checked' : 'unchecked'}
-                  onPress={() => setVision(key)}
-                />
-              </View>
-            </React.Fragment>
-          ))}
+          {Object.entries(translationMap).map(([key, label], i) => {
+            return (
+              <React.Fragment key={`Onboard-vision-${key}`}>
+                {i !== 0 && <View style={styles.bar} />}
+                <View style={styles.item}>
+                  <Text style={styles.label} accessible={false}>{label}</Text>
+                  <RadioButton.Android
+                    color={Colors.light.buttonBackground.primary}
+                    value={key}
+                    accessibilityLabel={`${label} 선택 버튼`}
+                    status={key === vision ? 'checked' : 'unchecked'}
+                    onPress={() => setVision(key as typeof setting['vision'])}
+                  />
+                </View>
+              </React.Fragment>
+            );
+          })}
           </View>
         </View>
       <View style={styles.buttonWrap}>
