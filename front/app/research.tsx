@@ -69,11 +69,19 @@ export default function ResearchScreen() {
               />
             )}
           </View>
-          <View style={styles.meta}>
-            {!!data.link && (
-              <View></View>
-            )}
-          </View>
+          {!!preview ? (
+            <View style={styles.meta}>
+              <Image style={styles.metaImg} source={{ uri: preview.image }} />
+              <View style={styles.metaContent}>
+              <Text style={styles.metaTitle}>
+                {preview.title}
+              </Text>
+              <Text style={styles.metaDesc}>
+                {preview.desc}
+              </Text>
+              </View>
+            </View>
+          ) : <View style={styles.empty} />}
           <Text style={styles.label}>
             매니저가 참고해야 하는 점이 있으면 알려주세요.
           </Text>
@@ -149,6 +157,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   meta: {
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: Colors.light.borderColor.primary,
+    borderRadius: 15,
+    marginTop: 20,
+  },
+  metaImg:{
+    resizeMode: 'cover',
+  },
+  metaContent: {
+    padding: 15,
+    borderRadius: 15,
+  },
+  metaTitle: {
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  metaDesc: {
+  },
+  empty: {
     marginBottom: 30,
   },
 });

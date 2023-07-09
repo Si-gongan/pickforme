@@ -16,4 +16,4 @@ export const PostRequestAPI = (params: PostRequestParams) => client.post<PostReq
 export const GetRequestsAPI = (params: GetRequestsParams) => client.get<Request[]>('/request');
 export const GetRequestAPI = (params: GetRequestParams) => client.get<Request>(`/admin/request/detail/${params.requestId}`);
 export const PostChatAPI = (params: PostChatParams) => client.post<Chat>('/request/chat',params);
-export const GetPreviewAPI = (params: GetPreviewParams) => client.get<Preview>(`/request/preview/${params.link}`);
+export const GetPreviewAPI = (params: GetPreviewParams) => client.post<Preview>('/request/preview', params);

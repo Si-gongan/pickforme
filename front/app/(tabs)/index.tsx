@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContainer: {
-    paddingVertical: 55,
+    paddingVertical: 25,
   },
   textWrap: {
     alignItems: 'flex-start',

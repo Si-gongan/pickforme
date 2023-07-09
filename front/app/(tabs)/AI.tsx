@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
@@ -10,6 +10,7 @@ import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
 
 export default function RequestsScreen() {
+  const router = useRouter();
   const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom).filter(request => request.type === 'AI');
 
@@ -18,7 +19,13 @@ export default function RequestsScreen() {
   }, [getRequests]);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대화 목록</Text>
+      <Text style={styles.title}>AI 포미</Text>
+      <Text style={styles.subtitle}>AI 쇼핑 도우미 포미와 대화를 시작하세요</Text>
+        <Button
+          style={styles.newRequest}
+          title='새 대화 시작하기'
+          onPress={() => router.push('/chat')}
+        />
       <ScrollView style={styles.scrollView}>
         <View style={styles.cards}>
           {requests.map((request) => (
@@ -50,7 +57,6 @@ export default function RequestsScreen() {
             </Link>
           ))}
         </View>
-        <Button></Button>
       </ScrollView>
     </View>
   );
@@ -138,5 +144,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   newRequest: {
+    width: '100%',
   },
 });

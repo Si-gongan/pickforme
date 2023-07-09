@@ -24,8 +24,8 @@ export const setClientTokenAtom = atom(null, async (get, set) => {
   }
   setClientToken(userData.token);
 });
-export const handleLoginResultAtom = atom(null, (get, set, data: LoginResponse) => {
-  set(userDataAtom, data.user);
+export const handleLoginResultAtom = atom(null, async (get, set, data: LoginResponse) => {
+  await set(userDataAtom, data.user);
   if (data.isRegister) {
     set(isShowGreetingModalAtom, true);
   }

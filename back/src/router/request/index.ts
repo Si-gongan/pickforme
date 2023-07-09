@@ -57,8 +57,8 @@ router.get("/", requireAuth, async (ctx) => {
   ctx.body = requests;
 });
 
-router.get("/preview/:link", requireAuth, async (ctx) => {
-  const { link } = ctx.params;
+router.post("/preview", requireAuth, async (ctx) => {
+  const { link } = (<{ link: string }>ctx.request.body);
   const {
     result: {
       ogTitle: title,
