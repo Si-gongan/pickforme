@@ -10,10 +10,32 @@ import { settingAtom } from '../../stores/auth/atoms';
 export default function RegisterScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
-  const [value, setValue] = React.useState('small');
 
   const handleSubmit = () => {
-    router.push('(onboarding)/nickname');
+    if (!setting.vision) {
+      return;
+    }
+    const defaultSetting: {
+      [key in typeof setting.vision]: {
+        fontSize: typeof setting.fontSize,
+        theme: typeof setting.theme,
+      }
+    } = {
+      none: {
+        fontSize: 'medium',
+        theme: 'default',
+      },
+      low: {
+        fontSize: 'large',
+        theme: 'dark',
+      },
+      blind: {
+        fontSize: 'medium',
+        theme: 'light',
+      },
+    };
+    setSetting({ ...defaultSetting[setting.vision], isReady: true })
+    router.push('/(tabs)');
   }
 
   return (

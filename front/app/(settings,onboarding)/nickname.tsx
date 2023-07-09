@@ -26,7 +26,7 @@ export default function NicknameScreen() {
     if (isSetting) {
       router.back();
     } else {
-      router.push('(onboarding)/theme');
+      router.push('(onboarding)/intro');
     }
   }
 

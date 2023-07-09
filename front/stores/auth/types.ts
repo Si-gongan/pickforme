@@ -7,7 +7,7 @@ export interface UserData {
 export interface Setting {
   name?: string,
   fontSize?: 'small' | 'medium' | 'large',
-  vision?: string,
+  vision?: 'none' | 'low' | 'blind',
   theme?: 'light' | 'dark' | 'default',
   isReady: boolean,
 }
