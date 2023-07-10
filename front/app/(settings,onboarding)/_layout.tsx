@@ -11,7 +11,7 @@ import { Text } from '../../components/Themed';
 
 import Colors from '../../constants/Colors';
 
-const SCREENS = ['fontSize', 'intro', 'nickname', 'theme', 'greeting'];
+const SCREENS = ['nickname', 'intro', 'fontSize', 'theme', 'greeting'];
 export default function TabLayout(params: any) {
   const colorScheme = useColorScheme();
   const router = useRouter();

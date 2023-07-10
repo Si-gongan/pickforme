@@ -20,7 +20,7 @@ export default function TabLayout() {
   const setting = useAtomValue(settingAtom);
 
   if (!setting.isReady) {
-    return <Redirect href="(onboarding)/fontSize" />;
+    return <Redirect href="(onboarding)/nickname" />;
   }
 
   return (

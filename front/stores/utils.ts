@@ -1,5 +1,6 @@
 import { atomWithStorage as baseAtomWithStorage, createJSONStorage } from 'jotai/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+// AsyncStorage.clear();
 
 const customAsyncStorage = {
   getItem: async (key: string) => {

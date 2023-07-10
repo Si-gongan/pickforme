@@ -34,7 +34,7 @@ export default function RegisterScreen() {
         theme: 'light',
       },
     };
-    setSetting({ ...defaultSetting[setting.vision], isReady: true })
+    setSetting({ ...setting, ...defaultSetting[setting.vision], isReady: true })
     router.push('/(tabs)');
   }
 
