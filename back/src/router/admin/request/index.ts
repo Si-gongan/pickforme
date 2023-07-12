@@ -29,6 +29,7 @@ router.post("/answer", async (ctx) => {
       socket.emit(session.connectionId, 'message', chat);
     }
     request.chats.push(chat._id);
+    request.unreadCount += 1;
   }
   request.answer = body.answer;
   request.status = RequestStatus.SUCCESS;
@@ -66,6 +67,7 @@ router.post("/chat", async (ctx) => {
     userId: request.userId,
   });
   request.chats.push(chat._id);
+  request.unreadCount += 1;
   await request.save();
   const session = await db.Session.findOne({ userId: request.userId });
   if (session) {

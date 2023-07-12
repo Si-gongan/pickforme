@@ -58,6 +58,10 @@ const RequestSchema = new mongoose.Schema({
       }
     }],
   },
+  unreadCount: {
+    type: Number,
+    default: 0,
+  },
   aiData: mongoose.Schema.Types.Mixed,
   chats: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -12,7 +12,7 @@ export default function HowStackLayout() {
   const router = useRouter();
   return (
     <Stack>
-      {['index', 'how'].map((name) => (
+      {['index', 'how', 'notification'].map((name) => (
         <Stack.Screen
           key={`mypage-stack-screen-${name}`}
           name={name}

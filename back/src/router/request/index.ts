@@ -84,11 +84,13 @@ router.get("/preview", async (ctx) => {
 });
 */
 
-
 router.get("/detail/:requestId", async (ctx) => {
   const { requestId } = ctx.params;
-  const request = await db.Request.findOne({ _id: requestId, userId: ctx.state.user._id }).populate('chats');
-  ctx.body = request;
+  const request = await db.Request.findOne({ _id: requestId, userId: ctx.state.user._id });
+  request.unreadCount = 0;
+  await request.save();
+  const res = await request.populate('chats');
+  ctx.body = res;
 });
 
 

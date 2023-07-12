@@ -43,6 +43,7 @@ interface RequestBase {
   createdAt: string,
   chats: Chat[],
   text: string,                              
+  unreadCount: number,
   answer: {
     text: string,
     products: Product[]
