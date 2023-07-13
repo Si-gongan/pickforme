@@ -3,7 +3,8 @@ import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
-
+import requireAuth from 'middleware/jwt';
+import { PushSetting } from 'models/user/types';
 
 const router = new Router({
   prefix: '/auth'
@@ -11,6 +12,7 @@ const router = new Router({
 
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({ email });
+  console.log(user);
   let isRegister = false;
   if (!user) {
     user = await db.User.create({ email, point: 3 });
@@ -77,6 +79,25 @@ router.post("/apple", async (ctx) => {
     return;
   }
   ctx.body = await handleLogin(email);
+});
+
+router.post('/pushtoken', requireAuth, async (ctx) => {
+  const user = await db.User.findById(ctx.state.user._id);
+  if (user) {
+    const { token } = <{ token: string }>ctx.request.body;
+    user.pushToken = token;
+    await user.save();
+    ctx.status = 200;
+  }
+});
+
+router.put('/pushsetting', requireAuth, async (ctx) => {
+  const user = await db.User.findById(ctx.state.user._id);
+  if (user) {
+    user.push = <PushSetting>ctx.request.body;
+    await user.save();
+    ctx.body = ctx.request.body;
+  }
 });
 
 export default router;

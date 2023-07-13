@@ -11,6 +11,7 @@ const useSocket = () => {
   const token = React.useMemo(() => userData?.token, [userData]);
 
   React.useEffect(() => {
+    console.log(API_HOST);
     if (token) {
       const ws = io(API_HOST, { extraHeaders: { token } });
       ws.on('message', e => {

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_HOST } from '@env';
 
+console.log(API_HOST);
 const client = axios.create({
   baseURL: API_HOST,
   headers: {

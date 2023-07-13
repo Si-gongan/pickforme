@@ -1,4 +1,4 @@
-import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image, Platform, KeyboardAvoidingView, } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom, useAtom } from 'jotai';
 import { useEffect, useState, useRef } from 'react';
@@ -34,7 +34,12 @@ export default function ChatScreen() {
   const chats = request?.chats || [];
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, flexDirection: 'column' }}
+      keyboardVerticalOffset={64}
+      behavior={Platform.select({ android: undefined, ios: 'padding' })}
+     >
+    <View style={{ flex: 1 }}>
       <ScrollView
         ref={scrollViewRef}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
@@ -43,6 +48,7 @@ export default function ChatScreen() {
           {chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
         </View>
       </ScrollView>
+      </View>
       {request?.status === RequestStatus.CLOSED ? (
         <>
         <Text style={styles.closedText} color='secondary'>
@@ -84,7 +90,7 @@ export default function ChatScreen() {
         </View>
       </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

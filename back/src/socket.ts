@@ -12,6 +12,7 @@ class Socket {
   setServer(server: ReturnType<typeof http.createServer>){
     this.io = new socketio.Server(server);
     this.io.on("connection", async (socket) => {
+    console.log('connection');
     const { token } = socket.handshake.headers;
     if (!token || typeof token !== 'string') {
       socket.disconnect();

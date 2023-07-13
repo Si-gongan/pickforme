@@ -1,15 +1,23 @@
 import { useRouter, usePathname } from "expo-router";
 import React from "react";
 import { StyleSheet, ScrollView } from 'react-native';
-import { useAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { RadioButton } from 'react-native-paper';
 
 import Button from '../../../components/Button';
 import Colors from '../../../constants/Colors';
 import { Text, View } from '../../../components/Themed';
-import { settingAtom } from '../../../stores/auth/atoms';
+import { PushChat, PushService, SetPushSettingParams } from '../../../stores/auth/types';
+import { setPushSettingAtom, userDataAtom } from '../../../stores/auth/atoms';
 
-const translationMap = {
+const translationMap: {
+  chat: {
+    [key in PushChat]: string;
+  },
+  service: {
+    [key in PushService]: string;
+  }
+} = {
   chat: {
     off: '받지 않음',
     report: '결과 리포트 도착 시에만',
@@ -24,8 +32,11 @@ const translationMap = {
 export default function ThemeScreen() {
   const router = useRouter();
   const pathname = usePathname();
-  const [theme, setTheme] = React.useState<string>('off');
+  const userData = useAtomValue(userDataAtom);
+  const [setting, setSetting] = React.useState<SetPushSettingParams>(userData!.push);
+  const setPushSetting = useSetAtom(setPushSettingAtom);
   const handleSubmit = () => {
+    setPushSetting(setting);
     router.back();
   }
 
@@ -45,8 +56,8 @@ export default function ThemeScreen() {
                       color={Colors.light.buttonBackground.primary}
                       value={key}
                       accessibilityLabel={`${label} 선택 버튼`}
-                      status={key === theme ? 'checked' : 'unchecked'}
-                      onPress={() => setTheme(key)}
+                      status={key === setting.chat ? 'checked' : 'unchecked'}
+                      onPress={() => setSetting((prev) => ({ ...prev, chat: key as PushChat }))}
                     />
                   </View>
                 </React.Fragment>
@@ -65,8 +76,8 @@ export default function ThemeScreen() {
                       color={Colors.light.buttonBackground.primary}
                       value={key}
                       accessibilityLabel={`${label} 선택 버튼`}
-                      status={key === theme ? 'checked' : 'unchecked'}
-                      onPress={() => setTheme(key)}
+                      status={key === setting.service ? 'checked' : 'unchecked'}
+                      onPress={() => setSetting((prev) => ({ ...prev, service: key as PushService }))}
                     />
                   </View>
                 </React.Fragment>

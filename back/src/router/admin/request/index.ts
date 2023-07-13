@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import db from 'models';
 import ogs from 'open-graph-scraper';
 import socket from 'socket';
+import sendPush from 'utils/push';
+
 
 import { RequestStatus } from 'models/request';
 
@@ -30,6 +32,13 @@ router.post("/answer", async (ctx) => {
     }
     request.chats.push(chat._id);
     request.unreadCount += 1;
+    const user = await db.User.findById(request.userId);
+    if (user && user.pushToken && (user.push.chat === 'report' || user.push.chat === 'all')) {
+      sendPush({
+        to: user.pushToken,
+        body: '결과 리포트가 도착했습니다.',
+      });
+    }
   }
   request.answer = body.answer;
   request.status = RequestStatus.SUCCESS;
@@ -72,6 +81,13 @@ router.post("/chat", async (ctx) => {
   const session = await db.Session.findOne({ userId: request.userId });
   if (session) {
     socket.emit(session.connectionId, 'message', chat);
+  }
+  const user = await db.User.findById(request.userId);
+  if (user && user.pushToken && user.push.chat === 'all') {
+    sendPush({
+      to: user.pushToken,
+      body: chat.text,
+    });
   }
   ctx.body = chat;
 });

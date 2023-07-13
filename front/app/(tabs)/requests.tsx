@@ -30,7 +30,9 @@ const statusName = {
 export default function RequestsScreen() {
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);
   const getRequests = useSetAtom(getRequestsAtom);
-  const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? true : request.type === tab);
+  const requests = useAtomValue(requestsAtom)
+    .filter(request => request.type !== 'AI')
+    .filter(request => tab === 'ALL' ? true : request.type === tab);
 
   React.useEffect(() => {
     getRequests();
@@ -83,7 +85,6 @@ export default function RequestsScreen() {
                         style={styles.status}
                         size='small'
                         color={request.status !== 'CLOSED' ? 'secondary' : 'primary'}
-                        disabled={request.status === 'CLOSED'}
                         title={statusName[request.status]}
                         accessibilityHint={'의뢰 상태 텍스트'}
                       />

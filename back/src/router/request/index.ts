@@ -3,6 +3,7 @@ import db from 'models';
 import requireAuth from 'middleware/jwt';
 import ogs from 'open-graph-scraper';
 import client from 'utils/axios';
+import sendPush from 'utils/push';
 import socket from '../../socket';
 import { RequestType } from 'models/request';
 
@@ -135,6 +136,13 @@ router.post("/chat", requireAuth, async (ctx) => {
       const session = await db.Session.findOne({ userId: ctx.state.user._id });
       if (session) {
         socket.emit(session.connectionId, 'message', chat);
+      }
+      const user = await db.User.findById(ctx.state.user._id);
+      if (user && user.pushToken && user.push.chat === 'all') {
+        sendPush({
+          to: user.pushToken,
+          body: chat.text,
+        });
       }
     })();
   }

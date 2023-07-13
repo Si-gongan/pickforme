@@ -67,11 +67,13 @@ export default function MyPageScreen() {
             글자 크기 변경
           </Text>
         </Link>
-        <Link href='/(tabs)/mypage/notification'>
-          <Text style={styles.menu}>
-            알림 설정
-          </Text>
-        </Link>
+        {!!userData && (
+          <Link href='/(tabs)/mypage/notification'>
+            <Text style={styles.menu}>
+              알림 설정
+            </Text>
+          </Link>
+        )}
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>

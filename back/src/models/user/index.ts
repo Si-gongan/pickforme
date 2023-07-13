@@ -8,6 +8,8 @@ import {
   UserDocument,
   UserModel,
   LocalRegisterPayload,
+  PushChat,
+  PushService,
 } from './types';
 
 const uniqueValidator = require('mongoose-unique-validator');
@@ -26,6 +28,21 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema({
   level: {
     type: Number,
     default: 1,
+  },
+  pushToken: {
+    type: String,
+  },
+  push: {
+    chat: {
+      type: String,
+      enum: PushChat,
+      default: PushChat.all,
+    },
+    service: {
+      type: String,
+      enum: PushService,
+      default: PushService.on,
+    },
   },
 }, {
   timestamps: true,

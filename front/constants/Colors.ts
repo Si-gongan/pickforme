@@ -88,7 +88,7 @@ export default {
     },
     buttonBackground: {
       primary,
-      secondary: tertiary,
+      secondary,
       tertiary,
     },
     card: {

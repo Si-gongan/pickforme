@@ -7,8 +7,10 @@ import {
   Setting,
   AppleLoginParams,
   KakaoLoginParams,
+  SetPushTokenParams,
+  SetPushSettingParams,
 } from './types';
-import { AppleLoginAPI, KakaoLoginAPI } from './apis';
+import { AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
 
 export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
 
@@ -24,6 +26,7 @@ export const setClientTokenAtom = atom(null, async (get, set) => {
   }
   setClientToken(userData.token);
 });
+
 export const handleLoginResultAtom = atom(null, async (get, set, data: LoginResponse) => {
   await set(userDataAtom, data.user);
   if (data.isRegister) {
@@ -40,6 +43,18 @@ export const loginAppleAtom = atom(null, async (get, set, params: AppleLoginPara
 export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginParams) => {
   const { data } = await KakaoLoginAPI(params);
   set(handleLoginResultAtom, data);
+});
+
+export const setPushTokenAtom = atom(null, async (get, set, params: SetPushTokenParams) => {
+  await SetPushTokenAPI(params);
+});
+
+export const setPushSettingAtom = atom(null, async (get, set, params: SetPushSettingParams) => {
+  const userData = await get(userDataAtom);
+  if (userData) {
+    const { data } = await SetPushSettingAPI(params);
+    set(userDataAtom, { ...userData, push: data });
+  }
 });
 
 export const isShowLoginModalAtom = atom(false);
