@@ -26,12 +26,12 @@ router.post("/answer", async (ctx) => {
         deeplink: `/request?requestId=${request._id}`,
       },
     });
-    const session = await db.Session.findOne({ userId: request.userId });
-    if (session) {
-      socket.emit(session.connectionId, 'message', chat);
-    }
     request.chats.push(chat._id);
     request.unreadCount += 1;
+    const session = await db.Session.findOne({ userId: request.userId });
+    if (session) {
+      socket.emit(session.connectionId, 'message', { chat, unreadCount: request.unreadCount });
+    }
     const user = await db.User.findById(request.userId);
     if (user && user.pushToken && (user.push.chat === 'report' || user.push.chat === 'all')) {
       sendPush({
@@ -80,7 +80,7 @@ router.post("/chat", async (ctx) => {
   await request.save();
   const session = await db.Session.findOne({ userId: request.userId });
   if (session) {
-    socket.emit(session.connectionId, 'message', chat);
+    socket.emit(session.connectionId, 'message', { chat, unreadCount: request.unreadCount });
   }
   const user = await db.User.findById(request.userId);
   if (user && user.pushToken && user.push.chat === 'all') {

@@ -187,6 +187,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontSize: 12,
     lineHeight: 15,
+    paddingRight: 30,
   },
   status: {
     paddingHorizontal: 18,
@@ -195,6 +196,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E46A6A',
     width: 25,
     height: 25,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
     position: 'absolute',
     right: 13,
     bottom: 7,

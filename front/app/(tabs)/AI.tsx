@@ -51,6 +51,13 @@ export default function RequestsScreen() {
                     <Text style={styles.preview} numberOfLines={1} accessible={false}>
                       {request.chats.slice(-1)?.[0]?.text || ''}
                     </Text>
+                    {!!(request.unreadCount >= 1) && (
+                      <View style={styles.unread}>
+                        <Text style={styles.unreadText} accessibilityLabel={`안읽은 메세지 ${request.unreadCount}개`}>
+                          {request.unreadCount}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 )}
               </Pressable>
@@ -139,11 +146,29 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontSize: 12,
     lineHeight: 15,
+    paddingRight: 30,
   },
   status: {
     paddingHorizontal: 18,
   },
   newRequest: {
     width: '100%',
+  },
+  unread: {
+    backgroundColor: '#E46A6A',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 25,
+    height: 25,
+    position: 'absolute',
+    right: 13,
+    bottom: 7,
+  },
+  unreadText: {
+    lineHeight: 15,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#EFEFEF',
   },
 });

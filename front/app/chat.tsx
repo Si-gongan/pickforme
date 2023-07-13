@@ -26,12 +26,12 @@ export default function ChatScreen() {
   useEffect(() => {
     setData({ text: '', requestId: (params.requestId as string || '') });
   }, [params.requestId, setData]);
+  const chats = request?.chats || [];
   useEffect(() => {
     if (data.requestId) {
       getRequest({ requestId: data.requestId });
     }
-  }, [getRequest, data.requestId]);
-  const chats = request?.chats || [];
+  }, [chats?.length, getRequest, data.requestId]);
 
   return (
     <KeyboardAvoidingView

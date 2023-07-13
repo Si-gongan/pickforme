@@ -85,7 +85,18 @@ router.get("/preview", async (ctx) => {
 });
 */
 
-router.get("/detail/:requestId", async (ctx) => {
+router.get("/read/:requestId", requireAuth, async (ctx) => {
+  const { requestId } = ctx.params;
+  const request = await db.Request.findOne({ _id: requestId, userId: ctx.state.user._id });
+  request.unreadCount = 0;
+  await request.save();
+  ctx.body = {
+    _id: request._id,
+    unreadCount: request.unreadCount,
+  };
+});
+
+router.get("/detail/:requestId", requireAuth, async (ctx) => {
   const { requestId } = ctx.params;
   const request = await db.Request.findOne({ _id: requestId, userId: ctx.state.user._id });
   request.unreadCount = 0;
@@ -109,7 +120,7 @@ router.post("/chat", requireAuth, async (ctx) => {
     userId: ctx.state.user._id,
   });
   request.chats.push(chat._id);
-  await request.save();
+  request.unreadCount = 0;
   if (request.type === RequestType.AI) {
     (async () => {
       const chats = await db.Chat.find({ userId: ctx.state.user._id, requestId: request._id }).sort({ createdAt: -1 }).limit(7).exec();
@@ -131,11 +142,12 @@ router.post("/chat", requireAuth, async (ctx) => {
         text,
       });
       request.chats.push(chat._id);
+      request.unreadCount += 1;
       await request.save();
 
       const session = await db.Session.findOne({ userId: ctx.state.user._id });
       if (session) {
-        socket.emit(session.connectionId, 'message', chat);
+        socket.emit(session.connectionId, 'message', { chat, unreadCount: request.unreadCount });
       }
       const user = await db.User.findById(ctx.state.user._id);
       if (user && user.pushToken && user.push.chat === 'all') {
@@ -146,6 +158,7 @@ router.post("/chat", requireAuth, async (ctx) => {
       }
     })();
   }
+  await request.save();
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
   ctx.body = chat;
   ctx.status = 200;

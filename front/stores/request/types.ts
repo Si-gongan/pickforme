@@ -89,3 +89,5 @@ export interface PostRequestResponse {
 }
 
 export interface GetRequestsParams {};
+
+export interface ReadRequestResponse extends Pick<Request, '_id' | 'unreadCount'> {};
