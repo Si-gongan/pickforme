@@ -124,7 +124,7 @@ router.post("/chat", requireAuth, async (ctx) => {
   if (request.type === RequestType.AI) {
     (async () => {
       const chats = await db.Chat.find({ userId: ctx.state.user._id, requestId: request._id }).sort({ createdAt: -1 }).limit(7).exec();
-      const messages = chats.map(({ text, isMine }) => ({ content: text, role: isMine ? 'user' : 'assistant' }));
+      const messages = chats.map(({ text, isMine }) => ({ content: text, role: isMine ? 'user' : 'assistant' })).reverse();
       let text = '';
       try  {
         const { data: { message, data } } = await client.post<{ message: string, data: any }>('/chat', { messages, data: request.aiData || null });
