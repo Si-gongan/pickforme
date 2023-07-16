@@ -6,10 +6,13 @@ import { settingAtom, userDataAtom } from '../../../stores/auth/atoms';
 import Colors from '../../../constants/Colors';
 import { Text, View } from '../../../components/Themed';
 import Button from '../../../components/Button';
+import useColorScheme, { ColorScheme } from '../../../hooks/useColorScheme';
 
 export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
   const setting = useAtomValue(settingAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
 
   const router = useRouter();
   const logout = () => {
@@ -62,13 +65,15 @@ export default function MyPageScreen() {
             화면 모드 변경
           </Text>
         </Link>
+        {/*
         <Link href='(settings)/fontSize'>
           <Text style={styles.menu}>
             글자 크기 변경
           </Text>
         </Link>
+        */}
         {!!userData && (
-          <Link href='/(tabs)/mypage/notification'>
+          <Link href='/notification'>
             <Text style={styles.menu}>
               알림 설정
             </Text>
@@ -118,7 +123,7 @@ export default function MyPageScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
@@ -137,7 +142,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: Colors.light.borderColor.primary,
+    borderColor: Colors[colorScheme].borderColor.primary,
     borderRadius: 15,
     paddingHorizontal: 14,
     gap: 14,

@@ -3,6 +3,7 @@ import { useSetAtom, useAtomValue } from 'jotai';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 
+  import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 import { RequestStatus } from '../../stores/request/types';
@@ -28,6 +29,8 @@ const statusName = {
   [RequestStatus.SUCCESS]: '리포트 도착',
 }
 export default function RequestsScreen() {
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);
   const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom)
@@ -72,7 +75,11 @@ export default function RequestsScreen() {
                   <View style={styles.card}>
                     <View style={styles.row}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.name} accessible={false}>
+                        <Text
+                          style={styles.name}
+                          numberOfLines={1}
+                          accessible={false}
+                        >
                           {request.name}
                         </Text>
                         <Text style={styles.date}
@@ -110,7 +117,7 @@ export default function RequestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     width: '100%',
     flex: 1,
@@ -155,7 +162,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 13,
     borderRadius: 12,
-    backgroundColor: Colors.light.card.primary,
+    backgroundColor: Colors[colorScheme].card.primary,
     marginBottom: 13,
   },
   row: {
@@ -169,6 +176,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'transparent',
     alignItems: 'center',
+    flexShrink: 1,
+    marginRight: 10,
   },
   rowRight: {
   },
@@ -177,11 +186,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 17,
     marginRight: 9,
+    flexShrink: 1,
   },
   date: {
     fontWeight: '400',
     fontSize: 12,
     lineHeight: 15,
+    flexShrink: 0,
   },
   preview: {
     fontWeight: '400',
@@ -190,6 +201,7 @@ const styles = StyleSheet.create({
     paddingRight: 30,
   },
   status: {
+    flexShrink: 0,
     paddingHorizontal: 18,
   },
   unread: {

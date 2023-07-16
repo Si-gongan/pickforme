@@ -4,9 +4,10 @@ import { View, Text } from './Themed';
 import Button from './Button';
 
 import Colors from '../constants/Colors';
+import useColorScheme, {ColorScheme } from '../hooks/useColorScheme';
 import { formatTime } from '../utils/common';
 import { Chat as IChat } from '../stores/request/types';
-import { Image, StyleSheet, Pressable, useColorScheme } from 'react-native';
+import { Image, StyleSheet, Pressable } from 'react-native';
 
 interface Props {
   data: IChat,
@@ -14,6 +15,8 @@ interface Props {
 const Chat: React.FC<Props> = ({ data }) => {
   const router = useRouter();
   const button = data.button;
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   return (
     <View style={[styles.root, data.isMine && styles.isMine]}>
       <View style={styles.card}>
@@ -41,7 +44,7 @@ const Chat: React.FC<Props> = ({ data }) => {
 
 export default Chat;
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) =>  StyleSheet.create({
   root: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -57,7 +60,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 11,
     borderRadius: 12,
-    backgroundColor: Colors.light.card.primary,
+    backgroundColor: Colors[colorScheme].card.primary,
   },
   button: {
     marginTop: 12,

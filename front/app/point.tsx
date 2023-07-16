@@ -5,6 +5,8 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { userDataAtom } from '../stores/auth/atoms';
 import { getProductsAtom, purchaseProductAtom, productsAtom } from '../stores/purchase/atoms';
 import Colors from '../constants/Colors';
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
+
 
 import { numComma} from '../utils/common';
 import Button, { ButtonText } from '../components/Button';
@@ -25,6 +27,8 @@ export default function PointScreen() {
   const products = useAtomValue(productsAtom);
   const purchaseProduct = useSetAtom(purchaseProductAtom);
   const userData = useAtomValue(userDataAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const subscriptionProducts = products.filter(({ type }) => type === 'SUBSCRIPTION');
   const purchaseProducts = products.filter(({ type }) => type === 'PURCHASE');
   const handleClick = (_id: string) => {
@@ -114,7 +118,7 @@ export default function PointScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -127,7 +131,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 20,
     marginBottom: 3,
-    backgroundColor: Colors.light.borderColor.primary,
+    backgroundColor: Colors[colorScheme].borderColor.primary,
   },
   titleMargin: {
     marginTop: 24,

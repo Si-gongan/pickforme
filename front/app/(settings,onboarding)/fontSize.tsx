@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../../components/Button';
 import { RadioButton } from 'react-native-paper';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -20,6 +21,7 @@ export default function FontSizeScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const isSetting = pathname.includes('settings');
+  const colorScheme = useColorScheme();
   const [value, setValue] = React.useState(setting.fontSize ??' small');
   const handleSubmit = () => {
     setSetting({
@@ -41,7 +43,7 @@ export default function FontSizeScreen() {
         <View style={styles.row} key={`Onboard-fontSize-${size}`}>
           <Text style={[styles.label, styles[size as keyof typeof styles]]} accessible={false}>{label}</Text>
           <RadioButton.Android
-            color={Colors.light.buttonBackground.primary}
+            color={Colors[colorScheme].text.primary}
             value={size}
             status={value === size ? 'checked' : 'unchecked'}
             onPress={() => setValue(size)}

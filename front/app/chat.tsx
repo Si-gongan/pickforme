@@ -9,6 +9,7 @@ import Colors from '../constants/Colors';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 import Chat from '../components/Chat';
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 
 export default function ChatScreen() {
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -20,6 +21,8 @@ export default function ChatScreen() {
   const [data, setData] = useAtom(sendChatParamsAtom)
   const requests = useAtomValue(requestsAtom);
   const request = requests.find(({ _id }) => _id === `${data.requestId}`);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const handleClickSend = () => {
     sendChat();
   }
@@ -94,7 +97,7 @@ export default function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   inputView: {
-    backgroundColor: Colors.light.buttonBackground.primary,
+    backgroundColor: Colors[colorScheme].buttonBackground.primary,
     paddingTop: 14,
     paddingBottom: 32,
     paddingHorizontal: 21,

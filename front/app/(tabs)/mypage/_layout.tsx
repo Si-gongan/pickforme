@@ -22,7 +22,7 @@ export default function HowStackLayout() {
        headerShown: false,
      }}
     >
-      {['index', 'how', 'notification'].map((name) => (
+      {['index', 'how'].map((name) => (
         <Stack.Screen
           key={`mypage-stack-screen-${name}`}
           name={name}

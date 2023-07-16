@@ -16,11 +16,13 @@ import {
   loginAppleAtom,
   userDataAtom,
 } from '../../stores/auth/atoms';
+import useColorScheme from '../../hooks/useColorScheme';
 
 WebBrowser.maybeCompleteAuthSession();
 
 interface Props extends ViewProps {};
 const LoginScreen: React.FC<Props> = (props) => {
+  const colorScheme = useColorScheme();
   const loginKakao = useSetAtom(loginKakaoAtom);
   const loginApple = useSetAtom(loginAppleAtom);
   const [loginGoogleReady, loginGoogleResult, loginGoogle] = Google.useAuthRequest({
@@ -98,7 +100,10 @@ const LoginScreen: React.FC<Props> = (props) => {
         {Platform.OS === 'ios' && (
           <AppleAuthentication.AppleAuthenticationButton
             buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            buttonStyle={colorScheme === 'light'
+              ? AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+              : AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+            }
             cornerRadius={15}
             style={styles.appleButton}
             onPress={loginWithApple}
@@ -111,7 +116,7 @@ const LoginScreen: React.FC<Props> = (props) => {
           style={[styles.button, styles.googleButton]}
           textStyle={[styles.buttonText, styles.googleButtonText]}
         >
-          <Image style={styles.icon} source={require('../../assets/images/auth/kakao.png')} />
+          <Image style={styles.icon} source={require('../../assets/images/auth/google.png')} />
         </Button>
       </View>
       <View style={styles.descWrap}>

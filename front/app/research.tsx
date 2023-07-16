@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSetAtom, useAtomValue } from 'jotai';
 import * as Clipboard from 'expo-clipboard';
 
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { previewAtom, getPreviewAtom, addRequestAtom } from '../stores/request/atoms';
 import { ResearchRequestParams } from '../stores/request/types';
 import Colors from '../constants/Colors';
@@ -16,6 +17,8 @@ export default function ResearchScreen() {
   const addRequest = useSetAtom(addRequestAtom);
   const getPreview = useSetAtom(getPreviewAtom);
   const preview = useAtomValue(previewAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const [data, setData] = useState<ResearchRequestParams>({
     type: 'RESEARCH',
     link: '',
@@ -102,7 +105,7 @@ export default function ResearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -123,12 +126,13 @@ const styles = StyleSheet.create({
   },
   textAreaContainer: {
     width: '100%',
-    borderColor: Colors.light.borderColor.primary,
+    borderColor: Colors[colorScheme].borderColor.primary,
     borderWidth: 1,
     padding: 5,
     marginBottom: 29,
   },
   textArea: {
+    color: Colors[colorScheme].text.primary,
   },
   textAreaBig: {
     height: 73,
@@ -159,7 +163,7 @@ const styles = StyleSheet.create({
   meta: {
     marginBottom: 30,
     borderWidth: 1,
-    borderColor: Colors.light.borderColor.primary,
+    borderColor: Colors[colorScheme].borderColor.primary,
     borderRadius: 15,
     marginTop: 20,
   },

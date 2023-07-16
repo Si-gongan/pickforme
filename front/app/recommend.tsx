@@ -6,6 +6,7 @@ import { addRequestAtom } from '../stores/request/atoms';
 import { RecommendRequestParams } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import useCheckPoint from '../hooks/useCheckPoint';
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -14,6 +15,8 @@ import { Text, View } from '../components/Themed';
 export default function RecommendScreen() {
   const router = useRouter();
   const addRequest = useSetAtom(addRequestAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const [data, setData] = useState<RecommendRequestParams>({
     type: 'RECOMMEND',
     price: '',
@@ -64,7 +67,7 @@ export default function RecommendScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -85,12 +88,13 @@ const styles = StyleSheet.create({
   },
   textAreaContainer: {
     width: '100%',
-    borderColor: Colors.light.borderColor.primary,
+    borderColor: Colors[colorScheme].borderColor.primary,
     borderWidth: 1,
     padding: 5,
     marginBottom: 29,
   },
   textArea: {
+    color: Colors[colorScheme].text.primary,
   },
   textAreaBig: {
     height: 132,

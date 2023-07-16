@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../../components/Button';
 import { RadioButton } from 'react-native-paper';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -17,6 +18,7 @@ const translationMap = {
 
 export default function ThemeScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
   const isSetting = pathname.includes('settings');
@@ -42,7 +44,7 @@ export default function ThemeScreen() {
             <View style={styles.row} key={`Onboard-theme-${key}`}>
               <Text style={styles.label} accessible={false}>{label}</Text>
               <RadioButton.Android
-                color={Colors.light.buttonBackground.primary}
+                color={Colors[colorScheme].text.primary}
                 value={key}
                 accessibilityLabel={`${label} 선택 버튼`}
                 status={key === theme ? 'checked' : 'unchecked'}

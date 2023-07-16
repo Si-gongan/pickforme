@@ -4,11 +4,13 @@ import { StyleSheet, ScrollView } from 'react-native';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { RadioButton } from 'react-native-paper';
 
-import Button from '../../../components/Button';
-import Colors from '../../../constants/Colors';
-import { Text, View } from '../../../components/Themed';
-import { PushChat, PushService, SetPushSettingParams } from '../../../stores/auth/types';
-import { setPushSettingAtom, userDataAtom } from '../../../stores/auth/atoms';
+import Button from '../components/Button';
+import Colors from '../constants/Colors';
+import { Text, View } from '../components/Themed';
+import { PushChat, PushService, SetPushSettingParams } from '../stores/auth/types';
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
+
+import { setPushSettingAtom, userDataAtom } from '../stores/auth/atoms';
 
 const translationMap: {
   chat: {
@@ -35,6 +37,8 @@ export default function ThemeScreen() {
   const userData = useAtomValue(userDataAtom);
   const [setting, setSetting] = React.useState<SetPushSettingParams>(userData!.push);
   const setPushSetting = useSetAtom(setPushSettingAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const handleSubmit = () => {
     setPushSetting(setting);
     router.back();
@@ -53,7 +57,7 @@ export default function ThemeScreen() {
                   <View style={styles.row}>
                     <Text style={styles.label} accessible={false}>{label}</Text>
                     <RadioButton.Android
-                      color={Colors.light.buttonBackground.primary}
+                      color={Colors[colorScheme].text.primary}
                       value={key}
                       accessibilityLabel={`${label} 선택 버튼`}
                       status={key === setting.chat ? 'checked' : 'unchecked'}
@@ -73,7 +77,7 @@ export default function ThemeScreen() {
                   <View style={styles.row}>
                     <Text style={styles.label} accessible={false}>{label}</Text>
                     <RadioButton.Android
-                      color={Colors.light.buttonBackground.primary}
+                      color={Colors[colorScheme].text.primary}
                       value={key}
                       accessibilityLabel={`${label} 선택 버튼`}
                       status={key === setting.service ? 'checked' : 'unchecked'}
@@ -93,7 +97,7 @@ export default function ThemeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -108,7 +112,7 @@ const styles = StyleSheet.create({
   },
   seperator: {
     height: 1,
-    backgroundColor: Colors.light.borderColor.secondary,
+    backgroundColor: Colors[colorScheme].borderColor.secondary,
   },
   buttonWrap: {
     width: '100%',

@@ -8,11 +8,14 @@ import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 export default function RequestsScreen() {
   const router = useRouter();
   const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom).filter(request => request.type === 'AI');
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
 
   React.useEffect(() => {
     getRequests();
@@ -69,7 +72,7 @@ export default function RequestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     width: '100%',
     flex: 1,
@@ -114,7 +117,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 13,
     borderRadius: 12,
-    backgroundColor: Colors.light.card.primary,
+    backgroundColor: Colors[colorScheme].card.primary,
     marginBottom: 13,
   },
   row: {

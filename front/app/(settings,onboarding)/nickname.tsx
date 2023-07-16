@@ -4,6 +4,7 @@ import { StyleSheet, TextInput } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../../components/Button';
 import { RadioButton } from 'react-native-paper';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -19,6 +20,8 @@ export default function NicknameScreen() {
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
   const pathname = usePathname();
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const isSetting = pathname.includes('settings');
   const [name, setName] = React.useState(setting.name ?? '');
   const [vision, setVision] = React.useState<typeof setting.vision>(setting.vision ?? 'none');
@@ -58,7 +61,7 @@ export default function NicknameScreen() {
                 <View style={styles.item}>
                   <Text style={styles.label} accessible={false}>{label}</Text>
                   <RadioButton.Android
-                    color={Colors.light.buttonBackground.primary}
+                    color={Colors[colorScheme].text.primary}
                     value={key}
                     accessibilityLabel={`${label} 선택 버튼`}
                     status={key === vision ? 'checked' : 'unchecked'}
@@ -77,7 +80,7 @@ export default function NicknameScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -108,7 +111,7 @@ const styles = StyleSheet.create({
   bar: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.light.borderColor.primary,
+    backgroundColor: Colors[colorScheme].borderColor.primary,
     marginTop: 15,
   },
   item: {
@@ -122,12 +125,13 @@ const styles = StyleSheet.create({
   },
   textAreaContainer: {
     width: '100%',
-    borderColor: Colors.light.borderColor.primary,
+    borderColor: Colors[colorScheme].borderColor.primary,
     borderWidth: 1,
     padding: 5,
     marginBottom: 82,
   },
   textArea: {
+    color: Colors[colorScheme].text.primary,
     fontSize: 18,
   },
 });

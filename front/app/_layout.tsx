@@ -1,13 +1,14 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Redirect, SplashScreen, Stack } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Suspense, useEffect } from 'react';
-import { useColorScheme, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useInterceptor from '../hooks/useInterceptor';
+import useColorScheme from '../hooks/useColorScheme';
 import useSocket from '../hooks/useSocket';
 import usePushToken from '../hooks/usePushToken';
 
@@ -82,24 +83,19 @@ function RootLayoutNav() {
   }
   return (
       <Suspense fallback={null}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={DefaultTheme}>
           <Stack
             initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
             screenOptions={{
               headerStyle: {
-                backgroundColor: Colors[colorScheme ?? 'light'].background.primary,
+                backgroundColor: Colors[colorScheme].background.primary,
               },
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(auths)" options={hideHeaderOption} />
-            <Stack.Screen name="(settings)" options={hideHeaderOption} />
-            <Stack.Screen name="buy" options={hideHeaderOption} />
-            <Stack.Screen name="point" options={hideHeaderOption} />
-            <Stack.Screen name="recommend" options={hideHeaderOption} />
-            <Stack.Screen name="research" options={hideHeaderOption} />
-            <Stack.Screen name="chat" options={hideHeaderOption} />
-            <Stack.Screen name="request" options={hideHeaderOption} />
+            {["(auths)", "(settings)", "buy", "point", "recommend", "research", "chat", "request"].map((name) => (
+              <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
+            ))}
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
           </Stack>

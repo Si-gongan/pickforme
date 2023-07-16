@@ -2,10 +2,14 @@ const tintColorLight = '#2f95dc';
 const tintColorDark = '#fff';
 
 const primary = '#111E4F';
+const primaryDark = '#424C75';
 const secondary = '#4A5CA0';
+const secondaryDark = '#313854';
 const tertiary = '#DFE4F5';
+const tertiaryDark = '#1D2336';
 const buttonText = '#EFEFEF';
 const secondary2 = '#9FA7C3';
+
 
 export default {
   light: {
@@ -62,14 +66,14 @@ export default {
   },
   dark: {
     text: {
-      primary,
-      secondary,
-      tertiary,
+      primary: '#D9D9D9',
+      secondary: '#D9D9D9',
+      tertiary: '#D9D9D9',
     },
     background: {
-      primary: '#fff',
-      secondary: '#fff',
-      tertiary,
+      primary: '#111525',
+      secondary: '#111525',
+      tertiary: '#111525',
     },
     tint: {
       primary: tintColorDark,
@@ -87,14 +91,14 @@ export default {
       tertiary,
     },
     buttonBackground: {
-      primary,
-      secondary,
-      tertiary,
+      primary: primaryDark,
+      secondary: secondaryDark,
+      tertiary: tertiaryDark,
     },
     card: {
-      primary: tertiary,
-      secondary: tertiary,
-      tertiary,
+      primary: tertiaryDark,
+      secondary: tertiaryDark,
+      tertiary: tertiaryDark,
     },
     disabledButtonBackground: {
       primary: secondary2,
@@ -104,12 +108,12 @@ export default {
     buttonText: {
       primary: buttonText,
       secondary: buttonText,
-      tertiary: primary,
+      tertiary: buttonText,
     },
     borderColor: {
-      primary: tertiary,
-      secondary: tertiary,
-      tertiary,
+      primary: secondary2,
+      secondary: secondary2,
+      tertiary: secondary2,
     },
   },
 };
