@@ -94,6 +94,7 @@ export default function ResearchScreen() {
               underlineColorAndroid="transparent"
               numberOfLines={4}
               multiline={true}
+              onChangeText={(text) => setData({ ...data, text })}
             />
           </View>
         </View>
