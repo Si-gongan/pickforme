@@ -1,12 +1,12 @@
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAtom, useAtomValue } from 'jotai';
-import { settingAtom, userDataAtom } from '../../../stores/auth/atoms';
+import { settingAtom, userDataAtom } from '../../stores/auth/atoms';
 
-import Colors from '../../../constants/Colors';
-import { Text, View } from '../../../components/Themed';
-import Button from '../../../components/Button';
-import useColorScheme, { ColorScheme } from '../../../hooks/useColorScheme';
+import Colors from '../../constants/Colors';
+import { Text, View } from '../../components/Themed';
+import Button from '../../components/Button';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
@@ -87,7 +87,7 @@ export default function MyPageScreen() {
         <Text style={styles.menu}>
           1:1 문의
         </Text>
-        <Link href='/(tabs)/mypage/how' >
+        <Link href='/how' >
           <Text style={styles.menu}>
             사용 설명서
          </Text>

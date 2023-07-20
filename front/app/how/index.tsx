@@ -2,8 +2,8 @@ import { useRouter , Link } from "expo-router";
 import React from "react";
 import { StyleSheet, ScrollView } from 'react-native';
 import { useAtom } from 'jotai';
-import Button from '../../../../components/Button';
-import { Text, View } from '../../../../components/Themed';
+import Button from '../../components/Button';
+import { Text, View } from '../../components/Themed';
 import styles from './styles';
 import { BUTTONS } from './constants';
 

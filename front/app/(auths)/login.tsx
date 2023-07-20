@@ -89,7 +89,7 @@ const LoginScreen: React.FC<Props> = (props) => {
       </View>
       <View style={styles.buttonWrap}>
         <Button
-          title='카카오로 시작하기'
+          title='카카오로 로그인'
           onPress={loginWithKakao}
           style={[styles.button, styles.kakaoButton]}
           textStyle={[styles.buttonText, styles.kakaoButtonText]}
@@ -111,7 +111,7 @@ const LoginScreen: React.FC<Props> = (props) => {
         )}
         </View>
         <Button
-          title='구글로 시작하기'
+          title='구글로 로그인'
           onPress={loginWithGoogle}
           style={[styles.button, styles.googleButton]}
           textStyle={[styles.buttonText, styles.googleButtonText]}
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: '700',
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 20,
+    lineHeight: 24,
   },
   kakaoButton: {
     backgroundColor: '#FEE500',
@@ -176,9 +176,9 @@ const styles = StyleSheet.create({
     color: '#6F6F6F',
   },
   icon: {
-    width: 31,
-    height: 30,
-    marginRight: 15,
+    width: 18,
+    height: 18,
+    marginRight: 8,
   },
   descWrap: {
     marginTop: 30,

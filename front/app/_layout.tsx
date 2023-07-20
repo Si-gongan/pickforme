@@ -93,7 +93,7 @@ function RootLayoutNav() {
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {["(auths)", "(settings)", "buy", "point", "recommend", "research", "chat", "request"].map((name) => (
+            {["(auths)", "(settings)", "buy", "point", "recommend", "research", "chat", "request", "how", "faq"].map((name) => (
               <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
             ))}
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />

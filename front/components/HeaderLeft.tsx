@@ -3,9 +3,16 @@ import { useRouter } from "expo-router";
 import { View, Text } from './Themed';
 import { HeaderBackButtonProps } from '@react-navigation/native-stack/src/types';
 import Button from './Button';
-import { Image, StyleSheet, Pressable, useColorScheme } from 'react-native';
+import useColorScheme from '../hooks/useColorScheme';
+import { Image, StyleSheet, Pressable } from 'react-native';
+
+const Icon = {
+  light: require('../assets/images/icon.png'),
+  dark: require('../assets/images/icon_dark.png'),
+}
 
 const HeaderLeft: React.FC<HeaderBackButtonProps> = (props) => {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   if (props.canGoBack) {
     return (
@@ -21,7 +28,7 @@ const HeaderLeft: React.FC<HeaderBackButtonProps> = (props) => {
   }
   return (
     <View style={styles.logoWrap}>
-      <Image style={styles.logoImage} source={require('../assets/images/icon.png')} />
+      <Image style={styles.logoImage} source={Icon[colorScheme]} />
       <Text style={styles.logoText}>
         픽포미
       </Text>
