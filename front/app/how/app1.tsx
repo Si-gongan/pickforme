@@ -26,7 +26,7 @@ export default function HowScreen() {
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-홈 탭에서는 ‘픽포미 추천’, ‘픽포미 분석’, ‘픽포미 구매’ ,‘AI 구매’를 이용할 수 있습니다. ‘픽포미 추천’과 ‘픽포미 분석’ 버튼을 클릭하면 의뢰서 작성 화면으로 이동하고, ‘AI 포미’ 버튼을 클릭하면 포미와의 채팅방으로 이동합니다.
+홈 탭에서는 ‘픽포미 추천’, ‘픽포미 분석’, ‘픽포미 구매’, ‘AI 포미’를 이용할 수 있습니다. ‘픽포미 추천’과 ‘픽포미 분석’ 버튼을 클릭하면 의뢰서 작성 화면으로 이동하고, ‘AI 포미’ 버튼을 클릭하면 포미와의 채팅방으로 이동합니다.
           </Text>
         </View>
         <View style={styles.section}>

@@ -14,7 +14,7 @@ export default function HowScreen() {
       <ScrollView>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.title}>'픽포미 분석' 소개</Text>
+          <Text style={styles.title}>'픽포미 추천' 소개</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.page}>총 2페이지 중 2페이지</Text>

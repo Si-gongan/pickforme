@@ -21,12 +21,12 @@ export default function HowScreen() {
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          포미는 대화를 통해 원하는 상품을 자동으로 추천하는 AI예요!
+          포미는 대화를 통해 원하는 상품을 자동으로 추천하고 분석하는 AI예요!
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-AI 포미 탭을 누르면, 포미와의 채팅방으로 이동할 수 있어요. 채팅방에 찾고 있는 상품과 원하는 조건을 입력하시면, 포미가 최적의 추천을 해드려요. 포미가 추천한 상품에 대해 추가적인 궁금증이 생기신다면, 말풍선을 길게 눌러 보세요. 픽포미 매니저에게 새로운 서비스를 요청할 수 있답니다!
+AI 포미 탭을 누르면, 포미와의 채팅방으로 이동할 수 있어요. 채팅방에 찾고 있는 상품과 원하는 조건을 입력하시면, 포미가 최적의 추천을 해드려요. 원하시는 쿠팡 상품 링크를 채팅에 입력해보세요. 포미가 자동으로 링크를 분석해 상품에 대해 자세히 설명해드려요!
           </Text>
         </View>
         <View style={styles.section}>

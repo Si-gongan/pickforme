@@ -22,7 +22,7 @@ export default function MyPageScreen() {
     <View style={styles.container}>
       <ScrollView style={styles.container}>
       <View style={styles.scrollContainer}>
-      <Text style={styles.name}>{setting?.name}님 안녕하세요,</Text>
+      <Text style={styles.name}>{setting?.name}님, 안녕하세요.</Text>
       <View style={styles.card}>
         <Text style={styles.title}>
           내 정보 수정
