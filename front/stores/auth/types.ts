@@ -22,6 +22,9 @@ export interface AppleLoginParams {
 export interface KakaoLoginParams {
   accessToken: string,
 }
+export interface GoogleLoginParams {
+  accessToken: string,
+}
 
 export interface LoginResponse {
   user: UserData;

@@ -14,6 +14,7 @@ import { Text, View } from '../../components/Themed';
 import {
   loginKakaoAtom,
   loginAppleAtom,
+  loginGoogleAtom,
   userDataAtom,
 } from '../../stores/auth/atoms';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -25,7 +26,8 @@ const LoginScreen: React.FC<Props> = (props) => {
   const colorScheme = useColorScheme();
   const loginKakao = useSetAtom(loginKakaoAtom);
   const loginApple = useSetAtom(loginAppleAtom);
-  const [loginGoogleReady, loginGoogleResult, loginGoogle] = Google.useAuthRequest({
+  const loginGoogle = useSetAtom(loginGoogleAtom);
+  const [loginGoogleReady, loginGoogleResult, loginGoogleBase] = Google.useAuthRequest({
     expoClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
     webClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
     androidClientId: '618404683764-vc6iaucqdo8me4am0t9062d01800q0cr.apps.googleusercontent.com',
@@ -43,10 +45,11 @@ const LoginScreen: React.FC<Props> = (props) => {
   }, [userData]);
 
   React.useEffect(() => {
-    if (loginGoogleResult) {
-      console.log(loginGoogleResult);
+    if (loginGoogleResult?.type === 'success' && loginGoogleResult.authentication) {
+      const { authentication: { accessToken } } = loginGoogleResult;
+      loginGoogle({ accessToken });
     }
-  }, [loginGoogleResult]);
+  }, [loginGoogleResult, loginGoogle]);
 
   if (userData) {
     return null;
@@ -57,7 +60,7 @@ const LoginScreen: React.FC<Props> = (props) => {
   }
 
   const loginWithGoogle = () => {
-    loginGoogle();
+    loginGoogleBase();
   }
 
   const loginWithApple = async () => {

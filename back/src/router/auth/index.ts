@@ -12,14 +12,12 @@ const router = new Router({
 
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({ email });
-  console.log(user);
   let isRegister = false;
   if (!user) {
     user = await db.User.create({ email, point: 3 });
     isRegister = true;
   }
   const token = await user.generateToken();
-  console.log(user.toObject());
   return {
     user: {
       ...user.toObject(),

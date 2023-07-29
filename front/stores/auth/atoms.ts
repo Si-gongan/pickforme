@@ -5,12 +5,13 @@ import {
   UserData,
   LoginResponse,
   Setting,
+  GoogleLoginParams,
   AppleLoginParams,
   KakaoLoginParams,
   SetPushTokenParams,
   SetPushSettingParams,
 } from './types';
-import { AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
+import { GoogleLoginAPI, AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
 
 export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
 
@@ -33,6 +34,11 @@ export const handleLoginResultAtom = atom(null, async (get, set, data: LoginResp
     set(isShowGreetingModalAtom, true);
   }
   set(setClientTokenAtom);
+});
+
+export const loginGoogleAtom = atom(null, async (get, set, params: GoogleLoginParams) => {
+  const { data } = await GoogleLoginAPI(params);
+  set(handleLoginResultAtom, data);
 });
 
 export const loginAppleAtom = atom(null, async (get, set, params: AppleLoginParams) => {
