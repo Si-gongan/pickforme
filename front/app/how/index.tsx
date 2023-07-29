@@ -16,15 +16,9 @@ export default function HowScreen() {
       <ScrollView>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.title}>안녕하세요. 쇼핑 도우미 서비스,</Text>
-          <Text style={styles.title}>픽포미에 오신 것을 환영합니다</Text>
+          <Text style={styles.title}>{`안녕하세요. 쇼핑 도우미 서비스,\n픽포미에 오신 것을 환영합니다`}</Text>
         </View>
-        <Text style={styles.desc}>
-          애플리케이션의 화면 구성과
-        </Text>
-        <Text style={styles.desc}>
-          픽포미가 제공하는 서비스를 설명드릴게요.
-        </Text>
+        <Text style={styles.desc}>{`애플리케이션의 화면 구성과\n픽포미가 제공하는 서비스를 설명드릴게요.`}</Text>
       </View>
       <View style={localStyles.buttonWrap}>
         {BUTTONS.map(({ name, label }) => (

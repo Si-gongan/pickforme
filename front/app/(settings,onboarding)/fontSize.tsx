@@ -1,4 +1,4 @@
-import { useRouter, usePathname } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
@@ -17,10 +17,10 @@ const translationMap = {
 };
 
 export default function FontSizeScreen() {
+  const { segment = '' } = useLocalSearchParams();
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
-  const pathname = usePathname();
-  const isSetting = pathname.includes('settings');
+  const isSetting = segment.includes('settings');
   const colorScheme = useColorScheme();
   const [value, setValue] = React.useState(setting.fontSize ??' small');
   const handleSubmit = () => {

@@ -44,7 +44,7 @@ export default function RegisterScreen() {
         <Text style={styles.title}>{setting?.name}님, 안녕하세요.</Text>
         <Text style={[styles.title, styles.title2]}>{`시각장애인을 위한\n쇼핑 서비스`}</Text>
         <View style={styles.textWrap}>
-          <Text style={[styles.highlight, styles.desc]}>픽포미</Text><Text style={styles.desc}>에 오신 것을 환영합니다!</Text>
+          <Text style={[styles.highlight, styles.desc]}>{`픽포미\n에 오신 것을 환영합니다!`}</Text>
         </View>
       </View>
       <View style={styles.buttonWrap}>

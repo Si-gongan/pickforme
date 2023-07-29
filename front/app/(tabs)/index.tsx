@@ -11,30 +11,38 @@ interface TDATA {
   path: string;
   title: string;
   image: ImageSourcePropType;
+  requireAuth: boolean;
 }
 const DATA: TDATA[] = [{
   path: '/recommend',
   title: '픽포미 추천',
   image: require('../../assets/images/main/recommend.png'),
+  requireAuth: true,
 }, {
   path: '/research',
   title: '픽포미 분석',
   image: require('../../assets/images/main/research.png'),
+  requireAuth: true,
 }, {
   path: '/buy',
   title: '픽포미 구매',
   image: require('../../assets/images/main/buy.png'),
+  requireAuth: true,
 }, {
-  path: '/(tabs)/mypage/how',
+  path: '/how',
   title: `픽포미\n사용설명서`,
   image: require('../../assets/images/main/how.png'),
+  requireAuth: false,
 }];
 
 export default function TabOneScreen() {
   const router = useRouter();
   const setting = useAtomValue(settingAtom);
-  const onPress = useCheckLogin((id: string) => {
+  const onPress = (id: string) => {
     router.push(id);
+  }
+  const onPressWithCheckLogin = useCheckLogin((id: string) => {
+    onPress(id);
   });
   return (
     <View style={styles.container}>
@@ -54,10 +62,11 @@ export default function TabOneScreen() {
             columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
               <Button
-                onPress={() => onPress(item.path)}
+                onPress={() => item.requireAuth ? onPressWithCheckLogin(item.path) : onPress(item.path)}
                 style={styles.button}
                 textStyle={styles.text}
                 title={item.title}
+                accessibilityLabel={`${item.title} 버튼`}
               >
                 <Image
                   style={styles.image}

@@ -1,4 +1,4 @@
-import { useRouter, usePathname } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
@@ -17,11 +17,11 @@ const translationMap = {
 }
 
 export default function ThemeScreen() {
+  const { segment = '' } = useLocalSearchParams();
   const [setting, setSetting] = useAtom(settingAtom);
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const pathname = usePathname();
-  const isSetting = pathname.includes('settings');
+  const isSetting = segment.includes('settings');
   const [theme, setTheme] = React.useState<string>(setting.theme ?? 'default');
   const handleSubmit = () => {
     setSetting({

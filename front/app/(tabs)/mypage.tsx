@@ -27,7 +27,7 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 정보 수정
         </Text>
-        <Link href='(settings)/nickname'>
+        <Link href='/(settings)/nickname'>
           <Text style={styles.menu}>
             기본 정보 수정
           </Text>
@@ -60,7 +60,7 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           앱 설정
         </Text>
-        <Link href='(settings)/theme'>
+        <Link href='/(settings)/theme'>
           <Text style={styles.menu}>
             화면 모드 변경
           </Text>

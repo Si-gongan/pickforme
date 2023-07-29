@@ -1,4 +1,4 @@
-import { useRouter, usePathname } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { StyleSheet, TextInput } from 'react-native';
 import { useAtom } from 'jotai';
@@ -17,12 +17,12 @@ const translationMap = {
 }
 
 export default function NicknameScreen() {
+  const { segment = '' } = useLocalSearchParams();
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
-  const pathname = usePathname();
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
-  const isSetting = pathname.includes('settings');
+  const isSetting = segment.includes('settings');
   const [name, setName] = React.useState(setting.name ?? '');
   const [vision, setVision] = React.useState<typeof setting.vision>(setting.vision ?? 'none');
 
@@ -33,7 +33,7 @@ export default function NicknameScreen() {
       vision: vision as typeof setting['vision'],
     });
     if (isSetting) {
-      router.back();
+      router.push('/(tabs)/mypage');
     } else {
       router.push('(onboarding)/intro');
     }

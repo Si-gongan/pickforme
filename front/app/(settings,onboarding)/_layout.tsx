@@ -16,6 +16,7 @@ export default function TabLayout(params: any) {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const setting = useAtomValue(settingAtom);
+
   const { segment } = params;
   if (setting.isReady && segment === '(onboarding)') {
     return <Redirect href="/(tabs)" />;
@@ -27,6 +28,7 @@ export default function TabLayout(params: any) {
           key={`setting-stack-screen-${name}`}
           name={name}
           options={{ headerShown: false }}
+          initialParams={{ segment }}
         />
       ))}
     </Stack>
