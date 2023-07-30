@@ -6,19 +6,27 @@ import Button from './Button';
 import Colors from '../constants/Colors';
 import useColorScheme, {ColorScheme } from '../hooks/useColorScheme';
 import { formatTime } from '../utils/common';
-import { Chat as IChat } from '../stores/request/types';
+import { Request, Chat as IChat } from '../stores/request/types';
 import { Image, StyleSheet, Pressable } from 'react-native';
 
 interface Props {
   data: IChat,
+  requestType: Request['type'] | undefined,
 }
-const Chat: React.FC<Props> = ({ data }) => {
+const Chat: React.FC<Props> = ({ data, requestType }) => {
   const router = useRouter();
   const button = data.button;
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+  const date = formatTime(data.createdAt);
+  const from = requestType === 'AI' ? 'AI 포미' : '픽포미 매니저';
+  const accessibilityLabel = `${data.isMine ? '' : `${from} `} ${data.text} ${date}`;
   return (
-    <View style={[styles.root, data.isMine && styles.isMine]}>
+    <View
+      style={[styles.root, data.isMine && styles.isMine]}
+      accessible
+      accessibilityLabel={accessibilityLabel}
+    >
       <View style={styles.card}>
         <Text style={styles.text}>
           {data.text}
@@ -35,7 +43,7 @@ const Chat: React.FC<Props> = ({ data }) => {
       </View>
       <View style={styles.dateWrap}>
         <Text style={styles.dateText}>
-          {formatTime(data.createdAt)}
+          {date}
         </Text>
       </View> 
     </View>

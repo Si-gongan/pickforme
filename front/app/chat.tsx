@@ -48,7 +48,7 @@ export default function ChatScreen() {
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
       >
         <View style={styles.inner}>
-          {chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} />)}
+          {chats.map((chat) => <Chat key={`Chat-${chat._id}`} data={chat} requestType={request?.type} />)}
         </View>
       </ScrollView>
       </View>
