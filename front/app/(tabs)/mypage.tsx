@@ -7,6 +7,7 @@ import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
 import Button from '../../components/Button';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
@@ -27,7 +28,7 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 정보 수정
         </Text>
-        <Link href='/(settings)/nickname'>
+        <Link href='/(settings)/nickname' accessibilityRole='button'>
           <Text style={styles.menu}>
             기본 정보 수정
           </Text>
@@ -49,7 +50,7 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 픽 {userData.point}픽
         </Text>
-        <Link href='/point'>
+        <Link href='/point' accessibilityRole='button'>
           <Text style={styles.menu}>
             픽 충전
           </Text>
@@ -60,7 +61,7 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           앱 설정
         </Text>
-        <Link href='/(settings)/theme'>
+        <Link href='/(settings)/theme' accessibilityRole='button'>
           <Text style={styles.menu}>
             화면 모드 변경
           </Text>
@@ -73,7 +74,7 @@ export default function MyPageScreen() {
         </Link>
         */}
         {!!userData && (
-          <Link href='/notification'>
+          <Link href='/notification' accessibilityRole='button'>
             <Text style={styles.menu}>
               알림 설정
             </Text>
@@ -84,25 +85,43 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           고객 지원
         </Text>
-        <Text style={styles.menu}>
-          1:1 문의
-        </Text>
-        <Link href='/how' >
+        <Button
+          title='1:1 문의'
+          variant='text'
+          onPress={() => WebBrowser.openBrowserAsync('http://pf.kakao.com/_csbDxj')}
+          style={[styles.menu, styles.solo]}
+          textStyle={styles.buttonText}
+          color='tertiary'
+          size='small'
+        />
+        <Link href='/how' accessibilityRole='button'>
           <Text style={styles.menu}>
             사용 설명서
          </Text>
         </Link>
-        <Link href='/faq'>
+        <Link href='/faq' accessibilityRole='button'>
           <Text style={styles.menu}>
             자주 묻는 질문 (FAQ)
           </Text>
         </Link>
-        <Text style={styles.menu}>
-          개인정보처리방침
-        </Text>
-        <Text style={styles.menu}>
-          서비스 이용약관
-        </Text>
+        <Button
+          title='개인정보처리방침'
+          variant='text'
+          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan/홈')}
+          style={[styles.menu, styles.solo]}
+          textStyle={styles.buttonText}
+          color='tertiary'
+          size='small'
+        />
+        <Button
+          title='서비스 이용약관'
+          variant='text'
+          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈')}
+          style={[styles.menu, styles.solo]}
+          textStyle={styles.buttonText}
+          color='tertiary'
+          size='small'
+        />
       </View>
       {!!userData && (
         <View style={[styles.card]}>
