@@ -3,7 +3,8 @@ import { useRouter } from "expo-router";
 import { View, Text } from './Themed';
 import Button from './Button';
 
-import Colors from '../constants/Colors';
+import Colors from '../constants/Colors'
+import Autolink from 'react-native-autolink';
 import useColorScheme, {ColorScheme } from '../hooks/useColorScheme';
 import { formatTime } from '../utils/common';
 import { Request, Chat as IChat } from '../stores/request/types';
@@ -28,9 +29,12 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
       accessibilityLabel={accessibilityLabel}
     >
       <View style={styles.card}>
-        <Text style={styles.text}>
-          {data.text}
-        </Text>
+        <Autolink
+          style={styles.text}
+          text={data.text}
+          linkStyle={styles.link}
+          renderText={(text) => <Text style={styles.text}>{text}</Text>}
+        />
         {button && (
           <Button
             style={styles.button}
@@ -78,8 +82,11 @@ const useStyles = (colorScheme: ColorScheme) =>  StyleSheet.create({
     fontSize: 14,
     lineHeight: 17,
   },
+  link: {
+    textDecorationLine: 'underline',
+    color: Colors[colorScheme].text.primary,
+  },
   dateWrap: {
-
   },
   dateText: {
     fontWeight: '400',
