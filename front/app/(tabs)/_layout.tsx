@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRouter, Link, Tabs, Redirect } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, Text } from 'react-native';
 
 import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
@@ -41,6 +41,7 @@ export default function TabLayout() {
           paddingBottom: 30,
           height: 84,
         },
+        headerTitle: () => <Text accessible={false} />,
         headerStyle: {
           backgroundColor: Colors[colorScheme].background.primary,
         },

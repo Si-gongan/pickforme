@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { Redirect, SplashScreen, Stack } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Suspense, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useInterceptor from '../hooks/useInterceptor';
@@ -51,7 +51,7 @@ export default function RootLayout() {
 
 const hideHeaderOption = {
   headerShadowVisible: false, // applied here
-  headerTitle: '',
+  headerTitle: () => <Text accessible={false} />,
   headerLeft: HeaderLeft,
 }
 function RootLayoutNav() {
