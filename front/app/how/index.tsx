@@ -22,7 +22,7 @@ export default function HowScreen() {
       </View>
       <View style={localStyles.buttonWrap}>
         {BUTTONS.map(({ name, label }) => (
-          <Button key={`how-button-${name}`} title={label} onPress={() => router.push(`/(tabs)/mypage/how/${name}`)} />
+          <Button key={`how-button-${name}`} title={label} onPress={() => router.push(`/how/${name}`)} />
         ))}
       </View>
       </ScrollView>
