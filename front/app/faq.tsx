@@ -205,7 +205,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   moreText: {
     textAlign: 'center',
     fontSize: 14,
-    color: Colors[colorScheme].background.primary,
+    color: Colors[colorScheme].buttonText.primary,
     fontWeight: '700',
   },
   answer: {
