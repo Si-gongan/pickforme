@@ -11,6 +11,7 @@ interface ButtonProps extends  Omit<PressableProps, 'children'>, ButtonTextProps
   variant?: 'contain' | 'text',
   color?: 'primary' | 'secondary' | 'tertiary';
   size?: 'large' | 'medium' | 'small',
+  renderChildrenPosition?: 'front' | 'back';
 };
 
 const styles = StyleSheet.create({
@@ -75,6 +76,7 @@ const Button = ({
   darkColor,
   color = 'primary',
   textStyle,
+  renderChildrenPosition = 'front',
   ...props
 }: ButtonProps) => {
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'buttonBackground', color);
@@ -92,16 +94,19 @@ const Button = ({
     <Pressable onPress={handlePress} {...props}>
       {({ pressed }) => (
         <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
-          {children}
-          <ButtonText
-            numberOfLines={numberOfLines}
-            textStyle={[textStyles.base, textStyles[size], textStyle]}
-            lightColor={lightColor}
-            darkColor={darkColor}
-            color={color}
-          >
-            {props.title}
-          </ButtonText>
+          {renderChildrenPosition === 'front' && children}
+          {props.title && (
+            <ButtonText
+              numberOfLines={numberOfLines}
+              textStyle={[textStyles.base, textStyles[size], textStyle]}
+              lightColor={lightColor}
+              darkColor={darkColor}
+              color={color}
+            >
+              {props.title}
+            </ButtonText>
+          )}
+          {renderChildrenPosition === 'back' && children}
         </View>
       )}
     </Pressable>
