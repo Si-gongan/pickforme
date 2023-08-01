@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import { Alert } from 'react-native';
 import { atomWithStorage } from '../utils';
 import { setClientToken } from '../../utils/axios';
 import {
@@ -11,7 +12,7 @@ import {
   SetPushTokenParams,
   SetPushSettingParams,
 } from './types';
-import { GoogleLoginAPI, AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
+import { QuitAPI, GoogleLoginAPI, AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
 
 export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
 
@@ -19,6 +20,12 @@ export const settingAtom = atomWithStorage<Setting>('setting', {
   isReady: false,
 });
 export const userDataAtom = atomWithStorage<UserData | void>('userData', undefined);
+
+export const quitAtom = atom(null, async (get, set) => {
+  await QuitAPI();
+  set(userDataAtom, undefined);
+  Alert.alert('탈퇴가 완료되었습니다.');
+});
 
 export const setClientTokenAtom = atom(null, async (get, set) => {
   const userData = await get(userDataAtom);

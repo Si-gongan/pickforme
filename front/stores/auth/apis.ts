@@ -15,3 +15,4 @@ export const KakaoLoginAPI = (params: KakaoLoginParams) => client.post<LoginResp
 export const GoogleLoginAPI = (params: GoogleLoginParams) => client.post<LoginResponse>('/auth/google',params);
 export const SetPushTokenAPI = (params: SetPushTokenParams) => client.post('/auth/pushtoken', params);
 export const SetPushSettingAPI = (params: SetPushSettingParams) => client.put<SetPushSettingResponse>('/auth/pushsetting', params);
+export const QuitAPI = () => client.post('/auth/quit');

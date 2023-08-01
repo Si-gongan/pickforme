@@ -27,6 +27,7 @@ export interface User extends LocalRegisterPayload {
   level: number;
   push: PushSetting;
   pushToken?: string;
+  originEmail?: string;
 }
 
 export interface UserDocument extends User, Document {

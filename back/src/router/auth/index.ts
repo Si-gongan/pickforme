@@ -98,4 +98,16 @@ router.put('/pushsetting', requireAuth, async (ctx) => {
   }
 });
 
+router.post('/quit', requireAuth, async (ctx) => {
+  const user = await db.User.findById(ctx.state.user._id);
+  if (!user) {
+    ctx.status = 404;
+    return;
+  }
+  user.originEmail = user.email;
+  user.email = `${user.email}_deleted_${new Date()}`;
+  await user.save();
+  ctx.status = 200;
+});
+
 export default router;

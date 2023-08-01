@@ -115,7 +115,7 @@ router.post('/buy', requireAuth, async (ctx) => {
   const buy = await db.Buy.findOne(query);
   ctx.body = !buy;
   if (buy) {
-    await buy.remove();
+    await db.Buy.deleteOne(query);
   } else {
     await db.Buy.create(query);
   }

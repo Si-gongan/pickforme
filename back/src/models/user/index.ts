@@ -44,6 +44,9 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema({
       default: PushService.on,
     },
   },
+  originEmail: {
+    type: String,
+  },
 }, {
   timestamps: true,
 });

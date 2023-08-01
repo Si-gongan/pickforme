@@ -1,7 +1,7 @@
-import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { useAtom, useAtomValue } from 'jotai';
-import { settingAtom, userDataAtom } from '../../stores/auth/atoms';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { settingAtom, userDataAtom, quitAtom } from '../../stores/auth/atoms';
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -15,9 +15,30 @@ export default function MyPageScreen() {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
 
+  const quit = useSetAtom(quitAtom);
   const router = useRouter();
   const logout = () => {
-    setUserData('' as unknown as undefined);
+    setUserData(undefined);
+  }
+  const handleClickQuit = () => {
+    Alert.alert(
+      '정말 탈퇴하시겠습니까?',
+      '모든 계정 정보가 삭제됩니다',
+      [
+        {
+          text: '탈퇴',
+          onPress: quit,
+          style: 'destructive',
+        },
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+      ],
+      {
+        cancelable: true,
+      },
+    );
   }
   return (
     <View style={styles.container}>
@@ -134,6 +155,15 @@ export default function MyPageScreen() {
             color='tertiary'
             size='small'
           />
+          <Button
+            title='회원탈퇴'
+            variant='text'
+            onPress={handleClickQuit}
+            style={[styles.menu, styles.solo]}
+            textStyle={[styles.buttonText, styles.red]}
+            color='tertiary'
+            size='small'
+          />
         </View>
       )}
       </View>
@@ -190,5 +220,8 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   buttonText: {
     fontWeight: '400',
+  },
+  red: {
+    color: '#EA4335',
   },
 });
