@@ -1,7 +1,17 @@
 import { atom } from 'jotai';
 import { RequestStatus, GetPreviewParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams, Chat } from './types';
-import { ReadRequestAPI, PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI } from './apis';
+import { ReadRequestAPI, PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI, GetBuyAPI, ToggleBuyAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
+
+export const buyAtom = atom<boolean>(false);
+export const getBuyAtom = atom(null, async (get, set) => {
+  const { data } = await GetBuyAPI();
+  set(buyAtom, data);
+});
+export const toggleBuyAtom = atom(null, async (get, set) => {
+  const { data } = await ToggleBuyAPI();
+  set(buyAtom, data);
+});
 
 export const requestsAtom = atom<Request[]>([]);
 

@@ -1,21 +1,33 @@
+import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { userDataAtom } from '../stores/auth/atoms';
+import { buyAtom, toggleBuyAtom, getBuyAtom } from '../stores/request/atoms';
 
+import * as WebBrowser from 'expo-web-browser';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
+import TBDImage from '../assets/images/buy/TBD.svg';
+import Colors from '../constants/Colors';
 
 export default function BuyScreen() {
   const router = useRouter();
   const userData = useAtomValue(userDataAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
+  const buy = useAtomValue(buyAtom);
+  const getBuy = useSetAtom(getBuyAtom);
+  const toggleBuy = useSetAtom(toggleBuyAtom);
+
+  useEffect(() => {
+    getBuy();
+  }, [getBuy]);
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={[styles.scrollContainer, styles.container]}>
-        <Image
-          style={styles.img}
-          source={require('../assets/images/buy/TBD.png')}
-        />
+        <TBDImage style={styles.img} />
         <Text style={styles.title}>
           서비스를 준비 중입니다.
         </Text>
@@ -30,6 +42,7 @@ export default function BuyScreen() {
         </Text>
         <Button
           style={[styles.button, styles.marginBottomS]}
+          onPress={toggleBuy}
           title='서비스가 필요해요'
           size='medium'
         />
@@ -37,6 +50,7 @@ export default function BuyScreen() {
           픽포미 구매 대행 서비스에 의견이 있으신가요?
         </Text>
         <Button
+          onPress={() => WebBrowser.openBrowserAsync('http://pf.kakao.com/_csbDxj')}
           style={styles.button}
           title='문의하기'
           size='medium'
@@ -46,7 +60,7 @@ export default function BuyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -56,6 +70,7 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
   },
   img: {
+    color: Colors[colorScheme].text.primary,
     width: 70,
     height: 70,
     marginBottom: 19,

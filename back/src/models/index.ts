@@ -5,6 +5,7 @@ import Session from './session';
 import Request from './request';
 import Chat from './chat';
 import Product from './product';
+import Buy from './Buy';
 
 const uri = process.env.MONGO_URI!;
 
@@ -16,6 +17,7 @@ const db = {
   Request,
   Chat,
   Product,
+  Buy,
 };
 
 export default db;
