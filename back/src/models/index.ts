@@ -5,7 +5,7 @@ import Session from './session';
 import Request from './request';
 import Chat from './chat';
 import Product from './product';
-import Buy from './Buy';
+import Buy from './buy';
 
 const uri = process.env.MONGO_URI!;
 
