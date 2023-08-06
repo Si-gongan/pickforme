@@ -9,7 +9,7 @@ const useCheckReady: React.FC<Props> = (props) => {
   const [isReady, setIsReady] = useAtom(isReadyAtom);
   useEffect(() => {
     setIsReady(true);
-  }, []);
+  }, [setIsReady]);
   if (!isReady) {
     return null;
   }

@@ -17,7 +17,7 @@ const useCheckLogin: React.FC<Props> = (props) => {
     if (!isLogin && !isLoginPage) {
       router.push('/login')
     }
-  }, [router, isLogin]);
+  }, [router, isLogin, isLoginPage]);
 
   if (!isLogin && !isLoginPage) {
     return null;

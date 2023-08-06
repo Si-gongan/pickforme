@@ -1,6 +1,7 @@
 import client from '../../utils/axios';
 
 import {
+  GoogleLoginParams,
   LoginResponse,
 } from './types';
 
