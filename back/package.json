@@ -7,7 +7,7 @@
     "start": "NODE_PATH=./src ts-node src/app.ts",
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
-    "nodemon": "NODE_PATH=./src nodemon src/app.ts"
+    "nodemon": "NODE_PATH=./src nodemon src/app.ts &"
   },
   "author": "jinsang",
   "license": "ISC",
