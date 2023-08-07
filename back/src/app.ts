@@ -13,8 +13,13 @@ import socket from './socket';
 const PORT = process.env.PORT || 3000;
 const app = new Koa();
 
+const corsOptions = {
+    origin: 'https://pickforme-admin-sigongan.vercel.app',
+    credentials: true,
+}
+
 app
-  .use(cors())
+  .use(cors(corsOptions))
   .use(bodyParser())
   .use(router.routes())
   .use(router.allowedMethods());
