@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState } from 'react';
 import { numComma } from '../utils/common';
-import { requestsAtom } from '../stores/request/atoms';
+import { requestsAtom, previewAtom, getPreviewAtom } from '../stores/request/atoms';
 import { Product } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
@@ -81,6 +81,12 @@ export default function RequestScreen() {
   if (!request) {
     return <Text>잘못된 접근입니다</Text>
   }
+  const handleOpenUrl = async (url: string) => {
+    await WebBrowser.openBrowserAsync(url);
+  }
+
+  const getPreview = useSetAtom(getPreviewAtom);
+  const preview = useAtomValue(previewAtom);
 
   return (
     <View style={styles.container}>
@@ -95,8 +101,23 @@ export default function RequestScreen() {
         <Text style={styles.desc}>
           {request.text}
         </Text>
+        {request.type === 'RESEARCH' && preview ? (
+          <Pressable onPress={() => handleOpenUrl(request.link)}>
+            <View style={styles.meta}>
+              <Image style={styles.metaImg} source={{ uri: preview.image }} />
+              <View style={styles.metaContent}>
+              <Text style={styles.metaTitle}>
+                {preview.title}
+              </Text>
+              <Text style={styles.metaDesc}>
+                {preview.desc}
+              </Text>
+              </View>
+            </View>
+          </Pressable>
+        ) : <View style={styles.empty} />}
         <Text style={styles.subtitle}>
-          추천 결과
+          {request.type === 'RESEARCH' ? '분석 ' : '추천'} 결과
         </Text>
         {request.answer ? (
           <>
@@ -197,5 +218,27 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   button: {
     paddingHorizontal: 12,
+  },
+  meta: {
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: Colors[colorScheme].borderColor.primary,
+    borderRadius: 15,
+  },
+  metaImg:{
+    resizeMode: 'cover',
+  },
+  metaContent: {
+    padding: 15,
+    borderRadius: 15,
+  },
+  metaTitle: {
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  metaDesc: {
+  },
+  empty: {
+    marginBottom: 30,
   },
 });

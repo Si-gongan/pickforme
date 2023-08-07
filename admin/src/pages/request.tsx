@@ -8,6 +8,10 @@ import { numComma } from '@/utils/common';
 import { postAnswerAtom, requestsAtom, getRequestAtom } from '@/stores/request/atoms';
 import { PostAnswerParams, Product } from '@/stores/request/types';
 
+const ExternalLinkUnderline = styled(ExternalLink)`
+  text-decoration: underline;
+`;
+
 const tabName = {
   'RECOMMEND': '픽포미 추천',
   'RESEARCH': '픽포미 분석',
@@ -151,6 +155,18 @@ export default function RequestScreen() {
       <Desc>
         {request.text}
       </Desc>
+      {request.type === 'RESEARCH' && (
+      <>
+        <Subtitle>
+          의뢰한 페이지 주소
+        </Subtitle>
+        <Desc>
+          <ExternalLinkUnderline href={request.link}>
+            {request.link}
+          </ExternalLinkUnderline>
+        </Desc>
+      </>
+      )}
       <Subtitle>
         추천 결과
       </Subtitle>
