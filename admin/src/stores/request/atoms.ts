@@ -17,7 +17,7 @@ export const getRequestsAtom = atom(null, async (get, set) => {
 });
 export const getRequestAtom = atom(null, async (get, set, params: GetRequestParams) => {
   const { data } = await GetRequestAPI(params); // 추후 last chat_id 추가하여 성능 개선
-  set(requestsAtom, [...get(requestsAtom), data]);
+  set(requestsAtom, get(requestsAtom).map((request) => request._id === data._id ? data : request));
 });
 
 export const sendChatAtom = atom(null, async (get, set, params: SendChatParams) => {
