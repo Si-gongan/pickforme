@@ -33,7 +33,7 @@ router.post("/", requireAuth, async (ctx) => {
   });
   if (body.type !== RequestType.AI) {
     const chat = await db.Chat.create({
-      text: '픽포미 추천 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.',
+      text: `픽포미 ${body.type === RequestType.RESEARCH ? '분석' : '추천'} 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.`,
       isMine: false,
       userId: user._id,
       requestId: request._id,
