@@ -18,6 +18,8 @@ router.post("/answer", async (ctx) => {
   const request = await db.Request.findById(body.requestId)
   if (!request.answer) {
     const chat = await db.Chat.create({
+      userId: request.userId,
+      requestId: request._id,
       text: '결과 리포트가 도착했습니다. 확인 후 문의사항이 있으실 경우 채팅을 남겨주세요. 1일 뒤 자동으로 의뢰가 종료됩니다.',
       createdAt: new Date(),
       isMine: false,

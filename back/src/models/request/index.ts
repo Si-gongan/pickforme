@@ -37,26 +37,29 @@ const RequestSchema = new mongoose.Schema({
     type: String,
   },
   answer: {
-    text: {
-      type: String,
-    },
-    products: [{
-      title: {
+    default: undefined,
+      type: {
+      text: {
         type: String,
       },
-      desc: {
-        type: String,
-      },
-      price: {
-        type: Number,
-      },
-      tags: [{
-        type: String,
+      products: [{
+        title: {
+          type: String,
+        },
+        desc: {
+          type: String,
+        },
+        price: {
+          type: Number,
+        },
+        tags: [{
+          type: String,
+        }],
+        url: {
+          type: String,
+        }
       }],
-      url: {
-        type: String,
-      }
-    }],
+    }
   },
   unreadCount: {
     type: Number,

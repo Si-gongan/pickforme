@@ -92,7 +92,7 @@ export default function RequestScreen() {
         <Text style={styles.subtitle}>
           추천 결과
         </Text>
-        {request.answer.text ? (
+        {request.answer?.text ? (
           <>
             <Text style={styles.desc}>
               {request.answer.text}

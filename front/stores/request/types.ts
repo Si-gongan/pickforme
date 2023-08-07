@@ -44,7 +44,7 @@ interface RequestBase {
   chats: Chat[],
   text: string,                              
   unreadCount: number,
-  answer: {
+  answer?: {
     text: string,
     products: Product[]
   },
