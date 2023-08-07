@@ -163,6 +163,16 @@ export default function RequestScreen() {
       <Desc>
         {request.text}
       </Desc>
+      {request.type === 'RECOMMEND' && (
+      <>
+        <Subtitle>
+          가격대
+        </Subtitle>
+        <Desc>
+          {request.price}
+        </Desc>
+      </>
+      )}
       {request.type === 'RESEARCH' && (
       <>
         <Subtitle>

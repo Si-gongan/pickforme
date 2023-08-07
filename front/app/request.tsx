@@ -107,6 +107,17 @@ export default function RequestScreen() {
         <Text style={styles.desc}>
           {request.text}
         </Text>
+        {request.type === 'RECOMMEND' && (
+        <>
+          <Text style={styles.subtitle}>
+            가격대
+          </Text>
+          <Text style={styles.desc}>
+            {request.price}
+          </Text>
+        </>
+        )}
+
         {request.type === 'RESEARCH' && preview ? (
           <Pressable onPress={() => handleOpenUrl(request.link)}>
             <View style={styles.meta}>
