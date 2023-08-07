@@ -27,14 +27,19 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     await WebBrowser.openBrowserAsync(url);
   }
   return (
-    <Pressable onPress={() => setIsOpen(true)}>
+    <Pressable
+      onPress={() => setIsOpen(true)}
+      accessible={!isOpen}
+      accessibilityLabel={`${product.title} 상품정보를 상세히 보려면 터치하세요.`}
+    >
       <View style={styles.product} key={`answer-product-${product.url}}`}>
-        <Text style={styles.productTitle}>
+        <Text style={styles.productTitle} accessibilityLabel={product.title}>
           {product.title}
         </Text>
         <Text style={styles.productPrice}>
           {numComma(product.price)}
         </Text>
+        {!!product.tags.length && (
         <View style={styles.productTagWrap}>
           {product.tags.map((tag) => (
             <Button
@@ -47,6 +52,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             />
           ))}
         </View>
+        )}
         <Collapsible collapsed={!isOpen}>
           <Text style={styles.productDesc}>
             {product.desc}
