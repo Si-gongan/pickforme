@@ -20,9 +20,17 @@ const tabName = {
 
 const ProductNew: React.FC<{ product: Product, setProduct: (product: Product) => void  }> = ({ product, setProduct }) => {
   const handleChangeInput: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
+    let value: string | string[] | undefined = e.target.value.trim();
+    if (e.target.name === 'tags') {
+      if (value.length) {
+        value = value.split('\n');
+      } else {
+        value = undefined;
+      }
+    }
     setProduct({
       ...product,
-      [e.target.name]: e.target.name === 'tags' ? e.target.value.split('\n') : e.target.value,
+      [e.target.name]: value,
     });
   }
   return (
