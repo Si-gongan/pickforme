@@ -8,6 +8,7 @@ import { Product } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
+import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import Collapsible from 'react-native-collapsible';
 import * as WebBrowser from 'expo-web-browser';
 
@@ -20,6 +21,8 @@ const tabName = {
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   const handleOpenUrl = async (url: string) => {
     await WebBrowser.openBrowserAsync(url);
   }
@@ -73,13 +76,16 @@ export default function RequestScreen() {
   const router = useRouter();
   const { requestId } = useLocalSearchParams();
   const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
   if (!request) {
     return <Text>잘못된 접근입니다</Text>
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.inner}>
+      <ScrollView>
+      <View style={styles.inner}>
         <Text style={styles.title}>
           {tabName[request.type]}
         </Text>
@@ -92,28 +98,33 @@ export default function RequestScreen() {
         <Text style={styles.subtitle}>
           추천 결과
         </Text>
-        {request.answer?.text ? (
+        {request.answer ? (
           <>
+            {request.answer.text && (
             <Text style={styles.desc}>
               {request.answer.text}
             </Text>
+            )}
+            {!!request.answer.products?.length && (
             <View style={styles.productWrap}>
               {request.answer.products.map((product) => (
                 <ProductCard key={`answer-product-${product.url}}`} product={product} />
               ))}
             </View>
+            )}
           </>
         ) : (
           <Text style={styles.desc}>
             매니저가 답변을 작성중입니다. 조금만 기다려주세요.
           </Text>
         )}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -143,9 +154,10 @@ const styles = StyleSheet.create({
   productWrap: {
     marginTop: 9,
     flexDirection: 'column',
+    gap: 26,
   },
   product: {
-    backgroundColor: Colors.light.card.primary,
+    backgroundColor: Colors[colorScheme].card.primary,
     borderRadius: 13,
     paddingVertical: 16,
     paddingHorizontal: 13,
@@ -163,6 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   productTagWrap: {
+    flexWrap: 'wrap',
     backgroundColor: 'transparent',
     flexDirection: 'row',
     gap: 9,
