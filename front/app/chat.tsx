@@ -140,7 +140,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontSize: 14,
   },
   sendIcon: {
-    marginTop: 12,
   },
   buttonWrap: {
     borderTopWidth: 1,

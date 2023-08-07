@@ -25,8 +25,6 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
   return (
     <View
       style={[styles.root, data.isMine && styles.isMine]}
-      accessible
-      accessibilityLabel={accessibilityLabel}
     >
       <View style={styles.card}>
         <Autolink
@@ -34,6 +32,8 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
           text={data.text}
           linkStyle={styles.link}
           renderText={(text) => <Text style={styles.text}>{text}</Text>}
+          accessible
+          accessibilityLabel={accessibilityLabel}
         />
         {button && (
           <Button
@@ -46,7 +46,7 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
         )}
       </View>
       <View style={styles.dateWrap}>
-        <Text style={styles.dateText}>
+        <Text style={styles.dateText} accessible={false}>
           {date}
         </Text>
       </View> 
