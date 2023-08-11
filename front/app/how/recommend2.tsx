@@ -32,7 +32,7 @@ export default function HowScreen() {
         <View style={styles.section}>
           <View style={[styles.buttonWrap, styles.buttonLeft]}>
             <View style={styles.half}>
-              <Button title='상품 추천 예시' color='tertiary' onPress={() => router.back()} />
+              <Button title='상품 추천 예시' color='tertiary' onPress={() => router.push('./example?requestId=recommend1')} />
             </View>
           </View>
         </View>
