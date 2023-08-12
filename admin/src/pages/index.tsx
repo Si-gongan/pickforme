@@ -21,7 +21,7 @@ const tabName = {
 export default function RequestsScreen() {
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);
   const getRequests = useSetAtom(getRequestsAtom);
-  const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? true : request.type === tab);
+  const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? (request.type === 'RECOMMEND' || request.type === 'RESEARCH') : request.type === tab).reverse();
 
   React.useEffect(() => {
     getRequests();
