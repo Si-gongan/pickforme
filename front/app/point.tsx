@@ -1,9 +1,11 @@
-import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import React from 'react';
+import { ScrollView, StyleSheet, Pressable, FlatList, Image, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userDataAtom } from '../stores/auth/atoms';
 import { getProductsAtom, purchaseProductAtom, productsAtom } from '../stores/purchase/atoms';
+import { Product } from '../stores/purchase/types';
 import Colors from '../constants/Colors';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 
@@ -11,6 +13,19 @@ import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { numComma} from '../utils/common';
 import Button, { ButtonText } from '../components/Button';
 import { Text, View } from '../components/Themed';
+import {
+  connectAsync,
+  disconnectAsync,
+  finishTransactionAsync,
+  getBillingResponseCodeAsync,
+  getProductsAsync,
+  getPurchaseHistoryAsync,
+  IAPResponseCode,
+  purchaseItemAsync,
+  setPurchaseListener,
+  IAPItemDetails,
+  InAppPurchase,
+} from 'expo-in-app-purchases';
 
 const TERM = `
 유의사항
@@ -29,14 +44,72 @@ export default function PointScreen() {
   const userData = useAtomValue(userDataAtom);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+  const [items, setItems] = useState<IAPItemDetails[]>([]);
+  /*
   const subscriptionProducts = products.filter(({ type }) => type === 'SUBSCRIPTION');
   const purchaseProducts = products.filter(({ type }) => type === 'PURCHASE');
-  const handleClick = (_id: string) => {
-    purchaseProduct({ _id });
+  */
+  const handleClick = (id: string) => {
+    purchaseItemAsync(id);
+    // purchaseProduct({ _id });
   };
+
   useEffect(() => {
     getProducts();
   }, [getProducts]);
+
+  useEffect(() => {
+    if (products.length) {
+    connectAsync().then(async () => {
+      const items = products.map(({ productId }) => productId);
+      const { responseCode, results } = await getProductsAsync(items);
+      if (responseCode === IAPResponseCode.OK && results) {
+        setItems(results);
+      }
+      // Set purchase listener
+      setPurchaseListener(({ responseCode, results, errorCode }) => {
+        if (responseCode === IAPResponseCode.OK) {
+          for (const purchase of results!) {
+            console.log(`Successfully purchased ${purchase.productId}`);
+            if (!purchase.acknowledged) {
+              // `gas` is the only consumable product, the rest are subscriptions.
+              finishTransactionAsync(purchase, purchase.productId === 'gas');
+            }
+          }
+        /*
+        } else if (responseCode === IAPResponseCode.USER_CANCELED) {
+          console.log('User canceled');
+        */
+        } else {
+          console.warn(
+            `Something went wrong with the purchase. Received response code ${responseCode} and errorCode ${errorCode}`
+          );
+        }
+      });
+    });
+    return () => {
+      disconnectAsync();
+    }
+    }
+  }, [products]);
+
+  const filteredProducts = items.reduce((obj, item) => {
+    const key = item.type === 0 ? 'purchasableProducts' : 'subscriptionProducts';
+    const serverProd = products.find(({ productId }) => item.productId === productId);
+    if (serverProd) {
+      obj[key].push({ ...item, ...serverProd });
+    } else {
+      return obj;
+    }
+    return obj;
+  }, {
+    subscriptionProducts: [],
+    purchasableProducts: [],
+  } as {
+    subscriptionProducts: (IAPItemDetails & Product)[],
+    purchasableProducts: (IAPItemDetails & Product)[],
+  });
+
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -56,26 +129,26 @@ export default function PointScreen() {
           <Text style={styles.subtitle}>
             매월 편하게 자동 충전할게요!
           </Text>
-          {subscriptionProducts.map(product => {
+          {filteredProducts.subscriptionProducts.map(product => {
             const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
             return (
               <Button
-                key={`Point-Product-${product._id}`}
+                key={`Point-Product-${product.productId}`}
                 size='medium'
                 style={styles.card}
                 color={color}
-                onPress={() => handleClick(product._id)}
+                onPress={() => handleClick(product.productId)}
               > 
                 <ButtonText {...buttonTextProps} textStyle={[styles.productName, styles.productNameMargin]}>
-                  {product.name}
+                  {product.title}
                 </ButtonText>
                 <View style={styles.row}>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPoint}>
                     {product.point}픽
                   </ButtonText>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPrice}>
-                    월 {numComma(product.price)}원 
+                    월 {product.price}
                   </ButtonText>
                 </View>
               </Button>
@@ -87,23 +160,23 @@ export default function PointScreen() {
           <Text style={[styles.subtitle]}>
             필요할 때마다 구매할게요!
           </Text>
-          {purchaseProducts.map(product => {
+          {filteredProducts.purchasableProducts.map(product => {
             const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
             return (
               <Button
-                key={`Point-Product-${product._id}`}
+                key={`Point-Product-${product.productId}`}
                 size='medium'
                 style={styles.card}
                 color={color}
-                onPress={() => handleClick(product._id)}
+                onPress={() => handleClick(product.productId)}
               > 
-                <View style={[styles.row, styles.rowMargin]}>
+                <View style={styles.row}>
                   <ButtonText {...buttonTextProps} textStyle={styles.productName}>
-                    {product.name}
+                    {product.title}
                   </ButtonText>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPrice}>
-                    {numComma(product.price)}원 
+                    {product.price}
                   </ButtonText>
                 </View>
               </Button>
@@ -173,11 +246,9 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
     paddingHorizontal: 17,
+    paddingVertical: 13,
     borderRadius: 10,
     marginBottom: 12,
-  },
-  rowMargin: {
-    marginTop: 13,
   },
   productName: {
     fontSize: 18,
@@ -185,7 +256,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     lineHeight: 22,
   },
   productNameMargin: {
-    marginTop: 13,
     marginBottom: 9,
   },
   productPoint: {

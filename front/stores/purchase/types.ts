@@ -1,9 +1,12 @@
+import { IAPItemType } from 'expo-in-app-purchases';
+import { Platform } from 'react-native';
+
 export interface Product {
   _id: string,
-  name: string,
+  productId: string,
   point: number,
-  price: number,
-  type: 'PURCHASE' | 'SUBSCRIPTION',
+  platform: typeof Platform.OS
+  type: IAPItemType,
 }
 
 export interface PurchaseProductParams extends Pick<Product, '_id'> {};

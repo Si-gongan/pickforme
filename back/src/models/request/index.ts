@@ -20,7 +20,7 @@ const RequestSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: RequestType,
+    enum: Object.values(RequestType),
     default: RequestType.RECOMMEND,
   },
   name: {

@@ -35,12 +35,12 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema({
   push: {
     chat: {
       type: String,
-      enum: PushChat,
+      enum: Object.values(PushChat),
       default: PushChat.all,
     },
     service: {
       type: String,
-      enum: PushService,
+      enum: Object.values(PushService),
       default: PushService.on,
     },
   },

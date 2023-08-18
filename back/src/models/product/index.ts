@@ -1,26 +1,26 @@
 import mongoose from 'mongoose';
 
 export enum ProductType {
-  SUBSCRIPTION = 'SUBSCRIPTION',
-  PURCHASE = 'PURCHASE',
+  SUBSCRIPTION = 0,
+  PURCHASE = 1,
 }
 
 const ProductSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ProductType,
+    enum: Object.values(ProductType),
     required: [true, 'can\'t be blank'],
   },
-  price: {
-    type: Number,
+  productId: {
+    type: String,
     required: [true, 'can\'t be blank'],
+  },
+  platform: {
+    type: String,
+    enum: ['ios', 'android'],
   },
   point: {
     type: Number,
-    required: [true, 'can\'t be blank'],
-  },
-  name: {
-    type: String,
     required: [true, 'can\'t be blank'],
   },
 }, {
@@ -29,33 +29,36 @@ const ProductSchema = new mongoose.Schema({
 
 const model = mongoose.models.Products || mongoose.model('Products', ProductSchema);
 
-/*
-model.insertMany([{
-    name: '베이직',
+model.find({}).then((products) => {
+  if (products.length) {
+    return;
+  }
+  model.insertMany([{
+    platform: 'ios',
+    productId: 'pickforme_basic',
     point: 10,
-    price: 4900,
-    type: 'SUBSCRIPTION',
+    type: 1,
   }, {
-    name: '스탠다드',
+    platform: 'ios',
+    productId: 'pickforme_standard',
     point: 20,
-    price: 9500,
-    type: 'SUBSCRIPTION',
+    type: 1,
   }, {
-    name: '프리미엄',
+    platform: 'ios',
+    productId: 'pickforme_premium',
     point: 30,
-    price: 14000,
-    type: 'SUBSCRIPTION',
+    type: 1,
   }, {
-    name: '1픽 (1회 의뢰가능)',
+    platform: 'ios',
+    productId: 'pickforme_1pick',
+    type: 0,
     point: 1,
-    price: 550,
-    type: 'PURCHASE',
   }, {
-    name: '5픽 (5회 의뢰가능)',
+    platform: 'ios',
+    productId: 'pickforme_5pick',
+    type: 0,
     point: 5,
-    price: 2750,
-    type: 'PURCHASE',
   }]);
-*/
+});
 
 export default model;

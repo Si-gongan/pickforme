@@ -10,6 +10,8 @@ PODS:
     - ExpoModulesCore
   - EXFont (11.1.1):
     - ExpoModulesCore
+  - EXInAppPurchases (14.1.1):
+    - ExpoModulesCore
   - EXNotifications (0.20.1):
     - ExpoModulesCore
   - Expo (48.0.19):
@@ -424,6 +426,7 @@ DEPENDENCIES:
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
+  - EXInAppPurchases (from `../node_modules/expo-in-app-purchases/ios`)
   - EXNotifications (from `../node_modules/expo-notifications/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAppleAuthentication (from `../node_modules/expo-apple-authentication/ios`)
@@ -498,6 +501,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-file-system/ios"
   EXFont:
     :path: "../node_modules/expo-font/ios"
+  EXInAppPurchases:
+    :path: "../node_modules/expo-in-app-purchases/ios"
   EXNotifications:
     :path: "../node_modules/expo-notifications/ios"
   Expo:
@@ -605,6 +610,7 @@ SPEC CHECKSUMS:
   EXConstants: f348da07e21b23d2b085e270d7b74f282df1a7d9
   EXFileSystem: 844e86ca9b5375486ecc4ef06d3838d5597d895d
   EXFont: 6ea3800df746be7233208d80fe379b8ed74f4272
+  EXInAppPurchases: 1782de3b0a28737d713d032696486973e69f00e1
   EXNotifications: 09394cbd7165f9a4a00a53328aa09bf874bae717
   Expo: 8448e3a2aa1b295f029c81551e1ab6d986517fdb
   ExpoAppleAuthentication: 7bd5e4150d59e8df37aa80b425850ae88adf9e65
