@@ -40,6 +40,7 @@ export const handleLoginResultAtom = atom(null, async (get, set, data: LoginResp
   if (data.isRegister) {
     set(isShowGreetingModalAtom, true);
   }
+  set(isShowLoginModalAtom, false);
   set(setClientTokenAtom);
 });
 
