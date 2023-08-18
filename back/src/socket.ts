@@ -18,6 +18,7 @@ class Socket {
       socket.disconnect();
       return;
     }
+    try {
     const user = decodeJWT(token);
     await db.Session.deleteMany({
       userId: user._id,
@@ -30,6 +31,8 @@ class Socket {
         connectionId: socket.id, userId: user._id,
       });
     });
+    } catch (e) {
+    }
   });
   }
   emit(socketId: string, channel: string, data: any) {
