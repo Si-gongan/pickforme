@@ -7,7 +7,7 @@ import socket from 'socket';
 import sendPush from 'utils/push';
 
 
-import { RequestStatus } from 'models/request';
+import { RequestType, RequestStatus } from 'models/request';
 
 const router = new Router({
   prefix: '/request'
@@ -49,7 +49,7 @@ router.post("/answer", async (ctx) => {
 });
 
 router.get("/", async (ctx) => {
-  const requests = await db.Request.find({}).populate('chats');
+  const requests = await db.Request.find({ type: { $ne: RequestType.AI } }).populate('chats').sort({ createdAt: -1 });
   ctx.body = requests;
 });
 
