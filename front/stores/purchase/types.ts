@@ -1,4 +1,5 @@
-import { IAPItemType } from 'expo-in-app-purchases';
+import { IAPItemType, } from 'expo-in-app-purchases';
+import { Receipt } from 'in-app-purchase';
 import { Platform } from 'react-native';
 
 export interface Product {
@@ -9,4 +10,6 @@ export interface Product {
   type: IAPItemType,
 }
 
-export interface PurchaseProductParams extends Pick<Product, '_id'> {};
+export interface PurchaseProductParams extends Pick<Product, '_id'> {
+  receipt: Receipt,
+}

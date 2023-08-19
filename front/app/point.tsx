@@ -24,6 +24,7 @@ import {
   purchaseItemAsync,
   setPurchaseListener,
   IAPItemDetails,
+  IAPItemType,
   InAppPurchase,
 } from 'expo-in-app-purchases';
 
@@ -49,9 +50,8 @@ export default function PointScreen() {
   const subscriptionProducts = products.filter(({ type }) => type === 'SUBSCRIPTION');
   const purchaseProducts = products.filter(({ type }) => type === 'PURCHASE');
   */
-  const handleClick = (id: string) => {
+  const handleClick = async (id: string) => {
     purchaseItemAsync(id);
-    // purchaseProduct({ _id });
   };
 
   useEffect(() => {
@@ -66,24 +66,31 @@ export default function PointScreen() {
       if (responseCode === IAPResponseCode.OK && results) {
         setItems(results);
       }
-      // Set purchase listener
-      setPurchaseListener(({ responseCode, results, errorCode }) => {
+      setPurchaseListener(async ({ responseCode, results, errorCode }) => {
         if (responseCode === IAPResponseCode.OK) {
           for (const purchase of results!) {
-            console.log(`Successfully purchased ${purchase.productId}`);
+            const product = products.find(({ productId }) => productId === purchase.productId);
+            if (!product) {
+              continue;
+            }
+            const isSubscription = product.type === IAPItemType.SUBSCRIPTION;
             if (!purchase.acknowledged) {
-              // `gas` is the only consumable product, the rest are subscriptions.
-              finishTransactionAsync(purchase, purchase.productId === 'gas');
+              await finishTransactionAsync(purchase, !isSubscription);
+            }
+            if (purchase.transactionReceipt) {
+              purchaseProduct({ _id: product._id, receipt: purchase.transactionReceipt });
+            } else {
+              purchaseProduct({ _id: product._id, receipt: { subscription: isSubscription, ...purchase } });
             }
           }
         /*
         } else if (responseCode === IAPResponseCode.USER_CANCELED) {
           console.log('User canceled');
-        */
         } else {
           console.warn(
             `Something went wrong with the purchase. Received response code ${responseCode} and errorCode ${errorCode}`
           );
+        */
         }
       });
     });
@@ -93,11 +100,11 @@ export default function PointScreen() {
     }
   }, [products]);
 
-  const filteredProducts = items.reduce((obj, item) => {
-    const key = item.type === 0 ? 'purchasableProducts' : 'subscriptionProducts';
-    const serverProd = products.find(({ productId }) => item.productId === productId);
-    if (serverProd) {
-      obj[key].push({ ...item, ...serverProd });
+  const filteredProducts = products.reduce((obj, product) => {
+    const item = items.find(({ productId }) => product.productId === productId);
+    if (item) {
+      const key = item.type === IAPItemType.PURCHASE ? 'purchasableProducts' : 'subscriptionProducts';
+      obj[key].push({ ...item, ...product });
     } else {
       return obj;
     }

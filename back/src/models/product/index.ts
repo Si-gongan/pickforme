@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 export enum ProductType {
-  SUBSCRIPTION = 0,
-  PURCHASE = 1,
+  PURCHASE = 0,
+  SUBSCRIPTION = 1,
 }
 
 const ProductSchema = new mongoose.Schema({
@@ -37,26 +37,28 @@ model.find({}).then((products) => {
     platform: 'ios',
     productId: 'pickforme_basic',
     point: 10,
-    type: 1,
+    type: ProductType.SUBSCRIPTION,
   }, {
+  /*
     platform: 'ios',
     productId: 'pickforme_standard',
     point: 20,
-    type: 1,
+    type: ProductType.SUBSCRIPTION,
   }, {
     platform: 'ios',
     productId: 'pickforme_premium',
     point: 30,
-    type: 1,
+    type: ProductType.SUBSCRIPTION,
+  */
   }, {
     platform: 'ios',
     productId: 'pickforme_1pick',
-    type: 0,
+    type: ProductType.PURCHASE,
     point: 1,
   }, {
     platform: 'ios',
     productId: 'pickforme_5pick',
-    type: 0,
+    type: ProductType.PURCHASE,
     point: 5,
   }]);
 });
