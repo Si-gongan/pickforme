@@ -49,8 +49,8 @@ model.find({}).then((products) => {
     productId: 'pickforme_premium',
     point: 30,
     type: ProductType.SUBSCRIPTION,
-  */
   }, {
+  */
     platform: 'ios',
     productId: 'pickforme_1pick',
     type: ProductType.PURCHASE,
