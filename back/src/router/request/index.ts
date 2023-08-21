@@ -3,6 +3,7 @@ import db from 'models';
 import requireAuth from 'middleware/jwt';
 import ogs from 'open-graph-scraper';
 import client from 'utils/axios';
+import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
 import { RequestType } from 'models/request';
@@ -44,6 +45,20 @@ router.post("/", requireAuth, async (ctx) => {
     });
     request.chats = [chat._id];
     await request.save();
+
+    // slack
+    const slack_msg = body.type === RequestType.RECOMMEND ? 
+      `픽포미 추천 의뢰가 도착했습니다.\n
+      제목: ${name}\n
+      조건: ${body.text}\n
+      가격대: ${body.price}
+      ` : 
+      `픽포미 분석 의뢰가 도착했습니다.\n
+      제목: ${name}\n
+      링크: ${body.link}\n
+      참고사항: ${body.text}
+      `;
+    slack.post("/chat.postMessage", {text: slack_msg, channel: "C05NTFL1Q4C"});
   }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
   ctx.body = {
