@@ -49,15 +49,15 @@ router.post("/", requireAuth, async (ctx) => {
     // slack
     const slack_msg = body.type === RequestType.RECOMMEND ? 
       `픽포미 추천 의뢰가 도착했습니다.\n
-      제목: ${name}\n
-      조건: ${body.text}\n
-      가격대: ${body.price}
-      ` : 
-      `픽포미 분석 의뢰가 도착했습니다.\n
-      제목: ${name}\n
-      링크: ${body.link}\n
-      참고사항: ${body.text}
-      `;
+제목: ${name}\n
+조건: ${body.text}\n
+가격대: ${body.price}
+` : 
+`픽포미 분석 의뢰가 도착했습니다.\n
+제목: ${name}\n
+링크: ${body.link}\n
+참고사항: ${body.text}
+`;
     slack.post("/chat.postMessage", {text: slack_msg, channel: "C05NTFL1Q4C"});
   }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
