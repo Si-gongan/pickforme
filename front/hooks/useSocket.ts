@@ -1,12 +1,13 @@
 import io from 'socket.io-client';
 import React from 'react';
 import { API_HOST } from '@env';
-import { userDataAtom } from '../stores/auth/atoms';
+import { userDataAtom, setPointAtom } from '../stores/auth/atoms';
 import { receiveChatAtom } from '../stores/request/atoms';
-import { useSetAtom, useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 
 const useSocket = () => {
   const userData = useAtomValue(userDataAtom);
+  const setPoint = useSetAtom(setPointAtom);
   const receiveChat = useSetAtom(receiveChatAtom);
   const token = React.useMemo(() => userData?.token, [userData]);
 
@@ -17,11 +18,14 @@ const useSocket = () => {
       ws.on('message', e => {
         receiveChat(e);
       });
+      ws.on('point', e => {
+        setPoint(e);
+      });
       return () => {
         ws.disconnect();
       }
     }
-  }, [token, receiveChat]);
+  }, [token, receiveChat, setPoint]);
 }
 
 export default useSocket;

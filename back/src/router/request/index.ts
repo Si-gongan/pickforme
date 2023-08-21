@@ -4,7 +4,7 @@ import requireAuth from 'middleware/jwt';
 import ogs from 'open-graph-scraper';
 import client from 'utils/axios';
 import sendPush from 'utils/push';
-import socket from '../../socket';
+import socket from 'socket';
 import { RequestType } from 'models/request';
 
 const router = new Router({

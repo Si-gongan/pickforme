@@ -20,6 +20,13 @@ export const settingAtom = atomWithStorage<Setting>('setting', {
   isReady: false,
 });
 export const userDataAtom = atomWithStorage<UserData | void>('userData', undefined);
+export const setPointAtom = atom(null, async (get, set, data: number) => {
+  const userData = await get(userDataAtom);
+  if (!userData) {
+    return;
+  }
+  set(userDataAtom, { ...userData, point: data });
+});
 
 export const quitAtom = atom(null, async (get, set) => {
   await QuitAPI();

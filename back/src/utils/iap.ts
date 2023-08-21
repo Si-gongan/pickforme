@@ -1,4 +1,9 @@
 import iap, { Receipt } from 'in-app-purchase';
+import db from 'models';
+import sendPush from 'utils/push';
+import schedule from 'node-schedule'
+
+import socket from 'socket';
 
 const isProd = process.env.NODE_ENV === 'production';
 iap.config({
@@ -46,4 +51,48 @@ class IAPValidator {
 }
 
 const iapValidator = new IAPValidator();
+
+const checkSubs = async () => {
+  const purchases = await db.Purchase.find({ isExpired: false });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  purchases.forEach(async (purchase) => {
+    const purchaseData = await iapValidator.validate(purchase.receipt, purchase.product.productId);
+    if (purchaseData) {
+      if (purchaseData.transactionId !== purchase.purchase.transactionId) {
+        purchase.purchase = purchaseData;
+        await purchase.save();
+        const user = await db.User.findById(purchase.userId);
+        if (user) {
+          user.point += purchase.product.point;
+          await user.save();
+          const session = await db.Session.findOne({ userId: user._id });
+          if (session) {
+            socket.emit(session.connectionId, 'point', user.point);
+          }
+          if (user.pushToken) {
+            sendPush({
+              to: user.pushToken,
+              body: '멤버십 픽이 충전되었습니다',
+            });
+          }
+        }
+      }
+    } else {
+      purchase.isExpired = true;
+      await purchase.save();
+    }
+  });
+}
+
+if (isProd) {
+  schedule.scheduleJob('0 0 0 * * *', function () {
+    checkSubs();
+  });
+} else {
+  schedule.scheduleJob('0 * * * * *', function () {
+    checkSubs();
+  });
+}
+
 export default iapValidator;
