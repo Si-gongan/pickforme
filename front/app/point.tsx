@@ -8,6 +8,7 @@ import { getProductsAtom, purchaseProductAtom, productsAtom } from '../stores/pu
 import { Product } from '../stores/purchase/types';
 import Colors from '../constants/Colors';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
+import * as WebBrowser from 'expo-web-browser';
 
 
 import { numComma} from '../utils/common';
@@ -29,13 +30,10 @@ import {
 } from 'expo-in-app-purchases';
 
 const TERM = `
-유의사항
-
-픽은 결제일로부터 30일 동안 이용하실 수 있습니다.
-
-결제금액에는 부가세가 포함되어 있습니다.
-
-멤버십은 매달 만료일에 다음달 이용료가 자동 결제됩니다.
+- 이용방법: 픽은 ‘픽포미 추천’과 ‘픽포미 분석’에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
+- 이용기간: 픽은 결제일로부터 30일 동안 이용할 수 있습니다.
+- 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 구글 플레이 또는 앱스토어에 등록된 계정으로 요금이 부과됩니다.
+- 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 사용 중인 픽은 만료 시까지 이용 가능하며, 다음 달 구독부터 결제 및 사용이 자동 해지됩니다.
 `;
 export default function PointScreen() {
   const router = useRouter();
@@ -189,6 +187,13 @@ export default function PointScreen() {
               </Button>
             );
           })}
+          <Button
+            title='픽 이용약관'
+            variant='text'
+            onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈')}
+            color='tertiary'
+            size='small'
+          />
           <Text style={styles.terms}>
             {TERM}
           </Text>

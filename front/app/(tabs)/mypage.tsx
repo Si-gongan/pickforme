@@ -71,11 +71,13 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 픽 {userData.point}픽
         </Text>
-        <Link href='/point' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            픽 충전
-          </Text>
-        </Link>
+        {
+          <Link href='/point' accessibilityRole='button'>
+            <Text style={styles.menu}>
+              픽 충전
+            </Text>
+          </Link>
+        }
       </View>
       )}
       <View style={styles.card}>
@@ -128,7 +130,7 @@ export default function MyPageScreen() {
         <Button
           title='개인정보처리방침'
           variant='text'
-          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan/홈')}
+          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/개인정보처리방침?authuser=0')}
           style={[styles.menu, styles.solo]}
           textStyle={styles.buttonText}
           color='tertiary'
@@ -137,7 +139,7 @@ export default function MyPageScreen() {
         <Button
           title='서비스 이용약관'
           variant='text'
-          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈')}
+          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈?authuser=0')}
           style={[styles.menu, styles.solo]}
           textStyle={styles.buttonText}
           color='tertiary'
