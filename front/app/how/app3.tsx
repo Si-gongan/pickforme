@@ -21,17 +21,17 @@ export default function HowScreen() {
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          마이페이지 탭에는 내 정보 수정, 포인트 충전, 앱 설정 변경, 고객 지원 기능이 있습니다. ‘내 정보 수정’에서는 닉네임과 로그인 정보를 수정할 수 있고, ‘포인트 충전’에서는 유료 서비스 이용을 위한 포인트를 구매할 수 있습니다. ‘앱 설정’에서는 화면 모드, 알림 기능을 설정할 수 있습니다.
+          마이페이지 탭에는 내 정보 수정, 픽 충전, 앱 설정 변경, 고객 지원 기능이 있습니다. ‘내 정보 수정’에서는 닉네임과 시각장애 정도를 수정할 수 있고, ‘픽 충전’에서는 유료 서비스 이용권인 픽을 구매할 수 있습니다. ‘앱 설정’에서는 화면 모드와 알림 수신 여부를 변경할 수 있습니다.
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-‘고객 지원’에서는 픽포미를 만든 ‘팀 시공간’에게 카카오톡 채널을 통해 1:1 문의가 가능합니다. 또한 앱 사용 설명서, 자주 묻는 질문을 확인할 수 있습니다.
+          ‘고객 지원’에서는 픽포미를 만든 ‘팀 시공간’에게 카카오톡 채널을 통해 1:1 문의가 가능합니다. 또한 앱 사용 설명서, 자주 묻는 질문을 확인할 수 있습니다.
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-지금 바로 픽포미 서비스를 이용해보세요!
+          지금 바로 픽포미 서비스를 이용해보세요!
           </Text>
         </View>
         <View style={[styles.buttonWrap, styles.buttonLeft]}>
