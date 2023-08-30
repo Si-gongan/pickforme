@@ -32,12 +32,10 @@ const LoginScreen: React.FC<Props> = (props) => {
     webClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
     androidClientId: '618404683764-vc6iaucqdo8me4am0t9062d01800q0cr.apps.googleusercontent.com',
     iosClientId: '618404683764-e4rl4qllc10k93lgs2bv7vbv9j1lruu7.apps.googleusercontent.com',
-    // ...{ useProxy: true, projectNameForProxy: '@jinsangee/pickforme' },
-    // responseType: 'id_token',
+    redirectUri: 'com.sigonggan.pickforme:/(auths)/login',
   });
   const userData = useAtomValue(userDataAtom);
   const router = useRouter();
-
   React.useEffect(() => {
     if (userData) {
       router.replace('/(tabs)');
@@ -55,8 +53,13 @@ const LoginScreen: React.FC<Props> = (props) => {
     return null;
   }
   const loginWithKakao = async () => {
+    try {
     const token = await KakaoLogins.login();  
+    console.log(token);
     loginKakao({ accessToken: token.accessToken });
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   const loginWithGoogle = () => {
