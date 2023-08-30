@@ -20,61 +20,47 @@ const tabName = {
 }
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
-  const [isOpen, setIsOpen] = useState(true);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const handleOpenUrl = async (url: string) => {
     await WebBrowser.openBrowserAsync(url);
   }
   return (
-    <Pressable
-      onPress={() => setIsOpen(true)}
-      accessible={!isOpen}
-      accessibilityLabel={`${product.title} 상품정보를 상세히 보려면 터치하세요.`}
+    <View
+      style={styles.product} key={`answer-product-${product.url}}`}
     >
-      <View style={styles.product} key={`answer-product-${product.url}}`}>
-        <Text style={styles.productTitle} accessibilityLabel={product.title}>
-          {product.title}
-        </Text>
-        <Text style={styles.productPrice}>
-          {numComma(product.price)}
-        </Text>
-        {!!product.tags.length && (
-        <View style={styles.productTagWrap}>
-          {product.tags.map((tag) => (
-            <Button
-              color='secondary'
-              size='small'
-              style={styles.productTag}
-              key={`answer-product-${product.url}-${tag}}`}
-              textStyle={styles.productTagText}
-              title={tag}
-            />
-          ))}
-        </View>
-        )}
-        <Collapsible collapsed={!isOpen}>
-          <Text style={styles.productDesc}>
-            {product.desc}
-          </Text>
-          <View style={styles.buttonWrap}>
-            <Button
-              size='small'
-              title='접기'
-              color='secondary'
-              onPress={()=> setIsOpen(false)}
-              style={styles.button}
-            />
-            <Button
-              size='small'
-              title='구매링크 이동'
-              onPress={()=> handleOpenUrl(product.url)}
-              style={styles.button}
-            />
-          </View>
-        </Collapsible>
+      <Text style={styles.productTitle}>
+        {product.title}
+      </Text>
+      <Text style={styles.productPrice} accessible>
+        {numComma(product.price)}
+      </Text>
+      {!!product.tags.length && (
+      <View style={styles.productTagWrap}>
+        {product.tags.map((tag) => (
+          <Button
+            color='secondary'
+            size='small'
+            style={styles.productTag}
+            key={`answer-product-${product.url}-${tag}}`}
+            textStyle={styles.productTagText}
+            title={tag}
+          />
+        ))}
       </View>
-    </Pressable>
+      )}
+      <Text style={styles.productDesc}>
+        {product.desc}
+      </Text>
+      <View style={styles.buttonWrap}>
+        <Button
+          size='small'
+          title='구매링크 이동'
+          onPress={()=> handleOpenUrl(product.url)}
+          style={styles.button}
+        />
+      </View>
+    </View>
   );
 }
 
