@@ -14,8 +14,8 @@ const PORT = process.env.PORT || 3000;
 const app = new Koa();
 
 const corsOptions = {
-    origin: 'https://pickforme-admin-sigongan.vercel.app',
-    credentials: true,
+  origin: process.env.CLIENT_ORIGIN,
+  credentials: true,
 }
 
 app
