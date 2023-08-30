@@ -44,6 +44,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             style={styles.productTag}
             key={`answer-product-${product.url}-${tag}}`}
             textStyle={styles.productTagText}
+            readOnly
             title={tag}
           />
         ))}

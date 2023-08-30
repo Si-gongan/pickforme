@@ -12,6 +12,7 @@ interface ButtonProps extends  Omit<PressableProps, 'children'>, ButtonTextProps
   color?: 'primary' | 'secondary' | 'tertiary';
   size?: 'large' | 'medium' | 'small',
   renderChildrenPosition?: 'front' | 'back';
+  readOnly?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -75,6 +76,7 @@ const Button = ({
   lightColor,
   darkColor,
   color = 'primary',
+  readOnly,
   textStyle,
   renderChildrenPosition = 'front',
   ...props
@@ -90,25 +92,30 @@ const Button = ({
       onPress(e);
     }
   }
+  const Content = ({ pressed }: { pressed: boolean }) => (
+    <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
+      {renderChildrenPosition === 'front' && children}
+      {props.title && (
+        <ButtonText
+          numberOfLines={numberOfLines}
+          textStyle={[textStyles.base, textStyles[size], textStyle]}
+          lightColor={lightColor}
+          darkColor={darkColor}
+          color={color}
+        >
+          {props.title}
+        </ButtonText>
+      )}
+      {renderChildrenPosition === 'back' && children}
+    </View>
+  );
+
+  if (readOnly) {
+    return <Content pressed={false} />;
+  }
   return (
     <Pressable onPress={handlePress} {...props}>
-      {({ pressed }) => (
-        <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
-          {renderChildrenPosition === 'front' && children}
-          {props.title && (
-            <ButtonText
-              numberOfLines={numberOfLines}
-              textStyle={[textStyles.base, textStyles[size], textStyle]}
-              lightColor={lightColor}
-              darkColor={darkColor}
-              color={color}
-            >
-              {props.title}
-            </ButtonText>
-          )}
-          {renderChildrenPosition === 'back' && children}
-        </View>
-      )}
+      {(pressableProps) => <Content {...pressableProps} />}
     </Pressable>
   );
 }
