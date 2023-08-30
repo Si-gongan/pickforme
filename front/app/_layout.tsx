@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Redirect, SplashScreen, Stack } from 'expo-router';
+import { Redirect, SplashScreen, Stack, ErrorBoundary } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Suspense, useEffect } from 'react';
 import { StyleSheet, Text } from 'react-native';
@@ -19,11 +19,6 @@ import HeaderLeft from '../components/HeaderLeft';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import LackBottomSheet from '../components/BottomSheet/Lack';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
 
 
 export default function RootLayout() {
@@ -52,6 +47,7 @@ export default function RootLayout() {
 const hideHeaderOption = {
   headerShadowVisible: false, // applied here
   headerTitle: () => <Text accessible={false} />,
+  headerBackVisible: false,
   headerLeft: HeaderLeft,
 }
 function RootLayoutNav() {
