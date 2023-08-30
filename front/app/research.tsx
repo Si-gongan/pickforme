@@ -93,7 +93,8 @@ export default function ResearchScreen() {
               style={[styles.textArea, styles.textAreaBig]}
               underlineColorAndroid="transparent"
               numberOfLines={4}
-              multiline={true}
+              textAlignVertical='top'
+              multiline
               onChangeText={(text) => setData({ ...data, text })}
             />
           </View>

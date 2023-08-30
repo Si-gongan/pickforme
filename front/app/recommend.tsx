@@ -44,6 +44,7 @@ export default function RecommendScreen() {
             style={[styles.textArea, styles.textAreaBig]}
             underlineColorAndroid="transparent"
             numberOfLines={6}
+            textAlignVertical='top'
             multiline={true}
             onChangeText={(text) => setData({ ...data, text })}
           />

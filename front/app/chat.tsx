@@ -75,6 +75,7 @@ export default function ChatScreen() {
             style={[styles.textArea]}
             underlineColorAndroid="transparent"
             multiline
+            textAlignVertical='top'
             value={data.text}
             accessible
             accessibilityLabel="메세지 입력창"
