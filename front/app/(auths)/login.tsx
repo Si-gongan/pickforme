@@ -54,9 +54,8 @@ const LoginScreen: React.FC<Props> = (props) => {
   }
   const loginWithKakao = async () => {
     try {
-    const token = await KakaoLogins.login();  
-    console.log(token);
-    loginKakao({ accessToken: token.accessToken });
+      const token = await KakaoLogins.login();  
+      loginKakao({ accessToken: token.accessToken });
     } catch (e) {
       console.log(e);
     }
