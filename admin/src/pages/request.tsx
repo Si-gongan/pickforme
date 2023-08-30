@@ -18,15 +18,17 @@ const tabName = {
   'BUY': '',
 }
 
-const ProductNew: React.FC<{ product: Product, setProduct: (product: Product) => void  }> = ({ product, setProduct }) => {
+const ProductNew: React.FC<{ product: Product, removeProduct: () => void, setProduct: (product: Product) => void  }> = ({ product, setProduct, removeProduct }) => {
   const handleChangeInput: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
-    let value: string | string[] | undefined = e.target.value.trim();
+    let value: string | string[] | undefined = e.target.value;
     if (e.target.name === 'tags') {
       if (value.length) {
-        value = value.split('\n');
+        value = value.split('\n').map(v => v.trim());
       } else {
         value = undefined;
       }
+    } else {
+      value = value.trim();
     }
     setProduct({
       ...product,
@@ -35,6 +37,7 @@ const ProductNew: React.FC<{ product: Product, setProduct: (product: Product) =>
   }
   return (
       <ProductCard>
+        <RemoveButton type='button' onClick={removeProduct}>삭제</RemoveButton>
         <Row>
         제목: <input name='title' type='text' value={product.title} onChange={handleChangeInput} />
         </Row>
@@ -42,7 +45,7 @@ const ProductNew: React.FC<{ product: Product, setProduct: (product: Product) =>
         가격: <input name='price' type='number' value={product.price} onChange={handleChangeInput}/>
         </Row>
         <Row>
-        태그: <textarea name='tags' value={product.tags.join('\n')} placeholder='줄바꿈으로 구분' onChange={handleChangeInput}/>
+        태그: <textarea name='tags' value={product.tags?.join('\r\n')} placeholder='줄바꿈으로 구분' onChange={handleChangeInput}/>
         </Row>
         <Row>
         설명: <textarea name='desc' value={product.desc} onChange={handleChangeInput}/>
@@ -141,6 +144,13 @@ export default function RequestScreen() {
     setAnswer((prev) => ({ ...prev, products: [...prev.products, { ...initialProduct }] }));
   }
 
+  const handleClickRemoveProduct = (i: number) => {
+    setAnswer((prev) => ({
+      ...prev,
+      products: prev.products.filter((_, idx) => i !== idx),
+    }));
+  }
+
   const handleChangeProduct = (i: number) => (product: Product) => {
     setAnswer((prev) => ({
       ...prev,
@@ -205,9 +215,9 @@ export default function RequestScreen() {
           <Desc>
             답변을 작성해주세요
           </Desc>
-          <textarea onChange={handleChangeAnswerText} value={answer.text} />
+          <AnswerTextarea onChange={handleChangeAnswerText} value={answer.text} />
           {answer.products.map((product, i) => (
-            <ProductNew key={`answer-product-edit-${i}}`} product={product} setProduct={handleChangeProduct(i)} />
+            <ProductNew key={`answer-product-edit-${i}}`} product={product} setProduct={handleChangeProduct(i)} removeProduct={() => handleClickRemoveProduct(i)} />
           ))}
           <br />
           <button onClick={() => handleClickAddProduct()}>상품 추가</button>
@@ -269,15 +279,23 @@ const ProductPrice = styled.div`
   line-height: 15px;
   margin-bottom: 8px;
 `;
+const AnswerTextarea = styled.textarea`
+  min-height: 150px;
+`;
 const Row = styled.div`
   display: flex;
   flex-direction: row;
+`;
+const RemoveButton = styled.button`
+  display: block;
+  margin-left: auto;
 `;
 const ProductTagWrap = styled.div`
   display: flex;
   flex-direction: row;
   gap: 9px;
 `;
+
 const ProductTag = styled.div`
   padding: 0 12px;
 `;
