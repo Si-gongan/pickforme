@@ -3,6 +3,8 @@ export const hexToRgb = (hex: string) =>
 
 export const numComma = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-export const formatDate = (date: string | Date) => new Date(date).toLocaleDateString();
+export const formatDate = (date: string | Date) => {
+  return new Date(date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
+}
 
 export const formatTime = (date: string | Date) => new Date(date).toLocaleTimeString().replace(/...$/,'');

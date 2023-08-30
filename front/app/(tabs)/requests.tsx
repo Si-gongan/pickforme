@@ -68,8 +68,7 @@ export default function RequestsScreen() {
               asChild
             >
               <Pressable
-                accessible
-                accessibilityLabel={`${request.name} 채팅방에 입장하려면 이중탭하세요`}
+                accessible={false}
               >
                 {({ pressed }) => (
                   <View style={styles.card}>
@@ -78,7 +77,8 @@ export default function RequestsScreen() {
                         <Text
                           style={styles.name}
                           numberOfLines={1}
-                          accessible={false}
+                          accessible
+                          accessibilityLabel={`${request.name} 채팅방에 입장하려면 이중탭하세요`}
                         >
                           {request.name}
                         </Text>
@@ -94,9 +94,10 @@ export default function RequestsScreen() {
                         color={request.status !== 'CLOSED' ? 'secondary' : 'primary'}
                         title={statusName[request.status]}
                         accessibilityHint={'의뢰 상태 텍스트'}
+                        readOnly
                       />
                     </View>
-                    <Text style={styles.preview} numberOfLines={1} accessible={false}>
+                    <Text style={styles.preview} numberOfLines={1} accessible={false} accessibilityLabel={''} importantForAccessibility={'no'}>
                       {request.chats.slice(-1)?.[0]?.text || ''}
                     </Text>
                     {!!(request.unreadCount >= 1) && (
