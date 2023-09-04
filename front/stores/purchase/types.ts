@@ -13,3 +13,5 @@ export interface Product {
 export interface PurchaseProductParams extends Pick<Product, '_id'> {
   receipt: Receipt,
 }
+
+export interface GetProductsParams extends Pick<Product, 'platform'> {};

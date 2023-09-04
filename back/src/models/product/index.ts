@@ -5,10 +5,14 @@ export enum ProductType {
   SUBSCRIPTION = 1,
 }
 
+export enum Platform {
+  IOS = 'ios',
+  ANDROID = 'android',
+}
+
 const ProductSchema = new mongoose.Schema({
   type: {
-    type: String,
-    enum: Object.values(ProductType),
+    type: Number,
     required: [true, 'can\'t be blank'],
   },
   productId: {
@@ -17,7 +21,7 @@ const ProductSchema = new mongoose.Schema({
   },
   platform: {
     type: String,
-    enum: ['ios', 'android'],
+    enum: Object.values(Platform),
   },
   point: {
     type: Number,
@@ -34,7 +38,7 @@ model.find({}).then((products) => {
     return;
   }
   model.insertMany([{
-    platform: 'ios',
+    platform: Platform.IOS,
     productId: 'pickforme_basic',
     point: 10,
     type: ProductType.SUBSCRIPTION,
@@ -51,12 +55,27 @@ model.find({}).then((products) => {
     type: ProductType.SUBSCRIPTION,
   }, {
   */
-    platform: 'ios',
+    platform: Platform.IOS,
     productId: 'pickforme_1pick',
     type: ProductType.PURCHASE,
     point: 1,
   }, {
-    platform: 'ios',
+    platform: Platform.IOS,
+    productId: 'pickforme_5pick',
+    type: ProductType.PURCHASE,
+    point: 5,
+  }, {
+    platform: Platform.ANDROID,
+    productId: 'pickforme_basic',
+    point: 10,
+    type: ProductType.SUBSCRIPTION,
+  }, {
+    platform: Platform.ANDROID,
+    productId: 'pickforme_1pick',
+    type: ProductType.PURCHASE,
+    point: 1,
+  }, {
+    platform: Platform.ANDROID,
     productId: 'pickforme_5pick',
     type: ProductType.PURCHASE,
     point: 5,

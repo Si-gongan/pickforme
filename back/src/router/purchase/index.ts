@@ -46,8 +46,9 @@ router.post("/", requireAuth, async (ctx) => {
 });
 
 // 상품목록
-router.get("/products",async (ctx) => {
-  const products = await db.Product.find({});
+router.get("/products/:platform",async (ctx) => {
+  const { platform } = ctx.params;
+  const products = await db.Product.find({ platform });
   ctx.body = products;
   ctx.status = 200;
 });

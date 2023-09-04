@@ -53,7 +53,7 @@ export default function PointScreen() {
   };
 
   useEffect(() => {
-    getProducts();
+    getProducts({ platform: Platform.OS });
   }, [getProducts]);
 
   useEffect(() => {
