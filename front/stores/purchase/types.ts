@@ -6,7 +6,8 @@ export interface Product {
   _id: string,
   productId: string,
   point: number,
-  platform: typeof Platform.OS
+  platform: typeof Platform.OS,
+  displayName: string,
   type: IAPItemType,
 }
 

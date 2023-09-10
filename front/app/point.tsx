@@ -73,12 +73,12 @@ export default function PointScreen() {
             }
             const isSubscription = product.type === IAPItemType.SUBSCRIPTION;
             if (!purchase.acknowledged) {
+              if (purchase.transactionReceipt) {
+                purchaseProduct({ _id: product._id, receipt: purchase.transactionReceipt });
+              } else {
+                purchaseProduct({ _id: product._id, receipt: { subscription: isSubscription, ...purchase } });
+              }
               await finishTransactionAsync(purchase, !isSubscription);
-            }
-            if (purchase.transactionReceipt) {
-              purchaseProduct({ _id: product._id, receipt: purchase.transactionReceipt });
-            } else {
-              purchaseProduct({ _id: product._id, receipt: { subscription: isSubscription, ...purchase } });
             }
           }
         /*
@@ -114,7 +114,6 @@ export default function PointScreen() {
     subscriptionProducts: (IAPItemDetails & Product)[],
     purchasableProducts: (IAPItemDetails & Product)[],
   });
-
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -146,7 +145,7 @@ export default function PointScreen() {
                 onPress={() => handleClick(product.productId)}
               > 
                 <ButtonText {...buttonTextProps} textStyle={[styles.productName, styles.productNameMargin]}>
-                  {product.title}
+                  {product.displayName}
                 </ButtonText>
                 <View style={styles.row}>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPoint}>
@@ -178,7 +177,7 @@ export default function PointScreen() {
               > 
                 <View style={styles.row}>
                   <ButtonText {...buttonTextProps} textStyle={styles.productName}>
-                    {product.title}
+                    {product.displayName}
                   </ButtonText>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPrice}>
                     {product.price}
