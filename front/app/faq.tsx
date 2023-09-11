@@ -57,7 +57,6 @@ const FAQS: {
 export default function HowScreen() {
   const router = useRouter();
   const [tab,setTab] = React.useState<keyof typeof FAQS>('AI')
-  const [selectedQuestion, setSelectedQuestion] = React.useState<void | number>(undefined);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   return (
@@ -77,7 +76,6 @@ export default function HowScreen() {
             style={styles.button}
             textStyle={styles.buttonText}
             onPress={() => {
-              setSelectedQuestion(undefined);
               setTab(TAB);
             }}
             color={tab === TAB ? 'secondary' : 'tertiary'}
@@ -85,35 +83,23 @@ export default function HowScreen() {
         ))}
       </View>
       <View style={styles.rows}>
-        {FAQS[tab].questions.map(({ question, answer }, i) => {
-          const isSelected = selectedQuestion === i;
-          return (
-            <Pressable onPress={() => setSelectedQuestion(isSelected ? undefined : i)}>
-              <View style={[styles.row, isSelected && styles.selectedRow]} key={`FAQ-ROW-${tab}-${i}`}>
-                <View style={styles.rowHeader}>
-                  <View style={styles.questionWrap}>
-                    <Text style={styles.question}>
-                      {question}
-                    </Text>
-                    <View style={styles.questionGap} />
-                  </View>
-                  <View style={styles.moreButton}>
-                    <Text style={styles.moreText}>
-                      {isSelected ? '-' : '+'}
-                    </Text>
-                  </View>
-                </View>
-                {isSelected && (
-                  <View style={styles.answerWrap}>
-                    <Text style={styles.answer}>
-                      {answer}
-                    </Text>
-                  </View>
-                )}
+        {FAQS[tab].questions.map(({ question, answer }, i) => (
+          <View style={styles.row} key={`FAQ-ROW-${tab}-${i}`}>
+            <View style={styles.rowHeader}>
+              <View style={styles.questionWrap}>
+                <Text style={styles.question}>
+                  {question}
+                </Text>
+                <View style={styles.questionGap} />
               </View>
-            </Pressable>
-          );
-        })}
+            </View>
+            <View style={styles.answerWrap}>
+              <Text style={styles.answer}>
+                {answer}
+              </Text>
+            </View>
+          </View>
+        ))}
       </View>
       </ScrollView>
     </View>
@@ -156,9 +142,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     paddingHorizontal: 33,
     flex: 1,
   },
-  selectedRow: {
-    backgroundColor: Colors[colorScheme].card.primary,
-  },
   button: {
     width: 70,
     height: 52,
@@ -189,24 +172,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   question: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  moreButton: {
-    flexShirnk: 0,
-    width: 20,
-    height: 20,
-    marginLeft: 50,
-    marginRight: 20,
-    borderRadius: 20,
-    backgroundColor: Colors[colorScheme].buttonBackground.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-  },
-  moreText: {
-    textAlign: 'center',
-    fontSize: 14,
-    color: Colors[colorScheme].buttonText.primary,
-    fontWeight: '700',
   },
   answer: {
     fontSize: 14,
