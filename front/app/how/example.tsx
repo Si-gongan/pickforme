@@ -36,7 +36,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           {product.title}
         </Text>
         <Text style={styles.productPrice}>
-          {numComma(product.price)}
+          {numComma(product.price)}원
         </Text>
         {!!product.tags.length && (
         <View style={styles.productTagWrap}>
