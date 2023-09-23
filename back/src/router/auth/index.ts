@@ -14,7 +14,8 @@ const handleLogin = async (email: string) => {
   let user = await db.User.findOne({ email });
   let isRegister = false;
   if (!user) {
-    user = await db.User.create({ email, point: 3 });
+    const usedEmail = await db.User.findOne({ originEmail: email })
+    user = await db.User.create({ email, point: usedEmail ? 0 : 3 });
     isRegister = true;
   }
   const token = await user.generateToken();

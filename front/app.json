@@ -14,7 +14,7 @@
     ],
     "name": "픽포미",
     "slug": "pickforme",
-    "version": "1.0.0",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
     "scheme": "myapp",
@@ -62,7 +62,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sigonggan.pickforme"
+      "package": "com.sigonggan.pickforme",
+      "runtimeVersion": "1.0.0",
+      "versionCode" : 16
     },
     "web": {
       "bundler": "metro",

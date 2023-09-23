@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/app.ts",
   "scripts": {
-    "start": "NODE_PATH=./src ts-node src/app.ts",
+    "start": "NODE_ENV=production NODE_PATH=./src ts-node src/app.ts",
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "pm2": "pm2 kill && pm2 start ./pm2.json"
