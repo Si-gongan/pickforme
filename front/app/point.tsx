@@ -113,6 +113,7 @@ export default function PointScreen() {
     subscriptionProducts: (IAPItemDetails & Product)[],
     purchasableProducts: (IAPItemDetails & Product)[],
   });
+  console.log(currentSubscription);
   return (
     <View style={styles.container}>
       <ScrollView>
