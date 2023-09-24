@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userDataAtom } from '../stores/auth/atoms';
-import { getProductsAtom, purchaseProductAtom, productsAtom } from '../stores/purchase/atoms';
+import { subscriptionAtom, getProductsAtom, purchaseProductAtom, productsAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 import { Product } from '../stores/purchase/types';
 import Colors from '../constants/Colors';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
@@ -39,6 +39,8 @@ export default function PointScreen() {
   const router = useRouter();
   const getProducts = useSetAtom(getProductsAtom);
   const products = useAtomValue(productsAtom);
+  const currentSubscription = useAtomValue(subscriptionAtom);
+  const getSubscription = useSetAtom(getSubscriptionAtom);
   const purchaseProduct = useSetAtom(purchaseProductAtom);
   const userData = useAtomValue(userDataAtom);
   const colorScheme = useColorScheme();
@@ -57,46 +59,43 @@ export default function PointScreen() {
   }, [getProducts]);
 
   useEffect(() => {
+    getSubscription();
+  }, [getSubscription]);
+
+  useEffect(() => {
     if (products.length) {
-    connectAsync().then(async () => {
-      const items = products.map(({ productId }) => productId);
-      const { responseCode, results } = await getProductsAsync(items);
-      if (responseCode === IAPResponseCode.OK && results) {
-        setItems(results);
-      }
-      setPurchaseListener(async ({ responseCode, results, errorCode }) => {
-        if (responseCode === IAPResponseCode.OK) {
-          for (const purchase of results!) {
-            const product = products.find(({ productId }) => productId === purchase.productId);
-            if (!product) {
-              continue;
-            }
-            const isSubscription = product.type === IAPItemType.SUBSCRIPTION;
-            if (!purchase.acknowledged) {
-              if (purchase.transactionReceipt) {
-                purchaseProduct({ _id: product._id, receipt: purchase.transactionReceipt });
-              } else {
-                purchaseProduct({ _id: product._id, receipt: { subscription: isSubscription, ...purchase } });
-              }
-              await finishTransactionAsync(purchase, !isSubscription);
-            }
-          }
-        /*
-        } else if (responseCode === IAPResponseCode.USER_CANCELED) {
-          console.log('User canceled');
-        } else {
-          console.warn(
-            `Something went wrong with the purchase. Received response code ${responseCode} and errorCode ${errorCode}`
-          );
-        */
+      connectAsync().then(async () => {
+        const items = products.map(({ productId }) => productId);
+        const { responseCode, results } = await getProductsAsync(items);
+        if (responseCode === IAPResponseCode.OK && results) {
+          setItems(results);
         }
+        setPurchaseListener(async ({ responseCode, results, errorCode }) => {
+          if (responseCode === IAPResponseCode.OK) {
+            for (const purchase of results!) {
+              const product = products.find(({ productId }) => productId === purchase.productId);
+              if (!product) {
+                continue;
+              }
+              const isSubscription = product.type === IAPItemType.SUBSCRIPTION;
+              if (!purchase.acknowledged) {
+                if (purchase.transactionReceipt) {
+                  purchaseProduct({ _id: product._id, receipt: purchase.transactionReceipt });
+                } else {
+                  purchaseProduct({ _id: product._id, receipt: { subscription: isSubscription, ...purchase } });
+                }
+                await finishTransactionAsync(purchase, !isSubscription);
+              }
+            }
+            getSubscription();
+          }
+        });
       });
-    });
-    return () => {
-      disconnectAsync();
+      return () => {
+        disconnectAsync();
+      }
     }
-    }
-  }, [products]);
+  }, [products, getSubscription]);
 
   const filteredProducts = products.reduce((obj, product) => {
     const item = items.find(({ productId }) => product.productId === productId);
@@ -126,6 +125,16 @@ export default function PointScreen() {
               {userData?.point}픽
             </Text>
           </View>
+          {!!currentSubscription && (
+          <View style={[styles.myPoint, styles.titleMargin]}>
+            <Text style={styles.myPointText}>
+              내 멤버십
+            </Text>
+            <Text style={styles.myPointNumber}>
+              {currentSubscription.product.displayName}
+            </Text>
+          </View>
+          )}
           <View style={styles.seperator} />
           <Text style={[styles.myPointText, styles.titleMargin]}>
             픽포미 멤버십

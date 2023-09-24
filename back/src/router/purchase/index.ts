@@ -34,6 +34,12 @@ router.post("/", requireAuth, async (ctx) => {
       const { point } = product;
       user.point += point;
       await user.save();
+      await db.PickHistory.create({
+        usage: product.type === ProductType.SUBSCRIPTION ?  `멤버십 충전 - ${product.displayName}` : `충전 - ${product.displayName}`,
+        point: user.point,
+        diff: point,
+        userId: user._id,
+      });
       ctx.body = user.point;
       ctx.status = 200;
       return;
@@ -53,9 +59,15 @@ router.get("/products/:platform",async (ctx) => {
   ctx.status = 200;
 });
 
-router.get('/subscription', async (ctx) => {
-  const subscription = await db.Purchase.find({ userId: ctx.state.user._id, isExpired: false });
+router.get('/subscription', requireAuth, async (ctx) => { 
+  const subscription = await db.Purchase.findOne({ userId: ctx.state.user._id, isExpired: false });
   ctx.body = subscription;
+  ctx.status = 200;
+});
+
+router.get('/history', requireAuth, async (ctx) => {
+  const usages = await db.PickHistory.find({});
+  ctx.body = usages;
   ctx.status = 200;
 });
 

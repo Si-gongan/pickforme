@@ -71,13 +71,16 @@ export default function MyPageScreen() {
         <Text style={styles.title}>
           내 픽 {userData.point}픽
         </Text>
-        {
-          <Link href='/point' accessibilityRole='button'>
-            <Text style={styles.menu}>
-              픽 충전
-            </Text>
-          </Link>
-        }
+        <Link href='/point' accessibilityRole='button'>
+          <Text style={styles.menu}>
+            픽 충전
+          </Text>
+        </Link>
+        <Link href='/point-history' accessibilityRole='button'>
+          <Text style={styles.menu}>
+            픽 사용내역
+          </Text>
+        </Link>
       </View>
       )}
       <View style={styles.card}>

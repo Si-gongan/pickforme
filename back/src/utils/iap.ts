@@ -65,6 +65,13 @@ const checkSubs = async () => {
         const user = await db.User.findById(purchase.userId);
         if (user) {
           user.point += purchase.product.point;
+          await db.PickHistory.create({
+            usage: `멤버십 충전 - ${purchase.product.displayName}`,
+            point: user.point,
+            diff: purchase.product.point,
+            userId: user._id,
+          });
+
           await user.save();
           const session = await db.Session.findOne({ userId: user._id });
           if (session) {

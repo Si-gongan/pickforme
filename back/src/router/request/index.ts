@@ -19,8 +19,15 @@ router.post("/", requireAuth, async (ctx) => {
     return;
   }
   const body = (<any>ctx.request).body;
+  const requestName = `픽포미 ${body.type === RequestType.RESEARCH ? '분석' : '추천'}`;
   if (body.type !== RequestType.AI) {
     await user.usePoint(1);
+    await db.PickHistory.create({
+      usage: requestName,
+      point: user.point,
+      diff: -1,
+      userId: user._id,
+    });
   }
   const { data: { title: name } } = await client.post<{ title: string }>('/report/title', {
     url: body.link,
@@ -34,7 +41,7 @@ router.post("/", requireAuth, async (ctx) => {
   });
   if (body.type !== RequestType.AI) {
     const chat = await db.Chat.create({
-      text: `픽포미 ${body.type === RequestType.RESEARCH ? '분석' : '추천'} 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.`,
+      text: `${requestName} 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.`,
       isMine: false,
       userId: user._id,
       requestId: request._id,

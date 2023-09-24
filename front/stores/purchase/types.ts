@@ -16,3 +16,37 @@ export interface PurchaseProductParams extends Pick<Product, '_id'> {
 }
 
 export interface GetProductsParams extends Pick<Product, 'platform'> {};
+
+export interface Purchase {
+  product: Product,
+  userId: string,
+  purchase: {
+    service: string,
+    status: number,
+    packageName: string,
+    productId: string,
+    purchaseToken: string,
+    startTimeMillis: number,
+    expiryTimeMillis: number,
+    autoRenewing: boolean,
+    priceCurrencyCode: string,
+    priceAmountMicros: number,
+    countryCode: string,
+    paymentState: number,
+    orderId: string,
+    purchaseType: number,
+    acknowledgementState: number,
+    kind: string,
+    transactionId: string,
+    quantity: number,
+    expirationDate: string
+  },
+  isExpired: boolean;
+}
+
+export interface PickHistory {
+  createdAt: string,
+  usage: string;
+  point: number;
+  diff: number;
+}
