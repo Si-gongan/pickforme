@@ -53,4 +53,10 @@ router.get("/products/:platform",async (ctx) => {
   ctx.status = 200;
 });
 
+router.get('/subscription', async (ctx) => {
+  const subscription = await db.Purchase.find({ userId: ctx.state.user._id, isExpired: false });
+  ctx.body = subscription;
+  ctx.status = 200;
+});
+
 export default router;
