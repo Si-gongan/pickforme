@@ -25,6 +25,6 @@ export const getSubscriptionAtom = atom(null, async (get, set) => {
 export const pickHistoryAtom = atom<PickHistory[] | null>(null);
 export const getPickHistoryAtom = atom(null, async (get, set) => {
   const { data } = await GetPickHistoryAPI();
-  set(pickHistoryAtom, data);
+  set(pickHistoryAtom, data.reverse());
 });
 
