@@ -66,7 +66,7 @@ router.get('/subscription', requireAuth, async (ctx) => {
 });
 
 router.get('/history', requireAuth, async (ctx) => {
-  const usages = await db.PickHistory.find({});
+  const usages = await db.PickHistory.find({ userId: ctx.state.user._id });
   ctx.body = usages;
   ctx.status = 200;
 });
