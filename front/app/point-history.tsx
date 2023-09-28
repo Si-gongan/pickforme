@@ -60,7 +60,7 @@ export default function PointHistoryScreen() {
                   {history.usage}
                 </Text>
                 <Text style={styles.diff}>
-                  {history.diff}
+                  {`${history.diff > 0 ? '+' : ''}${history.diff}`}
                 </Text>
               </View>
               <Text style={styles.point}>
