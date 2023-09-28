@@ -50,10 +50,12 @@ export default function PointHistoryScreen() {
             픽 충전 및 이용 내역
           </Text>
           <View style={styles.history}>
-          {historys?.map((history) => (
-            <View style={styles.row}>
+          {historys?.map((history) => {
+            const date = `${formatDate(history.createdAt)} ${formatTime(history.createdAt)}`;
+            return (
+            <View style={styles.row} accessibilityLabel={`${date} ${history.usage} ${history.diff}픽 ${history.diff > 0 ? '충전' : '소모'} 남은 픽 ${history.point}픽`}>
               <Text style={styles.date} color='secondary'>
-                {`${formatDate(history.createdAt)} ${formatTime(history.createdAt)}`}
+                {date}
               </Text>
               <View style={styles.rowInner}>
                 <Text style={styles.usage}>
@@ -67,7 +69,8 @@ export default function PointHistoryScreen() {
                 {`남은 픽 ${history.point}`}
               </Text>
             </View>
-          ))}
+            );
+          })}
           </View>
         </View>
       </ScrollView>
