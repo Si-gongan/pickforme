@@ -60,7 +60,7 @@ router.get("/products/:platform",async (ctx) => {
 });
 
 router.get('/subscription', requireAuth, async (ctx) => { 
-  const subscription = await db.Purchase.findOne({ userId: ctx.state.user._id, isExpired: false });
+  const subscription = await db.Purchase.findOne({ userId: ctx.state.user._id, isExpired: false, 'product.type': ProductType.SUBSCRIPTION });
   ctx.body = subscription;
   ctx.status = 200;
 });
