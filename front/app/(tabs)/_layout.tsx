@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRouter, Link, Tabs, Redirect } from 'expo-router';
-import { Pressable, Text } from 'react-native';
+import { StyleSheet, Image, Pressable, Text } from 'react-native';
 
 import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
@@ -57,6 +57,14 @@ export default function TabLayout() {
         options={{
           title: '홈',
           tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
+          headerRight: () => (
+            <Pressable onPress={() => router.push('/notice')} accessibilityLabel='공지사항' accessibilityRole='button'>
+            <Image
+              style={styles.notice}
+              source={require('../../assets/images/main/notice.png')}
+            />
+            </Pressable>
+          ),
         }}
       />
       <Tabs.Screen
@@ -85,3 +93,12 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  notice: {
+    width: 25,
+    height: 25,
+    marginRight: 27,
+  },
+});
+
