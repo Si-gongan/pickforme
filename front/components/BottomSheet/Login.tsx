@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { BottomSheet } from 'react-native-btr';
+import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
 import { isShowLoginModalAtom } from '../../stores/auth/atoms';
 import { View, Text } from '../Themed';
@@ -35,7 +35,8 @@ const LoginBottomSheet: React.FC<Props> = () => {
   }
   return (
     <BottomSheet
-      visible={visible}
+      style={styles.base}
+      isVisible={visible}
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
     >

@@ -14,11 +14,13 @@ import usePushToken from '../hooks/usePushToken';
 
 import Colors from '../constants/Colors';
 
+import { bottomSheetsAtom } from '../stores/layout/atoms';
 import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../stores/auth/atoms';
 import HeaderLeft from '../components/HeaderLeft';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import LackBottomSheet from '../components/BottomSheet/Lack';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
+import CommonBottomSheet from '../components/BottomSheet/Common';
 
 
 export default function RootLayout() {
@@ -51,6 +53,7 @@ const hideHeaderOption = {
   headerLeft: HeaderLeft,
 }
 function RootLayoutNav() {
+  const bottomSheets = useAtomValue(bottomSheetsAtom);
   const setClientToken = useSetAtom(setClientTokenAtom);
   const colorScheme = useColorScheme();
   const setting = useAtomValue(settingAtom);
@@ -98,6 +101,9 @@ function RootLayoutNav() {
           <LoginBottomSheet />
           <LackBottomSheet />
           <GreetingBottomSheet />
+          {bottomSheets.map((info, i) => (
+            <CommonBottomSheet info={info} index={i} />
+          ))}
         </ThemeProvider>
       </Suspense>
   );

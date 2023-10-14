@@ -1,21 +1,21 @@
 import Router from '@koa/router';
-import axios from 'axios';
-import jwt from 'jsonwebtoken';
 import db from 'models';
-import ogs from 'open-graph-scraper';
 import socket from 'socket';
 import sendPush from 'utils/push';
 
-
-import { RequestType, RequestStatus } from 'models/request';
+import {
+  RequestType, RequestStatus,
+} from 'models/request';
 
 const router = new Router({
-  prefix: '/request'
+  prefix: '/request',
 });
 
-router.post("/answer", async (ctx) => {
-  const body = (<any>ctx.request).body;
-  const request = await db.Request.findById(body.requestId)
+router.post('/answer', async (ctx) => {
+  const {
+    body,
+  } = <any>ctx.request;
+  const request = await db.Request.findById(body.requestId);
   if (!request.answer) {
     const chat = await db.Chat.create({
       userId: request.userId,
@@ -30,9 +30,13 @@ router.post("/answer", async (ctx) => {
     });
     request.chats.push(chat._id);
     request.unreadCount += 1;
-    const session = await db.Session.findOne({ userId: request.userId });
+    const session = await db.Session.findOne({
+      userId: request.userId,
+    });
     if (session) {
-      socket.emit(session.connectionId, 'message', { chat, unreadCount: request.unreadCount });
+      socket.emit(session.connectionId, 'message', {
+        chat, unreadCount: request.unreadCount,
+      });
     }
     const user = await db.User.findById(request.userId);
     if (user && user.pushToken && (user.push.chat === 'report' || user.push.chat === 'all')) {
@@ -48,8 +52,14 @@ router.post("/answer", async (ctx) => {
   ctx.body = await request.populate('chats');
 });
 
-router.get("/", async (ctx) => {
-  const requests = await db.Request.find({ type: { $ne: RequestType.AI } }).populate('chats').sort({ createdAt: -1 });
+router.get('/', async (ctx) => {
+  const requests = await db.Request.find({
+    type: {
+      $ne: RequestType.AI,
+    },
+  }).populate('chats').sort({
+    createdAt: -1,
+  });
   ctx.body = requests;
 });
 
@@ -61,17 +71,20 @@ router.get("/preview", async (ctx) => {
 });
 */
 
-router.get("/detail/:requestId", async (ctx) => {
-  const { requestId } = ctx.params;
+router.get('/detail/:requestId', async (ctx) => {
+  const {
+    requestId,
+  } = ctx.params;
   const request = await db.Request.findById(requestId).populate('chats');
   ctx.body = request;
 });
 
-
 // 채팅 입력
-router.post("/chat", async (ctx) => {
-  const body = (<any>ctx.request).body;
-  const request = await db.Request.findById(body.requestId)
+router.post('/chat', async (ctx) => {
+  const {
+    body,
+  } = <any>ctx.request;
+  const request = await db.Request.findById(body.requestId);
   const chat = await db.Chat.create({
     ...(body as Object),
     isMine: false,
@@ -80,9 +93,13 @@ router.post("/chat", async (ctx) => {
   request.chats.push(chat._id);
   request.unreadCount += 1;
   await request.save();
-  const session = await db.Session.findOne({ userId: request.userId });
+  const session = await db.Session.findOne({
+    userId: request.userId,
+  });
   if (session) {
-    socket.emit(session.connectionId, 'message', { chat, unreadCount: request.unreadCount });
+    socket.emit(session.connectionId, 'message', {
+      chat, unreadCount: request.unreadCount,
+    });
   }
   const user = await db.User.findById(request.userId);
   if (user && user.pushToken && user.push.chat === 'all') {

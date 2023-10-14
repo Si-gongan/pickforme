@@ -8,6 +8,7 @@ import Product from './product';
 import Buy from './buy';
 import PickHistory from './pickHistory';
 import Purchase from './purchase';
+import Event from './event';
 
 const uri = process.env.MONGO_URI!;
 
@@ -22,6 +23,7 @@ const db = {
   Buy,
   Purchase,
   PickHistory,
+  Event,
 };
 
 export default db;

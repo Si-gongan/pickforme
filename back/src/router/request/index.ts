@@ -6,19 +6,23 @@ import client from 'utils/axios';
 import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
-import { RequestType } from 'models/request';
+import {
+  RequestType,
+} from 'models/request';
 
 const router = new Router({
-  prefix: '/request'
+  prefix: '/request',
 });
 
 // 의뢰생성
-router.post("/", requireAuth, async (ctx) => {
+router.post('/', requireAuth, async (ctx) => {
   const user = await db.User.findById(ctx.state.user._id);
   if (!user) {
     return;
   }
-  const body = (<any>ctx.request).body;
+  const {
+    body,
+  } = <any>ctx.request;
   const requestName = `픽포미 ${body.type === RequestType.RESEARCH ? '분석' : '추천'}`;
   if (body.type !== RequestType.AI) {
     await user.usePoint(1);
@@ -29,7 +33,11 @@ router.post("/", requireAuth, async (ctx) => {
       userId: user._id,
     });
   }
-  const { data: { title: name } } = await client.post<{ title: string }>('/report/title', {
+  const {
+    data: {
+      title: name,
+    },
+  } = await client.post<{ title: string }>('/report/title', {
     url: body.link,
 	  text: body.text,
     // "messages" : list(string)
@@ -54,18 +62,20 @@ router.post("/", requireAuth, async (ctx) => {
     await request.save();
 
     // slack
-    const slack_msg = body.type === RequestType.RECOMMEND ? 
-      `픽포미 추천 의뢰가 도착했습니다.\n
+    const slack_msg = body.type === RequestType.RECOMMEND
+      ? `픽포미 추천 의뢰가 도착했습니다.\n
 제목: ${name}\n
 조건: ${body.text}\n
 가격대: ${body.price}
-` : 
-`픽포미 분석 의뢰가 도착했습니다.\n
+`
+      : `픽포미 분석 의뢰가 도착했습니다.\n
 제목: ${name}\n
 링크: ${body.link}\n
 참고사항: ${body.text}
 `;
-    slack.post("/chat.postMessage", {text: slack_msg, channel: "C05NTFL1Q4C"});
+    slack.post('/chat.postMessage', {
+      text: slack_msg, channel: 'C05NTFL1Q4C',
+    });
   }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
   ctx.body = {
@@ -75,22 +85,30 @@ router.post("/", requireAuth, async (ctx) => {
   ctx.status = 200;
 });
 
-router.get("/", requireAuth, async (ctx) => {
-  const requests = await db.Request.find({ userId: ctx.state.user._id }).populate('chats');
+router.get('/', requireAuth, async (ctx) => {
+  const requests = await db.Request.find({
+    userId: ctx.state.user._id,
+  }).populate('chats');
   ctx.body = requests;
 });
 
-router.post("/preview", requireAuth, async (ctx) => {
-  const { link } = (<{ link: string }>ctx.request.body);
+router.post('/preview', requireAuth, async (ctx) => {
+  const {
+    link,
+  } = (<{ link: string }>ctx.request.body);
   const {
     result: {
       ogTitle: title,
       ogDescription: desc,
       ogImage: [{
         url: image,
-      }] = [{ url: '' }],
+      }] = [{
+        url: '',
+      }],
     },
-  } = await ogs({ url: link });
+  } = await ogs({
+    url: link,
+  });
 
   ctx.body = {
     image,
@@ -107,9 +125,13 @@ router.get("/preview", async (ctx) => {
 });
 */
 
-router.get("/read/:requestId", requireAuth, async (ctx) => {
-  const { requestId } = ctx.params;
-  const request = await db.Request.findOne({ _id: requestId, userId: ctx.state.user._id });
+router.get('/read/:requestId', requireAuth, async (ctx) => {
+  const {
+    requestId,
+  } = ctx.params;
+  const request = await db.Request.findOne({
+    _id: requestId, userId: ctx.state.user._id,
+  });
   request.unreadCount = 0;
   await request.save();
   ctx.body = {
@@ -118,9 +140,13 @@ router.get("/read/:requestId", requireAuth, async (ctx) => {
   };
 });
 
-router.get("/detail/:requestId", requireAuth, async (ctx) => {
-  const { requestId } = ctx.params;
-  const request = await db.Request.findOne({ _id: requestId, userId: ctx.state.user._id });
+router.get('/detail/:requestId', requireAuth, async (ctx) => {
+  const {
+    requestId,
+  } = ctx.params;
+  const request = await db.Request.findOne({
+    _id: requestId, userId: ctx.state.user._id,
+  });
   request.unreadCount = 0;
   await request.save();
   const res = await request.populate('chats');
@@ -128,12 +154,16 @@ router.get("/detail/:requestId", requireAuth, async (ctx) => {
 });
 
 router.get('/buy', requireAuth, async (ctx) => {
-  const query = { userId: ctx.state.user._id };
+  const query = {
+    userId: ctx.state.user._id,
+  };
   const buy = await db.Buy.findOne(query);
   ctx.body = !!buy;
 });
 router.post('/buy', requireAuth, async (ctx) => {
-  const query = { userId: ctx.state.user._id };
+  const query = {
+    userId: ctx.state.user._id,
+  };
   const buy = await db.Buy.findOne(query);
   ctx.body = !buy;
   if (buy) {
@@ -144,9 +174,11 @@ router.post('/buy', requireAuth, async (ctx) => {
 });
 
 // 채팅 입력
-router.post("/chat", requireAuth, async (ctx) => {
-  const body = (<any>ctx.request).body;
-  const request = await db.Request.findById(body.requestId)
+router.post('/chat', requireAuth, async (ctx) => {
+  const {
+    body,
+  } = <any>ctx.request;
+  const request = await db.Request.findById(body.requestId);
   if (!request) {
     ctx.status = 404;
     return;
@@ -160,11 +192,25 @@ router.post("/chat", requireAuth, async (ctx) => {
   request.unreadCount = 0;
   if (request.type === RequestType.AI) {
     (async () => {
-      const chats = await db.Chat.find({ userId: ctx.state.user._id, requestId: request._id }).sort({ createdAt: -1 }).limit(7).exec();
-      const messages = chats.map(({ text, isMine }) => ({ content: text, role: isMine ? 'user' : 'assistant' })).reverse();
+      const chats = await db.Chat.find({
+        userId: ctx.state.user._id, requestId: request._id,
+      }).sort({
+        createdAt: -1,
+      }).limit(7).exec();
+      const messages = chats.map(({
+        text, isMine,
+      }) => ({
+        content: text, role: isMine ? 'user' : 'assistant',
+      })).reverse();
       let text = '';
-      try  {
-        const { data: { message, data } } = await client.post<{ message: string, data: any }>('/chat', { messages, data: request.aiData || null });
+      try {
+        const {
+          data: {
+            message, data,
+          },
+        } = await client.post<{ message: string, data: any }>('/chat', {
+          messages, data: request.aiData || null,
+        });
         if (data) {
           request.aiData = data;
         }
@@ -182,9 +228,13 @@ router.post("/chat", requireAuth, async (ctx) => {
       request.unreadCount += 1;
       await request.save();
 
-      const session = await db.Session.findOne({ userId: ctx.state.user._id });
+      const session = await db.Session.findOne({
+        userId: ctx.state.user._id,
+      });
       if (session) {
-        socket.emit(session.connectionId, 'message', { chat, unreadCount: request.unreadCount });
+        socket.emit(session.connectionId, 'message', {
+          chat, unreadCount: request.unreadCount,
+        });
       }
       const user = await db.User.findById(ctx.state.user._id);
       if (user && user.pushToken && user.push.chat === 'all') {

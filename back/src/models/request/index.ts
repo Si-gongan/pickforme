@@ -38,7 +38,7 @@ const RequestSchema = new mongoose.Schema({
   },
   answer: {
     default: undefined,
-      type: {
+    type: {
       text: {
         type: String,
       },
@@ -57,9 +57,9 @@ const RequestSchema = new mongoose.Schema({
         }],
         url: {
           type: String,
-        }
+        },
       }],
-    }
+    },
   },
   unreadCount: {
     type: Number,

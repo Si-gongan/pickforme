@@ -14,6 +14,6 @@ const router = new Router();
   purchaseRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
-})
+});
 
 export default router;

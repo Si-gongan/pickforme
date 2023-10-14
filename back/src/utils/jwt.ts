@@ -36,5 +36,4 @@ export const requireAuth = (ctx: Context, next: () => void) => {
   return next();
 };
 
-
 export default generateToken;

@@ -6,11 +6,21 @@ export interface Props {
 }
 
 export const styles = StyleSheet.create({
+  base: {
+    justifyContent: "flex-end",
+    margin: 0,
+  },
   title: {
     fontSize: 20,
     lineHeight: 24,
     fontWeight: '700',
     marginBottom: 33,
+  },
+  subtitle: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: '500',
+    marginBottom: 20,
   },
   desc: {
     fontWeight: '500',

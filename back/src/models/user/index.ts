@@ -1,7 +1,6 @@
 import mongoose, {
   Schema,
 } from 'mongoose';
-import crypto from 'crypto';
 import jwt from 'utils/jwt';
 
 import {
