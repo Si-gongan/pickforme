@@ -64,7 +64,7 @@
       },
       "package": "com.sigonggan.pickforme",
       "runtimeVersion": "1.0.0",
-      "versionCode" : 16
+      "versionCode": 16
     },
     "web": {
       "bundler": "metro",
@@ -74,6 +74,10 @@
       "eas": {
         "projectId": "e1838378-658e-46ee-b890-0e439a47e799"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/e1838378-658e-46ee-b890-0e439a47e799"
     }
   }
 }
