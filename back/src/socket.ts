@@ -48,6 +48,12 @@ class Socket {
               userDocument.point += isFast ? 2 : 1;
               await userDocument.save();
               socket.emit('point', userDocument.point);
+              await db.PickHistory.create({
+                usage: `흰 지팡이의 날 픽 지급`,
+                point: userDocument.point,
+                diff: isFast ? 2 : 1,
+                userId: user._id,
+              });
               socket.emit('bottomsheet', [{
                 type: 'title',
                 text: '제 44회 흰지팡이의 날을 축하해요!',
