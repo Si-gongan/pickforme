@@ -23,6 +23,14 @@ const handleLogin = async (email: string) => {
     user = await db.User.create({
       email, point: usedEmail ? 0 : 3,
     });
+    if (!usedEmail) {
+      await db.PickHistory.create({
+        userId: user._id,
+        diff: 3,
+        point: user.point,
+        usage: '회원가입 지급'
+      })
+    }
     isRegister = true;
   }
   const token = await user.generateToken();
