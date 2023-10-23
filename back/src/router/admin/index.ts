@@ -3,6 +3,7 @@ import requireAuth from 'middleware/jwt';
 import requireAdmin from 'middleware/admin';
 
 import requestRouter from './request';
+import noticeRouter from './notice';
 
 const router = new Router({
   prefix: '/admin',
@@ -10,6 +11,7 @@ const router = new Router({
 
 [
   requestRouter,
+  noticeRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes(), requireAuth, requireAdmin);
 });

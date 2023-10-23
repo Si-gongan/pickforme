@@ -45,12 +45,15 @@ const RequestSchema = new mongoose.Schema({
       products: [{
         title: {
           type: String,
+          default: '',
         },
         desc: {
           type: String,
+          default: '',
         },
         price: {
           type: Number,
+          default: 0,
         },
         tags: [{
           type: String,
