@@ -38,20 +38,25 @@ const ProductNew: React.FC<{ product: Product, removeProduct: () => void, setPro
   return (
       <ProductCard>
         <RemoveButton type='button' onClick={removeProduct}>삭제</RemoveButton>
+        상품명
         <Row>
-        제목: <input name='title' type='text' value={product.title} onChange={handleChangeInput} />
+          <ProductInput name='title' type='text' value={product.title} onChange={handleChangeInput} />
         </Row>
+        가격
         <Row>
-        가격: <input name='price' type='number' value={product.price} onChange={handleChangeInput}/>
+          <ProductInput name='price' type='number' value={product.price} onChange={handleChangeInput}/>
         </Row>
+        태그
         <Row>
-        태그: <textarea name='tags' value={product.tags?.join('\r\n')} placeholder='줄바꿈으로 구분' onChange={handleChangeInput}/>
+          <ProductTagArea name='tags' value={product.tags?.join('\r\n')} placeholder='줄바꿈으로 구분' onChange={handleChangeInput}/>
         </Row>
+        설명
         <Row>
-        설명: <textarea name='desc' value={product.desc} onChange={handleChangeInput}/>
+          <ProductTextArea name='desc' value={product.desc} onChange={handleChangeInput}/>
         </Row>
+        구매링크
         <Row>
-        구매링크: <input name='url' type='text' value={product.url} onChange={handleChangeInput}/>
+          <ProductInput name='url' type='text' value={product.url} onChange={handleChangeInput}/>
         </Row>
       </ProductCard>
   );
@@ -237,7 +242,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px;
+  max-width : 900px;
   justify-content: flex-start;
+  margin : auto;
 `;
 const Title = styled.div`
   font-weight: 600;
@@ -285,6 +292,7 @@ const AnswerTextarea = styled.textarea`
 const Row = styled.div`
   display: flex;
   flex-direction: row;
+  margin : 10px 0; 
 `;
 const RemoveButton = styled.button`
   display: block;
@@ -313,3 +321,20 @@ const ButtonWrap = styled.div`
 const Button = styled.button`
   padding: 0 12px;
 `;
+
+const ProductInput = styled.input`
+  flex: 1;
+  padding : 5px;
+`
+
+const ProductTagArea = styled.textarea`
+  flex: 1;
+  height: 80px;
+  padding : 5px;
+`
+
+const ProductTextArea = styled.textarea`
+  flex: 1;
+  height: 120px;
+  padding : 5px;
+`
