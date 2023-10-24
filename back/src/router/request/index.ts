@@ -244,6 +244,14 @@ router.post('/chat', requireAuth, async (ctx) => {
         });
       }
     })();
+  } else {
+    const slack_msg = `
+채팅이 도착했습니다.\n
+${body.text}
+    `;
+    slack.post('/chat.postMessage', {
+      text: slack_msg, channel: 'C05NTFL1Q4C',
+    });
   }
   await request.save();
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
