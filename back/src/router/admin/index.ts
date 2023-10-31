@@ -9,11 +9,12 @@ const router = new Router({
   prefix: '/admin',
 });
 
+router.use(requireAuth, requireAdmin);
 [
   requestRouter,
   noticeRouter,
 ].forEach((subrouter) => {
-  router.use(subrouter.routes(), requireAuth, requireAdmin);
+  router.use(subrouter.routes());
 });
 
 export default router;
