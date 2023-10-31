@@ -58,7 +58,7 @@ export default function TabLayout() {
           title: '홈',
           tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
           headerRight: () => (
-            <Pressable onPress={() => router.push('/notice')} accessibilityLabel='공지사항' accessibilityRole='button'>
+            <Pressable onPress={() => router.push('/notices')} accessibilityLabel='공지사항' accessibilityRole='button'>
             <Image
               style={styles.notice}
               source={require('../../assets/images/main/notice.png')}

@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState } from 'react';

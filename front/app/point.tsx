@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Pressable, FlatList, Image, Platform } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, Image, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';

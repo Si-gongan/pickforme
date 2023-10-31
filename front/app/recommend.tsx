@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { TextInput, ScrollView, StyleSheet, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSetAtom } from 'jotai';
 import { addRequestAtom } from '../stores/request/atoms';

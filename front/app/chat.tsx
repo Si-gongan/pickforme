@@ -1,4 +1,4 @@
-import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image, Platform, KeyboardAvoidingView, } from 'react-native';
+import { TextInput, ScrollView, StyleSheet, Pressable, Image, Platform, KeyboardAvoidingView, } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom, useAtom } from 'jotai';
 import { useEffect, useState, useRef } from 'react';

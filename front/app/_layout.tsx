@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { Redirect, SplashScreen, Stack, ErrorBoundary } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Suspense, useEffect } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useInterceptor from '../hooks/useInterceptor';
@@ -12,6 +12,7 @@ import useColorScheme from '../hooks/useColorScheme';
 import useSocket from '../hooks/useSocket';
 import usePushToken from '../hooks/usePushToken';
 
+import { Text } from '../components/Themed';
 import Colors from '../constants/Colors';
 
 import { bottomSheetsAtom } from '../stores/layout/atoms';
@@ -92,9 +93,11 @@ function RootLayoutNav() {
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {["(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "how", "faq", "notice"].map((name) => (
+            {["(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "how", "faq"].map((name) => (
               <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
             ))}
+            <Stack.Screen name="notices" options={{ ...hideHeaderOption, headerTitle: undefined, title: '공지사항' }} />
+            <Stack.Screen name="notice" options={{ ...hideHeaderOption, headerTitle: undefined, title: '공지사항' }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
           </Stack>
