@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextInput, ScrollView, StyleSheet, Pressable, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { useSetAtom } from 'jotai';
 import { addRequestAtom } from '../stores/request/atoms';
 import { RecommendRequestParams } from '../stores/request/types';
@@ -36,6 +36,12 @@ export default function RecommendScreen() {
         <Text style={styles.title}>
           어떤 상품을 추천해드릴까요?
         </Text>
+        <Link
+          href={`/recommend-sample`}
+          asChild
+        >
+          <Button style={styles.button} textStyle={styles.buttonText} title='작성 예시' size='medium' />
+        </Link>
         <Text style={styles.label}>
           원하시는 상품과 가격대를 적어주세요.
         </Text>
@@ -99,6 +105,17 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   textAreaBig: {
     height: 132,
+  },
+  buttonText: {
+    color: Colors[colorScheme].text.primary,
+  },
+  button: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: Colors[colorScheme].text.primary,
+    marginBottom: 37,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 24,
   },
   buttonWrap: {
     padding: 20,
