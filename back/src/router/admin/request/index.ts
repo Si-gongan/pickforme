@@ -75,7 +75,7 @@ router.get('/detail/:requestId', async (ctx) => {
   const {
     requestId,
   } = ctx.params;
-  const request = await db.Request.findById(requestId).populate('chats');
+  const request = await db.Request.findById(requestId).populate('chats').populate('userId');
   ctx.body = request;
 });
 

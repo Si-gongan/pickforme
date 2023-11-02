@@ -173,6 +173,12 @@ export default function RequestScreen() {
         {tabName[request.type]}
       </Title>
       <Subtitle>
+        의뢰인 email
+      </Subtitle>
+      <Desc>
+        {request.userId?.email}
+      </Desc>
+      <Subtitle>
         의뢰 내용
       </Subtitle>
       <Desc>
@@ -181,7 +187,7 @@ export default function RequestScreen() {
       {request.type === 'RECOMMEND' && (
       <>
         <Subtitle>
-          가격대
+          상품 및 가격대
         </Subtitle>
         <Desc>
           {request.price}

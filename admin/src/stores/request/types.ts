@@ -1,3 +1,4 @@
+import { UserData } from '../auth/types';
 export enum RequestStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
@@ -42,6 +43,7 @@ interface RequestBase {
   status: RequestStatus,
   createdAt: string,
   chats: Chat[],
+  userId?: UserData,
   text: string,                              
   answer: {
     text: string,
