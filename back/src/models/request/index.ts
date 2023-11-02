@@ -28,10 +28,11 @@ const RequestSchema = new mongoose.Schema({
   },
   text: {
     type: String,
-    required: [true, 'can\'t be blank'],
+    default: '',
   },
   price: {
     type: String,
+    required: [true, 'can\'t be blank'],
   },
   link: {
     type: String,

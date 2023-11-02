@@ -22,7 +22,7 @@ export default function RecommendScreen() {
     price: '',
     text: '',
   });
-  const disabled = !data.price || !data.text;
+  const disabled = !data.price;
   const handleSubmit = useCheckPoint(1, () => {
     addRequest(data);
     router.push('(tabs)/requests')
@@ -37,7 +37,17 @@ export default function RecommendScreen() {
           어떤 상품을 추천해드릴까요?
         </Text>
         <Text style={styles.label}>
-          원하시는 상품에 대해 알려주세요.
+          원하시는 상품과 가격대를 적어주세요.
+        </Text>
+        <View style={styles.textAreaContainer} >
+          <TextInput
+            style={styles.textArea}
+            underlineColorAndroid="transparent"
+            onChangeText={(price) => setData({ ...data, price })}
+          />
+        </View>
+        <Text style={styles.label}>
+          (선택) 상품 선택 시 고려하는 조건과, 상품과 연관된 고객님의 특징(성별, 사이즈, 색상, 스타일 등)을 작성해 주세요.
         </Text>
         <View style={styles.textAreaContainer} >
           <TextInput
@@ -47,16 +57,6 @@ export default function RecommendScreen() {
             textAlignVertical='top'
             multiline={true}
             onChangeText={(text) => setData({ ...data, text })}
-          />
-        </View>
-        <Text style={styles.label}>
-          원하시는 가격대를 적어주세요.
-        </Text>
-        <View style={styles.textAreaContainer} >
-          <TextInput
-            style={styles.textArea}
-            underlineColorAndroid="transparent"
-            onChangeText={(price) => setData({ ...data, price })}
           />
         </View>
         </View>
