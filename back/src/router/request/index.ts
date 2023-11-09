@@ -39,7 +39,7 @@ router.post('/', requireAuth, async (ctx) => {
     },
   } = await client.post<{ title: string }>('/report/title', {
     url: body.link,
-	  text: body.text,
+	  text: `${body.price}\n${body.text}`,
     // "messages" : list(string)
   });
   const request = await db.Request.create({
