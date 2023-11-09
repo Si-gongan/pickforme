@@ -65,8 +65,9 @@ router.post('/', requireAuth, async (ctx) => {
     const slack_msg = body.type === RequestType.RECOMMEND
       ? `픽포미 추천 의뢰가 도착했습니다.\n
 제목: ${name}\n
-조건: ${body.text}\n
-가격대: ${body.price}
+상품 및 가격대: ${body.price}\n
+상세 조건: ${body.text}
+
 `
       : `픽포미 분석 의뢰가 도착했습니다.\n
 제목: ${name}\n
