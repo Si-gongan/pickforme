@@ -182,15 +182,15 @@ export default function RequestScreen() {
         의뢰 내용
       </Subtitle>
       <Desc>
-        {request.text}
+        {request.type === 'RECOMMEND' ? request.price : request.text}
       </Desc>
       {request.type === 'RECOMMEND' && (
       <>
         <Subtitle>
-          상품 및 가격대
+          상세 조건 
         </Subtitle>
         <Desc>
-          {request.price}
+          {request.text}
         </Desc>
       </>
       )}
