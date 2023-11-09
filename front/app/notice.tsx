@@ -2,6 +2,8 @@ import { ScrollView, StyleSheet, Pressable, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState } from 'react';
+import RenderHtml from 'react-native-render-html';
+
 import { formatDate, formatTime, numComma } from '../utils/common';
 import { noticesAtom } from '../stores/notice/atoms';
 import Colors from '../constants/Colors';
@@ -19,10 +21,10 @@ export default function RequestScreen() {
     return <Text>잘못된 접근입니다</Text>
   }
 
-
   return (
     <View style={styles.container}>
       <ScrollView>
+        <View style={styles.containerInner}>
         <Text style={styles.title}>
           {notice.title}
         </Text>
@@ -30,8 +32,11 @@ export default function RequestScreen() {
           {`${formatDate(notice.createdAt)} ${formatTime(notice.createdAt)}`}
         </Text>
         <Text style={styles.desc}>
-          {notice.text}
+          <RenderHtml
+            source={{ html: `<body>${notice.text.replace(/\n/g, '<br />')}</body>` }}
+          />
         </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -41,7 +46,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
-  inner: {
+  containerInner: {
     flex: 1,
     padding: 20,
     justifyContent: 'flex-start',

@@ -4,7 +4,8 @@ export const hexToRgb = (hex: string) =>
 export const numComma = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 export const formatDate = (date: string | Date) => {
-  return new Date(date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
+  const today = new Date(date);
+  return `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
 }
 
 export const formatTime = (date: string | Date) => new Date(date).toLocaleTimeString().replace(/...$/,'');
