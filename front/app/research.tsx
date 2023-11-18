@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { useSetAtom, useAtomValue } from 'jotai';
 import * as Clipboard from 'expo-clipboard';
 
@@ -46,10 +46,16 @@ export default function ResearchScreen() {
       >
         <View style={[styles.container, styles.containerInner]}>
           <Text style={styles.title}>
-            어떤 상품을 분석해드릴까요?
+            궁금한 상품의 상세페이지를 설명드릴게요!
           </Text>
+          <Link
+            href={`/research-sample`}
+            asChild
+          >
+            <Button style={styles.button} textStyle={styles.buttonText} title='작성 예시' size='medium' />
+          </Link>
           <Text style={styles.label}>
-            의뢰할 상품의 링크를 입력해주세요.
+            상품의 링크를 입력해주세요.
           </Text>
           <View style={styles.buttonRow}>
             <View style={styles.linkButton}>
@@ -86,7 +92,7 @@ export default function ResearchScreen() {
             </View>
           ) : <View style={styles.empty} />}
           <Text style={styles.label}>
-            매니저가 참고해야 하는 점이 있으면 알려주세요.
+            상품에 대해 궁금한 점을 적어주세요.
           </Text>
           <View style={styles.textAreaContainer} >
             <TextInput
@@ -138,6 +144,17 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   textAreaBig: {
     height: 73,
+  },
+  buttonText: {
+    color: Colors[colorScheme].text.primary,
+  },
+  button: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: Colors[colorScheme].text.primary,
+    marginBottom: 37,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 24,
   },
   buttonWrap: {
     padding: 20,

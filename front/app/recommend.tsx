@@ -33,38 +33,38 @@ export default function RecommendScreen() {
         scrollEnabled
       >
         <View style={[styles.container, styles.containerInner]}>
-        <Text style={styles.title}>
-          어떤 상품을 추천해드릴까요?
-        </Text>
-        <Link
-          href={`/recommend-sample`}
-          asChild
-        >
-          <Button style={styles.button} textStyle={styles.buttonText} title='작성 예시' size='medium' />
-        </Link>
-        <Text style={styles.label}>
-          원하시는 상품과 가격대를 적어주세요.
-        </Text>
-        <View style={styles.textAreaContainer} >
-          <TextInput
-            style={styles.textArea}
-            underlineColorAndroid="transparent"
-            onChangeText={(price) => setData({ ...data, price })}
-          />
-        </View>
-        <Text style={styles.label}>
-          (선택) 상품 선택 시 고려하는 조건과, 상품과 연관된 고객님의 특징(성별, 사이즈, 색상, 스타일 등)을 작성해 주세요.
-        </Text>
-        <View style={styles.textAreaContainer} >
-          <TextInput
-            style={[styles.textArea, styles.textAreaBig]}
-            underlineColorAndroid="transparent"
-            numberOfLines={6}
-            textAlignVertical='top'
-            multiline={true}
-            onChangeText={(text) => setData({ ...data, text })}
-          />
-        </View>
+          <Text style={styles.title}>
+            어떤 상품을 추천해드릴까요?
+          </Text>
+          <Link
+            href={`/recommend-sample`}
+            asChild
+          >
+            <Button style={styles.button} textStyle={styles.buttonText} title='작성 예시' size='medium' />
+          </Link>
+          <Text style={styles.label}>
+            원하시는 상품과 가격대를 적어주세요.
+          </Text>
+          <View style={styles.textAreaContainer} >
+            <TextInput
+              style={styles.textArea}
+              underlineColorAndroid="transparent"
+              onChangeText={(price) => setData({ ...data, price })}
+            />
+          </View>
+          <Text style={styles.label}>
+            (선택) 상품 선택 시 고려하는 조건과, 상품과 연관된 고객님의 특징(성별, 사이즈, 색상, 스타일 등)을 작성해 주세요.
+          </Text>
+          <View style={styles.textAreaContainer} >
+            <TextInput
+              style={[styles.textArea, styles.textAreaBig]}
+              underlineColorAndroid="transparent"
+              numberOfLines={6}
+              textAlignVertical='top'
+              multiline={true}
+              onChangeText={(text) => setData({ ...data, text })}
+            />
+          </View>
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
