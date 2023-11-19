@@ -115,6 +115,7 @@ android {
 
     namespace 'com.sigonggan.pickforme'
     defaultConfig {
+        missingDimensionStrategy "store", "play"
         applicationId 'com.sigonggan.pickforme'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion

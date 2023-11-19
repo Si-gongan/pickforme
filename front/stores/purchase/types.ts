@@ -1,6 +1,10 @@
-import { IAPItemType, } from 'expo-in-app-purchases';
 import { Receipt } from 'in-app-purchase';
 import { Platform } from 'react-native';
+
+export enum ProductType {
+  PURCHASE = 0,
+  SUBSCRIPTION = 1,
+}
 
 export interface Product {
   _id: string,
@@ -8,7 +12,7 @@ export interface Product {
   point: number,
   platform: typeof Platform.OS,
   displayName: string,
-  type: IAPItemType,
+  type: ProductType,
 }
 
 export interface PurchaseProductParams extends Pick<Product, '_id'> {
