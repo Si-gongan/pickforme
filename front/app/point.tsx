@@ -126,16 +126,14 @@ export default function PointScreen() {
               {userData?.point}픽
             </Text>
           </View>
-          {!!currentSubscription && (
           <View style={[styles.myPoint, styles.titleMargin]}>
             <Text style={styles.myPointText}>
               내 멤버십
             </Text>
             <Text style={styles.myPointNumber}>
-              {currentSubscription.product.displayName}
+              {currentSubscription?.product?.displayName || '없음'}
             </Text>
           </View>
-          )}
           <View style={styles.seperator} />
           <Text style={[styles.myPointText, styles.titleMargin]}>
             픽포미 멤버십
