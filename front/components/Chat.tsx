@@ -9,6 +9,8 @@ import useColorScheme, {ColorScheme } from '../hooks/useColorScheme';
 import { formatTime } from '../utils/common';
 import { Request, Chat as IChat } from '../stores/request/types';
 import { Image, StyleSheet, Pressable } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+
 
 interface Props {
   data: IChat,
@@ -22,11 +24,16 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
   const date = formatTime(data.createdAt);
   const from = requestType === 'AI' ? 'AI 포미' : '픽포미 매니저';
   const accessibilityLabel = `${data.isMine ? '' : `${from} `} ${data.text} ${date}`;
+    const handleOpenUrl = async (url: string) => {
+    await WebBrowser.openBrowserAsync(url);
+  }
+
   return (
+    <>
     <View
       style={[styles.root, data.isMine && styles.isMine]}
     >
-      <View style={styles.card}>
+      <View style={[styles.card, data.isMine && styles.cardMine]}>
         <Autolink
           style={styles.text}
           text={data.text}
@@ -51,6 +58,17 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
         </Text>
       </View> 
     </View>
+    {data.products?.map((product) => (
+      <Pressable onPress={() => handleOpenUrl(product.link)}>
+      <View style={styles.productCard}>
+        <Image style={styles.productImage} source={{ uri: product.thumbnail }} />
+        <Text style={styles.productText}>
+          {`${product.name}\n\n평점 ${product.rating} (${product.rating_total_count}명 평가)`}
+        </Text>
+      </View>
+      </Pressable>
+    ))}
+    </>
   );
 }
 
@@ -68,11 +86,16 @@ const useStyles = (colorScheme: ColorScheme) =>  StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   card: {
-    maxWidth: '60%',
+    maxWidth: '64%',
     paddingVertical: 14,
     paddingHorizontal: 11,
-    borderRadius: 12,
     backgroundColor: Colors[colorScheme].card.primary,
+    borderRadius: 10,
+    borderBottomLeftRadius: 0,
+  },
+  cardMine: {
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 0,
   },
   button: {
     marginTop: 12,
@@ -93,4 +116,19 @@ const useStyles = (colorScheme: ColorScheme) =>  StyleSheet.create({
     fontSize: 10,
     lineHeight: 12,
   },
+  productCard: {
+    marginBottom: 10,
+    maxWidth: '50%',
+    backgroundColor: Colors[colorScheme].card.primary,
+    borderRadius: 10,
+    borderBottomLeftRadius: 0,
+  },
+  productImage: {
+    width: '100%',
+    height: 126,
+  },
+  productText: {
+    fontSize: 12,
+    padding: 8,
+  }
 });

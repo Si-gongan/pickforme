@@ -32,7 +32,7 @@ const RequestSchema = new mongoose.Schema({
   },
   price: {
     type: String,
-    required: [true, 'can\'t be blank'],
+    default: '0',
   },
   link: {
     type: String,
@@ -69,7 +69,7 @@ const RequestSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  aiData: mongoose.Schema.Types.Mixed,
+  data: mongoose.Schema.Types.Mixed,
   chats: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chats',

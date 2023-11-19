@@ -1,3 +1,12 @@
+interface ChatProduct {
+  name: string,
+  price: number,
+  rating: number,
+  rating_total_count: number,
+  thumbnail: string,
+  link: string,
+}
+
 export enum RequestStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
@@ -10,6 +19,7 @@ export interface Chat {
   isMine: boolean,
   text: string,
   requestId: string,
+  products?: ChatProduct[],
   button?: {
     text: string,
     deeplink: string,

@@ -193,30 +193,27 @@ router.post('/chat', requireAuth, async (ctx) => {
   request.unreadCount = 0;
   if (request.type === RequestType.AI) {
     (async () => {
-      const chats = await db.Chat.find({
-        userId: ctx.state.user._id, requestId: request._id,
-      }).sort({
-        createdAt: -1,
-      }).limit(7).exec();
-      const messages = chats.map(({
-        text, isMine,
-      }) => ({
-        content: text, role: isMine ? 'user' : 'assistant',
-      })).reverse();
       let text = '';
+      let products;
       try {
         const {
           data: {
-            message, data,
+            answer: message,
+            data,
           },
-        } = await client.post<{ message: string, data: any }>('/chat', {
-          messages, data: request.aiData || null,
+        } = await client.post<{ answer: string, data: any }>('/shopping-chat', {
+          text: body.text,
+          ...(request.data ? { data: request.data } : {}),
         });
         if (data) {
-          request.aiData = data;
+          request.data = data;
+          if (data.products) {
+            products = data.products;
+          }
         }
         text = message;
       } catch (e) {
+        console.log(e);
         text = '죄송합니다. 다시 시도해주세요.';
       }
       const chat = await db.Chat.create({
@@ -224,6 +221,7 @@ router.post('/chat', requireAuth, async (ctx) => {
         isMine: false,
         userId: ctx.state.user._id,
         text,
+        products,
       });
       request.chats.push(chat._id);
       request.unreadCount += 1;

@@ -22,6 +22,14 @@ const ChatSchema = new mongoose.Schema({
     ref: 'Users',
     required: [true, 'can\'t be null'],
   },
+  products: [{
+    name: String,
+    price: Number,
+    rating: Number,
+    rating_total_count: Number,
+    thumbnail: String,
+    link: String,
+  }]
 }, {
   timestamps: true,
 });
