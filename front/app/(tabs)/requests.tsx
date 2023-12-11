@@ -3,24 +3,23 @@ import { useSetAtom, useAtomValue } from 'jotai';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 
-  import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 import { RequestStatus } from '../../stores/request/types';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
+import Product from '../../components/Product';
 
 enum TABS {
-  ALL = 'ALL',
-  RECOMMEND = 'RECOMMEND',
-  RESEARCH = 'RESEARCH',
+  REQUEST = 'REQUEST',
+  PRODUCT = 'PRODUCT',
 };
 
 const tabName = {
-  [TABS.ALL]: '전체',
-  [TABS.RECOMMEND]: '픽포미 추천',
-  [TABS.RESEARCH]: '픽포미 분석',
+  [TABS.REQUEST]: '의뢰 목록',
+  [TABS.PRODUCT]: '상품 목록',
 }
 
 const statusName = {
@@ -31,11 +30,10 @@ const statusName = {
 export default function RequestsScreen() {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
-  const [tab, setTab] = React.useState<TABS>(TABS.ALL);
+  const [tab, setTab] = React.useState<TABS>(TABS.REQUEST);
   const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom)
-    .filter(request => request.type !== 'AI')
-    .filter(request => tab === 'ALL' ? true : request.type === tab);
+    .filter(request => request.type !== 'AI');
 
   React.useEffect(() => {
     getRequests();
@@ -60,7 +58,7 @@ export default function RequestsScreen() {
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.cards}>
-          {requests.map((request) => (
+          {tab === TABS.REQUEST ? requests.map((request) => (
             <Link
               href={`/chat?requestId=${request._id}`}
               key={`Request-card-${request._id}`}
@@ -111,7 +109,9 @@ export default function RequestsScreen() {
                 )}
               </Pressable>
             </Link>
-          ))}
+          )) : requests.map(({ answer, _id }) => answer?.products?.map(product => (
+            <Product product={product} key={`product-${product.url}`} requestId={_id} isSimple />
+          )))}
         </View>
       </ScrollView>
     </View>
