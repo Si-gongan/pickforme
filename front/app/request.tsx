@@ -98,6 +98,13 @@ export default function RequestScreen() {
             매니저가 답변을 작성중입니다. 조금만 기다려주세요.
           </Text>
         )}
+          <Button
+            style={styles.button}
+            title='문의 채팅하기'
+            color='secondary'
+            size='large'
+            onPress={() => router.push(`/chat?requestId=${requestId}`)}
+          />
         </View>
       </ScrollView>
     </View>
@@ -157,5 +164,8 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   empty: {
     marginBottom: 30,
+  },
+  button: {
+    marginTop: 30,
   },
 });

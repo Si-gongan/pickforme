@@ -60,7 +60,7 @@ export default function RequestsScreen() {
         <View style={styles.cards}>
           {tab === TABS.REQUEST ? requests.map((request) => (
             <Link
-              href={`/chat?requestId=${request._id}`}
+              href={`/request?requestId=${request._id}`}
               key={`Request-card-${request._id}`}
               style={styles.cardLink}
               asChild
@@ -152,6 +152,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   cards: {
     flexDirection: 'column-reverse',
+    gap: 13,
   },
   scrollView: {
     marginTop: 35,
@@ -164,7 +165,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     paddingHorizontal: 13,
     borderRadius: 12,
     backgroundColor: Colors[colorScheme].card.primary,
-    marginBottom: 13,
   },
   row: {
     backgroundColor: 'transparent',
