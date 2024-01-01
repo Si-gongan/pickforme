@@ -12,6 +12,7 @@ import HeaderLeft from '../../components/HeaderLeft';
 
 import IndexIcon from '../../assets/images/tabbar/index.svg';
 import DiscoverIcon from '../../assets/images/tabbar/discover.svg';
+import AIIcon from '../../assets/images/tabbar/AI.svg';
 import RequestsIcon from '../../assets/images/tabbar/requests.svg';
 import MypageIcon from '../../assets/images/tabbar/mypage.svg';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -68,11 +69,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="discover"
+        options={{
+          headerShown: false, 
+          title: '탐색',
+          tabBarIcon: ({ color }) => <DiscoverIcon style={{color}} />,
+        }}
+      />
+      <Tabs.Screen
         name="AI"
         options={{
           headerShown: false, 
           title: 'AI 포미',
-          tabBarIcon: ({ color }) => <DiscoverIcon style={{color}} />,
+          tabBarIcon: ({ color }) => <AIIcon style={{color}} />,
         }}
       />
       <Tabs.Screen

@@ -14,25 +14,25 @@ interface TDATA {
   requireAuth: boolean;
 }
 const DATA: TDATA[] = [{
+  path: '/(tabs)/discover',
+  title: `상품\n검색하기`,
+  image: require('../../assets/images/main/discover.png'),
+  requireAuth: true,
+}, {
+  path: '/(tabs)/AI',
+  title: `포미와\n쇼핑하기`,
+  image: require('../../assets/images/main/AI.png'),
+  requireAuth: true,
+}, {
   path: '/recommend',
-  title: '픽포미 추천',
+  title: `상품\n추천받기`,
   image: require('../../assets/images/main/recommend.png'),
   requireAuth: true,
 }, {
   path: '/research',
-  title: '픽포미 분석',
+  title: `상품\n설명받기`,
   image: require('../../assets/images/main/research.png'),
   requireAuth: true,
-}, {
-  path: '/buy',
-  title: '픽포미 구매',
-  image: require('../../assets/images/main/buy.png'),
-  requireAuth: true,
-}, {
-  path: '/how',
-  title: `픽포미\n사용설명서`,
-  image: require('../../assets/images/main/how.png'),
-  requireAuth: false,
 }];
 
 export default function TabOneScreen() {
@@ -51,19 +51,48 @@ export default function TabOneScreen() {
           <View style={styles.textWrap}>
             <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
             <Text style={styles.title}>좋은 하루입니다!</Text>
-            <Text style={styles.subtitle}>픽포미 쇼핑 도우미 서비스를 이용해보세요.</Text>
           </View>
+          <Text style={styles.subtitle}>
+            정보의 제한 없이 자유롭게 쇼핑해요
+          </Text>
           <View style={styles.save}>
           <FlatList<TDATA>
             scrollEnabled={false}
             contentContainerStyle={styles.list}
-            data={DATA}
+            data={DATA.slice(0,2)}
             numColumns={2}
             columnWrapperStyle={styles.row}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <Button
                 onPress={() => item.requireAuth ? onPressWithCheckLogin(item.path) : onPress(item.path)}
-                style={styles.button}
+                style={[styles.button, index % 2 ? styles.buttonRight : styles.buttonLeft]}
+                textStyle={styles.text}
+                title={item.title}
+                accessibilityLabel={`${item.title} 버튼`}
+              >
+                <Image
+                  style={styles.image}
+                  source={item.image}
+                />
+              </Button>
+            )}
+            keyExtractor={(item) => item.path}
+          />
+          </View>
+          <Text style={styles.subtitle}>
+            나만을 위한 맞춤형 서비스를 받아보세요
+          </Text>
+                    <View style={styles.save}>
+          <FlatList<TDATA>
+            scrollEnabled={false}
+            contentContainerStyle={styles.list}
+            data={DATA.slice(2)}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            renderItem={({ item, index }) => (
+              <Button
+                onPress={() => item.requireAuth ? onPressWithCheckLogin(item.path) : onPress(item.path)}
+                style={[styles.button, index % 2 ? styles.buttonRight : styles.buttonLeft]}
                 textStyle={styles.text}
                 title={item.title}
                 accessibilityLabel={`${item.title} 버튼`}
@@ -93,15 +122,19 @@ const styles = StyleSheet.create({
     paddingVertical: 25,
   },
   textWrap: {
-    alignItems: 'flex-start',
+    textAlign: 'left',
+    marginBottom: 85,
     width: '100%',
-    paddingHorizontal: 39,
   },
   image: {
-    width: 43,
-    height: 43,
+    position: 'absolute',
+    right: 17,
+    top: 15,
+    width: 38,
+    height: 38,
   },
   save: {
+    marginBottom: 53,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -112,10 +145,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    alignItems: 'center',
-    margin: 12,
-    width: 122,
-    height: 172,
+    alignItems: 'flex-start',
+    width: 149,
+    height: 108,
+    paddingLeft: 16,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -124,8 +157,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 5,
   },
+  buttonLeft: {
+    marginRight: 9,
+  },
+  buttonRight: {
+    marginLeft: 9,
+  },
   text: {
-    textAlign: 'center',
+    textAlign: 'left',
     marginTop: 12,
   },
   row: {
@@ -133,12 +172,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
+    textAlign: 'left',
+    width: '100%',
     lineHeight: 27,
     fontWeight: '600',
   },
   subtitle: {
-    marginTop: 21,
+    width: '100%',
+    textAlign: 'left',
+    marginBottom:20,
     fontSize: 16,
-    lineHeight: 19,
-  }
+    fontWeight: '500',
+  },
 });
