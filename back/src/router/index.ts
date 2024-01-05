@@ -5,6 +5,7 @@ import requestRouter from './request';
 import purchaseRouter from './purchase';
 import adminRouter from './admin';
 import noticeRouter from './notice';
+import discoverRouter from './discover';
 
 const router = new Router();
 
@@ -14,6 +15,7 @@ const router = new Router();
   authRouter,
   requestRouter,
   purchaseRouter,
+  discoverRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
 });
