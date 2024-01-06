@@ -46,8 +46,8 @@ export default function TabOneScreen() {
   });
   return (
     <View style={styles.container}>
-      <ScrollView>
-        <View style={[styles.container, styles.scrollContainer]}>
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.inner}>
           <View style={styles.textWrap}>
             <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
             <Text style={styles.title}>좋은 하루입니다!</Text>
@@ -117,13 +117,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   scrollContainer: {
+    width: '100%',
     paddingVertical: 25,
+  },
+  inner: {
+    flex: 0,
+    alignSelf: 'center',
   },
   textWrap: {
     textAlign: 'left',
-    marginBottom: 85,
+    marginBottom: 53,
     width: '100%',
   },
   image: {
@@ -134,7 +140,7 @@ const styles = StyleSheet.create({
     height: 38,
   },
   save: {
-    marginBottom: 53,
+    marginBottom:40,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
