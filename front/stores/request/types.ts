@@ -1,6 +1,8 @@
-interface ChatProduct {
+export interface ChatProduct {
+  id: number,
   name: string,
   price: number,
+  group: string,
   rating: number,
   rating_total_count: number,
   thumbnail: string,

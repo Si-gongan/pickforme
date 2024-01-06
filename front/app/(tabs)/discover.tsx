@@ -4,12 +4,14 @@ import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'r
 import { useRouter, Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
-import { getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
+import { searchedProductsAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
+
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/DiscoverProduct';
+import SearchProductCard from '../../components/SearchProduct';
 
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
@@ -29,18 +31,25 @@ const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
           </Pressable>
           );
 }
+
 export default function DiscoverScreen() {
   const router = useRouter();
   const getMainProducts = useSetAtom(getMainProductsAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
   const colorScheme = useColorScheme();
+    const searchProducts = useSetAtom(searchProductsAtom);
+  const searchedProducts = useAtomValue(searchedProductsAtom);
+
   const styles = useStyles(colorScheme);
+  const [query, setQuery] = React.useState('');
   const [length, setLength] = React.useState({
     special: 5,
     random: 5,
   });
   const [text, setText ] =React.useState('');
   const handleClickSend = () => {
+    searchProducts(text);
+    setQuery(text);
   }
 
   const handleClickMore = (key: keyof typeof length) => {
@@ -58,7 +67,18 @@ export default function DiscoverScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.horizontalPadder}>
+        {!!query.length ? (
+              <Button
+        title='뒤로가기'
+        color='tertiary'
+        size='small'
+        onPress={() => setQuery('')}
+        style={styles.backButton}
+        textStyle={styles.backText}
+        />
+        ) : (
         <Text style={styles.title}>탐색</Text>
+        )}
       </View>
       <ScrollView style={styles.scrollView}>
       <View style={[styles.section, styles.horizontalPadder]}>
@@ -67,6 +87,8 @@ export default function DiscoverScreen() {
             style={[styles.textArea]}
             underlineColorAndroid="transparent"
             value={text}
+            returnKeyType='done'
+            onSubmitEditing={() => handleClickSend()}
             accessible
             accessibilityLabel="검색어 입력창"
             onChangeText={(text) => setText(text)}
@@ -75,12 +97,34 @@ export default function DiscoverScreen() {
           <Pressable
             onPress={handleClickSend}
             accessible
-            accessibilityLabel="전송버튼"
+            accessibilityLabel="검색하기"
           >
             <Image style={styles.sendIcon} source={require('../../assets/images/discover/icSearch.png')} />
           </Pressable>
         </View>
       </View>
+      {!!query.length ? (
+      <>
+      {searchedProducts === undefined ? (
+      <Text style={styles.loading}>검색중입니다.</Text>
+      ) : (!!searchedProducts.length ? (
+        <>
+              <FlatList
+                      scrollEnabled={false}
+                       columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.searchList}
+        data={searchedProducts}
+        numColumns={2}
+        keyExtractor={(product) => `search-${product.id}`}
+        renderItem={({ item: product }) => <SearchProductCard product={product} />}
+        ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
+      />
+
+        </>
+      ) : <Text>검색결과가 없습니다.</Text>)}
+      </>
+      ) : (
+      <>
       {!!mainProducts.random.length && (
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, styles.horizontalPadder]}>
@@ -113,6 +157,8 @@ export default function DiscoverScreen() {
       />
       </View>
       )}
+      </>
+      )}
       </ScrollView>
     </View>
   );
@@ -141,6 +187,11 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   scrollView: {
     marginTop: 35,
     flex: 1,
+  },
+  seperatorRow: {
+    height: 15,
+    width: 1,
+    backgroundColor: 'transparent',
   },
   seperator: {
     height: 1,
@@ -204,5 +255,27 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+    backButton: { width: 89 },
+  backText: {
+    textDecorationLine: 'underline',
+  },
+  searchList: {
+    paddingHorizontal: 20,
+    marginLeft: 7,
+    marginRight: 7,
+    flex: 1,
+  },
+  searchItem: {
+  },
+  columnWrapper: {
+    gap: 14,
+    marginLeft: -7,
+    paddingRight: 7,
+  },
+  loading: {
+    paddingHorizontal: 20,
+    textAlign: 'center',
+    flex: 1,
   },
 });

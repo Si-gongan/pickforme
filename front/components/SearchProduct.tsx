@@ -1,7 +1,7 @@
 import { StyleSheet, Pressable, Image } from 'react-native';
 import { Text, View } from './Themed';
 
-import { Product } from '../stores/discover/types';
+import { ChatProduct as Product } from '../stores/request/types';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
@@ -16,23 +16,24 @@ interface Props {
   product: Product;
 }
 const ProductCard: React.FC<Props> = ({ product }) => {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const handleOpenUrl = async () => {
-    await WebBrowser.openBrowserAsync(product.productUrl);
+    router.push(`/discover-detail?productId=${product.id}`);
   }
   return (
     <View
       style={styles.product}
     >
-      <Image style={styles.productImage} source={{ uri: product.productImage }} />
+      <Image style={styles.productImage} source={{ uri: product.thumbnail }} />
       <View style={styles.footer}>
         <View style={styles.footerText}>
         <Text style={styles.productTitle} numberOfLines={2}>
-          {product.productName}
+          {product.name}
         </Text>
         <Text style={styles.productPrice} accessible>
-          {numComma(product.productPrice)}원
+          {numComma(product.price)}원
         </Text>
         </View>
         <View style={styles.buttonWrap}>
@@ -50,20 +51,20 @@ const ProductCard: React.FC<Props> = ({ product }) => {
 
 const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   product: {
-    width: 140,
+    width: '50%',
     height: '100%',
   },
   productImage: {
-    height: 120,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    height: 132,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   productTitle: {
-    fontSize: 9,
+    fontSize: 10,
     lineHeight: 11,
   },
   productPrice: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
   },
   productDesc: {

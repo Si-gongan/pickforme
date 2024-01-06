@@ -24,6 +24,7 @@ export default function NoticeScreen() {
       <ScrollView>
     <View>
       <FlatList
+        scrollEnabled={false}
         data={notices}
         ItemSeparatorComponent={() => <View style={styles.seperator} />}
         keyExtractor={(notice) => notice._id}

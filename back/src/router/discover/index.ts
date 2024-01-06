@@ -47,4 +47,52 @@ router.get('/products', requireAuth, async (ctx) => {
   };
 });
 
+router.post('/product', requireAuth, async (ctx) => {
+  const {
+    body: {
+      product: {
+        id,
+      }
+    },
+  } = <any>ctx.request;
+  const { data: { product } } = await client.get(`https://api.kimgosu.vsolution.app/products/${id}`, { headers: {Authorization: 'Bearer 389|wxFe3R2xVdE2eFXII3pPH7lF5tFqaUp5o9RVkOQl' } });
+  ctx.body = {
+    product,
+  }
+});
+
+router.post('/product/detail', requireAuth, async (ctx) => {
+  const {
+    body: {
+      product: {
+        id,
+        group,
+      }
+    },
+  } = <any>ctx.request;
+  const datas = await Promise.allSettled([
+    client.post('https://ai.sigongan-ai.shop/product-caption', { id: `${id}` }),
+    client.post('/report', { id: `${id}` }),
+    client.post('https://ai.sigongan-ai.shop/product-review', { url: `https://www.coupang.com/vp/products/${group}` }),
+  ]).then(results => results.map((result) => result.status === 'fulfilled' ? result.value : { data:undefined }));
+  const [{ data: { answer: caption } = { answer: undefined } }, { data: { answer: report }  = { answer: undefined } }, { data: review}] = datas;
+  ctx.body = {
+    caption,
+    report,
+    review,
+  }
+});
+
+router.post('/search', requireAuth, async (ctx) => {
+  const {
+    body: {
+      query
+    },
+  } = <any>ctx.request;
+  const { data: { products } } = await client.get(`https://api.kimgosu.vsolution.app/products?keyword=${encodeURIComponent(query)}`, { headers: {Authorization: 'Bearer 389|wxFe3R2xVdE2eFXII3pPH7lF5tFqaUp5o9RVkOQl' } });
+  ctx.body = products;
+});
+
+
+
 export default router;

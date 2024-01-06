@@ -221,7 +221,6 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
           {filteredProducts.subscriptionProducts.map(product => {
             const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
-            console.log(product);
             if (product.platform === 'android') {
               const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails.find(subscriptionOfferDetail => subscriptionOfferDetail.basePlanId.replace('-', '_') === product.productId);
               if (!subscriptionOffer) {

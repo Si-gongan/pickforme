@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { useRouter, Link,  useLocalSearchParams } from 'expo-router';
 import { useSetAtom, useAtomValue } from 'jotai';
 import * as Clipboard from 'expo-clipboard';
 
@@ -13,6 +13,7 @@ import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 
 export default function ResearchScreen() {
+  const params = useLocalSearchParams();
   const router = useRouter();
   const addRequest = useSetAtom(addRequestAtom);
   const getPreview = useSetAtom(getPreviewAtom);
@@ -21,7 +22,7 @@ export default function ResearchScreen() {
   const styles = useStyles(colorScheme);
   const [data, setData] = useState<ResearchRequestParams>({
     type: 'RESEARCH',
-    link: '',
+    link: params.link ? decodeURIComponent(`${params.link}`) : '',
     text: '',
   });
   const handleClickPaste = async () => {
