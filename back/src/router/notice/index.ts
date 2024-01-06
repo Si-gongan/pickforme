@@ -13,7 +13,6 @@ router.get('/detail/:noticeId', async (ctx) => {
   ctx.body = notice;
 });
 
-
 router.get('/', async (ctx) => {
   const notices = await db.Notice.find({}).sort({
     createdAt: -1,

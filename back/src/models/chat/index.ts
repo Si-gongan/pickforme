@@ -29,7 +29,7 @@ const ChatSchema = new mongoose.Schema({
     rating_total_count: Number,
     thumbnail: String,
     link: String,
-  }]
+  }],
 }, {
   timestamps: true,
 });

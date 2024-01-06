@@ -81,7 +81,7 @@ const RequestSchema = new mongoose.Schema({
   isPublic: {
     type: Boolean,
     default: false,
-  }
+  },
 }, {
   timestamps: true,
 });

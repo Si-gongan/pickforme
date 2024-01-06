@@ -9,8 +9,9 @@ module.exports = {
     'airbnb-typescript/base'
   ],
   rules: {
+    '@typescript-eslint/camelcase': 0,
     'no-underscore-dangle': ['error', { 'allow': ['_id'] }],
-    'max-len': ['error', { 'code': 120 }],
+    'max-len': ['error', { 'code': 140 }],
     'import/prefer-default-export': 0,
     'object-curly-newline': ['error', {
       multiline: true,

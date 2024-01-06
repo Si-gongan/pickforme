@@ -13,11 +13,9 @@ const sendPush = (message: ExpoPushMessage) => {
     ...message,
   }]);
   (async () => {
+    // eslint-disable-next-line no-restricted-syntax
     for (const chunk of chunks) {
-      try {
-        await expo.sendPushNotificationsAsync(chunk);
-      } catch (error) {
-      }
+      expo.sendPushNotificationsAsync(chunk).catch(() => {});
     }
   })();
 };

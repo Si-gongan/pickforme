@@ -28,63 +28,13 @@ class Socket {
         await db.Session.create({
           connectionId: socket.id, userId: user._id,
         });
-        // 2023 흰지팡이 event 대응
-        const now = new Date();
-        if (
-          now >= new Date('2023-10-14T15:00:00.000Z')
-            && now <= new Date('2023-10-20T15:00:00.000Z')
-        ) {
-          const attended = await db.Event.findOne({
-            eventId: '2023_1015', userId: user._id,
-          });
-          if (!attended) {
-            await db.Event.create({
-              userId: user._id, eventId: '2023_1015',
-            });
-            const userDocument = await db.User.findById(user._id);
-            if (userDocument) {
-              const count = await db.Event.count({});
-              const isFast = count < 44;
-              userDocument.point += isFast ? 2 : 1;
-              await userDocument.save();
-              socket.emit('point', userDocument.point);
-              await db.PickHistory.create({
-                usage: `흰 지팡이의 날 픽 지급`,
-                point: userDocument.point,
-                diff: isFast ? 2 : 1,
-                userId: user._id,
-              });
-              socket.emit('bottomsheet', [{
-                type: 'title',
-                text: '제 44회 흰지팡이의 날을 축하해요!',
-              }, {
-                type: 'subtitle',
-                text: '흰지팡이의 날을 기념해, 1픽을 무료로 드렸어요!',
-              }, {
-                type: 'desc',
-                text: '픽포미는 앞으로도 시각장애인분들의 편리한 온라인 쇼핑을 위해 노력할게요!',
-              }]);
-              if (isFast) {
-                socket.emit('bottomsheet', [{
-                  type: 'title',
-                  text: '선물이 도착했어요!',
-                }, {
-                  type: 'desc',
-                  text: '제44회 흰지팡이의 날에, 선착순으로 픽포미에 접속하셨군요!',
-                }, {
-                  type: 'subtitle',
-                  text: '지금 바로 사용하실 수 있는 1픽을 더 드렸어요!',
-                }]);
-              }
-            }
-          }
-        }
         socket.on('disconnect', async () => {
           await db.Session.findOneAndDelete({
             connectionId: socket.id, userId: user._id,
           });
         });
       } catch (e) {
+        // discard error
       }
     });
   }

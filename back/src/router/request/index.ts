@@ -39,7 +39,7 @@ router.post('/', requireAuth, async (ctx) => {
     },
   } = await client.post<{ title: string }>('/report/title', {
     url: body.link,
-	  text: `${body.price}\n${body.text}`,
+    text: `${body.price}\n${body.text}`,
     // "messages" : list(string)
   });
   const request = await db.Request.create({
@@ -203,7 +203,9 @@ router.post('/chat', requireAuth, async (ctx) => {
           },
         } = await client.post<{ answer: string, data: any }>('/shopping-chat', {
           text: body.text,
-          ...(request.data ? { data: request.data } : {}),
+          ...(request.data ? {
+            data: request.data,
+          } : {}),
         });
         if (data) {
           request.data = data;
@@ -213,17 +215,16 @@ router.post('/chat', requireAuth, async (ctx) => {
         }
         text = message;
       } catch (e) {
-        console.log(e);
         text = '죄송합니다. 다시 시도해주세요.';
       }
-      const chat = await db.Chat.create({
+      const autoChat = await db.Chat.create({
         requestId: body.requestId,
         isMine: false,
         userId: ctx.state.user._id,
         text,
         products,
       });
-      request.chats.push(chat._id);
+      request.chats.push(autoChat._id);
       request.unreadCount += 1;
       await request.save();
 
@@ -232,14 +233,14 @@ router.post('/chat', requireAuth, async (ctx) => {
       });
       if (session) {
         socket.emit(session.connectionId, 'message', {
-          chat, unreadCount: request.unreadCount,
+          chat: autoChat, unreadCount: request.unreadCount,
         });
       }
       const user = await db.User.findById(ctx.state.user._id);
       if (user && user.pushToken && user.push.chat === 'all') {
         sendPush({
           to: user.pushToken,
-          body: chat.text,
+          body: autoChat.text,
         });
       }
     })();

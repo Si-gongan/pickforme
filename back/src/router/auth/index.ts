@@ -28,8 +28,8 @@ const handleLogin = async (email: string) => {
         userId: user._id,
         diff: 3,
         point: user.point,
-        usage: '회원가입 지급'
-      })
+        usage: '회원가입 지급',
+      });
     }
     isRegister = true;
   }
@@ -49,7 +49,10 @@ router.post('/google', async (ctx) => {
   } = <{ accessToken: string }>ctx.request.body;
   const {
     data,
-  } = await axios.get<{ email: string, verified_email: boolean }>(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+  } = await axios.get<{ email: string, verified_email: boolean }>(
+    `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
+  `,
+  );
   const {
     email, verified_email,
   } = data;
