@@ -66,11 +66,11 @@ export default function DiscoverScreen() {
         </Text>
         {product.regular_price !== product.price && (
         <Text style={styles.originalPrice}>
-          {numComma(product.regular_price)} ({Math.floor(product.discount_rate)}%)
+          {numComma(product.regular_price || 0)} ({Math.floor(product.discount_rate)}%)
         </Text>
         )}
         <Text style={styles.price}>
-          {numComma(product.price)}원
+          {numComma(product.price || 0)}원
         </Text>
         <View style={styles.seperator} />
           <View style={styles.table}>
@@ -109,7 +109,7 @@ export default function DiscoverScreen() {
                   역대 최고가
                 </Text>
                 <Text style={styles.tableItem}>
-                  {numComma(product.highest_price)}원
+                  {numComma(product.highest_price || 0)}원
                 </Text>
               </View>
               <View style={styles.tableRow}>
@@ -117,7 +117,7 @@ export default function DiscoverScreen() {
                   역대 최저가
                 </Text>
                 <Text style={styles.tableItem}>
-                  {numComma(product.lowest_price)}원
+                  {numComma(product.lowest_price || 0)}원
                 </Text>
               </View>
             </View>
