@@ -193,8 +193,11 @@ router.post('/chat', requireAuth, async (ctx) => {
   request.unreadCount = 0;
   if (request.type === RequestType.AI) {
     (async () => {
-      let text = '';
-      let products;
+      const responseBody = {
+        text: '',
+        products: [],
+        questions: [],
+      };
       try {
         const {
           data: {
@@ -210,19 +213,21 @@ router.post('/chat', requireAuth, async (ctx) => {
         if (data) {
           request.data = data;
           if (data.products) {
-            products = data.products;
+            responseBody.products = data.products;
+          }
+          if (data.questions) {
+            responseBody.questions = data.questions;
           }
         }
-        text = message;
+        responseBody.text = message;
       } catch (e) {
-        text = '죄송합니다. 다시 시도해주세요.';
+        responseBody.text = '죄송합니다. 다시 시도해주세요.';
       }
       const autoChat = await db.Chat.create({
         requestId: body.requestId,
         isMine: false,
         userId: ctx.state.user._id,
-        text,
-        products,
+        ...responseBody,
       });
       request.chats.push(autoChat._id);
       request.unreadCount += 1;

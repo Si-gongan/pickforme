@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { RequestStatus, GetPreviewParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams, Chat } from './types';
+import { GetPreviewParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams, Chat } from './types';
 import { ReadRequestAPI, PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI, GetBuyAPI, ToggleBuyAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
 
@@ -63,7 +63,11 @@ export const sendChatParamsAtom = atom<SendChatParams>({
   requestId: '',
 });
 
+export const isSendChatLoadingAtom = atom(false);
+
 export const sendChatAtom = atom(null, async (get, set) => {
+  set(isSendChatLoadingAtom, true);
+  try {
   const params = get(sendChatParamsAtom);
   if (!params.text) {
     return;
@@ -81,6 +85,10 @@ export const sendChatAtom = atom(null, async (get, set) => {
   const requests = await get(requestsAtom)
   const { data } = await PostChatAPI(params);
   set(receiveChatAtom, { chat: data, unreadCount: 0 });
+  set(isSendChatLoadingAtom, false);
+  } catch (e) {
+  set(isSendChatLoadingAtom, false);
+  }
 });
 
 export const receiveChatAtom = atom(null, async (get, set, params: { chat: Chat, unreadCount: number }) => {

@@ -6,7 +6,7 @@ import Button from './Button';
 import Colors from '../constants/Colors'
 import Autolink from 'react-native-autolink';
 import useColorScheme, {ColorScheme } from '../hooks/useColorScheme';
-import { formatTime } from '../utils/common';
+import { numComma, formatTime } from '../utils/common';
 import { Request, Chat as IChat } from '../stores/request/types';
 import { Image, StyleSheet, Pressable } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
@@ -29,9 +29,9 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
   }
 
   return (
-    <>
+    <View style={styles.root}>
     <View
-      style={[styles.root, data.isMine && styles.isMine]}
+      style={[styles.chatRoot, data.isMine && styles.isMine]}
     >
       <View style={[styles.card, data.isMine && styles.cardMine]}>
         <Autolink
@@ -60,15 +60,25 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
     </View>
     {data.products?.map((product) => (
       <Pressable onPress={() => handleOpenUrl(product.link)}>
-      <View style={styles.productCard}>
+      <View style={[styles.card, styles.productCard]}>
         <Image style={styles.productImage} source={{ uri: product.thumbnail }} />
-        <Text style={styles.productText}>
-          {`${product.name}\n\n평점 ${product.rating} (${product.rating_total_count}명 평가)`}
-        </Text>
+        <View style={styles.productText}>
+          <View style={styles.productTextHeader}>
+          <Text style={styles.productName} numberOfLines={2}>
+            {product.name}
+          </Text>
+          <Text style={styles.productRating}>
+            평점 ${product.rating} (${product.rating_total_count}명 평가)
+          </Text>
+          </View>
+          <Text style={styles.productPrice}>
+            {numComma(product.price)}원
+          </Text>
+        </View>
       </View>
       </Pressable>
     ))}
-    </>
+    </View>
   );
 }
 
@@ -76,11 +86,13 @@ export default Chat;
 
 const useStyles = (colorScheme: ColorScheme) =>  StyleSheet.create({
   root: {
+    marginBottom: 21,
+  },
+  chatRoot: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'flex-start',
     gap: 10,
-    marginBottom: 21,
   },
   isMine: {
     flexDirection: 'row-reverse',
@@ -117,18 +129,40 @@ const useStyles = (colorScheme: ColorScheme) =>  StyleSheet.create({
     lineHeight: 12,
   },
   productCard: {
-    marginBottom: 10,
-    maxWidth: '50%',
+    maxWidth: '100%',
+    marginTop: 10,
     backgroundColor: Colors[colorScheme].card.primary,
     borderRadius: 10,
+    padding: 10,
     borderBottomLeftRadius: 0,
+    flexDirection: 'row',
   },
   productImage: {
-    width: '100%',
-    height: 126,
+    width: 100,
+    marginRight: 10,
+    height: 100,
+  },
+  productName: {
+    fontWeight: '400',
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  productPrice: {
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  productRating: {
+    fontWeight: '400',
+    fontSize: 12,
   },
   productText: {
-    fontSize: 12,
-    padding: 8,
-  }
+    flex: 1,
+    backgroundColor: 'transparent',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  productTextHeader: {
+    backgroundColor: 'transparent',
+    flexDirection: 'column'
+  },
 });

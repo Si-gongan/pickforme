@@ -19,6 +19,7 @@ export interface Chat {
   _id: string,
   createdAt: string,
   isMine: boolean,
+  questions?: string[],
   text: string,
   requestId: string,
   products?: ChatProduct[],
