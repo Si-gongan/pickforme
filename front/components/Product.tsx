@@ -50,25 +50,11 @@ const ProductCard: React.FC<Props> = ({ product, isSimple, requestId }) => {
         ))}
       </View>
       )}
-      {isSimple ? (
-      <View style={styles.buttonWrap}>
-            <Link
-              href={`/request?requestId=${requestId}`}
-              key={`Request-card-${requestId}`}
-              asChild
-            >
-        <Button
-          size='small'
-          title='의뢰내역으로 이동'
-          style={styles.button}
-        />
-            </Link>
-      </View>
-      ) : (
-        <>
+      {!isSimple && (
       <Text style={styles.productDesc}>
         {product.desc}
       </Text>
+      )}
       <View style={styles.buttonWrap}>
         <Button
           size='small'
@@ -77,8 +63,6 @@ const ProductCard: React.FC<Props> = ({ product, isSimple, requestId }) => {
           style={styles.button}
         />
       </View>
-        </>
-      )}
     </View>
   );
 }
