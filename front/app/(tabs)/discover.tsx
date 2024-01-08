@@ -153,7 +153,7 @@ export default function DiscoverScreen() {
         keyExtractor={(product) => `special-${product.productId}`}
         ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
         renderItem={({ item: product }) => <ProductCard product={product} />}
-        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
+        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
       />
       </View>
       )}
