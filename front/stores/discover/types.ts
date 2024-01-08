@@ -82,7 +82,18 @@ export interface GetProductDetailsResponse {
 }
 
 interface DetailedProduct extends ChatProduct, ProductDetail {};
-export type SearchProductsResponse = DetailedProduct[];
+export interface SearchProductsResponse {
+  products: DetailedProduct[],
+  total: number,
+  count: number,
+  per_page: number,
+  page: number,
+  last_page: number,
+}
+export interface SearchProductsRequest {
+  page: number,
+  query: string,
+}
 
 export type GetProductDetailRequest = ChatProduct;
 

@@ -4,7 +4,7 @@ import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'r
 import { useRouter, Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
-import { searchedProductsAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
+import { isSearchingAtom, searchMoreAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
@@ -38,7 +38,9 @@ export default function DiscoverScreen() {
   const mainProducts = useAtomValue(mainProductsAtom);
   const colorScheme = useColorScheme();
     const searchProducts = useSetAtom(searchProductsAtom);
-  const searchedProducts = useAtomValue(searchedProductsAtom);
+  const searchResult = useAtomValue(searchResultAtom);
+  const handleSearchMore = useSetAtom(searchMoreAtom);
+  const isSearching = useAtomValue(isSearchingAtom);
 
   const styles = useStyles(colorScheme);
   const [query, setQuery] = React.useState('');
@@ -48,7 +50,7 @@ export default function DiscoverScreen() {
   });
   const [text, setText ] =React.useState('');
   const handleClickSend = () => {
-    searchProducts(text);
+    searchProducts({ query: text });
     setQuery(text);
   }
 
@@ -80,8 +82,7 @@ export default function DiscoverScreen() {
         <Text style={styles.title}>탐색</Text>
         )}
       </View>
-      <ScrollView style={styles.scrollView}>
-      <View style={[styles.section, styles.horizontalPadder]}>
+      <View style={styles.horizontalPadder}>
         <View style={styles.inputWrap}>
           <TextInput
             style={[styles.textArea]}
@@ -104,27 +105,26 @@ export default function DiscoverScreen() {
         </View>
       </View>
       {!!query.length ? (
-      <>
-      {searchedProducts === undefined ? (
-      <Text style={styles.loading}>검색중입니다.</Text>
-      ) : (!!searchedProducts.length ? (
         <>
-              <FlatList
-                      scrollEnabled={false}
-                       columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.searchList}
-        data={searchedProducts}
-        numColumns={2}
-        keyExtractor={(product) => `search-${product.id}`}
-        renderItem={({ item: product }) => <SearchProductCard product={product} />}
-        ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
-      />
-
+        {!!searchResult?.products.length && (
+                <FlatList
+                         columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.searchList}
+          data={searchResult.products}
+          numColumns={2}
+          keyExtractor={(product) => `search-${product.id}`}
+          renderItem={({ item: product }) => <SearchProductCard product={product} />}
+          ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
+          onEndReached={() => handleSearchMore(query)}
+        />
+        )}
+        {!isSearching && !searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
+        {isSearching && (
+          <Text style={styles.loading}>검색중입니다.</Text>
+          )}
         </>
-      ) : <Text>검색결과가 없습니다.</Text>)}
-      </>
       ) : (
-      <>
+      <ScrollView style={styles.scrollView}>
       {!!mainProducts.random.length && (
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, styles.horizontalPadder]}>
@@ -157,9 +157,8 @@ export default function DiscoverScreen() {
       />
       </View>
       )}
-      </>
-      )}
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -173,7 +172,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    paddingVertical: 20,
     width: '100%',
     flex: 1,
     paddingTop: 50,
@@ -185,7 +183,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginBottom: 13,
   },
   scrollView: {
-    marginTop: 35,
+    paddingVertical: 20,
     flex: 1,
   },
   seperatorRow: {
@@ -230,6 +228,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     lineHeight: 11,
   },
   inputWrap: {
+    marginBottom: 10,
     paddingHorizontal: 22,
     paddingVertical: 15,
     borderRadius: 45,
@@ -240,12 +239,10 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     borderColor: Colors[colorScheme].text.primary,
     borderWidth: 1,
     flexDirection: 'row',
-    width: '100%',
-    flex: 1,
   },
   textArea: {
-    flex: 1,
     fontSize: 14,
+    flex: 1,
     width: '100%',
   },
   sendIcon: {
@@ -256,7 +253,10 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-    backButton: { width: 89 },
+  backButton: {
+    width: 89,
+    marginBottom: 9,
+  },
   backText: {
     textDecorationLine: 'underline',
   },
@@ -264,7 +264,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     paddingHorizontal: 20,
     marginLeft: 7,
     marginRight: 7,
-    flex: 1,
   },
   searchItem: {
   },

@@ -123,18 +123,17 @@ router.post('/search', requireAuth, async (ctx) => {
   const {
     body: {
       query,
+      page = 1,
     },
   } = <any>ctx.request;
   const {
-    data: {
-      products,
-    },
-  } = await client.get(`https://api.kimgosu.vsolution.app/products?keyword=${encodeURIComponent(query)}`, {
+    data,
+  } = await client.get(`https://api.kimgosu.vsolution.app/products?keyword=${encodeURIComponent(query)}&page=${page}`, {
     headers: {
       Authorization: 'Bearer 389|wxFe3R2xVdE2eFXII3pPH7lF5tFqaUp5o9RVkOQl',
     },
   });
-  ctx.body = products;
+  ctx.body = data;
 });
 
 export default router;
