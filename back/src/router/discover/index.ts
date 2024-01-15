@@ -98,7 +98,7 @@ router.post('/product/detail/caption', requireAuth, async (ctx) => {
   };
 });
 
-router.post('/product/detail/report', requireAuth, async (ctx) => {
+router.post('/product/detail/new-report', requireAuth, async (ctx) => {
   const {
     body: {
       product: {
