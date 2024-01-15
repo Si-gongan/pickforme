@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import Colors from '../constants/Colors';
-import { searchedProductsAtom, productDetailAtom, getProductDetailAtom } from '../stores/discover/atoms';
+import { searchResultAtom, productDetailAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
 import { ChatProduct as Product } from '../stores/request/types';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -26,17 +26,24 @@ const tabName = {
   [TABS.REVIEW]: '리뷰 요약',
 }
 
+const loadingMessages = {
+  [TABS.CAPTION]: 'AI가 상품 이미지를 분석하고 있어요.',
+  [TABS.REPORT]: 'AI가 상품의 상세정보를 요약중이에요.',
+  [TABS.REVIEW]: 'AI가 상품의 리뷰를 요약중이에요.',
+}
+
 
 export default function DiscoverScreen() {
   const { productId } = useLocalSearchParams();
   const router = useRouter();
   const productDetail = useAtomValue(productDetailAtom);
-  const searchedProducts = useAtomValue(searchedProductsAtom);
+  const searchResult = useAtomValue(searchResultAtom);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const getProductDetail = useSetAtom(getProductDetailAtom);
-  const product = searchedProducts?.find(({ id }) => `${id}` === `${productId}`);
+  const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`);
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
+  const loadingStatus = useAtomValue(loadingStatusAtom);
 
   React.useEffect(() => {
     if (product) {
@@ -137,8 +144,8 @@ export default function DiscoverScreen() {
           </View>
         ))}
       </View>
-        {!(productDetail?.isDone) ? (
-          <View style={styles.detailWrap}><Text>정보를 불러오는 중입니다</Text></View>
+        {!(loadingStatus[tab]) ? (
+          <View style={styles.detailWrap}><Text>{loadingMessages[tab]}</Text></View>
         ) : (!!productDetail?.[tab] ? (
           <>
               {tab !== 'review' ? (

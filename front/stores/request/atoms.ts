@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
-import { GetPreviewParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams, Chat } from './types';
-import { ReadRequestAPI, PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI, GetBuyAPI, ToggleBuyAPI } from './apis';
+import { GetPreviewParams, ReviewRequestParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams, Chat } from './types';
+import { ReviewRequestAPI, ReadRequestAPI, PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI, GetBuyAPI, ToggleBuyAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
 
 export const buyAtom = atom<boolean>(false);
@@ -99,4 +99,14 @@ export const receiveChatAtom = atom(null, async (get, set, params: { chat: Chat,
     unreadCount,
     chats: [...request.chats, chat],
   } : request));
+});
+
+export const reviewBottomSheetAtom = atom<string | void>(undefined);
+
+export const reviewRequestAtom = atom(null, async (get,set,params: ReviewRequestParams) => {
+  await ReviewRequestAPI(params);
+  set(requestsAtom, get(requestsAtom).map((request) => request._id === params._id ? {
+    ...request,
+    ...params,
+  }: request));
 });

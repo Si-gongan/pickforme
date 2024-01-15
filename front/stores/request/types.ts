@@ -9,6 +9,11 @@ export interface ChatProduct {
   link: string,
 }
 
+interface Review {
+  text: string,
+  rating: number,
+}
+
 export enum RequestStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
@@ -56,6 +61,8 @@ interface RequestBase {
   createdAt: string,
   chats: Chat[],
   text: string,                              
+  isPublic: boolean,
+  review: Review,
   unreadCount: number,
   answer?: {
     text: string,
@@ -66,7 +73,7 @@ interface RequestBase {
 export interface RecommendRequestParams {
   type: 'RECOMMEND',                         
   price: string,
-  text: string,                              
+  text: string,
 }
 
 export interface ResearchRequestParams {
@@ -104,3 +111,5 @@ export interface PostRequestResponse {
 export interface GetRequestsParams {};
 
 export interface ReadRequestResponse extends Pick<Request, '_id' | 'unreadCount'> {};
+
+export interface ReviewRequestParams extends Review, Pick<Request, '_id'> {};

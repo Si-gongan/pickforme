@@ -8,6 +8,9 @@ import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { previewAtom, getPreviewAtom, addRequestAtom } from '../stores/request/atoms';
 import { ResearchRequestParams } from '../stores/request/types';
 import Colors from '../constants/Colors';
+import CheckBox from '../components/CheckBox';
+import { pushBottomSheetAtom } from '../stores/layout/atoms';
+
 
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -20,10 +23,14 @@ export default function ResearchScreen() {
   const preview = useAtomValue(previewAtom);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+    const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
+  const [isShareChecked, setIsShareChecked] = useState(false);
+
   const [data, setData] = useState<ResearchRequestParams>({
     type: 'RESEARCH',
     link: params.link ? decodeURIComponent(`${params.link}`) : '',
     text: '',
+    isPublic: isShareChecked,
   });
   const handleClickPaste = async () => {
     const text = await Clipboard.getStringAsync();
@@ -38,6 +45,17 @@ export default function ResearchScreen() {
   const handleSubmit = () => {
     addRequest(data);
     router.push('(tabs)/requests')
+  }
+  const openShareDesc = () => {
+    pushBottomSheet(
+      [{
+        type: 'title',
+        text: '[선택사항] 픽포미 추천 함께 공유하기',
+      }, {
+        type: 'desc',
+        text: '픽포미 추천 상품을 모두가 확인할 수 있게 리포트를 공유하는 기능이에요. 매월 최다 조회될 경우 1픽을 돌려받을 수 있어요. 개인 정보는 노출되지 않아요.',
+      }]
+    );
   }
   const disabled = !data.link;
   return (
@@ -108,6 +126,16 @@ export default function ResearchScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
+        <View style={styles.checkWrap}>
+          <CheckBox
+            checked={isShareChecked}
+            onPress={() => setIsShareChecked(prev => !prev)}
+          />
+          <Text style={styles.checkText}>[선택사항] 픽포미 추천 함께 공유하기</Text>
+          <Pressable onPress={openShareDesc}>
+            <Image style={styles.checkMore} source={require('../assets/images/ChevronRight.png')} />
+          </Pressable>
+        </View>
         <Button title='1픽 사용하여 분석 의뢰하기' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
@@ -157,8 +185,27 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 24,
   },
-  buttonWrap: {
+    buttonWrap: {
+    flexDirection: 'column',
     padding: 20,
+  },        
+  checkWrap: {
+    marginBottom: 19,
+    flexDirection: 'row',
+    gap: 11,
+  },
+  check: {
+    flexShrink: 0,
+  },
+  checkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    flexGrow: 1,
+  },
+  checkMore: {
+    flexShrink: 0,
+    width: 8,
+    height: 15,
   },
   buttonRow: {
     flexDirection: 'row',

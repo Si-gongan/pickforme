@@ -78,6 +78,10 @@ const RequestSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Users',
   },
+  review: {
+    text: String,
+    rating: Number,
+  },
   isPublic: {
     type: Boolean,
     default: false,

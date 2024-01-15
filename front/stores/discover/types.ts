@@ -99,5 +99,4 @@ export type GetProductDetailRequest = ChatProduct;
 
 export interface DiscoverDetailState extends GetProductDetailsResponse {
   id: number,
-  isDone: boolean,
-  }
+}

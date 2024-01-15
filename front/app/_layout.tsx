@@ -22,7 +22,7 @@ import LoginBottomSheet from '../components/BottomSheet/Login';
 import LackBottomSheet from '../components/BottomSheet/Lack';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import CommonBottomSheet from '../components/BottomSheet/Common';
-
+import ReviewBottomSheet from '../components/BottomSheet/Review';
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -104,6 +104,7 @@ function RootLayoutNav() {
           <LoginBottomSheet />
           <LackBottomSheet />
           <GreetingBottomSheet />
+          <ReviewBottomSheet />
           {bottomSheets.map((info, i) => (
             <CommonBottomSheet info={info} index={i} />
           ))}

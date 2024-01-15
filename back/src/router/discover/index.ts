@@ -75,7 +75,7 @@ router.post('/product', requireAuth, async (ctx) => {
   };
 });
 
-router.post('/product/detail', requireAuth, async (ctx) => {
+router.post('/product/detail/caption', requireAuth, async (ctx) => {
   const {
     body: {
       product: {
@@ -84,41 +84,61 @@ router.post('/product/detail', requireAuth, async (ctx) => {
       },
     },
   } = <any>ctx.request;
-  const datas = await Promise.allSettled([
-    client.post('https://ai.sigongan-ai.shop/product-caption', {
-      id: `${id}`,
-    }),
-    client.post('/report', {
-      id: `${id}`,
-    }),
-    client.post('https://ai.sigongan-ai.shop/product-review', {
-      url: `https://www.coupang.com/vp/products/${group}`,
-    }),
-  ]).then((results) => results.map((result) => (result.status === 'fulfilled' ? result.value : {
-    data: undefined,
-  })));
-  const [{
-    data: {
+  const {
+     data: {
       answer: caption,
     } = {
       answer: undefined,
     },
-  }, {
+  } = await client.post('https://ai.sigongan-ai.shop/product-caption', {
+    id: `${id}`,
+  }).catch(() => ({ data: {} }));
+  ctx.body = {
+    caption,
+  };
+});
+
+router.post('/product/detail/report', requireAuth, async (ctx) => {
+  const {
+    body: {
+      product: {
+        id,
+        group,
+      },
+    },
+  } = <any>ctx.request;
+  const {
     data: {
       answer: report,
     } = {
       answer: undefined,
     },
-  }, {
-    data: review,
-  }] = datas;
+  } = await client.post('/report', {
+      id: `${id}`,
+  }).catch(() => ({ data: {} }));
   ctx.body = {
-    caption,
     report,
-    review,
   };
 });
 
+router.post('/product/detail/report', requireAuth, async (ctx) => {
+  const {                   
+    body: {                 
+      product: {            
+        id,                 
+        group,              
+      },                    
+    },                      
+  } = <any>ctx.request;     
+  const {
+    data: review,
+  } = await client.post('https://ai.sigongan-ai.shop/product-review', {
+      url: `https://www.coupang.com/vp/products/${group}`,
+  }).catch(() => ({ data: {} }));
+  ctx.body = {
+    review,
+  };
+});
 router.post('/search', requireAuth, async (ctx) => {
   const {
     body: {

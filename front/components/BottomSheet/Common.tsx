@@ -18,7 +18,7 @@ interface Props extends BaseProps {
   index: number;
 }
 
-const LoginBottomSheet: React.FC<Props> = ({ info, index }) => {
+const CommongBottomSheet: React.FC<Props> = ({ info, index }) => {
   const bottomSheets = useAtomValue(bottomSheetsAtom);
   const isFirst = bottomSheets.findIndex(({ isVisible }) => !!isVisible) === index;
   const [isVisible, setIsVisible] = React.useState(info.isVisible);
@@ -56,4 +56,4 @@ const LoginBottomSheet: React.FC<Props> = ({ info, index }) => {
     </BottomSheet>
   );
 }
-export default LoginBottomSheet;
+export default CommongBottomSheet;

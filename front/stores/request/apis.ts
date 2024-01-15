@@ -9,6 +9,7 @@ import {
   GetPreviewParams,
   ReadRequestResponse,
   SendChatParams as PostChatParams,
+  ReviewRequestParams,
   Preview,
   Chat
 } from './types';
@@ -21,3 +22,4 @@ export const PostChatAPI = (params: PostChatParams) => client.post<Chat>('/reque
 export const GetPreviewAPI = (params: GetPreviewParams) => client.post<Preview>('/request/preview', params);
 export const GetBuyAPI = () => client.get<boolean>('/request/buy');
 export const ToggleBuyAPI = () => client.post<boolean>('/request/buy');
+export const ReviewRequestAPI = (params: ReviewRequestParams) => client.post('/request/review', params);

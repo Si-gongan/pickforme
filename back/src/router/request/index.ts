@@ -93,6 +93,20 @@ router.get('/', requireAuth, async (ctx) => {
   ctx.body = requests;
 });
 
+router.post('/review', requireAuth, async (ctx) => {
+  const {
+    body: {
+      _id,
+      ...review
+    },
+  } = <any>ctx.request;
+  const request = await db.Request.findOne({
+    _id, userId: ctx.state.user._id,
+  });
+  request.review = review;
+  await request.save();
+  ctx.status = 200;
+});
 router.post('/preview', requireAuth, async (ctx) => {
   const {
     link,

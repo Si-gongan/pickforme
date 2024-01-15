@@ -3,7 +3,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState } from 'react';
 import { numComma } from '../utils/common';
-import { requestsAtom, previewAtom, getPreviewAtom } from '../stores/request/atoms';
+
+import { pushBottomSheetAtom } from '../stores/layout/atoms';
+import { reviewBottomSheetAtom, requestsAtom, previewAtom, getPreviewAtom } from '../stores/request/atoms';
 import { Product } from '../stores/request/types';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
@@ -25,6 +27,9 @@ export default function RequestScreen() {
   const { requestId } = useLocalSearchParams();
   const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
   const colorScheme = useColorScheme();
+  const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
+  const setIsShowReviewBottomSheet = useSetAtom(reviewBottomSheetAtom);
+
   const styles = useStyles(colorScheme);
   if (!request) {
     return <Text>잘못된 접근입니다</Text>
@@ -33,6 +38,18 @@ export default function RequestScreen() {
     await WebBrowser.openBrowserAsync(url);
   }
 
+  const handlePressReview = () => {
+    if (request.review) {
+      pushBottomSheet(
+      [{
+        type: 'title',
+        text: '이미 리뷰를 작성하셨습니다',
+      }]
+    );
+    } else {
+      setIsShowReviewBottomSheet(request._id);
+    }
+  }
   const getPreview = useSetAtom(getPreviewAtom);
   const preview = useAtomValue(previewAtom);
 
@@ -98,13 +115,24 @@ export default function RequestScreen() {
             매니저가 답변을 작성중입니다. 조금만 기다려주세요.
           </Text>
         )}
+        <View style={styles.buttonWrap}>
           <Button
             style={styles.button}
             title='문의 채팅하기'
-            color='secondary'
+            color='primary'
             size='large'
             onPress={() => router.push(`/chat?requestId=${requestId}`)}
           />
+          {request.answer && (
+          <Button
+            style={styles.button}
+            title='리포트 평가하기'
+            color='secondary'
+            size='large'
+            onPress={handlePressReview}
+          />
+          )}
+        </View>
         </View>
       </ScrollView>
     </View>
@@ -166,6 +194,10 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginBottom: 30,
   },
   button: {
+  },
+  buttonWrap: {
     marginTop: 30,
+    flexDirection: 'column',
+    gap: 18,
   },
 });
