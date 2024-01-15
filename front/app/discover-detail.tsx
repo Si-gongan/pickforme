@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import Colors from '../constants/Colors';
-import { searchResultAtom, productDetailAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { searchResultAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
 import { ChatProduct as Product } from '../stores/request/types';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -41,6 +41,8 @@ export default function DiscoverScreen() {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const getProductDetail = useSetAtom(getProductDetailAtom);
+  const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
+  const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
   const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`);
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
@@ -61,6 +63,16 @@ export default function DiscoverScreen() {
       return;
     }
     router.push({ pathname: '/research', params: { link: encodeURIComponent(product.url)  }});
+  }
+  const handlePressTab = (nextTab: TABS) => {
+    if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
+      if (nextTab === TABS.REPORT) {
+        getProductDetailReport(product);
+      } else if (nextTab === TABS.REVIEW) {
+        getProductDetailReview(product);
+      }
+    }
+    setTab(nextTab);
   }
   return (
     <View style={styles.container}>
@@ -138,13 +150,13 @@ export default function DiscoverScreen() {
               title={tabName[TAB]}
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
-              onPress={() => setTab(TAB)}
+              onPress={() => handlePressTab(TAB)}
               accessibilityLabel={`${tabName[TAB]} 의뢰목록 보기`}
             />
           </View>
         ))}
       </View>
-        {!(loadingStatus[tab]) ? (
+        {(loadingStatus[tab] <= 1) ? (
           <View style={styles.detailWrap}><Text>{loadingMessages[tab]}</Text></View>
         ) : (!!productDetail?.[tab] ? (
           <>
@@ -154,13 +166,13 @@ export default function DiscoverScreen() {
                 </View>
               ) : (
                 <>
-                  {productDetail?.[tab]?.pros.length === 0 
-                  && productDetail?.[tab]?.cons.length === 0 && (
+                  {!productDetail?.[tab]?.pros?.length
+                  && !productDetail?.[tab]?.cons?.length && (
                     <View style={styles.detailWrap}>
                       <Text>등록된 리뷰가 없습니다.</Text>
                     </View>
                   )}
-                  {productDetail?.[tab]?.pros.length !== 0 && (
+                  {productDetail?.[tab]?.pros?.length !== 0 && (
                     <View style={styles.detailWrap}>
                       <Text style={styles.reviewListTitle}>
                         긍정 리뷰 요약
@@ -170,7 +182,7 @@ export default function DiscoverScreen() {
                       ))}
                     </View>
                   )}
-                  {productDetail?.[tab]?.cons.length !== 0 && (
+                  {productDetail?.[tab]?.cons?.length !== 0 && (
                     <View style={styles.detailWrap}>
                       <Text style={styles.reviewListTitle}>
                         부정 리뷰 요약

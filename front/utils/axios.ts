@@ -8,6 +8,8 @@ const client = axios.create({
     'Content-Type': 'application/json',
   },
 });
+client.defaults.timeout = 40000;
+
 
 export const setClientToken = (token?: string) => {
   if (token) {

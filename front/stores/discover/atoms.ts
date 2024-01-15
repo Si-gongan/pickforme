@@ -13,10 +13,16 @@ export const mainProductsAtom = atom<DiscoverState>({
   reports: [],
 });
 
+enum LoadingStatus {
+  INIT,
+  LOADING,
+  FINISH,
+}
+
 export const loadingStatusAtom = atom({
-  caption: false,
-  review: false,
-  report: false,
+  caption: LoadingStatus.INIT,
+  review: LoadingStatus.INIT,
+  report: LoadingStatus.INIT,
 });
 export const isSearchingAtom = atom(false);
 export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
@@ -55,7 +61,7 @@ export const productDetailAtom = atom<DiscoverDetailState | void>(undefined);
 export const getProductDetailAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   const { data } = await GetProductDetailMainAPI(product)
   set(productDetailAtom, { id: product.id });
-  set(loadingStatusAtom, { caption: false, report: false, review: false });
+  set(loadingStatusAtom, { caption: LoadingStatus.LOADING, report: LoadingStatus.INIT, review: LoadingStatus.INIT });
   const searchResult = get(searchResultAtom);
   if (searchResult) {
     set(searchResultAtom, {
@@ -66,22 +72,24 @@ export const getProductDetailAtom = atom(null, async (get, set, product: GetProd
   const { data: productDetail } = await GetProductDetailsCaptionAPI(product)
   if (get(productDetailAtom)?.id === product.id) {
     set(productDetailAtom, { id: product.id, ...productDetail });
-    set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: true });
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
   }
 });
 
 export const getProductDetailReviewAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
+  set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
   const { data: productDetail } = await GetProductDetailsReviewAPI(product)
   if (get(productDetailAtom)?.id === product.id) {
     set(productDetailAtom, { id: product.id, ...productDetail });
-    set(loadingStatusAtom, { ...get(loadingStatusAtom), review: true });
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
   }
 });
 
 export const getProductDetailReportAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
+  set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.LOADING });
   const { data: productDetail } = await GetProductDetailsReportAPI(product)
   if (get(productDetailAtom)?.id === product.id) {
     set(productDetailAtom, { id: product.id, ...productDetail });
-    set(loadingStatusAtom, { ...get(loadingStatusAtom), report: true });
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.FINISH });
   }
 });

@@ -121,7 +121,7 @@ router.post('/product/detail/report', requireAuth, async (ctx) => {
   };
 });
 
-router.post('/product/detail/report', requireAuth, async (ctx) => {
+router.post('/product/detail/review', requireAuth, async (ctx) => {
   const {                   
     body: {                 
       product: {            
@@ -134,7 +134,7 @@ router.post('/product/detail/report', requireAuth, async (ctx) => {
     data: review,
   } = await client.post('https://ai.sigongan-ai.shop/product-review', {
       url: `https://www.coupang.com/vp/products/${group}`,
-  }).catch(() => ({ data: {} }));
+  }).catch(() => ({ data: { pros: [], cons: [] } }));
   ctx.body = {
     review,
   };
