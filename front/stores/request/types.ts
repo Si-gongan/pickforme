@@ -61,7 +61,6 @@ interface RequestBase {
   createdAt: string,
   chats: Chat[],
   text: string,                              
-  isPublic: boolean,
   review: Review,
   unreadCount: number,
   answer?: {
@@ -74,6 +73,7 @@ export interface RecommendRequestParams {
   type: 'RECOMMEND',                         
   price: string,
   text: string,
+  isPublic: boolean,
 }
 
 export interface ResearchRequestParams {

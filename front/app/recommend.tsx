@@ -57,6 +57,7 @@ export default function RecommendScreen() {
           <Link
             href={`/recommend-sample`}
             asChild
+            accessibilityRole='button'
           >
             <Button style={styles.button} textStyle={styles.buttonText} title='작성 예시' size='medium' />
           </Link>

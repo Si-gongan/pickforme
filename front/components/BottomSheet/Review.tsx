@@ -7,7 +7,7 @@ import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import { View, Text } from '../Themed';
 import Button from '../Button';
-import { StyleSheet, Image, TextInput, Pressable } from 'react-native';
+import {  AccessibilityInfo, StyleSheet, Image, TextInput, Pressable } from 'react-native';
 import { Props, styles } from './Base';
 import Colors from '../../constants/Colors';
 
@@ -73,6 +73,14 @@ const LoginBottomSheet: React.FC<Props> = () => {
     }
     onClose();
   }
+  const handlePress = (idx: number) => {
+    setTimeout(() => {
+      AccessibilityInfo.announceForAccessibility(
+        `별 ${idx}개 선택`
+      );
+    }, 100);
+    setRating(idx);
+  }
   return (
     <BottomSheet
       style={styles.base}
@@ -86,7 +94,7 @@ const LoginBottomSheet: React.FC<Props> = () => {
         </Text>
         <View style={localStyles.starWrap}>
           {[1,2,3,4,5].map((idx) => (
-            <Pressable onPress={() => setRating(idx)} key={`Review-star-${idx}`}>
+            <Pressable onPress={() => handlePress(idx)} key={`Review-star-${idx}`} accessibilityRole='button' accessibilityLabel={`별 ${idx}개`}>
               <Image style={localStyles.star} source={idx <= rating ? require('../../assets/images/StarFill.png') :  require('../../assets/images/Star.png')} />
             </Pressable>
           ))}

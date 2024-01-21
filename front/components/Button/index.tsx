@@ -3,7 +3,7 @@ import { StyleSheet, TextProps, Pressable, PressableProps, ViewProps } from 'rea
 import { useThemeColor, ThemeProps } from '../../hooks/useThemeColor';
 import { View, Text } from '../Themed';
 
-interface ButtonTextProps extends ThemeProps, Pick<TextProps, 'children' | 'numberOfLines' | 'ellipsizeMode'> {
+interface ButtonTextProps extends ThemeProps, Pick<TextProps, 'children' | 'numberOfLines' | 'ellipsizeMode' | 'accessibilityLabel'> {
   textStyle?: TextProps['style'];
 }
 interface ButtonProps extends  Omit<PressableProps, 'children'>, ButtonTextProps {
@@ -114,7 +114,7 @@ const Button = ({
     return <Content pressed={false} />;
   }
   return (
-    <Pressable onPress={handlePress} {...props}>
+    <Pressable onPress={handlePress} {...props} accessibilityRole='button'>
       {(pressableProps) => <Content {...pressableProps} />}
     </Pressable>
   );

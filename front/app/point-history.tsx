@@ -59,7 +59,7 @@ export default function PointHistoryScreen() {
                 <Text style={styles.usage}>
                   {history.usage}
                 </Text>
-                <Text style={styles.diff}>
+                <Text style={styles.diff} accessibilityLabel={`${history.diff > 0 ? '플러스' : '마이너스'}${history.diff}`}>
                   {`${history.diff > 0 ? '+' : ''}${history.diff}`}
                 </Text>
               </View>

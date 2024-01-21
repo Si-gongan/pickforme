@@ -27,13 +27,15 @@ const ProductCard: React.FC<Props> = ({ product }) => {
     >
       <Image style={styles.productImage} source={{ uri: product.productImage }} />
       <View style={styles.footer}>
-        <View style={styles.footerText}>
-        <Text style={styles.productTitle} numberOfLines={2}>
-          {product.productName}
-        </Text>
-        <Text style={styles.productPrice} accessible>
-          {numComma(product.productPrice)}원
-        </Text>
+        <View style={styles.footerText}
+          accessibilityLabel={`${product.productName} ${numComma(product.productPrice)}원`}
+        >
+          <Text style={styles.productTitle} numberOfLines={2}>
+            {product.productName}
+          </Text>
+          <Text style={styles.productPrice} accessible>
+            {numComma(product.productPrice)}원
+          </Text>
         </View>
         <View style={styles.buttonWrap}>
           <Button

@@ -33,6 +33,7 @@ export default function NoticeScreen() {
               href={`/notice?noticeId=${notice._id}`}
               style={styles.cardLink}
               asChild
+              accessibilityRole='button'
             >
               <Pressable>
                 {({ pressed }) => (

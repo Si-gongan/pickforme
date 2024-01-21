@@ -31,7 +31,7 @@ export default function RequestScreen() {
         <Text style={styles.date} color='secondary'>
           {`${formatDate(notice.createdAt)} ${formatTime(notice.createdAt)}`}
         </Text>
-        <Text style={styles.desc}>
+        <Text style={styles.desc} accessibilityLabel={notice.text}>
           <RenderHtml
             source={{ html: `<body>${notice.text.replace(/\n/g, '<br />')}</body>` }}
           />

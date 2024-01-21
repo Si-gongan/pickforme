@@ -48,7 +48,7 @@ export default function TabOneScreen() {
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.inner}>
-          <View style={styles.textWrap}>
+          <View style={styles.textWrap} accessibilityLabel={`${setting?.name}님 안녕하세요, 좋은 하루입니다!`} >
             <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
             <Text style={styles.title}>좋은 하루입니다!</Text>
           </View>

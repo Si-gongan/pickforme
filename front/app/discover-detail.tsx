@@ -98,7 +98,7 @@ export default function DiscoverScreen() {
                 기타 정보
               </Text>
               {!!product.option && (
-              <View style={styles.tableRow}>
+              <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                   옵션
                 </Text>
@@ -107,7 +107,7 @@ export default function DiscoverScreen() {
                 </Text>
               </View>
                 )}
-              <View style={styles.tableRow}>
+              <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                   평점
                 </Text>
@@ -115,7 +115,7 @@ export default function DiscoverScreen() {
                   {product.ratings}
                 </Text>
               </View>
-              <View style={styles.tableRow}>
+              <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                    리뷰 개수
                 </Text>
@@ -123,7 +123,7 @@ export default function DiscoverScreen() {
                   {product.reviews}
                 </Text>
               </View>
-              <View style={styles.tableRow}>
+              <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                   역대 최고가
                 </Text>
@@ -131,7 +131,7 @@ export default function DiscoverScreen() {
                   {numComma(product.highest_price || 0)}원
                 </Text>
               </View>
-              <View style={styles.tableRow}>
+              <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                   역대 최저가
                 </Text>

@@ -30,7 +30,6 @@ export default function ResearchScreen() {
     type: 'RESEARCH',
     link: params.link ? decodeURIComponent(`${params.link}`) : '',
     text: '',
-    isPublic: isShareChecked,
   });
   const handleClickPaste = async () => {
     const text = await Clipboard.getStringAsync();
@@ -70,6 +69,7 @@ export default function ResearchScreen() {
           <Link
             href={`/research-sample`}
             asChild
+            accessibilityRole='button'
           >
             <Button style={styles.button} textStyle={styles.buttonText} title='작성 예시' size='medium' />
           </Link>
@@ -126,16 +126,6 @@ export default function ResearchScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
-        <View style={styles.checkWrap}>
-          <CheckBox
-            checked={isShareChecked}
-            onPress={() => setIsShareChecked(prev => !prev)}
-          />
-          <Text style={styles.checkText}>[선택사항] 픽포미 추천 함께 공유하기</Text>
-          <Pressable onPress={openShareDesc}>
-            <Image style={styles.checkMore} source={require('../assets/images/ChevronRight.png')} />
-          </Pressable>
-        </View>
         <Button title='1픽 사용하여 분석 의뢰하기' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
