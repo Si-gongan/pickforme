@@ -68,7 +68,7 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
             {product.name}
           </Text>
           <Text style={styles.productRating}>
-            평점 ${product.rating} (${product.rating_total_count}명 평가)
+            평점 {product.rating} ({product.rating_total_count}명 평가)
           </Text>
           </View>
           <Text style={styles.productPrice}>
