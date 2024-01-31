@@ -19,7 +19,7 @@ const DATA: TDATA[] = [{
   image: require('../../assets/images/main/discover.png'),
   requireAuth: true,
 }, {
-  path: '/(tabs)/AI',
+  path: '/chat',
   title: `포미와\n쇼핑하기`,
   image: require('../../assets/images/main/AI.png'),
   requireAuth: true,
