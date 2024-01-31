@@ -105,7 +105,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'transparent',
     gap: 10,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   button: {
     paddingHorizontal: 12,

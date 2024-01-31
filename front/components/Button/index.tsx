@@ -19,17 +19,19 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 15,
   },
   large: {
     minHeight: 57,
     paddingVertical: 16,
+    borderRadius: 15,
   },
   medium: {
     minHeight: 36,
+    borderRadius: 10,
   },
   small: {
     minHeight: 31,
+    borderRadius: 7,
   },
   pressed: {
   },
@@ -40,6 +42,9 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
     backgroundColor: 'transparent',
+  },
+  readOnly: {
+    borderRadius: 15,
   },
 });
 
@@ -93,7 +98,7 @@ const Button = ({
     }
   }
   const Content = ({ pressed }: { pressed: boolean }) => (
-    <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], style]}>
+    <View style={[styles.button, styles[size], { backgroundColor: props.disabled ? disabledBackgroundColor : backgroundColor }, pressed && styles.pressed, styles[variant], readOnly && styles.readOnly, style]}>
       {renderChildrenPosition === 'front' && children}
       {props.title && (
         <ButtonText
