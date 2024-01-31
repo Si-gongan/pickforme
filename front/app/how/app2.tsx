@@ -21,28 +21,15 @@ export default function HowScreen() {
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          ‘의뢰 목록’ 탭에서는 그동안의 의뢰서들과 결과 리포트를 모아 볼 수 있습니다. 의뢰 한 건당 하나의 채팅방이 개설되어요. 서비스 진행 상황 또한 의뢰 목록 탭에서 확인할 수 있습니다.
+3. AI 포미 탭: 쇼핑을 돕는 인공지능 AI 포미와 대화할 수 있어요. 원하는 상품을 설명하고 상품 추천을 빠르게 받아보세요.
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-의뢰 시 개설되는 채팅방에서는 의뢰하셨던 내용을 확인할 수 있어요. 의뢰서를 토대로 작성된 결과 리포트 또한 여기서 확인하세요.
-          </Text>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.desc}>
-결과 리포트에 대한 추가적인 궁금증이 있다면, 채팅방에 바로 문의를 남겨주세요.
-          </Text>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.desc}>
-결과 리포트 전송 후 24시간이 지나면, 해당 의뢰에 대한 서비스는 종료됩니다.
+4. 의뢰 목록 탭: 총 3개의 탭으로 구성되어 있어요. 의뢰 리포트, 구매 리포트, 상품 목록 탭이에요. ‘의뢰 리포트’ 탭을 활성화하면 내가 의뢰한 리포트를 전부 볼 수 있어요. 의뢰 진행 상황도 확인할 수 있고요. ‘구매 리포트' 탭을 활성화화면 내가 구매한 다른 사람의 리포트를 볼 수 있어요. ‘상품 목록’ 버튼은 의뢰 리포트와 구매 리포트에서 추천한 상품들이 전부 저장돼있어요. 
           </Text>
         </View>
         <View style={styles.buttonWrap}>
-          <View style={styles.full}>
-            <Button title='이전' onPress={() => router.back()} />
-          </View>
           <View style={styles.full}>
             <Button title='다음' onPress={() => router.push('./app3')} />
           </View>

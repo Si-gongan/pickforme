@@ -14,24 +14,23 @@ export default function HowScreen() {
       <ScrollView>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.title}>'픽포미 분석' 소개</Text>
+          <Text style={styles.title}>'상품 설명 받기' 소개</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.page}>총 2페이지 중 2페이지</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          작성한 의뢰서는 픽포미 매니저에게 바로 전달됩니다. 2시간 이내로 채팅을 통해 결과 리포트를 전달드려요.
+          작성한 의뢰서는 픽포미 매니저에게 바로 전달됩니다. 2시간 이내로 설명 리포트를 전달드려요. 결과 리포트 전송 후 24시간이 지나면, 해당 의뢰에 대한 서비스는 종료됩니다.
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          리포트에는 기본적으로 상품 디자인, 상세페이지 정보, 리뷰가 포함됩니다. 중고상품의 경우, 사진으로 보이는 상품 상태와 하자여부까지 알려드려요. 작성하신 의뢰서와 결과 리포트에 문의사항이 있을 경우, 채팅을 통해 매니저에게 문의해주세요.
-          </Text>
+          리포트에는 기본적으로 상품 디자인, 상세페이지 정보, 리뷰에 대해 설명해드려요. 중고상품의 경우, 사진으로 보이는 상품 상태와 하자여부를 알려드려요. 작성하신 의뢰서와 설명 리포트에 문의사항이 있을 경우, 채팅을 통해 매니저에게 문의해주세요.           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-의뢰서와 리포트의 예시를 보러 가볼까요?
+          의뢰서와 리포트의 예시를 보러 가볼까요?
           </Text>
         </View>
         <View style={styles.section}>
@@ -45,8 +44,8 @@ export default function HowScreen() {
           </View>
         </View>
         <View style={[styles.buttonWrap, styles.buttonLeft]}>
-          <View style={styles.half}>
-            <Button title='이전' onPress={() => router.back()} />
+          <View style={styles.full}>
+            <Button title='상품 설명 받으러 가기' onPress={() => router.push('/research')} />
           </View>
         </View>
       </View>

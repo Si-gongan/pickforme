@@ -14,23 +14,23 @@ export default function HowScreen() {
       <ScrollView>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.title}>'픽포미 추천' 소개</Text>
+          <Text style={styles.title}>'상품 추천 받기' 소개</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.page}>총 2페이지 중 1페이지</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          복잡한 온라인 쇼핑몰에서 내가 딱 원하는 상품을 찾기 어려우셨나요? 고객님의 요구사항에 맞는 최적의 상품 3개를 매니저가 직접 찾아 드립니다.
+          쇼핑할 때 내가 딱 원하는 상품을 찾을 수 없어 곤란했던 적 있으셨나요? 이제 픽포미가 당신의 요구사항에 맞는 최적의 상품 3개를 직접 찾아 드릴게요.
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-홈 화면의 픽포미 추천 버튼을 누르면, 의뢰서 작성 페이지로 이동할 수 있습니다. 의뢰서에는 찾고 싶은 상품에 대한 설명을 적어주세요. 원하는 성능, 디자인, 가격대, 브랜드 등 다양한 조건을 제시하셔도 좋습니다.
+          홈 화면의 ‘상품 추천 받기’ 버튼을 누르면, 의뢰서 작성 페이지로 이동합니다. 의뢰서에 어떤 상품을 원하는지를 가격대와 함께 작성해주세요. 원하는 성능, 디자인, 브랜드 등 조건을 자세하게 작성해주시면 더욱 정확한 상품 추천이 가능해요. 
           </Text>
         </View>
         <View style={[styles.buttonWrap, styles.buttonRight]}>
-          <View style={styles.half}>
+          <View style={styles.full}>
             <Button title='다음' onPress={() => router.push('./recommend2')} />
           </View>
         </View>

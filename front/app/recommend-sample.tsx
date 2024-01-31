@@ -11,45 +11,42 @@ export default function RequestScreen() {
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.inner}>
-        <Text style={styles.title}>
-          추천 의뢰 작성 방법
-        </Text>
-        <Text style={styles.desc}>
-{`1) 상품 종류
-2) 상품과 연관된 고객님의 특징
-3) 상품 선택 시 고려하시는 부분을 작성해 주세요!
-자세한 설명을 적어주시면 마음에 쏙 드는 상품을 추천드릴게요 🙂
+          <Text style={styles.title}>
+            추천 의뢰 작성 방법
+          </Text>
+          <Text style={styles.desc}>
+{`요구사항에 맞는 최적의 상품 3개를 찾아드려요. 
+1) 원하는 상품과 가격대 
+2) 원하는 상품의 특징을 자유롭게 적어주세요.
 `}
-</Text>
-<Text style={styles.subtitle}>
-작성 예시
-</Text>
-<View style={styles.row}>
-  <Text style={[styles.desc, styles.dot]}>
-    {`\u2022`}
-  </Text>
-  {/* @ts-ignore */}
-  <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
-화장품) 파운데이션. 21호 지성피부고, 커버력이 좋은 상품을 원해요!
-  </Text>
-</View>
-<View style={styles.row}>
-  <Text style={[styles.desc, styles.dot]}>
-    {`\u2022`}
-  </Text>
-  {/* @ts-ignore */}
-  <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
-옷) 버건디 가디건. 저는 여성이고, 주로 M사이즈를 입습니다. 무난하게 입을 상품을 원해요!</Text>
-</View>
-<View style={styles.row}>
-  <Text style={[styles.desc, styles.dot]}>
-    {`\u2022`}
-  </Text>
-  {/* @ts-ignore */}
-  <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
-전자제품) 흰색 13인치 노트북. 학교 수업에서 사용할 예정이라, 무겁지 않고 얇은 상품을 원해요!</Text>
-</View>
-</View>
+          </Text>
+          <Text style={styles.subtitle}>
+          작성 예시
+          </Text>
+          <View style={styles.row}>
+            <Text style={[styles.desc, styles.dot]}>
+              {`\u2022`}
+            </Text>
+            {/* @ts-ignore */}
+            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            5만원대 가디건) 여성용 버건디색 M사이즈로, 무난하게 입을 수 있는 제품이면 좋겠어요.
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={[styles.desc, styles.dot]}>
+              {`\u2022`}
+            </Text>
+            {/* @ts-ignore */}
+            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            50만원 노트북) 흰색 13인치로, 학교 수업에서 사용할 예정이라 무겁지 않고 얇은 상품을 원해요.</Text>
+          </View>
+          <View style={{height:20}}></View>
+          <View style={styles.row}>
+            {/* @ts-ignore */}
+            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            자세하게 의뢰서를 작성해주시면 마음에 쏙 드는 상품을 추천드릴 수 있어요 🙂</Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );

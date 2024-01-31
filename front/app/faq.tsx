@@ -20,10 +20,10 @@ const FAQS: {
       answer: 'AI 포미는 고객님께서 물어보신 제품을 쿠팡에서 찾아 추천해 드려요. 빠르고 편리하게 필요한 물건을 찾고 싶으시다면, 픽포미의 AI ‘포미’와 대화해 보세요.',
     }, {
       question: '포미가 추천하는 상품은 어떠한 기준으로 선정되나요? ',
-      answer: '포미는 쿠팡과 네이버쇼핑을 기반으로 제품을 추천해 드려요. 고객님께서 조건을 추가하지 않으신다면, 제품의 가격, 구매 수, 리뷰 수, 평점 등을 기준으로 제품을 추천해 드립니다.',
+      answer: '포미는 쿠팡을 기반으로 제품을 추천해 드려요. 고객님께서 조건을 추가하지 않으신다면, 제품의 가격, 구매 수, 리뷰 수, 평점 등을 기준으로 제품을 추천해 드립니다.',
     }, {
       question: '포미가 원하는 정보를 주지 않아요.',
-      answer: 'AI 포미는 최선의 정보를 제공하기 위해 노력하고 있어요. 그럼에도 아직 포미는 똑똑해지는 중이어서, 완벽한 정보를 제공하지 못할 수도 있습니다. 포미를 통해 충분한 정보를 얻지 못하셨다면, 매니저가 직접 제공하는 픽포미 추천이나 픽포미 설명 서비스를 이용해 보시는 건 어떨까요?',
+      answer: 'AI 포미는 최선의 정보를 제공하기 위해 노력하고 있어요. 그럼에도 아직 포미는 똑똑해지는 중이어서, 완벽한 정보를 제공하지 못할 수도 있습니다. 포미를 통해 충분한 정보를 얻지 못하셨다면, 매니저가 직접 제공하는 픽포미 추천이나 픽포미 설명 서비스를 이용해보시는 걸 추천드려요.',
     }],
   },
   PICKFORME: {
@@ -63,10 +63,7 @@ export default function HowScreen() {
     <View style={styles.container}>
       <ScrollView>
       <View style={styles.content}>
-        <Text style={styles.title}>FAQ</Text>
-        <Text style={styles.desc}>
-          질문을 터치해 답을 확인해보세요.
-        </Text>
+        <Text style={styles.title}>자주 묻는 질문</Text>
       </View>
       <View style={styles.tabWrap}>
         {Object.entries(FAQS).map(([TAB, { name }]) => (

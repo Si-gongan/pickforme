@@ -13,9 +13,9 @@ import Collapsible from 'react-native-collapsible';
 import * as WebBrowser from 'expo-web-browser';
 
 const tabName = {
-  'recommend1': '[픽포미 추천 예시]',
-  'research1': '[픽포미 분석 예시 - 일반]',
-  'research2': '[픽포미 분석 예시 - 중고]',
+  'recommend1': '[상품 추천 예시]',
+  'research1': '[상품 설명 예시 - 일반 상품]',
+  'research2': '[상품 설명 예시 - 중고 상품]',
 }
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
@@ -59,14 +59,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           <View style={styles.buttonWrap}>
             <Button
               size='small'
-              title='접기'
-              color='secondary'
-              onPress={()=> setIsOpen(false)}
-              style={styles.button}
-            />
-            <Button
-              size='small'
-              title='구매링크 이동'
+              title='구매링크로 이동하기'
               onPress={()=> handleOpenUrl(product.url)}
               style={styles.button}
             />
@@ -88,7 +81,7 @@ const requestExamples: Request[] = [{
   text: '살지 말지 고민하고 있는 휴대폰 케이스인데 디자인이 어떤지 궁금해요. 옵션별로 설명해주세요.',
   unreadCount: 0,
   answer: {
-    text: '안녕하세요, 고객님께서 의뢰하신 하드케이스 궁그미케이스 제품에 대한 분석 리포트입니다.',
+    text: '안녕하세요, 쿠팡에서 판매하고 있는 하드케이스 궁그미케이스 제품에 대해서 자세하게 설명해 드릴게요.',
     products: [{
       title: '[하드케이스 궁그미케이스] 아이폰13 갤럭시s22 a52s케이스 a32 a53 se3',
       desc: `상세페이지 요약: 이 휴대폰 케이스는 얇아서 그립감이 좋고, 색바램이 적으며 생활기스에 강합니다. 광택이 없고 매트한 재질이에요. 
@@ -107,26 +100,25 @@ const requestExamples: Request[] = [{
   },
 }, {
   type: 'RESEARCH',
-  link: 'https://naver.com',
+  link: 'https://www.daangn.com/articles/694548548',
   _id: 'research2',
   name: '하드케이스',
   status: RequestStatus.SUCCESS,
   createdAt: '2023-08-11T14:15:56.933Z',
   chats: [],
-  text: '휴대폰 케이스인데 디자인과 품질 상태가 궁금합니다. 원 상품의 가격도 궁금해요.',
+  text: '양귀자 모순 책인데 디자인이랑 상태가 궁금합니다. 정가도 궁금해요.',
   unreadCount: 0,
   answer: {
-    text: '안녕하세요, 당근마켓의 44.9도의 매너온도를 가지신 딴딴이님이 올리신, 케이스티파이 아이폰 13 PRO 핸드폰 케이스에 대해 설명해드릴게요.',
+    text: '안녕하세요, 고객님께서 의뢰하신 도서 양귀자의 모순에 대해 설명해 드릴게요. 사진으로 확인 가능한 제품의 상태나 하자, 원 상품의 가격을 알려드립니다. 다만, 사진만으로 제품의 상태를 확실하게 확인하기 어려울 수 있다는 점 참고 부탁드립니다.',
     products: [{
-      title: '케이스티파이 아이폰 13 PRO 핸드폰 케이스',
-      desc: `판매자가 올린 글 요약: 딴딴이님께서는 제품을 구매 후 5일 정도 사용하셨으며, 제품 컨디션이 좋고 구매 시 케이스 상자를 함께 주신다고 설명하셨습니다. 그리고 두 장의 제품 사진을 올려주셨어요.
-판매자가 올린 사진 설명: 검정색의 범퍼케이스로, 뒷면의 디자인은 검은색 배경 위에 미키마우스 캐릭터가 20마리 가까이 그려져 있어 화려하고 귀여운 느낌입니다. 윙크를 하거나, 손을 내밀고 있거나, 춤을 추는 등 활동적인 미키마우스 일러스트가 케이스 전체에 그려져 있어요. 케이스 아랫부분에는 디즈니와 케이스티파이의 로고가 함께 작게 적혀 있습니다.
-판매자 분이 올려주신 케이스 후면을 찍은 사진에서 보이는 제품의 상태는 전반적으로 깨끗하고 큰 하자가 보이지 않습니다. 다만 케이스의 중앙부에 먼지와 같이 아주 작은 스크래치 자국이 보이기는 합니다. 케이스 상자를 찍은 사진에서는 접히거나 훼손된 부분 없이 새 것처럼 깨끗한 모습입니다.
-새 제품 정보: 해당 제품은 케이스티파이 사이트에서 원가 61000원에 판매되는 상품이었고, 현재는 품절되어 정식 사이트에서는 구매가 불가능한 상품이네요. 판매자 분께서 본문에는 30000만원 판매라고 적어두셨지만, 끌올을 하시면서 25000원으로 가격을 내리신 상황이니 구매에 참고해주세요. 쿠팡에서 판매되고 있는 해당 제품의 정보는 다음 링크에서 파악하실 수 있습니다.
-      `,
-      url: 'http://naver.com',
-      price: 25000,
-      tags: ['쿠팡', '평점 4점, 리뷰 407개'],
+      title: '도서 양귀자의 모순, 판매자 당근마켓 쿠리스 님 (매너온도 36.5도)',
+      desc: `판매자가 올린 글 요약: 2회독한 책이에요. 필기는 없고 내부 상태는 좋다고 해요. 봉천역 직거래 희망한다고 합니다. 세 장의 제품 사진을 올려주셨어요.
+      판매자가 올린 사진 설명: 천 같은 재질의 연두색 하드커버예요. 책을 꽂을 때 보이는 측면으로는 아이보리 색이 두꺼운 띄처럼 감싸고 있어요. 앞표지에는 제목과 디자인이 파란색으로 각인되어 있어요. 줄에 새 두마리가 등을 돌리고 앉아 있는 디자인이에요. 뒷표지는 책에서 발췌한 글이 파랑색으로 각인되어 있어요. 전반적으로 차분하고 절제된 느낌을 주는 디자인이에요. 
+      판매자 분이 올려준 사진으로 보았을 때 제품의 상태는 약간의 사용감이 있어 보여요. 앞표지는 전반적으로 깨끗하고 상태는 좋은 편이에요. 다만 뒤표지에 손가락 두마디 정도의 영역에 옅은 얼룩들이 보여요. 천처럼 쉽게 흡수되는 재질이라 얼룩은 연두색이 약간 짙어진 정도예요. 측면은 재질 특성상 귀퉁이가 약간 접혀있지만 큰 하자는 없어보여요.
+      새 제품 정보: 해당 제품은 쿠팡에서 정가 사이트에서 정가 11,700원에 판매되는 상품이에요. 표지는 쇄마다 바뀐다고 해서 현재 연두색 표지의 상품은 정식 구매가 어려워요. 현재 쿠팡에서 판매되고 있는 상품은 아이보리 배경에 보라색으로 각인된 디자인이에요. 쿠팡에서 판매되고 있는 상품은 다음 링크에서 확인할 수 있습니다.`,
+      url: 'https://www.daangn.com/articles/694548548',
+      price: 5000,
+      tags: [],
     }],
   },
 }, {
@@ -137,10 +129,10 @@ const requestExamples: Request[] = [{
   createdAt: '2023-08-11T14:15:56.933Z',
   price: '8만원대',
   chats: [],
-  text: '들고 다닐 수 있는 녹음기를 추천해주세요. 5시간 이상 녹음이 가능했으면 좋겠어요',
+  text: '8만원 이하의 들고 다닐 수 있는 녹음기를 추천해주세요. 5시간 이상 녹음이 가능했으면 좋겠어요',
   unreadCount: 0,
   answer: {
-    text: '안녕하세요, 말씀해주신 ‘8만원 이하’ ‘휴대성’ ‘5시간 녹음 가능’ 조건을 반영한 녹음기를 쇼핑몰 플랫폼에서 리뷰와 평점, 가격이 좋은 세 상품을 시공간 해설진이 소개해드릴게요.',
+    text: '안녕하세요, 말씀해주신 ‘8만원 이하’ ‘휴대성’ ‘5시간 녹음 가능’ 조건을 반영한 녹음기를 쇼핑몰 플랫폼에서 리뷰와 평점이 좋은 세 상품을 소개해드릴게요.',
     products: [{
       title: '디큐브 볼펜 녹음기',
       desc: `매니저의 한줄 추천 이유: 타 상품 대비 가볍고 휴대성이 좋습니다.
@@ -202,16 +194,6 @@ export default function RequestExampleScreen() {
         <Text style={styles.desc}>
           {request.text}
         </Text>
-        {request.type === 'RECOMMEND' && (
-        <>
-          <Text style={styles.subtitle}>
-            가격대
-          </Text>
-          <Text style={styles.desc}>
-            {request.price}
-          </Text>
-        </>
-        )}
 
         {request.type === 'RESEARCH' && preview ? (
           <Pressable onPress={() => handleOpenUrl(request.link)}>
@@ -229,7 +211,7 @@ export default function RequestExampleScreen() {
           </Pressable>
         ) : <View style={styles.empty} />}
         <Text style={styles.subtitle}>
-          {request.type === 'RESEARCH' ? '분석 ' : '추천'} 결과
+          결과 리포트
         </Text>
         {request.answer ? (
           <>

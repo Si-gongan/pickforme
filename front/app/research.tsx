@@ -111,7 +111,7 @@ export default function ResearchScreen() {
             </View>
           ) : <View style={styles.empty} />}
           <Text style={styles.label}>
-            상품에 대해 궁금한 점을 적어주세요.
+            상품에 대해 궁금한 점을 자유롭게 적어주세요.
           </Text>
           <View style={styles.textAreaContainer} >
             <TextInput
@@ -126,7 +126,7 @@ export default function ResearchScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
-        <Button title='1픽 사용하여 분석 의뢰하기' onPress={handleSubmit} disabled={disabled} />
+        <Button title='1픽으로 설명 의뢰하기' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
   );

@@ -72,7 +72,7 @@ export default function RecommendScreen() {
             />
           </View>
           <Text style={styles.label}>
-            (선택) 상품 선택 시 고려하는 조건과, 상품과 연관된 고객님의 특징(성별, 사이즈, 색상, 스타일 등)을 작성해 주세요.
+          (선택사항) 원하시는 상품의 특징(성별, 사이즈, 색상, 스타일 등)을 자유롭게 작성해 주세요.
           </Text>
           <View style={styles.textAreaContainer} >
             <TextInput
@@ -97,7 +97,7 @@ export default function RecommendScreen() {
             <Image style={styles.checkMore} source={require('../assets/images/ChevronRight.png')} />
           </Pressable>
         </View>
-        <Button title='1픽 사용하여 추천 의뢰하기' onPress={handleSubmit} disabled={disabled} />
+        <Button title='1픽으로 추천 의뢰하기' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>
   );

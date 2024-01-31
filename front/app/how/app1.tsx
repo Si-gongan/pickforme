@@ -21,21 +21,21 @@ export default function HowScreen() {
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-          앱 화면 하단에는 홈, AI 포미, 의뢰 목록, 마이페이지 4개의 탭이 있습니다. 탭을 터치하면 각 화면으로 이동됩니다.
+          앱 화면 하단에는 총 5개의 탭이 있어요. 왼쪽부터 홈, 탐색, AI 포미, 의뢰 목록, 마이페이지예요. 
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-홈 탭에서는 ‘픽포미 추천’, ‘픽포미 분석’, ‘픽포미 구매’ ,‘픽포미 사용설명서’를 이용할 수 있습니다. ‘픽포미 추천’과 ‘픽포미 분석’ 버튼을 클릭하면 의뢰서 작성 화면으로 이동하고, ‘픽포미 사용설명서’ 버튼을 클릭하면 픽포미 앱의 사용설명서 화면으로 이동합니다.
+1. 홈 탭: ‘상품 검색하기', ‘포미와 쇼핑하기', ‘상품 추천 받기’, 상품 설명 받기’ 버튼이 있어요. ‘상품 검색하기' 버튼을 누르면 탑색 탭의 상품 검색창으로 바로 이동해요. ‘포미와 쇼핑하기'를 누르면 AI포미 탭의 새로운 채팅창으로 바로 이동해요. ‘상품 추천 받기’와 ‘상품 설명 받기’를 누르면 의뢰서 작성 화면으로 이동해요. 
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.desc}>
-AI 포미 탭에서는 쇼핑을 돕는 인공지능, 포미와 대화할 수 있습니다. 포미에게 원하는 상품에 대해 말해주고 똑똑한 상품 추천을 받아보세요!
+2. 탐색 탭: 상품 검색하거나 추천 상품과 특가 상품을 볼 수 있어요. 상품 검색 결과는 쿠팡 추천 기준으로 노출됩니다. 
           </Text>
         </View>
         <View style={[styles.buttonWrap, styles.buttonRight]}>
-          <View style={styles.half}>
+          <View style={styles.full}>
             <Button title='다음' onPress={() => router.push('./app2')} />
           </View>
         </View>

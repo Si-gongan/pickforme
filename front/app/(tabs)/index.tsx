@@ -48,12 +48,10 @@ export default function TabOneScreen() {
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.inner}>
-          <View style={styles.textWrap} accessibilityLabel={`${setting?.name}님 안녕하세요, 좋은 하루입니다!`} >
-            <Text style={styles.title}>{setting?.name}님 안녕하세요,</Text>
-            <Text style={styles.title}>좋은 하루입니다!</Text>
+          <View style={styles.textWrap}>
           </View>
           <Text style={styles.subtitle}>
-            정보의 제한 없이 자유롭게 쇼핑해요
+            원하는 상품을 자유롭게 찾아보세요
           </Text>
           <View style={styles.save}>
           <FlatList<TDATA>
@@ -80,7 +78,7 @@ export default function TabOneScreen() {
           />
           </View>
           <Text style={styles.subtitle}>
-            나만을 위한 맞춤형 서비스를 받아보세요
+            나만을 위한 맞춤 서비스를 받아보세요
           </Text>
                     <View style={styles.save}>
           <FlatList<TDATA>
@@ -121,7 +119,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     width: '100%',
-    paddingVertical: 25,
+    paddingVertical: 60,
   },
   inner: {
     flex: 0,
@@ -140,7 +138,7 @@ const styles = StyleSheet.create({
     height: 38,
   },
   save: {
-    marginBottom:40,
+    marginBottom:80,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',

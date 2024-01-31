@@ -58,7 +58,7 @@ const ProductCard: React.FC<Props> = ({ product, isSimple, requestId }) => {
       <View style={styles.buttonWrap}>
         <Button
           size='small'
-          title='구매링크 이동'
+          title='구매링크로 이동하기'
           onPress={()=> handleOpenUrl(product.url)}
           style={styles.button}
         />

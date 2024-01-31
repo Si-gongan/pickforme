@@ -93,7 +93,7 @@ export default function DiscoverScreen() {
             accessible
             accessibilityLabel="검색어 입력창"
             onChangeText={(text) => setText(text)}
-            placeholder='상품이름'
+            placeholder='상품을 검색하세요'
           />
           <Pressable
             onPress={handleClickSend}

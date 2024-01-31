@@ -21,8 +21,8 @@ enum TABS {
 
 
 const tabName = {
-  [TABS.CAPTION]: '이미지 분석',
-  [TABS.REPORT]: '상세정보 요약',
+  [TABS.CAPTION]: '이미지 설명',
+  [TABS.REPORT]: '상세페이지 설명',
   [TABS.REVIEW]: '리뷰 요약',
 }
 
@@ -56,13 +56,13 @@ export default function DiscoverScreen() {
     if (!product) {
       return;
     }
-    await WebBrowser.openBrowserAsync(product.url);
+    await WebBrowser.openBrowserAsync(`https://coupang.com/vp/products/${product.group}`);
   }
   const handleClickRequest = () => {
     if (!product) {
       return;
     }
-    router.push({ pathname: '/research', params: { link: encodeURIComponent(product.url)  }});
+    router.push({ pathname: '/research', params: { link: encodeURIComponent(`https://coupang.com/vp/products/${product.group}`) }});
   }
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
@@ -83,19 +83,27 @@ export default function DiscoverScreen() {
         <Text style={styles.name}>
           {product.name}
         </Text>
-        {product.regular_price !== product.price && (
-        <Text style={styles.originalPrice}>
-          {numComma(product.regular_price || 0)} ({Math.floor(product.discount_rate)}%)
-        </Text>
-        )}
-        <Text style={styles.price}>
-          {numComma(product.price || 0)}원
-        </Text>
+        {product.regular_price !== product.price ? 
+        <>
+          <Text style={styles.price}>
+           {Math.floor(product.discount_rate)}% {numComma(product.price || 0)}원
+          </Text>
+          <Text style={styles.originalPrice}>
+            {numComma(product.regular_price || 0)}
+          </Text>
+        </>
+        : 
+        <>
+          <Text style={styles.price}>
+            {numComma(product.price || 0)}원
+          </Text>
+        </>
+        }
         <View style={styles.seperator} />
           <View style={styles.table}>
             <View style={styles.tableList}>
               <Text style={[styles.tableHeader, styles.tableTitle]}>
-                기타 정보
+                상품 정보
               </Text>
               {!!product.option && (
               <View style={styles.tableRow} accessible>
@@ -205,10 +213,10 @@ export default function DiscoverScreen() {
       </ScrollView>
       <View style={styles.buttonWrap}>
       <View style={styles.buttonOuter}>
-        <Button title='픽포미 분석 요청하기' onPress={handleClickRequest} style={styles.button} color='tertiary' size='small' />
+        <Button title='매니저에게 상품 설명 받기' onPress={handleClickRequest} style={styles.button} color='tertiary' size='small' />
       </View>
       <View style={styles.buttonOuter}>
-        <Button title='구매' onPress={handleClickBuy} style={styles.button} size='small' />
+        <Button title='구매하기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
       </View>
     </View>
@@ -237,7 +245,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     backgroundColor: Colors[colorScheme].borderColor.tertiary,
   },
   name: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     lineHeight: 21,
   },
@@ -247,7 +255,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   originalPrice: {
     color: '#576084',
-    fontSize: 18,
+    fontSize: 20,
     fontStyle: 'italic',
     fontWeight: '500',
     textDecorationLine: 'line-through',

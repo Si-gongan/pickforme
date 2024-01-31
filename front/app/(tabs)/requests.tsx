@@ -18,8 +18,8 @@ enum TABS {
 };
 
 const tabName = {
-  [TABS.REQUEST]: '의뢰 목록',
-  [TABS.PRODUCT]: '상품 목록',
+  [TABS.REQUEST]: '의뢰 리포트',
+  [TABS.PRODUCT]: '전체 상품 목록',
 }
 
 const statusName = {

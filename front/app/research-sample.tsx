@@ -11,42 +11,44 @@ export default function RequestScreen() {
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.inner}>
-        <Text style={styles.title}>
-          분석 의뢰 작성 방법
-        </Text>
-        <Text style={styles.desc}>
-{`픽포미 분석에서는 접근성이 낮은 상품 페이지를 꼼꼼히 설명해드려요! 궁금한 상품의 링크를 붙여넣고, 그 밑의 입력창에 상품에 대해 알고 싶은 점을 적어주세요.
-`}
-</Text>
-<Text style={styles.subtitle}>
-작성 예시
-</Text>
-<View style={styles.row}>
-  <Text style={[styles.desc, styles.dot]}>
-    {`\u2022`}
-  </Text>
-  {/* @ts-ignore */}
-  <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
-화장품) 상품 이름에는 안 적혀 있어서, 구체적인 성분이 궁금해요.
-  </Text>
-</View>
-<View style={styles.row}>
-  <Text style={[styles.desc, styles.dot]}>
-    {`\u2022`}
-  </Text>
-  {/* @ts-ignore */}
-  <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
-옷) 버건디 가디건인데, 혹시 많이 진한 색인가요?</Text>
-</View>
-<View style={styles.row}>
-  <Text style={[styles.desc, styles.dot]}>
-    {`\u2022`}
-  </Text>
-  {/* @ts-ignore */}
-  <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
-전자제품) 가습기의 가로 세로 높이 사이즈가 궁금해요.</Text>
-</View>
-</View>
+          <Text style={styles.title}>
+            설명 의뢰 작성 방법
+          </Text>
+          <Text style={styles.desc}>
+            {`대체텍스트가 없는 상세페이지에 대해 꼼꼼하게 설명해 드려요. 상품의 링크를 붙여넣고 그 밑의 입력창에 궁금한 점을 자유롭게 적어주세요. 
+            `}
+          </Text>
+          <Text style={styles.subtitle}>
+            작성 예시
+          </Text>
+          <View style={styles.row}>
+            <Text style={[styles.desc, styles.dot]}>
+              {`\u2022`}
+            </Text>
+            {/* @ts-ignore */}
+            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+              화장품의 구체적인 성분이 궁금해요.
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={[styles.desc, styles.dot]}>
+              {`\u2022`}
+            </Text>
+            {/* @ts-ignore */}
+            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+              버건디 가디건 혹시 많이 진한 색인가요?
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={[styles.desc, styles.dot]}>
+              {`\u2022`}
+            </Text>
+            {/* @ts-ignore */}
+            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+              가습기의 가로 세로 높이 사이즈가 궁금해요.
+            </Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );

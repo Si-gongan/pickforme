@@ -16,8 +16,8 @@ import * as WebBrowser from 'expo-web-browser';
 import ProductCard from '../components/Product';
 
 const tabName = {
-  'RECOMMEND': '픽포미 추천',
-  'RESEARCH': '픽포미 분석',
+  'RECOMMEND': '상품 추천 리포트',
+  'RESEARCH': '상품 설명 리포트',
   'AI': 'AI 포미',
   'BUY': '',
 }
@@ -67,14 +67,11 @@ export default function RequestScreen() {
           {request.text}
         </Text>
         {request.type === 'RECOMMEND' && (
-        <>
-          <Text style={styles.subtitle}>
-            가격대
-          </Text>
-          <Text style={styles.desc}>
-            {request.price}
-          </Text>
-        </>
+        
+        <Text style={styles.desc}>
+          {request.price}
+        </Text>
+        
         )}
 
         {request.type === 'RESEARCH' && preview ? (
@@ -93,7 +90,7 @@ export default function RequestScreen() {
           </Pressable>
         ) : <View style={styles.empty} />}
         <Text style={styles.subtitle}>
-          {request.type === 'RESEARCH' ? '분석 ' : '추천'} 결과
+          결과 리포트
         </Text>
         {request.answer ? (
           <>

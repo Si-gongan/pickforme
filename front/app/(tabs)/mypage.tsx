@@ -47,11 +47,11 @@ export default function MyPageScreen() {
       <Text style={styles.name}>{setting?.name}님, 안녕하세요.</Text>
       <View style={styles.card}>
         <Text style={styles.title}>
-          내 정보 수정
+          내 정보
         </Text>
         <Link href='/(settings)/nickname' accessibilityRole='button'>
           <Text style={styles.menu}>
-            기본 정보 수정
+            수정하기
           </Text>
         </Link>
         {!userData && (
@@ -69,16 +69,16 @@ export default function MyPageScreen() {
       {!!userData && (
       <View style={styles.card}>
         <Text style={styles.title}>
-          내 픽 {userData.point}픽
+          잔여 {userData.point}픽
         </Text>
         <Link href='/point' accessibilityRole='button'>
           <Text style={styles.menu}>
-            픽 충전
+            충전하기
           </Text>
         </Link>
         <Link href='/point-history' accessibilityRole='button'>
           <Text style={styles.menu}>
-            픽 사용내역
+            사용내역 보기
           </Text>
         </Link>
       </View>
@@ -89,7 +89,7 @@ export default function MyPageScreen() {
         </Text>
         <Link href='/(settings)/theme' accessibilityRole='button'>
           <Text style={styles.menu}>
-            화면 모드 변경
+            화면 모드 변경하기
           </Text>
         </Link>
         {/*
@@ -102,7 +102,7 @@ export default function MyPageScreen() {
         {!!userData && (
           <Link href='/notification' accessibilityRole='button'>
             <Text style={styles.menu}>
-              알림 설정
+              알림 설정하기
             </Text>
           </Link>
         )}
@@ -127,7 +127,7 @@ export default function MyPageScreen() {
         </Link>
         <Link href='/faq' accessibilityRole='button'>
           <Text style={styles.menu}>
-            자주 묻는 질문 (FAQ)
+            자주 묻는 질문
           </Text>
         </Link>
         <Button
