@@ -17,6 +17,7 @@ router.post('/answer', async (ctx) => {
   } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId);
   if (!request.answer) {
+    const deeplink = `/request?requestId=${request._id}`;
     const chat = await db.Chat.create({
       userId: request.userId,
       requestId: request._id,
@@ -25,7 +26,7 @@ router.post('/answer', async (ctx) => {
       isMine: false,
       button: {
         text: '결과물 보기',
-        deeplink: `/request?requestId=${request._id}`,
+        deeplink,
       },
     });
     request.chats.push(chat._id);
@@ -43,6 +44,7 @@ router.post('/answer', async (ctx) => {
       sendPush({
         to: user.pushToken,
         body: '결과 리포트가 도착했습니다.',
+        data: { url: deeplink },
       });
     }
   }
@@ -106,6 +108,7 @@ router.post('/chat', async (ctx) => {
     sendPush({
       to: user.pushToken,
       body: chat.text,
+      data: { url: `/chat?requestId=${request._id}` },
     });
   }
   ctx.body = chat;

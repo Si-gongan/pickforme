@@ -1,5 +1,6 @@
 import React from "react";
 import { useSetAtom, useAtomValue } from 'jotai';
+import { useRouter } from 'expo-router';
 import { setPushTokenAtom, userDataAtom } from '../stores/auth/atoms'
 import { Platform } from 'react-native';
 import * as Device from "expo-device";
@@ -16,21 +17,26 @@ Notifications.setNotificationHandler({
 const usePushToken = () => {
   const userData = useAtomValue(userDataAtom);
   const setPushToken = useSetAtom(setPushTokenAtom);
+  const router = useRouter();
 
   React.useEffect(() => {
     const notificationListener = Notifications.addNotificationReceivedListener((notification) => {
-      console.log(notification);
+      // notification 받은경우
     });
 
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log(response);
+      // notification 누른경우
+      const data = response.notification.request.content.data;
+      if (data.url) {
+        router.push(data.url);
+      }
     });
 
     return () => {
       Notifications.removeNotificationSubscription(notificationListener);
       Notifications.removeNotificationSubscription(responseListener);
     };
-  }, []);
+  }, [router]);
 
   React.useEffect(() => {
     if (userData?._id) {

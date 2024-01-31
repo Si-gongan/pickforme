@@ -260,6 +260,7 @@ router.post('/chat', requireAuth, async (ctx) => {
         sendPush({
           to: user.pushToken,
           body: autoChat.text,
+          data: { url: `/chat?requestId=${request._id}` },
         });
       }
     })();
