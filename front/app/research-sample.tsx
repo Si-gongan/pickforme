@@ -26,7 +26,7 @@ export default function RequestScreen() {
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}
-            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            <Text style={styles.desc}>
               화장품의 구체적인 성분이 궁금해요.
             </Text>
           </View>
@@ -35,7 +35,7 @@ export default function RequestScreen() {
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}
-            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            <Text style={styles.desc}>
               버건디 가디건 혹시 많이 진한 색인가요?
             </Text>
           </View>
@@ -44,7 +44,7 @@ export default function RequestScreen() {
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}
-            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            <Text style={styles.desc}>
               가습기의 가로 세로 높이 사이즈가 궁금해요.
             </Text>
           </View>

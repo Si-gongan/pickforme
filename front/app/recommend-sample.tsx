@@ -28,7 +28,7 @@ export default function RequestScreen() {
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}
-            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            <Text style={styles.desc}>
             5만원대 가디건) 여성용 버건디색 M사이즈로, 무난하게 입을 수 있는 제품이면 좋겠어요.
             </Text>
           </View>
@@ -37,13 +37,13 @@ export default function RequestScreen() {
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}
-            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            <Text style={styles.desc}>
             50만원 노트북) 흰색 13인치로, 학교 수업에서 사용할 예정이라 무겁지 않고 얇은 상품을 원해요.</Text>
           </View>
           <View style={{height:20}}></View>
           <View style={styles.row}>
             {/* @ts-ignore */}
-            <Text style={styles.desc} lineBreakStrategyIOS='hangul-word'>
+            <Text style={styles.desc}>
             자세하게 의뢰서를 작성해주시면 마음에 쏙 드는 상품을 추천드릴 수 있어요 🙂</Text>
           </View>
         </View>

@@ -13,8 +13,12 @@ export type ViewProps = ThemeProps & DefaultView['props'];
 export function Text(props: TextProps) {
   const { style, lightColor, darkColor, color, ...otherProps } = props;
   const textColor = useThemeColor({ light: lightColor, dark: darkColor }, 'text', color);
+  const defaultProps = {
+    style: [{ color: textColor }, style],
+    lineBreakStrategyIOS: 'hangul-word',
+  };
 
-  return <DefaultText style={[{ color: textColor }, style]} {...otherProps} />;
+  return <DefaultText {...defaultProps} {...otherProps} />;
 }
 
 export function View(props: ViewProps) {
