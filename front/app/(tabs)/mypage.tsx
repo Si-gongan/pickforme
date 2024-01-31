@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, Alert, Image } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { settingAtom, userDataAtom, quitAtom } from '../../stores/auth/atoms';
@@ -8,6 +8,8 @@ import { Text, View } from '../../components/Themed';
 import Button from '../../components/Button';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
+
+import MypageIcon from '../../assets/images/tabbar/mypage.svg';
 
 export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);
@@ -42,8 +44,13 @@ export default function MyPageScreen() {
   }
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.container}>
+       <View style={styles.header}>
+        <MypageIcon style={styles.icon} />
+        <Text style={styles.headerTitle}>마이페이지</Text>
+      </View>
+      <ScrollView style={styles.scrollView}>
       <View style={styles.scrollContainer}>
+
       <Text style={styles.name}>{setting?.name}님, 안녕하세요.</Text>
       <View style={styles.card}>
         <Text style={styles.title}>
@@ -181,17 +188,20 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
+    paddingTop: 50,
+  },
+  scrollView: {
+    flex: 1,
   },
   scrollContainer: {
-    paddingVertical: 32,
-    paddingHorizontal: 13,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
   name: {
     fontWeight: '600',
     fontSize: 20,
     lineHeight: 24,
     marginBottom: 31,
-    marginHorizontal: 14,
   },
   card: {
     borderWidth: 1,
@@ -229,4 +239,18 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   red: {
     color: '#EA4335',
   },
+     header: {
+       paddingHorizontal: 20,
+    flexDirection: 'row',
+  },
+  icon: {
+    color: Colors[colorScheme].text.primary,
+    marginRight: 9,
+  },
+  headerTitle: {
+     fontWeight: '600',
+    fontSize: 22,
+    lineHeight: 27,
+    marginBottom: 13,
+  }
 });

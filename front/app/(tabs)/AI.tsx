@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Image } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
@@ -9,6 +9,8 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+
+import AIIcon from '../../assets/images/tabbar/AI.svg';
 
 export default function RequestsScreen() {
   const router = useRouter();
@@ -22,7 +24,10 @@ export default function RequestsScreen() {
   }, [getRequests]);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>AI 포미</Text>
+      <View style={styles.header}>
+        <AIIcon style={styles.icon} />
+        <Text style={styles.title}>AI 포미</Text>
+      </View>
       <Text style={styles.subtitle}>AI 쇼핑 도우미 포미와 대화를 시작하세요</Text>
         <Button
           style={styles.newRequest}
@@ -78,6 +83,13 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 50,
+  },
+  header: {
+    flexDirection: 'row',
+  },
+  icon: {
+    color: Colors[colorScheme].text.primary,
+    marginRight: 9,
   },
   title: {
     fontWeight: '600',

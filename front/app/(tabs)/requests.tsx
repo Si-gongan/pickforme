@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, Image, ScrollView, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
@@ -11,6 +11,8 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
 import Product from '../../components/Product';
+
+import RequestsIcon from '../../assets/images/tabbar/requests.svg';
 
 enum TABS {
   REQUEST = 'REQUEST',
@@ -40,7 +42,11 @@ export default function RequestsScreen() {
   }, [getRequests]);
   return (
     <View style={styles.container}>
+    <View style={styles.header}>
+        <RequestsIcon style={styles.icon} />
       <Text style={styles.title}>의뢰 목록</Text>
+      </View>
+
       <Text style={styles.subtitle}>채팅방에 입장하여 의뢰 진행상황을 확인하세요</Text>
       <View style={styles.tabWrap}>
         {Object.values(TABS).map((TAB) => (
@@ -221,5 +227,12 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#EFEFEF',
+  },
+   header: {
+    flexDirection: 'row',
+  },
+  icon: {
+    color: Colors[colorScheme].text.primary,
+    marginRight: 9,
   },
 });

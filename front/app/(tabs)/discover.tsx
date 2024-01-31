@@ -13,6 +13,8 @@ import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/DiscoverProduct';
 import SearchProductCard from '../../components/SearchProduct';
 
+import DiscoverIcon from '../../assets/images/tabbar/discover.svg';
+
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
@@ -50,7 +52,7 @@ export default function DiscoverScreen() {
   });
   const [text, setText ] =React.useState('');
   const handleClickSend = () => {
-    searchProducts({ query: text });
+    searchProducts({ query: text, page: 1 });
     setQuery(text);
   }
 
@@ -79,7 +81,10 @@ export default function DiscoverScreen() {
         textStyle={styles.backText}
         />
         ) : (
+        <View style={styles.header}>
+        <DiscoverIcon style={styles.icon} />
         <Text style={styles.title}>탐색</Text>
+      </View>
         )}
       </View>
       <View style={styles.horizontalPadder}>
@@ -276,5 +281,12 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     paddingHorizontal: 20,
     textAlign: 'center',
     flex: 1,
+  },
+ header: {
+    flexDirection: 'row',
+  },
+  icon: {
+    color: Colors[colorScheme].text.primary,
+    marginRight: 9,
   },
 });

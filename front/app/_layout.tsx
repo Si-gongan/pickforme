@@ -11,7 +11,6 @@ import useInterceptor from '../hooks/useInterceptor';
 import useColorScheme from '../hooks/useColorScheme';
 import useSocket from '../hooks/useSocket';
 import usePushToken from '../hooks/usePushToken';
-import useRouterNotification from '../hooks/useRouterNotification';
 
 import { Text } from '../components/Themed';
 import Colors from '../constants/Colors';
@@ -63,7 +62,6 @@ function RootLayoutNav() {
   const [isLoaded, setIsLoaded] = useAtom(isLoadedAtom);
   usePushToken();
   useSocket();
-  useRouterNotification
   useInterceptor();
   useEffect(() => {
     (async () => {
