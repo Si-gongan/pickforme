@@ -21,12 +21,12 @@ const handleLogin = async (email: string) => {
       originEmail: email,
     });
     user = await db.User.create({
-      email, point: usedEmail ? 0 : 3,
+      email, point: usedEmail ? 0 : 1,
     });
     if (!usedEmail) {
       await db.PickHistory.create({
         userId: user._id,
-        diff: 3,
+        diff: 1,
         point: user.point,
         usage: '회원가입 지급',
       });

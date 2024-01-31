@@ -35,7 +35,7 @@ const LoginBottomSheet: React.FC<Props> = () => {
           회원가입 보상
         </Text>
         <Text style={[styles.desc, localStyles.title]}>
-          감사의 의미로 3회 무료 이용권(3픽)을 드렸어요.
+          감사의 의미로 무료 1픽을 드렸어요.
           지금 바로 픽포미 서비스를 이용해보세요!
         </Text>
         <View style={styles.buttonRow}>

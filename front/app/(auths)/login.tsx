@@ -126,7 +126,7 @@ const LoginScreen: React.FC<Props> = (props) => {
       </View>
       <View style={styles.descWrap}>
         <Text style={styles.desc}>픽포미에 첫 회원가입하고</Text>
-        <Text style={styles.desc}>3회 무료 이용권을 획득하세요!</Text>
+        <Text style={styles.desc}>무료 1픽을 획득하세요!</Text>
       </View>
     </View>
   );
