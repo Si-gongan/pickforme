@@ -50,8 +50,6 @@ export default function MyPageScreen() {
       </View>
       <ScrollView style={styles.scrollView}>
       <View style={styles.scrollContainer}>
-
-      <Text style={styles.name}>{setting?.name}님, 안녕하세요.</Text>
       <View style={styles.card}>
         <Text style={styles.title}>
           내 정보
