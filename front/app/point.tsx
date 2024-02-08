@@ -264,7 +264,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
                     {product.point}픽
                   </ButtonText>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPrice}>
-                    월 {(product as any).localizedPrice}
+                    월 {(product as any).localizedPrice.replace(/₩(.*)/,'$1원')}
                   </ButtonText>
                 </View>
               </Button>
@@ -292,7 +292,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
                     {product.displayName}
                   </ButtonText>
                   <ButtonText {...buttonTextProps} textStyle={styles.productPrice}>
-                    {product.localizedPrice}
+                    {product.localizedPrice.replace(/₩(.*)/,'$1원')}
                   </ButtonText>
                 </View>
               </Button>
