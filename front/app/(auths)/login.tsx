@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import { ViewProps, Platform, Image, StyleSheet } from 'react-native';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 
 import * as AuthSession from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
@@ -12,6 +12,7 @@ import * as WebBrowser from 'expo-web-browser';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import {
+  isOnboardingFinishedAtom,
   loginKakaoAtom,
   loginAppleAtom,
   loginGoogleAtom,
@@ -23,7 +24,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 interface Props extends ViewProps {};
 const LoginScreen: React.FC<Props> = (props) => {
+  const [isDone, setIsDone] = React.useState(false);
   const colorScheme = useColorScheme();
+  const [isOnboardingFinished, setIsOnboardingFinished ] = useAtom(isOnboardingFinishedAtom);
   const loginKakao = useSetAtom(loginKakaoAtom);
   const loginApple = useSetAtom(loginAppleAtom);
   const loginGoogle = useSetAtom(loginGoogleAtom);
@@ -37,10 +40,16 @@ const LoginScreen: React.FC<Props> = (props) => {
   const userData = useAtomValue(userDataAtom);
   const router = useRouter();
   React.useEffect(() => {
-    if (userData) {
-      router.replace('/(tabs)');
+    if (userData && !isDone) {
+      setIsDone(true);
+      if (isOnboardingFinished !== 'true') {
+        setIsOnboardingFinished('true');
+        router.replace('/how/app1');
+      } else {
+        router.replace('/(tabs)');
+      }
     }
-  }, [userData]);
+  }, [userData, isOnboardingFinished, setIsOnboardingFinished, isDone]);
 
   React.useEffect(() => {
     if (loginGoogleResult?.type === 'success' && loginGoogleResult.authentication) {

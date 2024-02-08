@@ -14,6 +14,7 @@ import {
 } from './types';
 import { QuitAPI, GoogleLoginAPI, AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
 
+export const isOnboardingFinishedAtom = atomWithStorage<'true' | 'false'>('isOnboardingFinished', 'false');
 export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
 
 export const settingAtom = atomWithStorage<Setting>('setting', {
