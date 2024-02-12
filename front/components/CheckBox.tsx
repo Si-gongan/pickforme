@@ -13,13 +13,16 @@ export type CheckBoxProps = {
 function CheckBox({
   checked,
   onPress,
+  ...props
 }: CheckBoxProps) {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   return (
     <Pressable
       onPress={onPress}
-      >
+      accessibilityRole='checkbox'
+      {...props}
+    >
     <View
       style={[styles.wrap, checked && styles.checked]}
     >

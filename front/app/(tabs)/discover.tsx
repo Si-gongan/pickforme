@@ -19,7 +19,7 @@ const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
    return     (
-    <Pressable onPress={onClick}>
+    <Pressable onPress={onClick} accessibilityRole='button' accessibilityLabel='더보기'>
           <View
             style={styles.more}
           >
@@ -104,6 +104,7 @@ export default function DiscoverScreen() {
             onPress={handleClickSend}
             accessible
             accessibilityLabel="검색하기"
+            accessibilityRole='button'
           >
             <Image style={styles.sendIcon} source={require('../../assets/images/discover/icSearch.png')} />
           </Pressable>

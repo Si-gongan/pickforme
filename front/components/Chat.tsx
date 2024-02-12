@@ -59,7 +59,7 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
       </View> 
     </View>
     {data.products?.map((product) => (
-      <Pressable onPress={() => handleOpenUrl(product.link)}>
+      <Pressable onPress={() => handleOpenUrl(product.link)} accessibilityRole='button'>
       <View style={[styles.card, styles.productCard]}>
         <Image style={styles.productImage} source={{ uri: product.thumbnail }} />
         <View style={styles.productText}>

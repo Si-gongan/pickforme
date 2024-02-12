@@ -27,7 +27,7 @@ export default function PointHistoryScreen() {
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.content}>
-          <View style={styles.myPoint}>
+          <View style={styles.myPoint} accessible>
             <Text style={styles.myPointText}>
               내 픽
             </Text>
@@ -35,7 +35,7 @@ export default function PointHistoryScreen() {
               {userData?.point}픽
             </Text>
           </View>
-          <View style={[styles.myPoint, styles.titleMargin]}>
+          <View style={[styles.myPoint, styles.titleMargin]} accessible>
             <Text style={styles.myPointText}>
               내 멤버십
             </Text>
@@ -51,7 +51,7 @@ export default function PointHistoryScreen() {
           {historys?.map((history) => {
             const date = `${formatDate(history.createdAt)} ${formatTime(history.createdAt)}`;
             return (
-            <View style={styles.row} accessibilityLabel={`${date} ${history.usage} ${history.diff}픽 ${history.diff > 0 ? '충전' : '소모'} 남은 픽 ${history.point}픽`}>
+            <View style={styles.row} accessibilityLabel={`${date} ${history.usage} ${Math.abs(history.diff)}픽 ${history.diff > 0 ? '충전' : '사용'} 남은 픽 ${history.point}픽`} accessible>
               <Text style={styles.date} color='secondary'>
                 {date}
               </Text>
@@ -59,7 +59,7 @@ export default function PointHistoryScreen() {
                 <Text style={styles.usage}>
                   {history.usage}
                 </Text>
-                <Text style={styles.diff} accessibilityLabel={`${history.diff > 0 ? '플러스' : '마이너스'}${history.diff}`}>
+                <Text style={styles.diff}>
                   {`${history.diff > 0 ? '+' : ''}${history.diff}`}
                 </Text>
               </View>

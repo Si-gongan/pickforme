@@ -88,12 +88,19 @@ export default function RecommendScreen() {
       </ScrollView>
       <View style={styles.buttonWrap}>
         <View style={styles.checkWrap}>
-          <CheckBox
-            checked={isShareChecked}
-            onPress={() => setIsShareChecked(prev => !prev)}
-          />
-          <Text style={styles.checkText}>[선택사항] 픽포미 추천 함께 공유하기</Text>
-          <Pressable onPress={openShareDesc}>
+          <Pressable onPress={() => setIsShareChecked(prev => !prev)}
+            accessibilityRole='checkbox' accessible
+            style={styles.checkWrapRow}
+          >
+            <CheckBox
+              checked={isShareChecked}
+              onPress={() => setIsShareChecked(prev => !prev)}
+            />
+            <Text style={styles.checkText} accessibilityLabel={`[선택사항] 픽포미 추천 함께 공유하기 ${isShareChecked ? '선택됨' : '선택안됨'}`}>
+              [선택사항] 픽포미 추천 함께 공유하기
+            </Text>
+          </Pressable>
+          <Pressable onPress={openShareDesc} accessibilityRole='button' accessibilityLabel='자세히 보기'>
             <Image style={styles.checkMore} source={require('../assets/images/ChevronRight.png')} />
           </Pressable>
         </View>
@@ -152,7 +159,14 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   checkWrap: {
     marginBottom: 19,
+    alignItems: 'center',
     flexDirection: 'row',
+    gap: 11,
+  },
+  checkWrapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexGrow: 1,
     gap: 11,
   },
   check: {

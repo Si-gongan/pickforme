@@ -159,7 +159,7 @@ export default function DiscoverScreen() {
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
               onPress={() => handlePressTab(TAB)}
-              accessibilityLabel={`${tabName[TAB]} 의뢰목록 보기`}
+              accessibilityLabel={tabName[TAB]}
             />
           </View>
         ))}
@@ -181,22 +181,28 @@ export default function DiscoverScreen() {
                     </View>
                   )}
                   {productDetail?.[tab]?.pros?.length !== 0 && (
-                    <View style={styles.detailWrap}>
+                    <View style={styles.detailWrap} accessible={true}>
                       <Text style={styles.reviewListTitle}>
                         긍정 리뷰 요약
                       </Text>
                       {productDetail?.[tab]?.pros.map((row, i) => (
-                        <Text style={styles.reviewListRow} key={`discover-detail-${product.id}-pros-row-${i}`}>{`\u2022 ${row}`}</Text>
+                        <View style={styles.reviewListRow} key={`discover-detail-${product.id}-pros-row-${i}`}>
+                          <Text accessible={false}>{`\u2022`}</Text>
+                          <Text style={styles.reviewListRowText}>{row}</Text>
+                        </View>
                       ))}
                     </View>
                   )}
                   {productDetail?.[tab]?.cons?.length !== 0 && (
-                    <View style={styles.detailWrap}>
+                    <View style={styles.detailWrap} accessible={true}>
                       <Text style={styles.reviewListTitle}>
                         부정 리뷰 요약
                       </Text>
                       {productDetail?.[tab]?.cons.map((row, i) => (
-                        <Text style={styles.reviewListRow} key={`discover-detail-${product.id}-cons-row-${i}`}>{`\u2022 ${row}`}</Text>
+                        <View style={styles.reviewListRow} key={`discover-detail-${product.id}-cons-row-${i}`}>
+                          <Text accessible={false}>{`\u2022`}</Text>
+                          <Text style={styles.reviewListRowText}>{row}</Text>
+                        </View>
                       ))}
                     </View>
                   )}
@@ -319,6 +325,8 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginBottom: 13,
   },
   reviewListRow: {
+  },
+  reviewListRowText: {
     lineHeight: 24,
     fontSize: 14,
   },

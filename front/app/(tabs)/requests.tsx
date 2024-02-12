@@ -57,7 +57,7 @@ export default function RequestsScreen() {
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
               onPress={() => setTab(TAB)}
-              accessibilityLabel={`${tabName[TAB]} 보기`}
+              accessibilityLabel={`${tabName[TAB]} 보기 ${tab === TAB ? '선택됨' : ''}`}
             />
           </View>
         ))}

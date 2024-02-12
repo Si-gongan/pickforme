@@ -97,7 +97,7 @@ const LoginScreen: React.FC<Props> = (props) => {
 
   return (
     <View style={[styles.container, props.style]}>
-      <View style={styles.titleWrap}>
+      <View style={styles.titleWrap} accessible={true}>
         <Text style={styles.title}>로그인하면 픽포미의 모든</Text>
         <Text style={styles.title}>서비스를 이용할 수 있어요!</Text>
       </View>
@@ -133,7 +133,7 @@ const LoginScreen: React.FC<Props> = (props) => {
           <Image style={styles.icon} source={require('../../assets/images/auth/google.png')} />
         </Button>
       </View>
-      <View style={styles.descWrap}>
+      <View style={styles.descWrap} accessible={true}>
         <Text style={styles.desc}>픽포미에 첫 회원가입하고</Text>
         <Text style={styles.desc}>무료 1픽을 획득하세요!</Text>
       </View>

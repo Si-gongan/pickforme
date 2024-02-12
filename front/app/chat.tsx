@@ -142,7 +142,7 @@ export default function ChatScreen() {
             size='small'
             color='primary'
             accessible
-            accessibilityLabel="전송버튼"
+            accessibilityLabel="전송"
           >
             <Image style={styles.sendIcon} source={require('../assets/images/chat/send.png')} />
           </Button>

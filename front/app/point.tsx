@@ -195,7 +195,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.content}>
-          <View style={styles.myPoint}>
+          <View style={styles.myPoint} accessible>
             <Text style={styles.myPointText}>
               내 픽
             </Text>
@@ -203,7 +203,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
               {userData?.point}픽
             </Text>
           </View>
-          <View style={[styles.myPoint, styles.titleMargin]}>
+          <View style={[styles.myPoint, styles.titleMargin]} accessible>
             <Text style={styles.myPointText}>
               내 멤버십
             </Text>

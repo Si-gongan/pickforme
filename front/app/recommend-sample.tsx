@@ -24,7 +24,7 @@ export default function RequestScreen() {
           작성 예시
           </Text>
           <View style={styles.row}>
-            <Text style={[styles.desc, styles.dot]}>
+            <Text style={[styles.desc, styles.dot]} accessible={false}>
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}
@@ -33,7 +33,7 @@ export default function RequestScreen() {
             </Text>
           </View>
           <View style={styles.row}>
-            <Text style={[styles.desc, styles.dot]}>
+            <Text style={[styles.desc, styles.dot]} accessible={false}>
               {`\u2022`}
             </Text>
             {/* @ts-ignore */}

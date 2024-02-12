@@ -58,6 +58,7 @@ export default function TabLayout() {
         options={{
           title: '홈',
           tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
+          tabBarAccessibilityLabel: '홈 탭',
           headerRight: () => (
             <Pressable onPress={() => router.push('/notices')} accessibilityLabel='공지사항' accessibilityRole='button'>
             <Image
@@ -73,6 +74,7 @@ export default function TabLayout() {
         options={{
           headerShown: false, 
           title: '탐색',
+          tabBarAccessibilityLabel: '탐색 탭',
           tabBarIcon: ({ color }) => <DiscoverIcon style={{color}} />,
         }}
       />
@@ -81,6 +83,7 @@ export default function TabLayout() {
         options={{
           headerShown: false, 
           title: 'AI 포미',
+          tabBarAccessibilityLabel: 'AI 포미 탭',
           tabBarIcon: ({ color }) => <AIIcon style={{color}} />,
         }}
       />
@@ -89,6 +92,7 @@ export default function TabLayout() {
         options={{
           headerShown: false, 
           title: '의뢰 목록',
+          tabBarAccessibilityLabel: '의뢰 목록 탭',
           tabBarIcon: ({ color }) => <RequestsIcon style={{color}} />,
         }}
       />
@@ -97,6 +101,7 @@ export default function TabLayout() {
         options={{
           headerShown: false, 
           title: '마이페이지',
+          tabBarAccessibilityLabel: '마이페이지 탭',
           tabBarIcon: ({ color }) => <MypageIcon style={{color}} />,
         }}
       />

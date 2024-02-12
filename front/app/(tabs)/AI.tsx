@@ -42,6 +42,7 @@ export default function RequestsScreen() {
               key={`Request-card-${request._id}`}
               style={styles.cardLink}
               asChild
+              accessibilityRole='button'
             >
               <Pressable>
                 {({ pressed }) => (

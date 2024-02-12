@@ -84,6 +84,7 @@ export default function ResearchScreen() {
                 size='small'
                 numberOfLines={1}
                 title={data.link || '터치하여 붙여넣기'}
+                accessibilityLabel='링크 입력됨'
                 textStyle={styles.linkButtonText}
               />
             </View>

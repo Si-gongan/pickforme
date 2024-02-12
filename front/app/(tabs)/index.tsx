@@ -11,26 +11,31 @@ interface TDATA {
   path: string;
   title: string;
   image: ImageSourcePropType;
+  label: string;
   requireAuth: boolean;
 }
 const DATA: TDATA[] = [{
   path: '/(tabs)/discover',
   title: `상품\n검색하기`,
+  label: '상품 검색하기',
   image: require('../../assets/images/main/discover.png'),
   requireAuth: true,
 }, {
   path: '/chat',
   title: `포미와\n쇼핑하기`,
+  label: '포미와 쇼핑하기',
   image: require('../../assets/images/main/AI.png'),
   requireAuth: true,
 }, {
   path: '/recommend',
   title: `상품\n추천받기`,
+  label: `상품 추천받기`,
   image: require('../../assets/images/main/recommend.png'),
   requireAuth: true,
 }, {
   path: '/research',
   title: `상품\n설명받기`,
+  label: `상품 설명받기`,
   image: require('../../assets/images/main/research.png'),
   requireAuth: true,
 }];
@@ -66,7 +71,8 @@ export default function TabOneScreen() {
                 style={[styles.button, index % 2 ? styles.buttonRight : styles.buttonLeft]}
                 textStyle={styles.text}
                 title={item.title}
-                accessibilityLabel={`${item.title} 버튼`}
+                accessibilityLabel={item.label}
+                accessibilityRole='button'
               >
                 <Image
                   style={styles.image}
@@ -93,7 +99,8 @@ export default function TabOneScreen() {
                 style={[styles.button, index % 2 ? styles.buttonRight : styles.buttonLeft]}
                 textStyle={styles.text}
                 title={item.title}
-                accessibilityLabel={`${item.title} 버튼`}
+                accessibilityLabel={item.label}
+                accessibilityRole='button'
               >
                 <Image
                   style={styles.image}
