@@ -88,7 +88,12 @@ const LoginBottomSheet: React.FC<Props> = () => {
       if (requestId && headerTitleRef.current) {
         const nodeHandle = findNodeHandle(headerTitleRef.current);
         if (nodeHandle) {
-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          const timer = setTimeout(() => {
+            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          }, 100);
+          return () => {
+            clearTimeout(timer);
+          }
         }
       }
     }, [requestId]

@@ -8,7 +8,7 @@ import Autolink from 'react-native-autolink';
 import useColorScheme, {ColorScheme } from '../hooks/useColorScheme';
 import { numComma, formatTime } from '../utils/common';
 import { Request, Chat as IChat } from '../stores/request/types';
-import { Image, StyleSheet, Pressable } from 'react-native';
+import { Image, StyleSheet, Pressable, findNodeHandle, AccessibilityInfo } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 
@@ -17,6 +17,7 @@ interface Props {
   requestType: Request['type'] | undefined,
 }
 const Chat: React.FC<Props> = ({ data, requestType }) => {
+  const rootRef = React.useRef(null);
   const router = useRouter();
   const button = data.button;
   const colorScheme = useColorScheme();
@@ -28,8 +29,26 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
     await WebBrowser.openBrowserAsync(url);
   }
 
+  React.useEffect(
+    () => {
+      if (rootRef.current) {
+        const nodeHandle = findNodeHandle(rootRef.current);
+        if (nodeHandle) {
+          const timer = setTimeout(() => {
+            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          }, 100);
+          return () => {
+            clearTimeout(timer);
+          }
+        }
+      }
+    }, []
+  );
+
+
+
   return (
-    <View style={styles.root}>
+    <View style={styles.root} ref={rootRef}>
     <View
       style={[styles.chatRoot, data.isMine && styles.isMine]}
     >
@@ -48,6 +67,7 @@ const Chat: React.FC<Props> = ({ data, requestType }) => {
             title={button.text}
             color='secondary'
             size='small'
+            accessibilityRole='button'
             onPress={() => router.push(button.deeplink)}
           />
         )}

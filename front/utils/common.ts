@@ -8,4 +8,7 @@ export const formatDate = (date: string | Date) => {
   return `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
 }
 
-export const formatTime = (date: string | Date) => new Date(date).toLocaleTimeString().replace(/...$/,'').replace(':', '시 ') + '분';
+export const formatTime = (date: string | Date) => {
+  const today = new Date(date);
+  return (today.getHours() % 12) + '시 ' + today.getMinutes() + '분';
+};
