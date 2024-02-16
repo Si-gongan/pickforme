@@ -12,6 +12,13 @@ import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import AIIcon from '../../assets/images/tabbar/AI.svg';
 
+
+
+import { useFocusEffect } from '@react-navigation/core';
+import { useRef } from 'react';
+import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+
+
 export default function RequestsScreen() {
   const router = useRouter();
   const getRequests = useSetAtom(getRequestsAtom);
@@ -22,11 +29,23 @@ export default function RequestsScreen() {
   React.useEffect(() => {
     getRequests();
   }, [getRequests]);
+
+
+  const headerTitleRef = useRef<TextBase>(null);
+  useFocusEffect(
+    () => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    });
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <AIIcon style={styles.icon} />
-        <Text style={styles.title}>AI 포미</Text>
+        <Text style={styles.title} accessibilityRole='header' ref={headerTitleRef}>AI 포미</Text>
       </View>
       <Text style={styles.subtitle}>AI 쇼핑 도우미 포미와 대화를 시작하세요</Text>
         <Button

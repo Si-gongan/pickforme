@@ -3,14 +3,15 @@
  * https://docs.expo.io/guides/color-schemes/
  */
 
-import { Text as DefaultText, useColorScheme, View as DefaultView } from 'react-native';
+import { forwardRef } from 'react';
+import { Text as DefaultText, ViewProps as DefaultViewProps, TextProps as DefaultTextProps, useColorScheme, View as DefaultView } from 'react-native';
 
 import { useThemeColor, ThemeProps } from '../hooks/useThemeColor';
 
-export type TextProps = ThemeProps & DefaultText['props'];
-export type ViewProps = ThemeProps & DefaultView['props'];
+export type TextProps = ThemeProps & DefaultTextProps;
+export type ViewProps = ThemeProps & DefaultViewProps;
 
-export function Text(props: TextProps) {
+export const Text = forwardRef<DefaultText,TextProps>((props, ref) => {
   const { style, lightColor, darkColor, color, ...otherProps } = props;
   const textColor = useThemeColor({ light: lightColor, dark: darkColor }, 'text', color);
   const defaultProps = {
@@ -18,12 +19,12 @@ export function Text(props: TextProps) {
     lineBreakStrategyIOS: 'hangul-word',
   };
 
-  return <DefaultText {...defaultProps} {...otherProps} />;
-}
+  return <DefaultText {...defaultProps} {...otherProps} ref={ref} />;
+});
 
-export function View(props: ViewProps) {
+export const View = forwardRef<DefaultView,ViewProps>((props, ref) => {
   const { style, lightColor, darkColor, color, ...otherProps } = props;
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background', color);
 
-  return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
-}
+  return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} ref={ref}/>;
+});

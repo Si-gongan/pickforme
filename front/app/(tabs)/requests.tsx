@@ -14,6 +14,13 @@ import Product from '../../components/Product';
 
 import RequestsIcon from '../../assets/images/tabbar/requests.svg';
 
+
+import { useFocusEffect } from '@react-navigation/core';
+import { useRef } from 'react';
+import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+
+
+
 enum TABS {
   REQUEST = 'REQUEST',
   PRODUCT = 'PRODUCT',
@@ -40,11 +47,22 @@ export default function RequestsScreen() {
   React.useEffect(() => {
     getRequests();
   }, [getRequests]);
+  const headerTitleRef = useRef<TextBase>(null);
+  useFocusEffect(
+    () => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }
+    );
   return (
     <View style={styles.container}>
     <View style={styles.header}>
         <RequestsIcon style={styles.icon} />
-      <Text style={styles.title}>의뢰 목록</Text>
+      <Text style={styles.title} ref={headerTitleRef} accessibilityRole='header'>의뢰 목록</Text>
       </View>
 
       <Text style={styles.subtitle}>채팅방에 입장하여 의뢰 진행상황을 확인하세요</Text>

@@ -1,4 +1,4 @@
-import { StyleSheet, Pressable, Image } from 'react-native';
+import { StyleSheet, View as ViewBase, Pressable, Image } from 'react-native';
 import { Text, View } from './Themed';
 
 import { Product } from '../stores/discover/types';
@@ -7,7 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
 
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { numComma } from '../utils/common';
 import Colors from '../constants/Colors';
 import Button from '../components/Button';
@@ -15,16 +15,20 @@ import Button from '../components/Button';
 interface Props {
   product: Product;
 }
-const ProductCard: React.FC<Props> = ({ product }) => {
+const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const handleOpenUrl = async () => {
     await WebBrowser.openBrowserAsync(product.productUrl);
   }
   return (
-    <View
-      style={styles.product}
-    >
+    <Pressable
+            onPress={handleOpenUrl}
+            accessible
+      ref={ref}
+            accessibilityRole='button'
+            style={styles.pressable}
+            >
       <Image style={styles.productImage} source={{ uri: product.productImage }} />
       <View style={styles.footer}>
         <View style={styles.footerText}
@@ -41,17 +45,16 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           <Button
             size='small'
             title='자세히보기'
-            onPress={handleOpenUrl}
             style={styles.button}
           />
         </View>
       </View>
-    </View>
+    </Pressable>
   );
-}
+});
 
 const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
-  product: {
+  pressable: {
     width: 140,
     height: '100%',
   },

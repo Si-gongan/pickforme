@@ -1,7 +1,9 @@
-import { ScrollView, StyleSheet, Pressable, Alert, Image } from 'react-native';
+import { useRef } from 'react';
+import { Text as TextBase, AccessibilityInfo, ScrollView, findNodeHandle, StyleSheet, Pressable, Alert, Image } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { settingAtom, userDataAtom, quitAtom } from '../../stores/auth/atoms';
+import { useFocusEffect } from '@react-navigation/core';
 
 import Colors from '../../constants/Colors';
 import { Text, View } from '../../components/Themed';
@@ -16,6 +18,18 @@ export default function MyPageScreen() {
   const setting = useAtomValue(settingAtom);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+  const headerTitleRef = useRef<TextBase>(null);
+
+  useFocusEffect(
+    () => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }
+  );
 
   const quit = useSetAtom(quitAtom);
   const router = useRouter();
@@ -46,7 +60,7 @@ export default function MyPageScreen() {
     <View style={styles.container}>
        <View style={styles.header}>
         <MypageIcon style={styles.icon} />
-        <Text style={styles.headerTitle}>마이페이지</Text>
+        <Text style={styles.headerTitle} ref={headerTitleRef} accessibilityRole='header'>마이페이지</Text>
       </View>
       <ScrollView style={styles.scrollView}>
       <View style={styles.scrollContainer}>

@@ -7,6 +7,11 @@ import useCheckLogin from '../../hooks/useCheckLogin';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 
+import { useFocusEffect } from '@react-navigation/core';
+import { useRef } from 'react';
+import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+
+
 interface TDATA {
   path: string;
   title: string;
@@ -49,13 +54,22 @@ export default function TabOneScreen() {
   const onPressWithCheckLogin = useCheckLogin((id: string) => {
     onPress(id);
   });
+  const headerTitleRef = useRef<TextBase>(null);
+  useFocusEffect(
+    () => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }
+    );
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.inner}>
-          <View style={styles.textWrap}>
-          </View>
-          <Text style={styles.subtitle}>
+          <Text style={styles.subtitle} ref={headerTitleRef} accessibilityRole='header'>
             원하는 상품을 자유롭게 찾아보세요
           </Text>
           <View style={styles.save}>

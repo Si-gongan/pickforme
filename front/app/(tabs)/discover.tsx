@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
+import { Image, TextInput, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 
 import Colors from '../../constants/Colors';
@@ -14,6 +14,11 @@ import ProductCard from '../../components/DiscoverProduct';
 import SearchProductCard from '../../components/SearchProduct';
 
 import DiscoverIcon from '../../assets/images/tabbar/discover.svg';
+
+import { useFocusEffect } from '@react-navigation/core';
+import { useRef } from 'react';
+import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+
 
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
@@ -39,13 +44,21 @@ export default function DiscoverScreen() {
   const getMainProducts = useSetAtom(getMainProductsAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
   const colorScheme = useColorScheme();
-    const searchProducts = useSetAtom(searchProductsAtom);
+  const searchProducts = useSetAtom(searchProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const handleSearchMore = useSetAtom(searchMoreAtom);
   const isSearching = useAtomValue(isSearchingAtom);
 
+  const focusRef1 = useRef<ViewBase>(null);
+  const focusRef2 = useRef<ViewBase>(null);
+
   const styles = useStyles(colorScheme);
   const [query, setQuery] = React.useState('');
+
+  const [focus, setFocus] = React.useState({
+    special: 0,
+    random: 0,
+  });
   const [length, setLength] = React.useState({
     special: 5,
     random: 5,
@@ -62,8 +75,33 @@ export default function DiscoverScreen() {
       ...length,
       [key]: nextNum,
     });
+    const nextFocus = Math.min(mainProducts[key].length, length[key] + 1);
+    setFocus({
+      ...focus,
+      [key]: mainProducts[key][nextFocus].productId,
+    });
+    setTimeout(() => {
+      const ref = key === 'random' ? focusRef1 : focusRef2;
+      if (ref.current) {
+        const nodeHandle = findNodeHandle(ref.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }, 500);
   }
 
+  const headerTitleRef = useRef<TextBase>(null);
+  useFocusEffect(
+    () => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }
+    );
   React.useEffect(() => {
     getMainProducts();
   }, [getMainProducts]);
@@ -83,7 +121,7 @@ export default function DiscoverScreen() {
         ) : (
         <View style={styles.header}>
         <DiscoverIcon style={styles.icon} />
-        <Text style={styles.title}>탐색</Text>
+        <Text style={styles.title} accessibilityRole='header' ref={headerTitleRef}>탐색</Text>
       </View>
         )}
       </View>
@@ -142,7 +180,7 @@ export default function DiscoverScreen() {
         data={mainProducts.random.slice(0,length.random)}
         keyExtractor={(product) => `random-${product.productId}`}
         ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard product={product} />}
+        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef1 : undefined} product={product} />}
         ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
       />
       </View>
@@ -158,7 +196,7 @@ export default function DiscoverScreen() {
         data={mainProducts.special.slice(0,length.special)}
         keyExtractor={(product) => `special-${product.productId}`}
         ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard product={product} />}
+        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef2 : undefined} product={product} />}
         ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
       />
       </View>
