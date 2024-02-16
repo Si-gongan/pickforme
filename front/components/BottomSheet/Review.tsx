@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState} from 'react'
+import { useRef, useState, useEffect } from 'react'
 import BottomSheet from 'react-native-modal';
 import { useAtom, useSetAtom } from 'jotai';
 import { reviewRequestAtom, reviewBottomSheetAtom } from '../../stores/request/atoms';
@@ -7,7 +7,7 @@ import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import { View, Text } from '../Themed';
 import Button from '../Button';
-import {  AccessibilityInfo, StyleSheet, Image, TextInput, Pressable } from 'react-native';
+import { findNodeHandle, AccessibilityInfo, StyleSheet, Image, TextInput, Pressable } from 'react-native';
 import { Props, styles } from './Base';
 import Colors from '../../constants/Colors';
 
@@ -53,6 +53,7 @@ const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
 });
 
 const LoginBottomSheet: React.FC<Props> = () => {
+  const headerTitleRef = useRef(null);
   const router = useRouter();
     const colorScheme = useColorScheme();
   const localStyles = useLocalStyles(colorScheme);
@@ -81,6 +82,20 @@ const LoginBottomSheet: React.FC<Props> = () => {
     }, 100);
     setRating(idx);
   }
+
+  useEffect(
+    () => {
+      if (requestId && headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }, [requestId]
+  );
+
+
+
   return (
     <BottomSheet
       style={styles.base}
@@ -89,7 +104,7 @@ const LoginBottomSheet: React.FC<Props> = () => {
       onBackdropPress={onClose}
     >
       <View style={[styles.bottomSheet, localStyles.root]}>
-        <Text style={[styles.title, localStyles.title]}>
+        <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
           결과 리포트에 대한 후기를 남겨주세요!
         </Text>
         <View style={localStyles.starWrap}>
