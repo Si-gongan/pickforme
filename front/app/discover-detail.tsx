@@ -28,8 +28,8 @@ const tabName = {
 
 const loadingMessages = {
   [TABS.CAPTION]: 'AI가 상품 이미지를 분석하고 있어요.',
-  [TABS.REPORT]: 'AI가 상품의 상세정보를 요약중이에요.',
-  [TABS.REVIEW]: 'AI가 상품의 리뷰를 요약중이에요.',
+  [TABS.REPORT]: '쿠팡의 상품 상세페이지를 요약하고 있어요.',
+  [TABS.REVIEW]: '쿠팡의 리뷰 10개를 ai가 요약하고 있어요.',
 }
 
 
