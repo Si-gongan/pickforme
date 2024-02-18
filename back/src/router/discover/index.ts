@@ -90,7 +90,7 @@ router.post('/product/detail/caption', requireAuth, async (ctx) => {
     } = {
       answer: undefined,
     },
-  } = await client.post('https://ai.sigongan-ai.shop/product-caption', {
+  } = await client.post('/product-caption', {
     id: `${id}`,
   }).catch(() => ({ data: {} }));
   ctx.body = {
@@ -113,7 +113,7 @@ router.post('/product/detail/new-report', requireAuth, async (ctx) => {
     } = {
       answer: undefined,
     },
-  } = await client.post('/report', {
+  } = await client.post('/new-report', {
       id: `${id}`,
   }).catch(() => ({ data: {} }));
   ctx.body = {
@@ -132,7 +132,7 @@ router.post('/product/detail/review', requireAuth, async (ctx) => {
   } = <any>ctx.request;     
   const {
     data: review,
-  } = await client.post('https://ai.sigongan-ai.shop/product-review', {
+  } = await client.post('/product-review', {
       url: `https://www.coupang.com/vp/products/${group}`,
   }).catch(() => ({ data: { pros: [], cons: [] } }));
   ctx.body = {
