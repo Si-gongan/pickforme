@@ -29,7 +29,7 @@ export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
 
 export const searchProductsAtom = atom(null, async (get, set, params: SearchProductsRequest) => {
   set(isSearchingAtom, true);
-  if (!params.page) {
+  if (params.page === 1) {
     set(searchResultAtom, undefined);
   }
   const { data } = await SearchProductsAPI(params);
