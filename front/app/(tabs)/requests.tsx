@@ -49,14 +49,14 @@ export default function RequestsScreen() {
   }, [getRequests]);
   const headerTitleRef = useRef<TextBase>(null);
   useFocusEffect(
-    () => {
+    React.useCallback(() => {
       if (headerTitleRef.current) {
         const nodeHandle = findNodeHandle(headerTitleRef.current);
         if (nodeHandle) {
           AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
-    }
+    }, [])
     );
   return (
     <View style={styles.container}>
@@ -87,6 +87,7 @@ export default function RequestsScreen() {
               href={`/request?requestId=${request._id}`}
               key={`Request-card-${request._id}`}
               style={styles.cardLink}
+              accessibilityRole='button'
               asChild
             >
               <Pressable

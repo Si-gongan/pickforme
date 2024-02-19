@@ -93,6 +93,7 @@ export default function DiscoverScreen() {
 
   const headerTitleRef = useRef<TextBase>(null);
   useFocusEffect(
+  React.useCallback(
     () => {
       if (headerTitleRef.current) {
         const nodeHandle = findNodeHandle(headerTitleRef.current);
@@ -100,12 +101,11 @@ export default function DiscoverScreen() {
           AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
-    }
-    );
+    }, []),
+  );
   React.useEffect(() => {
     getMainProducts();
   }, [getMainProducts]);
-
   return (
     <View style={styles.container}>
       <View style={styles.horizontalPadder}>

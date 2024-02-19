@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, ScrollView, findNodeHandle, StyleSheet, Pressable, Alert, Image } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -21,14 +21,14 @@ export default function MyPageScreen() {
   const headerTitleRef = useRef<TextBase>(null);
 
   useFocusEffect(
-    () => {
+    useCallback(() => {
       if (headerTitleRef.current) {
         const nodeHandle = findNodeHandle(headerTitleRef.current);
         if (nodeHandle) {
           AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
-    }
+    }, [])
   );
 
   const quit = useSetAtom(quitAtom);

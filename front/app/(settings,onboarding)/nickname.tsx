@@ -59,11 +59,11 @@ export default function NicknameScreen() {
               <React.Fragment key={`Onboard-vision-${key}`}>
                 {i !== 0 && <View style={styles.bar} />}
                 <View style={styles.item}>
-                  <Text style={styles.label} accessible={false}>{label}</Text>
+                  <Text style={styles.label} accessible={false} importantForAccessibility='no' >{label}</Text>
                   <RadioButton.Android
                     color={Colors[colorScheme].text.primary}
                     value={key}
-                    accessibilityLabel={`${label} 선택 버튼`}
+                    accessibilityLabel={`${label} 선택`}
                     status={key === vision ? 'checked' : 'unchecked'}
                     onPress={() => setVision(key as typeof setting['vision'])}
                   />

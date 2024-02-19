@@ -27,12 +27,12 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
             accessible
       ref={ref}
             accessibilityRole='button'
+            accessibilityLabel={`${product.productName} ${numComma(product.productPrice)}원`}
             style={styles.pressable}
             >
       <Image style={styles.productImage} source={{ uri: product.productImage }} />
       <View style={styles.footer}>
         <View style={styles.footerText}
-          accessibilityLabel={`${product.productName} ${numComma(product.productPrice)}원`}
         >
           <Text style={styles.productTitle} numberOfLines={2}>
             {product.productName}
@@ -44,6 +44,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
         <View style={styles.buttonWrap}>
           <Button
             size='small'
+            accessible={false}
             title='자세히보기'
             style={styles.button}
           />

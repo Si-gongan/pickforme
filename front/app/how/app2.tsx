@@ -6,9 +6,25 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import styles from './styles';
 
+import { useFocusEffect } from '@react-navigation/core';
+import { useRef, useCallback } from 'react';
+import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+
+
+
 export default function HowScreen() {
   const router = useRouter();
-
+ const headerTitleRef = useRef<TextBase>(null);
+  useFocusEffect(
+    useCallback(() => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }, [])
+    );
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -20,7 +36,7 @@ export default function HowScreen() {
           <Text style={styles.page}>총 3페이지 중 2페이지</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.desc}>
+          <Text style={styles.desc}  ref={headerTitleRef}>
 3. AI 포미 탭: 쇼핑을 돕는 인공지능 AI 포미와 대화할 수 있어요. 원하는 상품을 설명하고 상품 추천을 빠르게 받아보세요.
           </Text>
         </View>

@@ -119,7 +119,7 @@ const Button = ({
     return <Content pressed={false} />;
   }
   return (
-    <Pressable onPress={handlePress} {...props} accessibilityRole='button'>
+    <Pressable onPress={handlePress} accessibilityLabel={props.title} {...props} accessibilityRole='button'>
       {(pressableProps) => <Content {...pressableProps} />}
     </Pressable>
   );

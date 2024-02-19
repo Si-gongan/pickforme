@@ -33,14 +33,14 @@ export default function RequestsScreen() {
 
   const headerTitleRef = useRef<TextBase>(null);
   useFocusEffect(
-    () => {
+    React.useCallback(() => {
       if (headerTitleRef.current) {
         const nodeHandle = findNodeHandle(headerTitleRef.current);
         if (nodeHandle) {
           AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
-    });
+    }, []));
   return (
     <View style={styles.container}>
       <View style={styles.header}>

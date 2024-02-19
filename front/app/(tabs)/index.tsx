@@ -8,7 +8,7 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 
 import { useFocusEffect } from '@react-navigation/core';
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 
 
@@ -56,14 +56,14 @@ export default function TabOneScreen() {
   });
   const headerTitleRef = useRef<TextBase>(null);
   useFocusEffect(
-    () => {
+    useCallback(() => {
       if (headerTitleRef.current) {
         const nodeHandle = findNodeHandle(headerTitleRef.current);
         if (nodeHandle) {
           AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
-    }
+    }, [])
     );
   return (
     <View style={styles.container}>

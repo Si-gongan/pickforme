@@ -6,15 +6,29 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import styles from './styles';
 
+import { useFocusEffect } from '@react-navigation/core';
+import { useRef, useCallback } from 'react';
+import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+
 export default function HowScreen() {
   const router = useRouter();
-
+ const headerTitleRef = useRef<TextBase>(null);
+  useFocusEffect(
+    useCallback(() => {
+      if (headerTitleRef.current) {
+        const nodeHandle = findNodeHandle(headerTitleRef.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }, [])
+    );
   return (
     <View style={styles.container}>
       <ScrollView>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.title}>앱 구성 소개</Text>
+          <Text style={styles.title} ref={headerTitleRef}>앱 구성 소개</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.page}>총 3페이지 중 1페이지</Text>
