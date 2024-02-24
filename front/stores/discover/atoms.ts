@@ -64,18 +64,18 @@ export const productDetailAtom = atom<DiscoverDetailState | void>(undefined);
 
 export const getProductDetailAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   const { data } = await GetProductDetailMainAPI(product)
-  set(productDetailAtom, { ...get(productDetailAtom), ...data });
+  set(productDetailAtom, { ...get(productDetailAtom), ...data, id: `${data.product.id}` });
   set(loadingStatusAtom, { caption: LoadingStatus.LOADING, report: LoadingStatus.INIT, review: LoadingStatus.INIT });
   const searchResult = get(searchResultAtom);
   if (searchResult) {
     set(searchResultAtom, {
       ...searchResult,
-      products: searchResult.products.map((item) => item.id === data.id ? { ...item, ...data } : item),
+      products: searchResult.products.map((item) => item.id === data.product.id ? { ...item, ...data } : item),
     });
     }
   const { data: productDetail } = await GetProductDetailsCaptionAPI(product)
-  if (get(productDetailAtom)?.id === product.id) {
-    set(productDetailAtom, { id: product.id, ...get(productDetailAtom), ...productDetail });
+  if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
+    set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
     set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
   }
 });
@@ -83,8 +83,8 @@ export const getProductDetailAtom = atom(null, async (get, set, product: GetProd
 export const getProductDetailReviewAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
   const { data: productDetail } = await GetProductDetailsReviewAPI(product)
-  if (get(productDetailAtom)?.id === product.id) {
-    set(productDetailAtom, { id: product.id, ...get(productDetailAtom), ...productDetail });
+  if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
+    set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
     set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
   }
 });
@@ -92,8 +92,8 @@ export const getProductDetailReviewAtom = atom(null, async (get, set, product: G
 export const getProductDetailReportAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.LOADING });
   const { data: productDetail } = await GetProductDetailsReportAPI(product)
-  if (get(productDetailAtom)?.id === product.id) {
-    set(productDetailAtom, { id: product.id, ...get(productDetailAtom), ...productDetail });
+  if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
+    set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
     set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.FINISH });
   }
 });

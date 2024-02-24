@@ -92,14 +92,14 @@ export default function DiscoverScreen() {
               <Text style={[styles.tableHeader, styles.tableTitle]}>
                 상품 정보
               </Text>
-              {productDetail?.product?.id === product?.id && (
+              {productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}` && (
               <>
               <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                   평점
                 </Text>
                 <Text style={styles.tableItem}>
-                  {Math.floor(productDetail.product.ratings / 20 * 10) / 10}
+                  {Math.floor(productDetail.product.ratings / 20 * 10) / 10} 점
                 </Text>
               </View>
               <View style={styles.tableRow} accessible>
@@ -107,7 +107,7 @@ export default function DiscoverScreen() {
                    리뷰 개수
                 </Text>
                 <Text style={styles.tableItem}>
-                  {productDetail.product.reviews}
+                  {productDetail.product.reviews} 개
                 </Text>
               </View>
               </>

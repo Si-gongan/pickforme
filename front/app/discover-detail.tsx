@@ -120,7 +120,7 @@ export default function DiscoverScreen() {
                   평점
                 </Text>
                 <Text style={styles.tableItem}>
-                  {Math.floor(product.ratings / 20 * 10) / 10}
+                  {Math.floor(product.ratings / 20 * 10) / 10} (점)
                 </Text>
               </View>
               <View style={styles.tableRow} accessible>
@@ -128,7 +128,7 @@ export default function DiscoverScreen() {
                    리뷰 개수
                 </Text>
                 <Text style={styles.tableItem}>
-                  {product.reviews}
+                  {product.reviews} (개)
                 </Text>
               </View>
               <View style={styles.tableRow} accessible>

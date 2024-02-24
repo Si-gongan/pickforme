@@ -72,7 +72,9 @@ export interface GetMainProductsResponse {
   reports: Report[],
 }
 
-export type GetProductDetailMainResponse = ProductDetail;
+export type GetProductDetailMainResponse = {
+  product: ProductDetail;
+}
 export interface GetProductDetailsResponse {
   product?: ProductDetail;
     caption?: string,
@@ -100,5 +102,5 @@ export interface SearchProductsRequest {
 export type GetProductDetailRequest = ChatProduct | Product;
 
 export interface DiscoverDetailState extends GetProductDetailsResponse {
-  id: number,
+  id: string;
 }
