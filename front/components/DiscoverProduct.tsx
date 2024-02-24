@@ -3,7 +3,6 @@ import { Text, View } from './Themed';
 
 import { Product } from '../stores/discover/types';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
-import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
 
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -16,14 +15,16 @@ interface Props {
   product: Product;
 }
 const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
+    const router = useRouter();
+
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
-  const handleOpenUrl = async () => {
-    await WebBrowser.openBrowserAsync(product.productUrl);
+  const handlePress = () => {
+    router.push(`/discover-detail-main?productId=${product.id}`);
   }
   return (
     <Pressable
-            onPress={handleOpenUrl}
+      onPress={handlePress}
             accessible
       ref={ref}
             accessibilityRole='button'
@@ -46,6 +47,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
             size='small'
             accessible={false}
             title='자세히보기'
+            onPress={handlePress}
             style={styles.button}
           />
         </View>

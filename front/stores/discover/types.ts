@@ -1,5 +1,6 @@
 import { ChatProduct, Request as Report } from '../request/types';
 export interface Product {
+  id: number;
   productId: number,
   productName: string,
   productPrice: number,
@@ -73,6 +74,7 @@ export interface GetMainProductsResponse {
 
 export type GetProductDetailMainResponse = ProductDetail;
 export interface GetProductDetailsResponse {
+  product?: ProductDetail;
     caption?: string,
     report?: string,
     review?: {
@@ -95,7 +97,7 @@ export interface SearchProductsRequest {
   query: string,
 }
 
-export type GetProductDetailRequest = ChatProduct;
+export type GetProductDetailRequest = ChatProduct | Product;
 
 export interface DiscoverDetailState extends GetProductDetailsResponse {
   id: number,

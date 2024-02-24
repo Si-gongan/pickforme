@@ -54,13 +54,17 @@ export const searchMoreAtom = atom(null, async (get, set, query: string) => {
 
 export const getMainProductsAtom = atom(null, async (get, set) => {
   const { data } = await GetMainProductsAPI();
-  set(mainProductsAtom, data);
+  set(mainProductsAtom, {
+    ...data,
+    special: data.special.map((item) => ({ ...item, id: item.productId })),
+    random: data.random.map((item) => ({ ...item, id: item.productId })),
+  });
 });
 export const productDetailAtom = atom<DiscoverDetailState | void>(undefined);
 
 export const getProductDetailAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   const { data } = await GetProductDetailMainAPI(product)
-  set(productDetailAtom, { id: product.id });
+  set(productDetailAtom, { ...get(productDetailAtom), ...data });
   set(loadingStatusAtom, { caption: LoadingStatus.LOADING, report: LoadingStatus.INIT, review: LoadingStatus.INIT });
   const searchResult = get(searchResultAtom);
   if (searchResult) {

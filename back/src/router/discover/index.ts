@@ -58,13 +58,24 @@ router.post('/product', requireAuth, async (ctx) => {
     body: {
       product: {
         id,
+        productUrl,
       },
     },
   } = <any>ctx.request;
+  if (productUrl) {
   const {
     data: {
-      product,
+      product
     },
+  } = await client.post(`/product-detail`, {
+    url: `https://www.coupang.com/vp/products/${id}`,
+  });
+  ctx.body = {
+    product,
+  };
+  } else {
+  const {
+    data: product,
   } = await client.get(`https://api.kimgosu.vsolution.app/products/${id}`, {
     headers: {
       Authorization: 'Bearer 389|wxFe3R2xVdE2eFXII3pPH7lF5tFqaUp5o9RVkOQl',
@@ -73,6 +84,7 @@ router.post('/product', requireAuth, async (ctx) => {
   ctx.body = {
     product,
   };
+  }
 });
 
 router.post('/product/detail/caption', requireAuth, async (ctx) => {
@@ -80,7 +92,7 @@ router.post('/product/detail/caption', requireAuth, async (ctx) => {
     body: {
       product: {
         id,
-        group,
+        productUrl,
       },
     },
   } = <any>ctx.request;
@@ -90,9 +102,12 @@ router.post('/product/detail/caption', requireAuth, async (ctx) => {
     } = {
       answer: undefined,
     },
-  } = await client.post('/product-caption', {
+  } = await client.post('/product-caption', productUrl ? {
+    url: `https://www.coupang.com/vp/products/${id}`,
+  } : {
     id: `${id}`,
   }).catch(() => ({ data: {} }));
+  console.log(caption);
   ctx.body = {
     caption,
   };
@@ -103,7 +118,7 @@ router.post('/product/detail/new-report', requireAuth, async (ctx) => {
     body: {
       product: {
         id,
-        group,
+        productUrl,
       },
     },
   } = <any>ctx.request;
@@ -113,9 +128,12 @@ router.post('/product/detail/new-report', requireAuth, async (ctx) => {
     } = {
       answer: undefined,
     },
-  } = await client.post('/new-report', {
+  } = await client.post('/new-report', productUrl ? {
+    url: `https://www.coupang.com/vp/products/${id}`,
+  } : {
       id: `${id}`,
   }).catch(() => ({ data: {} }));
+  console.log(report);
   ctx.body = {
     report,
   };
@@ -124,8 +142,9 @@ router.post('/product/detail/new-report', requireAuth, async (ctx) => {
 router.post('/product/detail/review', requireAuth, async (ctx) => {
   const {                   
     body: {                 
-      product: {            
-        id,                 
+      product: { 
+        id,
+        productUrl,
         group,              
       },                    
     },                      
@@ -133,8 +152,9 @@ router.post('/product/detail/review', requireAuth, async (ctx) => {
   const {
     data: review,
   } = await client.post('/product-review', {
-      url: `https://www.coupang.com/vp/products/${group}`,
+    url: `https://www.coupang.com/vp/products/${productUrl ? id : group}`,
   }).catch(() => ({ data: { pros: [], cons: [] } }));
+  console.log(review);
   ctx.body = {
     review,
   };
