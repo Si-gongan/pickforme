@@ -69,38 +69,36 @@ export default function TabOneScreen() {
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.inner}>
-          <Text style={styles.subtitle} ref={headerTitleRef} accessibilityRole='header'>
-            원하는 상품을 자유롭게 찾아보세요
-          </Text>
+          <View style={{height:60}}></View>
           <View style={styles.save}>
-          <FlatList<TDATA>
-            scrollEnabled={false}
-            contentContainerStyle={styles.list}
-            data={DATA.slice(0,2)}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            renderItem={({ item, index }) => (
-              <Button
-                onPress={() => item.requireAuth ? onPressWithCheckLogin(item.path) : onPress(item.path)}
-                style={[styles.button, index % 2 ? styles.buttonRight : styles.buttonLeft]}
-                textStyle={styles.text}
-                title={item.title}
-                accessibilityLabel={item.label}
-                accessibilityRole='button'
-              >
-                <Image
-                  style={styles.image}
-                  source={item.image}
-                />
-              </Button>
-            )}
-            keyExtractor={(item) => item.path}
-          />
+            <FlatList<TDATA>
+              scrollEnabled={false}
+              contentContainerStyle={styles.list}
+              data={DATA.slice(0,1)}
+              numColumns={1}
+              // columnWrapperStyle={styles.row}
+              renderItem={({ item, index }) => (
+                <Button
+                  onPress={() => item.requireAuth ? onPressWithCheckLogin(item.path) : onPress(item.path)}
+                  style={[styles.button, styles.buttonCenter]}
+                  textStyle={styles.text}
+                  title={item.title}
+                  accessibilityLabel={item.label}
+                  accessibilityRole='button'
+                >
+                  <Image
+                    style={styles.image}
+                    source={item.image}
+                  />
+                </Button>
+              )}
+              keyExtractor={(item) => item.path}
+            />
           </View>
           <Text style={styles.subtitle}>
             나만을 위한 맞춤 서비스를 받아보세요
           </Text>
-                    <View style={styles.save}>
+          <View style={styles.save}>
           <FlatList<TDATA>
             scrollEnabled={false}
             contentContainerStyle={styles.list}
@@ -181,6 +179,9 @@ const styles = StyleSheet.create({
     shadowColor: 'rgb(17, 30, 79)',
     shadowOpacity: 0.25,
     shadowRadius: 5,
+  },
+  buttonCenter: {
+    width: 316,
   },
   buttonLeft: {
     marginRight: 9,
