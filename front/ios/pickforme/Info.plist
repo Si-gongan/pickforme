@@ -43,6 +43,15 @@
           <string>kakaoa48d1b07defd794b769579746e2bb995</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.sigonggan.pickforme.share</string>
+        </array>
+      </dict>
+      <dict/>
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>

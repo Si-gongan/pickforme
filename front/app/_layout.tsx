@@ -11,6 +11,7 @@ import useInterceptor from '../hooks/useInterceptor';
 import useColorScheme from '../hooks/useColorScheme';
 import useSocket from '../hooks/useSocket';
 import usePushToken from '../hooks/usePushToken';
+import useGetShare from '../hooks/useGetShare';
 
 import { Text } from '../components/Themed';
 import Colors from '../constants/Colors';
@@ -63,6 +64,7 @@ function RootLayoutNav() {
   usePushToken();
   useSocket();
   useInterceptor();
+  useGetShare();
   useEffect(() => {
     (async () => {
       const storageIsLoaded = await AsyncStorage.getItem('isLoaded');
