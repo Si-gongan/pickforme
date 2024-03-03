@@ -119,8 +119,8 @@ android {
         applicationId 'com.sigonggan.pickforme'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 16
-        versionName "1.0.7"
+        versionCode 36
+        versionName "1.1.8"
     }
 
     splits {
