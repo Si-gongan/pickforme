@@ -24,7 +24,7 @@ const useGetShare = () => {
         } catch {}
       },
       (error: any) => {},
-      'com.sigonggan.pickforme.share'
+      'com.sigonggan.pickforme'
     );
   }, []);
 };

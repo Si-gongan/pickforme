@@ -6,7 +6,7 @@ import Photos
 class ShareViewController: SLComposeServiceViewController {
  // TODO: IMPORTANT: This should be your host app bundle identifier
  let hostAppBundleIdentifier = "com.sigonggan.pickforme"
- let shareProtocol = "com.sigonggan.pickforme.share" //share url protocol (must be unique to your app, suggest using your apple bundle id, ie: `hostAppBundleIdentifier`)
+ let shareProtocol = "com.sigonggan.pickforme" //share url protocol (must be unique to your app, suggest using your apple bundle id, ie: `hostAppBundleIdentifier`)
  let sharedKey = "ShareKey"
  var sharedMedia: [SharedMediaFile] = []
  var sharedText: [String] = []
