@@ -51,7 +51,7 @@ export default function DiscoverScreen() {
     if (product) {
       getProductDetail(product);
     }
-  }, [getProductDetail, product]);
+  }, [getProductDetail, product?.id]);
   const handleClickBuy = async () => {
     if (!product) {
       return;

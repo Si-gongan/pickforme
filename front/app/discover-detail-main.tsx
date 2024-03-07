@@ -64,6 +64,8 @@ export default function DiscoverScreen() {
     }
     router.push({ pathname: '/research', params: { link: product.productUrl }});
   }
+
+  const hasDetail =  productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       // if (nextTab === TABS.REPORT) {
@@ -93,7 +95,7 @@ export default function DiscoverScreen() {
               <Text style={[styles.tableHeader, styles.tableTitle]}>
                 상품 정보
               </Text>
-              {productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}` && (
+              {hasDetail && productDetail.product && (
               <>
               <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
@@ -130,7 +132,7 @@ export default function DiscoverScreen() {
           </View>
         ))}
       </View>
-        {(loadingStatus[tab] <= 1) ? (
+        {(loadingStatus[tab] <= 1 || !hasDetail) ? (
           <View style={styles.detailWrap}><Text>{loadingMessages[tab]}</Text></View>
         ) : (!!productDetail?.[tab] ? (
           <>
@@ -140,7 +142,7 @@ export default function DiscoverScreen() {
                 </View>
               ) : (
                 <>
-                  {!productDetail?.[tab]?.pros?.length
+                  {hasDetail && !productDetail?.[tab]?.pros?.length
                   && !productDetail?.[tab]?.cons?.length && (
                     <View style={styles.detailWrap}>
                       <Text>등록된 리뷰가 없습니다.</Text>
