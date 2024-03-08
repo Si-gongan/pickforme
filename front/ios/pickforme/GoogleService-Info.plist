@@ -3,12 +3,32 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>742717274705-4jauind5568m7978ph4lthq2k27r1lqv.apps.googleusercontent.com</string>
+	<string>951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.742717274705-4jauind5568m7978ph4lthq2k27r1lqv</string>
+	<string>com.googleusercontent.apps.951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l</string>
+	<key>API_KEY</key>
+	<string>AIzaSyArLg3FvbGnoazoQQcqfYgGkt9aeBy_mpc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>951645615132</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.sigonggan.pickforme</string>
+	<key>PROJECT_ID</key>
+	<string>pickforme-b8daf</string>
+	<key>STORAGE_BUCKET</key>
+	<string>pickforme-b8daf.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:951645615132:ios:0bc340f663e8f4dea99bd9</string>
 </dict>
 </plist>
