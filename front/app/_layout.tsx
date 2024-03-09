@@ -96,7 +96,7 @@ function RootLayoutNav() {
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="how" options={{ headerShown: false }} />
-            {["discover-detail-main", "discover-detail", "(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "faq", "recommend-sample", "research-sample"].map((name) => (
+            {["notification", "discover-detail-main", "discover-detail", "(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "faq", "recommend-sample", "research-sample"].map((name) => (
               <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
             ))}
             <Stack.Screen name="notices" options={{ ...hideHeaderOption, headerTitle: undefined, title: '공지사항' }} />

@@ -89,7 +89,7 @@ export default function DiscoverScreen() {
            {Math.floor(product.discount_rate)}% {numComma(product.price || 0)}원
           </Text>
           <Text style={styles.originalPrice}>
-            {numComma(product.regular_price || 0)}
+            {numComma(product.regular_price || 0)}원
           </Text>
         </>
         : 
