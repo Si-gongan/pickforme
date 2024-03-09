@@ -56,17 +56,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          headerShown: false,
           title: '홈',
           tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
           tabBarAccessibilityLabel: '홈 탭',
-          headerRight: () => (
-            <Pressable onPress={() => router.push('/notices')} accessibilityLabel='공지사항' accessibilityRole='button'>
-            <Image
-              style={styles.notice}
-              source={require('../../assets/images/main/notice.png')}
-            />
-            </Pressable>
-          ),
         }}
       />
       <Tabs.Screen
@@ -110,10 +103,5 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  notice: {
-    width: 25,
-    height: 25,
-    marginRight: 27,
-  },
 });
 

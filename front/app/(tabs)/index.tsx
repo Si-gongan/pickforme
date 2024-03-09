@@ -6,10 +6,13 @@ import useCheckLogin from '../../hooks/useCheckLogin';
 
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
+import Colors from '../../constants/Colors';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
 import { useFocusEffect } from '@react-navigation/core';
 import { useRef, useCallback } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
+import MypageIcon from '../../assets/images/tabbar/index.svg';
 
 
 interface TDATA {
@@ -47,6 +50,9 @@ const DATA: TDATA[] = [{
 
 export default function TabOneScreen() {
   const router = useRouter();
+    const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
+
   const setting = useAtomValue(settingAtom);
   const onPress = (id: string) => {
     router.push(id);
@@ -67,7 +73,20 @@ export default function TabOneScreen() {
     );
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <MypageIcon style={styles.icon} />
+          <Text style={styles.headerTitle} ref={headerTitleRef} accessibilityRole='header'>홈</Text>
+        </View>
+        <Pressable onPress={() => router.push('/notices')} accessibilityLabel='공지사항' accessibilityRole='button'>
+            <Image
+              style={styles.notice}
+              source={require('../../assets/images/main/notice.png')}
+            />
+        </Pressable>
+      </View>
+
+      <ScrollView style={styles.scrollView}>
         <View style={styles.inner}>
           <View style={{height:60}}></View>
           <View style={styles.save}>
@@ -129,18 +148,20 @@ export default function TabOneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
+    paddingTop: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
   },
-  scrollContainer: {
-    width: '100%',
-    paddingVertical: 60,
+  scrollView: {
+    flex: 1,
   },
   inner: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
     flex: 0,
     alignSelf: 'center',
   },
@@ -209,5 +230,30 @@ const styles = StyleSheet.create({
     marginBottom:20,
     fontSize: 16,
     fontWeight: '500',
+  },
+  header: {
+    width: '100%',
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  }, 
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    color: Colors[colorScheme].text.primary,
+    marginRight: 9,
+  },
+  headerTitle: {
+       fontWeight: '600',
+    fontSize: 22,
+    lineHeight: 27,
+  },
+  notice: {
+    width: 25,
+    height: 25,
+    marginRight: 27,
   },
 });

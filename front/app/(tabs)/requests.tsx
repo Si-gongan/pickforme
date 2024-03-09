@@ -82,7 +82,14 @@ export default function RequestsScreen() {
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.cards}>
-          {tab === TABS.REQUEST ? requests.map((request) => (
+          {tab === TABS.REQUEST ? (
+          <>
+            {requests.length === 0 && (
+              <Text style={styles.placeholder}>
+              의뢰 목록이 없습니다.
+              </Text>
+            )}
+            {requests.map((request) => (
             <Link
               href={`/request?requestId=${request._id}`}
               key={`Request-card-${request._id}`}
@@ -134,9 +141,20 @@ export default function RequestsScreen() {
                 )}
               </Pressable>
             </Link>
-          )) : requests.map(({ answer, _id }) => answer?.products?.map(product => (
-            <Product product={product} key={`product-${product.url}`} requestId={_id} isSimple />
-          )))}
+            ))}
+            </>
+          ) : (
+            <>
+              {requests.filter(({ answer }) => answer?.products).length === 0 && (
+                <Text style={styles.placeholder}>
+                  상품 목록이 없습니다.
+                </Text>
+              )}
+              {requests.map(({ answer, _id }) => answer?.products?.map(product => (
+                <Product product={product} key={`product-${product.url}`} requestId={_id} isSimple />
+              )))}
+            </>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -249,6 +267,9 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
    header: {
     flexDirection: 'row',
+  },
+  placeholder: {
+    textAlign: 'center',
   },
   icon: {
     color: Colors[colorScheme].text.primary,
