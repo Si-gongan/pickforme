@@ -64,7 +64,7 @@ export const productDetailAtom = atom<DiscoverDetailState | void>(undefined);
 
 export const getProductDetailAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   const { data } = await GetProductDetailMainAPI(product)
-  set(productDetailAtom, { ...get(productDetailAtom), ...data, id: `${data.product.id}` });
+  set(productDetailAtom, { ...data, id: `${data.product.id}` });
   set(loadingStatusAtom, { caption: LoadingStatus.LOADING, report: LoadingStatus.INIT, review: LoadingStatus.INIT });
   const searchResult = get(searchResultAtom);
   if (searchResult) {
