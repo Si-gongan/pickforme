@@ -24,7 +24,7 @@ const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
    return     (
-    <Pressable onPress={onClick} accessibilityRole='button' accessibilityLabel='더보기'>
+    <Pressable onPress={onClick} accessibilityRole='button' accessibilityLabel='더보기' accessible>
           <View
             style={styles.more}
           >
@@ -171,7 +171,7 @@ export default function DiscoverScreen() {
       <ScrollView style={styles.scrollView}>
       {!!mainProducts.random.length && (
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, styles.horizontalPadder]}>
+        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
           {mainProducts.random[1].categoryName}
         </Text>
       <FlatList
@@ -187,7 +187,7 @@ export default function DiscoverScreen() {
       )}
       {!!mainProducts.special.length && (
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, styles.horizontalPadder]}>
+        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
           오늘의 특가 상품
         </Text>
      <FlatList
