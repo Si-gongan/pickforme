@@ -16,6 +16,7 @@ interface Props {
   product: Product;
 }
 const ProductCard: React.FC<Props> = ({ product }) => {
+
   const router = useRouter();
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
@@ -23,7 +24,11 @@ const ProductCard: React.FC<Props> = ({ product }) => {
     router.push(`/discover-detail?productId=${product.id}`);
   }
   return (
-    <View
+    <Pressable
+      onPress={handleOpenUrl}
+            accessible
+            accessibilityRole='button'
+            accessibilityLabel={`${product.name} ${numComma(product.price)}원`}
       style={styles.product}
     >
       <Image style={styles.productImage} source={{ uri: product.thumbnail }} />
@@ -39,13 +44,14 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         <View style={styles.buttonWrap}>
           <Button
             size='small'
+            accessible={false}
             title='자세히보기'
             onPress={handleOpenUrl}
             style={styles.button}
           />
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
