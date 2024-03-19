@@ -87,6 +87,7 @@ export default function RecommendScreen() {
         </View>
       </ScrollView>
       <View style={styles.buttonWrap}>
+        {/*
         <View style={styles.checkWrap}>
           <Pressable onPress={() => setIsShareChecked(prev => !prev)}
             accessibilityRole='checkbox' accessible
@@ -104,6 +105,7 @@ export default function RecommendScreen() {
             <Image style={styles.checkMore} source={require('../assets/images/ChevronRight.png')} />
           </Pressable>
         </View>
+        */}
         <Button title='1픽으로 추천 의뢰하기' onPress={handleSubmit} disabled={disabled} />
       </View>
     </View>

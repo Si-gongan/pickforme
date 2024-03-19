@@ -45,17 +45,6 @@ export default function ResearchScreen() {
     addRequest(data);
     router.push('(tabs)/requests')
   }
-  const openShareDesc = () => {
-    pushBottomSheet(
-      [{
-        type: 'title',
-        text: '[선택사항] 픽포미 추천 함께 공유하기',
-      }, {
-        type: 'desc',
-        text: '픽포미 추천 상품을 모두가 확인할 수 있게 리포트를 공유하는 기능이에요. 매월 최다 조회될 경우 1픽을 돌려받을 수 있어요. 개인 정보는 노출되지 않아요.',
-      }]
-    );
-  }
   const disabled = !data.link;
   return (
     <View style={styles.container}>
