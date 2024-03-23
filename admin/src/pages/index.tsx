@@ -24,7 +24,7 @@ export default function RequestsScreen() {
   const requests = useAtomValue(requestsAtom).filter(request => tab === 'ALL' ? true : request.type === tab);
 
   React.useEffect(() => {
-    getRequests();
+    getRequests({});
   }, [getRequests]);
 
   return (

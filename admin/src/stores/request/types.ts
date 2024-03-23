@@ -49,6 +49,10 @@ interface RequestBase {
     text: string,
     products: Product[]
   },
+  review?: {
+    text: string,
+    rating: number
+  }
 }
 
 export interface PostAnswerParams extends Pick<Request, 'answer'>, Pick<Chat, 'requestId'> {
@@ -77,4 +81,7 @@ interface BuyRequest extends RequestBase {
 
 export type Request = BuyRequest | RecommendRequest | ResearchRequest;
 
-export interface GetRequestsParams {};
+export interface GetRequestsParams {
+  start?: string,
+  end?: string
+};

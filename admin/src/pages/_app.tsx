@@ -11,8 +11,12 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_APP_ID!}>
       <JotaiProvider>
-        <CheckReady><CheckLogin><Component {...pageProps} /></CheckLogin></CheckReady>
+        <CheckReady>
+          <CheckLogin>
+            <Component {...pageProps} />
+          </CheckLogin>
+        </CheckReady>
       </JotaiProvider>
-    </GoogleOAuthProvider>
+  </GoogleOAuthProvider>
   );
 }

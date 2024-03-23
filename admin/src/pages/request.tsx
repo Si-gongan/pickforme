@@ -206,6 +206,15 @@ export default function RequestScreen() {
         </Desc>
       </>
       )}
+      {request.review && (
+        <>
+          <Subtitle>리뷰 내용</Subtitle>
+          <Desc>
+            <div>평점: {request.review.rating}</div>
+            <div>후기: {request.review.text.trim() !== "" ? request.review.text : '없음'}</div>
+          </Desc>
+        </>
+      )}
       <Subtitle>
         추천 결과
       </Subtitle>
