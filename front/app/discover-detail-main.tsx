@@ -59,10 +59,11 @@ export default function DiscoverScreen() {
     await WebBrowser.openBrowserAsync(product.productUrl);
   }
   const handleClickRequest = () => {
+    console.log(product);
     if (!product) {
       return;
     }
-    router.push({ pathname: '/research', params: { link: product.productUrl }});
+    router.push({ pathname: '/research', params: { link: encodeURIComponent(product.productUrl) }});
   }
 
   const hasDetail =  productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
