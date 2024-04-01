@@ -14,7 +14,7 @@
     ],
     "name": "픽포미",
     "slug": "pickforme",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
     "scheme": "myapp",
@@ -65,7 +65,7 @@
       },
       "package": "com.sigonggan.pickforme",
       "runtimeVersion": "1.0.1",
-      "versionCode": 40,
+      "versionCode": 41,
       "intentFilters": [
         {
           "action": "android.intent.action.SEND",
