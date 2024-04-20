@@ -16,6 +16,9 @@
       "channel": "preview"
     },
     "production": {
+      "ios": {
+        "cocoapods": "1.15.2"
+      },
       "channel": "production"
     }
   },
