@@ -28,6 +28,33 @@ class Socket {
         await db.Session.create({
           connectionId: socket.id, userId: user._id,
         });
+         // 2023 흰지팡이 event 대응
+        const now = new Date();
+        if (
+          now <= new Date('2024-05-19T15:00:00.000Z')
+        ) {
+          const attended = await db.Event.findOne({
+            eventId: '2024_0420', userId: user._id,
+          });
+          if (!attended) {
+            await db.Event.create({
+              userId: user._id, eventId: '2024_0420',
+            });
+            const userDocument = await db.User.findById(user._id);
+            if (userDocument) {
+              const count = await db.Event.count({});
+              await userDocument.save();
+              socket.emit('bottomsheet', [{
+                type: 'title',
+                text: '언더웨어 브랜트 "더잠" 입점',
+              }, {
+                type: 'desc',
+                text: '4월 20일부터 한 달간 언더웨어 브랜드가 픽포미에 입점하게 되었습니다. 탐색탭 페이지에서 점자 팬티를 포함한 더잠의 상품들과 단독 할인 프로모션을 지금 바로 만나보세요.',
+              }]);
+            }
+          }
+        }
+
         socket.on('disconnect', async () => {
           await db.Session.findOneAndDelete({
             connectionId: socket.id, userId: user._id,
