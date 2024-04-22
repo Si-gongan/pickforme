@@ -169,6 +169,22 @@ export default function DiscoverScreen() {
         </>
       ) : (
       <ScrollView style={styles.scrollView}>
+      {!!mainProducts.special.length && (
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+          편안한 속옷의 기준, 더잠
+        </Text>
+     <FlatList
+        horizontal
+        contentContainerStyle={[styles.list, styles.horizontalPadder]}
+        data={mainProducts.special.slice(0,length.special)}
+        keyExtractor={(product) => `special-${product.productId}`}
+        ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef2 : undefined} product={product} />}
+        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
+      />
+      </View>
+      )}
       {!!mainProducts.random.length && (
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
@@ -182,22 +198,6 @@ export default function DiscoverScreen() {
         ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
         renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef1 : undefined} product={product} />}
         ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
-      />
-      </View>
-      )}
-      {!!mainProducts.special.length && (
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-          오늘의 특가 상품
-        </Text>
-     <FlatList
-        horizontal
-        contentContainerStyle={[styles.list, styles.horizontalPadder]}
-        data={mainProducts.special.slice(0,length.special)}
-        keyExtractor={(product) => `special-${product.productId}`}
-        ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef2 : undefined} product={product} />}
-        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
       />
       </View>
       )}

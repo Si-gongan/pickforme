@@ -16,20 +16,20 @@ import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
     
 enum TABS {
   CAPTION = 'caption',
-  // REPORT = 'report',
+  REPORT = 'report',
   REVIEW = 'review',
 };
 
 
 const tabName = {
   [TABS.CAPTION]: '이미지 설명',
-  // [TABS.REPORT]: '상세페이지 설명',
+  [TABS.REPORT]: '상세페이지 설명',
   [TABS.REVIEW]: '리뷰 요약',
 }
 
 const loadingMessages = {
   [TABS.CAPTION]: 'AI가 상품 이미지를 분석하고 있어요.',
-  // [TABS.REPORT]: '쿠팡의 상품 상세페이지를 요약하고 있어요.',
+  [TABS.REPORT]: '쿠팡의 상품 상세페이지를 요약하고 있어요.',
   [TABS.REVIEW]: '쿠팡의 리뷰 10개를 ai가 요약하고 있어요.',
 }
 
@@ -69,9 +69,10 @@ export default function DiscoverScreen() {
   const hasDetail =  productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
-      // if (nextTab === TABS.REPORT) {
-      //   getProductDetailReport(product);
-      // }
+      console.log(product);
+      if (nextTab === TABS.REPORT) {
+        getProductDetailReport(product);
+      }
       if (nextTab === TABS.REVIEW) {
         getProductDetailReview(product);
       }
@@ -120,7 +121,8 @@ export default function DiscoverScreen() {
           </View>
         <View style={styles.seperator} />
          <View style={styles.tabWrap}>
-        {Object.values(TABS).map((TAB) => (
+        {Object.values(TABS).map((TAB) => 
+        (product.id === 1 || product.id === 2 || product.id === 3 || TAB !== TABS.REPORT) && (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={styles.tabButton}
