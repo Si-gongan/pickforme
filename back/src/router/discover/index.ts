@@ -39,9 +39,10 @@ router.get('/products', requireAuth, async (ctx) => {
     data: {
       products: special,
     },
-  }, reports] = await Promise.all([
+  }, local, reports] = await Promise.all([
     client.get(`/coupang/bestcategories/${id}`),
     client.get('/coupang/goldbox'),
+    db.DiscoverSection.find({}),
     db.Request.find({
       isPublic: true,
     }).limit(3),
@@ -49,6 +50,7 @@ router.get('/products', requireAuth, async (ctx) => {
   ctx.body = {
     special,
     random,
+    local,
     reports,
   };
 });
@@ -62,7 +64,13 @@ router.post('/product', requireAuth, async (ctx) => {
       },
     },
   } = <any>ctx.request;
-  if (productUrl) {
+   const section = await db.DiscoverSection.findOne(
+      { 'products.productId': id },
+      { products: { $elemMatch: { productId: id } } }
+    );
+  if (section) {
+    ctx.body = { product: section.products[0].detail };
+  } else if (productUrl) {
   const {
     data,
   } = await client.post(`/product-detail`, {
@@ -90,6 +98,17 @@ router.post('/product/detail/caption', requireAuth, async (ctx) => {
       },
     },
   } = <any>ctx.request;
+  const section = await db.DiscoverSection.findOne(
+      { 'products.productId': id },
+      { products: { $elemMatch: { productId: id } } }
+    );
+  if (section) {
+    ctx.body = {
+      caption: section.products[0].caption,
+    };
+    return;
+  }
+
   const {
      data: {
       answer: caption,
@@ -115,6 +134,18 @@ router.post('/product/detail/new-report', requireAuth, async (ctx) => {
       },
     },
   } = <any>ctx.request;
+    const section = await db.DiscoverSection.findOne(
+      { 'products.productId': id },
+      { products: { $elemMatch: { productId: id } } }
+    );
+  if (section) {
+    ctx.body = {
+      report: section.products[0].report,
+    };
+    return;
+  }
+
+
   const {
     data: {
       answer: report,
@@ -141,6 +172,19 @@ router.post('/product/detail/review', requireAuth, async (ctx) => {
       },                    
     },                      
   } = <any>ctx.request;     
+      const section = await db.DiscoverSection.findOne(
+      { 'products.productId': id },
+      { products: { $elemMatch: { productId: id } } }
+    );
+  if (section) {
+    ctx.body = {
+      review: section.products[0].review,
+    };
+    return;
+  }
+
+
+
   const {
     data: review,
   } = await client.post('/product-review', {

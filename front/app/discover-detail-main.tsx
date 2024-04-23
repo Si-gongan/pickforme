@@ -44,7 +44,7 @@ export default function DiscoverScreen() {
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
-  const product = [...mainProducts.special, ...mainProducts.random].find(({ id }) => `${id}` === `${productId}`);
+  const product = [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`);
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
   React.useEffect(() => {
@@ -59,7 +59,6 @@ export default function DiscoverScreen() {
     await WebBrowser.openBrowserAsync(product.productUrl);
   }
   const handleClickRequest = () => {
-    console.log(product);
     if (!product) {
       return;
     }
@@ -296,6 +295,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginBottom: 13,
   },
   reviewListRow: {
+    flexDirection: 'row',
   },
   reviewListRowText: {
     lineHeight: 24,

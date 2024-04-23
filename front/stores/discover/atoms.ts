@@ -11,6 +11,7 @@ export const mainProductsAtom = atom<DiscoverState>({
   special: [],
   random: [],
   reports: [],
+  local: [],
 });
 
 enum LoadingStatus {

@@ -10,6 +10,7 @@ import PickHistory from './pickHistory';
 import Purchase from './purchase';
 import Event from './event';
 import Notice from './notice';
+import DiscoverSection from './DiscoverSection';
 
 const uri = process.env.MONGO_URI!;
 
@@ -22,6 +23,7 @@ const db = {
   Chat,
   Product,
   Buy,
+  DiscoverSection,
   Purchase,
   PickHistory,
   Event,

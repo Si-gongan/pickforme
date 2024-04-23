@@ -66,9 +66,16 @@ interface History {
   created_at: string;
 }
 
+interface Section {
+  name: string,
+  order: number,
+  products: Product[],
+}
+
 export interface GetMainProductsResponse {
   special: Product[],
   random: Product[],
+  local: Section[],
   reports: Report[],
 }
 

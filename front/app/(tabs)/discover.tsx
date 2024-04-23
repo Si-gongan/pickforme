@@ -90,7 +90,6 @@ export default function DiscoverScreen() {
       }
     }, 500);
   }
-
   const headerTitleRef = useRef<TextBase>(null);
   useFocusEffect(
   React.useCallback(
@@ -169,7 +168,23 @@ export default function DiscoverScreen() {
         </>
       ) : (
       <ScrollView style={styles.scrollView}>
-      {!!mainProducts.special.length && (
+      {mainProducts.local.filter(({ order }) => order < 0).sort((a,b) => a.order - b.order).map((section) => (
+        <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
+          <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+            {section.name}
+          </Text>
+          <FlatList
+            horizontal
+            contentContainerStyle={[styles.list, styles.horizontalPadder]}
+            data={section.products}
+            keyExtractor={(product) => `random-${product.productId}`}
+            ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+            renderItem={({ item: product }) => <ProductCard product={product} />}
+          />
+        </View>
+      ))}
+
+      {!!mainProducts.random.length && (
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
           편안한 속옷의 기준, 더잠
@@ -201,6 +216,21 @@ export default function DiscoverScreen() {
       />
       </View>
       )}
+       {mainProducts.local.filter(({ order }) => order > 0).sort((a,b) => a.order - b.order).map((section) => (
+        <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
+          <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+            {section.name}
+          </Text>
+          <FlatList
+            horizontal
+            contentContainerStyle={[styles.list, styles.horizontalPadder]}
+            data={section.products}
+            keyExtractor={(product) => `random-${product.productId}`}
+            ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+            renderItem={({ item: product }) => <ProductCard product={product} />}
+          />
+        </View>
+      ))}
       </ScrollView>
       )}
     </View>
@@ -329,3 +359,4 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginRight: 9,
   },
 });
+
