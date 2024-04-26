@@ -184,22 +184,7 @@ export default function DiscoverScreen() {
         </View>
       ))}
 
-      {!!mainProducts.random.length && (
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-          편안한 속옷의 기준, 더잠
-        </Text>
-     <FlatList
-        horizontal
-        contentContainerStyle={[styles.list, styles.horizontalPadder]}
-        data={mainProducts.special.slice(0,length.special)}
-        keyExtractor={(product) => `special-${product.productId}`}
-        ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef2 : undefined} product={product} />}
-        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
-      />
-      </View>
-      )}
+      
       {!!mainProducts.random.length && (
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
@@ -216,6 +201,24 @@ export default function DiscoverScreen() {
       />
       </View>
       )}
+
+      {!!mainProducts.random.length && (
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+          오늘의 특가
+        </Text>
+     <FlatList
+        horizontal
+        contentContainerStyle={[styles.list, styles.horizontalPadder]}
+        data={mainProducts.special.slice(0,length.special)}
+        keyExtractor={(product) => `special-${product.productId}`}
+        ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.productId ? focusRef2 : undefined} product={product} />}
+        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
+      />
+      </View>
+      )}  
+
        {mainProducts.local.filter(({ order }) => order > 0).sort((a,b) => a.order - b.order).map((section) => (
         <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
           <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>

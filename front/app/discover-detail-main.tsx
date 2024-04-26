@@ -68,7 +68,6 @@ export default function DiscoverScreen() {
   const hasDetail =  productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
-      console.log(product);
       if (nextTab === TABS.REPORT) {
         getProductDetailReport(product);
       }
@@ -121,7 +120,7 @@ export default function DiscoverScreen() {
         <View style={styles.seperator} />
          <View style={styles.tabWrap}>
         {Object.values(TABS).map((TAB) => 
-        (product.id === 1 || product.id === 2 || product.id === 3 || TAB !== TABS.REPORT) && (
+        (product.id < 100000 || TAB !== TABS.REPORT) && (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={styles.tabButton}
