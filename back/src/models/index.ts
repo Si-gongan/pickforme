@@ -10,7 +10,7 @@ import PickHistory from './pickHistory';
 import Purchase from './purchase';
 import Event from './event';
 import Notice from './notice';
-import DiscoverSection from './DiscoverSection';
+import DiscoverSection from './discoverSection';
 
 const uri = process.env.MONGO_URI!;
 
