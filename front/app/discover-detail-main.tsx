@@ -58,6 +58,12 @@ export default function DiscoverScreen() {
     }
     await WebBrowser.openBrowserAsync(product.productUrl);
   }
+  const handleClickBuy2 = async () => {
+    if (!product) {
+      return;
+    }
+    await WebBrowser.openBrowserAsync('이동될링크');
+  }
   const handleClickRequest = () => {
     if (!product) {
       return;
@@ -187,9 +193,15 @@ export default function DiscoverScreen() {
       )}
       </ScrollView>
       <View style={styles.buttonWrap}>
+      {['1','2','3'].includes(`${productId}`) ? (
+      <View style={styles.buttonOuter}>
+        <Button title='대리구매 요청하기' onPress={handleClickBuy} style={styles.button} color='tertiary' size='small' />
+      </View>
+      ) : (
       <View style={styles.buttonOuter}>
         <Button title='매니저에게 상품 설명 받기' onPress={handleClickRequest} style={styles.button} color='tertiary' size='small' />
       </View>
+      )}
       <View style={styles.buttonOuter}>
         <Button title='구매하기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
