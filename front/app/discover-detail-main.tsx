@@ -62,7 +62,7 @@ export default function DiscoverScreen() {
     if (!product) {
       return;
     }
-    await WebBrowser.openBrowserAsync('이동될링크');
+    await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj');
   }
   const handleClickRequest = () => {
     if (!product) {
