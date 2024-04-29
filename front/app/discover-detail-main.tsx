@@ -193,9 +193,9 @@ export default function DiscoverScreen() {
       )}
       </ScrollView>
       <View style={styles.buttonWrap}>
-      {['1','2','3'].includes(`${productId}`) ? (
+      {['1001','1002','1003'].includes(`${productId}`) ? (
       <View style={styles.buttonOuter}>
-        <Button title='대리구매 요청하기' onPress={handleClickBuy} style={styles.button} color='tertiary' size='small' />
+        <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={styles.button} color='tertiary' size='small' />
       </View>
       ) : (
       <View style={styles.buttonOuter}>
