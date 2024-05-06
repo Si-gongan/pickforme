@@ -11,10 +11,8 @@ import Colors from '../../constants/Colors';
 import HeaderLeft from '../../components/HeaderLeft';
 
 import IndexIcon from '../../assets/images/tabbar/index.svg';
-import DiscoverIcon from '../../assets/images/tabbar/discover.svg';
-import AIIcon from '../../assets/images/tabbar/AI.svg';
-import RequestsIcon from '../../assets/images/tabbar/requests.svg';
 import MypageIcon from '../../assets/images/tabbar/mypage.svg';
+import RequestsIcon from '../../assets/images/tabbar/requests.svg';
 import useColorScheme from '../../hooks/useColorScheme';
 
 export default function TabLayout() {
@@ -56,39 +54,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          headerShown: false,
+          headerShown: false, 
           title: '홈',
-          tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
           tabBarAccessibilityLabel: '홈 탭',
+          tabBarIcon: ({ color }) => <IndexIcon style={{color}} />,
         }}
       />
       <Tabs.Screen
-        name="discover"
+        name="wishlist"
         options={{
           headerShown: false, 
-          title: '탐색',
-          tabBarAccessibilityLabel: '탐색 탭',
-          tabBarIcon: ({ color }) => <DiscoverIcon style={{color}} />,
-        }}
-      />
-      <Tabs.Screen
-        name="AI"
-        options={{
-          headerShown: false, 
-          title: 'AI 포미',
-          tabBarAccessibilityLabel: 'AI 포미 탭',
-          tabBarIcon: ({ color }) => <AIIcon style={{color}} />,
-        }}
-      />
-      <Tabs.Screen
-        name="requests"
-        options={{
-          headerShown: false, 
-          title: '의뢰 목록',
-          tabBarAccessibilityLabel: '의뢰 목록 탭',
+          title: '위시리스트',
+          tabBarAccessibilityLabel: '위시리스트 탭',
           tabBarIcon: ({ color }) => <RequestsIcon style={{color}} />,
-        }}
+        }}   
       />
+
       <Tabs.Screen
         name="mypage"
         options={{

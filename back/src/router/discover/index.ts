@@ -1,6 +1,5 @@
 import Router from '@koa/router';
 import db from 'models';
-import requireAuth from 'middleware/jwt';
 import client from 'utils/axios';
 
 const router = new Router({
@@ -29,7 +28,7 @@ const CATEGORIES = [
   '1030',
 ];
 
-router.get('/products', requireAuth, async (ctx) => {
+router.get('/products', async (ctx) => {
   const id = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
   const [{
     data: {
@@ -55,7 +54,7 @@ router.get('/products', requireAuth, async (ctx) => {
   };
 });
 
-router.post('/product', requireAuth, async (ctx) => {
+router.post('/product', async (ctx) => {
   const {
     body: {
       product: {
@@ -89,7 +88,7 @@ router.post('/product', requireAuth, async (ctx) => {
   }
 });
 
-router.post('/product/detail/caption', requireAuth, async (ctx) => {
+router.post('/product/detail/caption', async (ctx) => {
   const {
     body: {
       product: {
@@ -125,7 +124,7 @@ router.post('/product/detail/caption', requireAuth, async (ctx) => {
   };
 });
 
-router.post('/product/detail/new-report', requireAuth, async (ctx) => {
+router.post('/product/detail/new-report', async (ctx) => {
   const {
     body: {
       product: {
@@ -162,7 +161,7 @@ router.post('/product/detail/new-report', requireAuth, async (ctx) => {
   };
 });
 
-router.post('/product/detail/review', requireAuth, async (ctx) => {
+router.post('/product/detail/review', async (ctx) => {
   const {                   
     body: {                 
       product: { 
@@ -194,7 +193,7 @@ router.post('/product/detail/review', requireAuth, async (ctx) => {
     review,
   };
 });
-router.post('/search', requireAuth, async (ctx) => {
+router.post('/search', async (ctx) => {
   const {
     body: {
       query,

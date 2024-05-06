@@ -1,11 +1,12 @@
 import React from 'react';
-import { useSetAtom, useAtomValue } from 'jotai';
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import Colors from '../constants/Colors';
-import { searchResultAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { wishProductsAtom, searchResultAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { DetailedProduct } from '../stores/discover/types';
 import { ChatProduct as Product } from '../stores/request/types';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -40,10 +41,23 @@ export default function DiscoverScreen() {
   const searchResult = useAtomValue(searchResultAtom);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+    const [wishlist,setWishlist] = useAtom(wishProductsAtom);
+
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
-  const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`);
+    const already = wishlist.find((wishProduct) => `${wishProduct.id}` === `${productId}`);
+  const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || already as DetailedProduct;
+      const handleClickWish = async () => {
+    if (product) {
+      if (already) {
+        setWishlist(wishlist.filter((wishProduct) => wishProduct !== already));
+      } else {
+        setWishlist([...wishlist, product]);
+      }
+    }
+  }
+
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
 
@@ -224,6 +238,26 @@ export default function DiscoverScreen() {
       <View style={styles.buttonOuter}>
         <Button title='구매하기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
+       {already ? (
+          <Pressable
+            onPress={handleClickWish}
+            accessible
+            accessibilityLabel="위시리스트 제거"
+            accessibilityRole='button'
+          >
+            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleClickWish}
+            accessible
+            accessibilityLabel="위시리스트 추가"
+            accessibilityRole='button'
+          >
+            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+          </Pressable>
+        )}
+
       </View>
     </View>
   );
@@ -347,5 +381,9 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   buttonOuter: {
     flex: 1,
+  },
+  heartIcon: {
+    width: 24,
+    height: 22,
   },
 });

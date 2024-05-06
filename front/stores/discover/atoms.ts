@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { GetProductDetailRequest, SearchProductsRequest, SearchProductsResponse, DiscoverState, DiscoverDetailState } from './types';
+import { GetProductDetailRequest, SearchProductsRequest, SearchProductsResponse, DiscoverState, DiscoverDetailState, Product, DetailedProduct } from './types';
 import {
   GetProductDetailMainAPI,
   GetProductDetailsCaptionAPI,
@@ -98,3 +98,5 @@ export const getProductDetailReportAtom = atom(null, async (get, set, product: G
     set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.FINISH });
   }
 });
+
+export const wishProductsAtom = atom<(Product | DetailedProduct)[]>([]);

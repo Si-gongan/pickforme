@@ -92,7 +92,7 @@ export interface GetProductDetailsResponse {
     },
 }
 
-interface DetailedProduct extends ChatProduct, ProductDetail {};
+export interface DetailedProduct extends ChatProduct, ProductDetail {};
 export interface SearchProductsResponse {
   products: DetailedProduct[],
   total: number,

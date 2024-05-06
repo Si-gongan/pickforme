@@ -1,11 +1,11 @@
 import React from 'react';
-import { useSetAtom, useAtomValue } from 'jotai';
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import Colors from '../constants/Colors';
-import { mainProductsAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
 import { Product } from '../stores/discover/types';
 
 import Button from '../components/Button';
@@ -46,6 +46,7 @@ export default function DiscoverScreen() {
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
   const product = [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`);
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
+  const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const loadingStatus = useAtomValue(loadingStatusAtom);
   React.useEffect(() => {
     if (product) {
@@ -57,6 +58,16 @@ export default function DiscoverScreen() {
       return;
     }
     await WebBrowser.openBrowserAsync(product.productUrl);
+  }
+  const already = wishlist.find((wishProduct) => wishProduct.id === product?.id);
+  const handleClickWish = async () => {
+    if (product) {
+      if (already) {
+        setWishlist(wishlist.filter((wishProduct) => wishProduct !== already));
+      } else {
+        setWishlist([...wishlist, product]);
+      }
+    }
   }
   const handleClickBuy2 = async () => {
     if (!product) {
@@ -205,6 +216,25 @@ export default function DiscoverScreen() {
       <View style={styles.buttonOuter}>
         <Button title='구매하기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
+        {already ? ( 
+          <Pressable
+            onPress={handleClickWish}
+            accessible
+            accessibilityLabel="위시리스트 제거"
+            accessibilityRole='button'
+          >
+            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleClickWish}
+            accessible
+            accessibilityLabel="위시리스트 추가"
+            accessibilityRole='button'
+          >
+            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -326,6 +356,10 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   button: {
     borderRadius: 10,
     height: 50,
+  },
+  heartIcon: {
+    width: 24,
+    height: 22,
   },
   buttonOuter: {
     flex: 1,
