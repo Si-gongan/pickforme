@@ -73,7 +73,9 @@ export const getProductDetailAtom = atom(null, async (get, set, product: GetProd
       ...searchResult,
       products: searchResult.products.map((item) => item.id === data.product.id ? { ...item, ...data } : item),
     });
-    }
+  }
+  const wishProducts = get(wishProductsAtom);
+  set(wishProductsAtom, wishProducts.map((item) => item.id === data.product.id ? { ...item, ...data } : item));
   const { data: productDetail } = await GetProductDetailsCaptionAPI(product)
   if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
     set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
