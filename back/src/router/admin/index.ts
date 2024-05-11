@@ -5,6 +5,7 @@ import requireAdmin from 'middleware/admin';
 import requestRouter from './request';
 import noticeRouter from './notice';
 import userRouter from './user';
+import notificationRouter from './notification';
 
 const router = new Router({
   prefix: '/admin',
@@ -13,6 +14,7 @@ const router = new Router({
 router.use(requireAuth, requireAdmin);
 [
   requestRouter,
+  notificationRouter,
   noticeRouter,
   userRouter
 ].forEach((subrouter) => {
