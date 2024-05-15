@@ -34,10 +34,9 @@ export default function TabLayout() {
         tabBarStyle: {
           position: 'absolute',
           backgroundColor: Colors[colorScheme].buttonBackground.primary,
-          borderTopLeftRadius: 17,
           borderTopWidth: 0,
-          borderTopRightRadius: 17,
-          paddingBottom: 30,
+          paddingTop: 10,
+          paddingBottom: 20,
           height: 84,
         },
         headerTitle: () => <Text accessible={false} />,

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_HOST = 'https://ai.sigongan-ai.shop';
+const API_HOST = 'https://ai.sigongan-ai.shop/pickforme';
 
 const client = axios.create({
   baseURL: API_HOST,

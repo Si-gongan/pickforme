@@ -1,10 +1,13 @@
 import { atom } from 'jotai';
-import { GetProductDetailRequest, SearchProductsRequest, SearchProductsResponse, DiscoverState, DiscoverDetailState, Product, DetailedProduct } from './types';
+import { GetProductDetailRequest, SearchProductsRequest, SearchProductsResponse, DiscoverState, DiscoverDetailState, Product } from './types';
+import { atomWithStorage } from '../utils';
+
 import {
   GetProductDetailMainAPI,
   GetProductDetailsCaptionAPI,
   GetProductDetailsReviewAPI,
   GetProductDetailsReportAPI,
+  GetProductFromUrl,
 GetMainProductsAPI, SearchProductsAPI } from './apis';
 
 export const mainProductsAtom = atom<DiscoverState>({
@@ -53,12 +56,12 @@ export const searchMoreAtom = atom(null, async (get, set, query: string) => {
   }
 });
 
-export const getMainProductsAtom = atom(null, async (get, set) => {
-  const { data } = await GetMainProductsAPI();
+export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
+  const { data } = await GetMainProductsAPI(categoryId);
   set(mainProductsAtom, {
     ...data,
-    special: data.special.map((item) => ({ ...item, id: item.productId })),
-    random: data.random.map((item) => ({ ...item, id: item.productId })),
+    special: data.special.map((item) => ({ ...item, id: item.id })),
+    random: data.random.map((item) => ({ ...item, id: item.id })),
   });
 });
 export const productDetailAtom = atom<DiscoverDetailState | void>(undefined);
@@ -74,7 +77,7 @@ export const getProductDetailAtom = atom(null, async (get, set, product: GetProd
       products: searchResult.products.map((item) => item.id === data.product.id ? { ...item, ...data } : item),
     });
   }
-  const wishProducts = get(wishProductsAtom);
+  const wishProducts = await get(wishProductsAtom);
   set(wishProductsAtom, wishProducts.map((item) => item.id === data.product.id ? { ...item, ...data } : item));
   const { data: productDetail } = await GetProductDetailsCaptionAPI(product)
   if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
@@ -101,4 +104,28 @@ export const getProductDetailReportAtom = atom(null, async (get, set, product: G
   }
 });
 
-export const wishProductsAtom = atom<(Product | DetailedProduct)[]>([]);
+export const wishProductsAtom = atomWithStorage<Product[]>('wishlist', []);
+
+export const clipboardProductAtom = atom<Product | void>(undefined);
+
+export const setClipboardProductAtom = atom(null, async (get,set, text: string) => {
+  if (!text) {
+    set(clipboardProductAtom, undefined);
+    return;
+  }
+  const {data: { product } } = await GetProductFromUrl({ url: text });
+  if (!product) {
+    return;
+  }
+  set(clipboardProductAtom, product);
+  if (!get(searchResultAtom)?.products.length) {
+    set(searchResultAtom, {
+      total: 1,
+      count: 1,
+      per_page: 1,
+      page: 1,
+      last_page: 1,
+      products: [product],
+    });
+  }
+});

@@ -6,8 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 import Colors from '../constants/Colors';
 import { wishProductsAtom, searchResultAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
-import { DetailedProduct } from '../stores/discover/types';
-import { ChatProduct as Product } from '../stores/request/types';
+import { Product } from '../stores/discover/types';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 import { numComma } from '../utils/common';
@@ -47,8 +46,8 @@ export default function DiscoverScreen() {
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
     const already = wishlist.find((wishProduct) => `${wishProduct.id}` === `${productId}`);
-  const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || already as DetailedProduct;
-      const handleClickWish = async () => {
+  const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || already as Product;
+  const handleClickWish = async () => {
     if (product) {
       if (already) {
         setWishlist(wishlist.filter((wishProduct) => wishProduct !== already));
@@ -70,13 +69,13 @@ export default function DiscoverScreen() {
     if (!product) {
       return;
     }
-    await WebBrowser.openBrowserAsync(`https://coupang.com/vp/products/${product.group}`);
+    await WebBrowser.openBrowserAsync(product.url);
   }
   const handleClickRequest = () => {
     if (!product) {
       return;
     }
-    router.push({ pathname: '/research', params: { link: encodeURIComponent(`https://coupang.com/vp/products/${product.group}`) }});
+    router.push({ pathname: '/research', params: { link: encodeURIComponent(product.url) }});
   }
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
@@ -97,13 +96,13 @@ export default function DiscoverScreen() {
         <Text style={styles.name}>
           {product.name}
         </Text>
-        {product.regular_price !== product.price ? 
+        {product.origin_price !== product.price ? 
         <>
           <Text style={styles.price}>
            {Math.floor(product.discount_rate)}% {numComma(product.price || 0)}원
           </Text>
           <Text style={styles.originalPrice}>
-            {numComma(product.regular_price || 0)}원
+            {numComma(product.origin_price || 0)}원
           </Text>
         </>
         : 
@@ -142,23 +141,7 @@ export default function DiscoverScreen() {
                    리뷰 개수
                 </Text>
                 <Text style={styles.tableItem}>
-                  {product.reviews} (개)
-                </Text>
-              </View>
-              <View style={styles.tableRow} accessible>
-                <Text style={styles.tableHeader}>
-                  역대 최고가
-                </Text>
-                <Text style={styles.tableItem}>
-                  {numComma(product.highest_price || 0)}원
-                </Text>
-              </View>
-              <View style={styles.tableRow} accessible>
-                <Text style={styles.tableHeader}>
-                  역대 최저가
-                </Text>
-                <Text style={styles.tableItem}>
-                  {numComma(product.lowest_price || 0)}원
+                  {product.reviews || 0} (개)
                 </Text>
               </View>
             </View>
@@ -178,7 +161,7 @@ export default function DiscoverScreen() {
           </View>
         ))}
       </View>
-        {(loadingStatus[tab] <= 1) ? (
+        {(loadingStatus[tab] <= 1 || productDetail?.id !== productId) ? (
           <View style={styles.detailWrap}><Text>{loadingMessages[tab]}</Text></View>
         ) : (!!productDetail?.[tab] ? (
           <>
@@ -245,7 +228,7 @@ export default function DiscoverScreen() {
             accessibilityLabel="위시리스트 제거"
             accessibilityRole='button'
           >
-            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeartFill.png')} />
           </Pressable>
         ) : (
           <Pressable

@@ -5,31 +5,8 @@ import client from 'utils/axios';
 const router = new Router({
   prefix: '/discover',
 });
-
-const CATEGORIES = [
-  '1001',
-  '1002',
-  '1010',
-  '1011',
-  '1012',
-  '1013',
-  '1014',
-  '1015',
-  '1016',
-  '1017',
-  '1018',
-  '1019',
-  '1020',
-  '1021',
-  '1024',
-  '1025',
-  '1026',
-  '1029',
-  '1030',
-];
-
-router.get('/products', async (ctx) => {
-  const id = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
+router.get('/products/:id', async (ctx) => {
+  const { id } = ctx.params;
   const [{
     data: {
       products: random,
@@ -59,32 +36,29 @@ router.post('/product', async (ctx) => {
     body: {
       product: {
         id,
-        productUrl,
+        url,
       },
     },
   } = <any>ctx.request;
+  if (id) {
    const section = await db.DiscoverSection.findOne(
       { 'products.productId': id },
       { products: { $elemMatch: { productId: id } } }
     );
-  if (section) {
-    ctx.body = { product: section.products[0].detail };
-  } else if (productUrl) {
-  const {
-    data,
-  } = await client.post(`/product-detail`, {
-    url: `https://www.coupang.com/vp/products/${id}`,
-  });
-  ctx.body = data;
-  } else {
+    if (section) {
+      ctx.body = { product: section.products[0].detail };
+    } else {
   const {
     data
-  } = await client.get(`https://api.kimgosu.vsolution.app/products/${id}`, {
-    headers: {
-      Authorization: 'Bearer 389|wxFe3R2xVdE2eFXII3pPH7lF5tFqaUp5o9RVkOQl',
-    },
+  } = await client.get(`/coupang/${id}`, {
   });
   ctx.body = data;
+    }
+  } else if (url) {
+    const {
+      data
+    } = await client.post('/product-detail', { url });
+    ctx.body = data; 
   }
 });
 
@@ -93,7 +67,7 @@ router.post('/product/detail/caption', async (ctx) => {
     body: {
       product: {
         id,
-        productUrl,
+        url,
       },
     },
   } = <any>ctx.request;
@@ -109,18 +83,12 @@ router.post('/product/detail/caption', async (ctx) => {
   }
 
   const {
-     data: {
-      answer: caption,
-    } = {
-      answer: undefined,
-    },
-  } = await client.post('/product-caption', productUrl ? {
-    url: `https://www.coupang.com/vp/products/${id}`,
-  } : {
-    id: `${id}`,
+    data
+  } = await client.post('/product-caption', id ? { id } : {
+    url,
   }).catch(() => ({ data: {} }));
   ctx.body = {
-    caption,
+    caption: data.caption,
   };
 });
 
@@ -129,7 +97,7 @@ router.post('/product/detail/new-report', async (ctx) => {
     body: {
       product: {
         id,
-        productUrl,
+        url,
       },
     },
   } = <any>ctx.request;
@@ -146,18 +114,12 @@ router.post('/product/detail/new-report', async (ctx) => {
 
 
   const {
-    data: {
-      answer: report,
-    } = {
-      answer: undefined,
-    },
-  } = await client.post('/new-report', productUrl ? {
-    url: `https://www.coupang.com/vp/products/${id}`,
-  } : {
-      id: `${id}`,
+    data
+  } = await client.post('/ai-report',  id ? { id } : {
+    url,
   }).catch(() => ({ data: {} }));
   ctx.body = {
-    report,
+    report: data.report,
   };
 });
 
@@ -166,8 +128,7 @@ router.post('/product/detail/review', async (ctx) => {
     body: {                 
       product: { 
         id,
-        productUrl,
-        group,              
+        url,
       },                    
     },                      
   } = <any>ctx.request;     
@@ -182,13 +143,15 @@ router.post('/product/detail/review', async (ctx) => {
     return;
   }
 
-
-
   const {
-    data: review,
-  } = await client.post('/product-review', {
-    url: `https://www.coupang.com/vp/products/${productUrl ? id : group}`,
-  }).catch(() => ({ data: { pros: [], cons: [] } }));
+    data: {
+      summary: review,
+    } = {
+      summary: { pros: [], cons: [] },
+    }
+  } = await client.post('/review-summary', id ? { id } : {
+    url,
+  }).catch(() => ({ data: { } }));
   ctx.body = {
     review,
   };
@@ -202,12 +165,22 @@ router.post('/search', async (ctx) => {
   } = <any>ctx.request;
   const {
     data,
-  } = await client.get(`https://api.kimgosu.vsolution.app/products?keyword=${encodeURIComponent(query)}&page=${page}`, {
-    headers: {
-      Authorization: 'Bearer 389|wxFe3R2xVdE2eFXII3pPH7lF5tFqaUp5o9RVkOQl',
-    },
-  });
+  } = await client.get(`/coupang-ict?keyword=${encodeURIComponent(query)}&page=${page}`)
   ctx.body = data;
+});
+
+router.post('/url', async (ctx) => {
+  const {
+    body: {
+      url,
+    },
+  } = <any>ctx.request;
+  const { data } = await client.post('/platform', { url });
+  if (!data.url) {
+    return;
+  }
+  const { data: response }= await client.post('/product-detail', { url: data.url });
+  ctx.body = response;
 });
 
 export default router;

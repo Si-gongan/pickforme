@@ -45,6 +45,7 @@ export default function DiscoverScreen() {
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
   const product = [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`);
+
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
   const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const loadingStatus = useAtomValue(loadingStatusAtom);
@@ -57,7 +58,7 @@ export default function DiscoverScreen() {
     if (!product) {
       return;
     }
-    await WebBrowser.openBrowserAsync(product.productUrl);
+    await WebBrowser.openBrowserAsync(product.url);
   }
   const already = wishlist.find((wishProduct) => wishProduct.id === product?.id);
   const handleClickWish = async () => {
@@ -79,10 +80,10 @@ export default function DiscoverScreen() {
     if (!product) {
       return;
     }
-    router.push({ pathname: '/research', params: { link: encodeURIComponent(product.productUrl) }});
+    router.push({ pathname: '/research', params: { link: encodeURIComponent(product.url) }});
   }
 
-  const hasDetail =  productDetail?.product?.id && product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
+  const hasDetail = !!productDetail?.product?.id && !!product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       if (nextTab === TABS.REPORT) {
@@ -99,12 +100,12 @@ export default function DiscoverScreen() {
       <ScrollView style={styles.scrollView}>
       {!!product && (
       <View style={styles.inner}>
-        <Image style={styles.image} source={{ uri: product.productImage }} />
+        <Image style={styles.image} source={{ uri: product.thumbnail }} />
         <Text style={styles.name}>
-          {product.productName}
+          {product.name}
         </Text>
           <Text style={styles.price}>
-            {numComma(product.productPrice || 0)}원
+            {numComma(product.price || 0)}원
           </Text>
         <View style={styles.seperator} />
           <View style={styles.table}>
@@ -127,7 +128,7 @@ export default function DiscoverScreen() {
                    리뷰 개수
                 </Text>
                 <Text style={styles.tableItem}>
-                  {productDetail.product.reviews} 개
+                  {productDetail.product.reviews || 0} 개
                 </Text>
               </View>
               </>
@@ -223,7 +224,7 @@ export default function DiscoverScreen() {
             accessibilityLabel="위시리스트 제거"
             accessibilityRole='button'
           >
-            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+            <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeartFill.png')} />
           </Pressable>
         ) : (
           <Pressable

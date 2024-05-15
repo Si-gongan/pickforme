@@ -28,18 +28,18 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
             accessible
       ref={ref}
             accessibilityRole='button'
-            accessibilityLabel={`${product.productName} ${numComma(product.productPrice)}원`}
+            accessibilityLabel={`${product.name} ${numComma(product.price)}원`}
             style={styles.pressable}
             >
-      <Image style={styles.productImage} source={{ uri: product.productImage }} />
+      <Image style={styles.thumbnail} source={{ uri: product.thumbnail }} />
       <View style={styles.footer}>
         <View style={styles.footerText}
         >
           <Text style={styles.productTitle} numberOfLines={2}>
-            {product.productName}
+            {product.name}
           </Text>
-          <Text style={styles.productPrice} accessible>
-            {numComma(product.productPrice)}원
+          <Text style={styles.price} accessible>
+            {numComma(product.price)}원
           </Text>
         </View>
         <View style={styles.buttonWrap}>
@@ -61,7 +61,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     width: 140,
     height: '100%',
   },
-  productImage: {
+  thumbnail: {
     height: 120,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
@@ -70,7 +70,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontSize: 9,
     lineHeight: 11,
   },
-  productPrice: {
+  price: {
     fontSize: 10,
     fontWeight: '600',
   },

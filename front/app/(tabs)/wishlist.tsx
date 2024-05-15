@@ -5,7 +5,7 @@ import { useRouter, Link } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 
 import { wishProductsAtom } from '../../stores/discover/atoms';
-import { Product, DetailedProduct } from '../../stores/discover/types';
+import { Product } from '../../stores/discover/types';
 import Colors from '../../constants/Colors';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
@@ -19,11 +19,6 @@ import DiscoverIcon from '../../assets/images/tabbar/requests.svg';
 import { useFocusEffect } from '@react-navigation/core';
 import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
-
-
-function isProduct(product: Product | DetailedProduct): product is Product {
-  return 'productUrl' in product;
-}
 
 export default function DiscoverScreen() {
   const router = useRouter();
@@ -59,7 +54,7 @@ export default function DiscoverScreen() {
           data={wishProducts}
           numColumns={2}
           keyExtractor={(product) => `wishlist-${product.id}`}
-          renderItem={({ item: product }) => isProduct(product) ? (
+          renderItem={({ item: product }) => product.id ? (
             <ProductCard product={product} />
           ) : (
             <SearchProductCard product={product} />

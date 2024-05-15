@@ -1,13 +1,4 @@
-export interface ChatProduct {
-  id: number,
-  name: string,
-  price: number,
-  group: string,
-  rating: number,
-  rating_total_count: number,
-  thumbnail: string,
-  link: string,
-}
+import { Product as ChatProduct } from '../discover/types';
 
 interface Review {
   text: string,
