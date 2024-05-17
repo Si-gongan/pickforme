@@ -14,6 +14,12 @@ const DiscoverSectionSchema = new mongoose.Schema({
     ratings: Number,
     url: String,
     thumbnail: String,
+    detail: {
+      id: Number,
+      productId: Number,
+      reviews: Number,
+      ratings: Number,
+    },
     caption: String,
     report: String,
     review: {
