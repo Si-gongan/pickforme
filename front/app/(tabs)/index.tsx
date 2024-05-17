@@ -119,8 +119,7 @@ export default function DiscoverScreen() {
   });
   const [text, setText ] =React.useState('');
   const handleClickSend = () => {
-    searchProducts({ query: text, page: 1 });
-    setQuery(text);
+    searchProducts({ query: text, page: 1, onLink: router.push, onQuery: () => setQuery(text) });
   }
 
   const handleClickMore = (key: keyof typeof length) => {
@@ -161,6 +160,7 @@ export default function DiscoverScreen() {
     setCategory(categoryName[id as keyof typeof categoryName]);
     getMainProducts(id);
   }, [getMainProducts]);
+  console.log(isSearching);
   return (
     <View style={styles.container}>
       <View style={styles.horizontalPadder}>
@@ -203,7 +203,10 @@ export default function DiscoverScreen() {
           </Pressable>
         </View>
       </View>
-      {!!query.length ? (
+      {isSearching ? (
+          <Text style={styles.loading}>검색중입니다.</Text>
+      ) : (
+      !!query.length ? (
         <>
         {!!searchResult?.products.length && (
                 <FlatList
@@ -218,9 +221,6 @@ export default function DiscoverScreen() {
         />
         )}
         {!isSearching && !searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
-        {isSearching && (
-          <Text style={styles.loading}>검색중입니다.</Text>
-          )}
         </>
       ) : (
       <ScrollView style={styles.scrollView}>
@@ -291,7 +291,7 @@ export default function DiscoverScreen() {
         </View>
       ))}
       </ScrollView>
-      )}
+      ))}
         {!!clipboardProduct && (
         <Pressable onPress={() => {
             setClipboardProduct('');

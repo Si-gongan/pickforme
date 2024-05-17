@@ -37,6 +37,7 @@ router.post('/product', async (ctx) => {
       product: {
         id,
         url,
+        platform,
       },
     },
   } = <any>ctx.request;
@@ -50,7 +51,7 @@ router.post('/product', async (ctx) => {
     } else {
   const {
     data
-  } = await client.get(`/coupang/${id}`, {
+  } = await client.get(`${platform === 'coupang-ict' ? '/coupang-ict' : '/coupang'}/${id}`, {
   });
   ctx.body = data;
     }
@@ -175,11 +176,12 @@ router.post('/url', async (ctx) => {
       url,
     },
   } = <any>ctx.request;
-  const { data } = await client.post('/platform', { url });
+  const { data } = await client.post('/platform', { url }).catch(() => ({ data: {} }));
   if (!data.url) {
+    ctx.body = data;
     return;
   }
-  const { data: response }= await client.post('/product-detail', { url: data.url });
+  const { data: response }= await client.post('/product-detail', { url: data.url }).catch(() => ({ data: {} }));
   ctx.body = response;
 });
 

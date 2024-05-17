@@ -74,9 +74,11 @@ router.post('/', requireAuth, async (ctx) => {
 링크: ${body.link}\n
 참고사항: ${body.text}
 `;
+/*
     slack.post('/chat.postMessage', {
       text: slack_msg, channel: 'C05NTFL1Q4C',
     });
+    */
   }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
   ctx.body = {

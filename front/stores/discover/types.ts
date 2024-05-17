@@ -65,6 +65,8 @@ export interface SearchProductsResponse {
 export interface SearchProductsRequest {
   page: number,
   query: string,
+  onLink?: (a: string) => void;
+  onQuery?: () => void;
 }
 
 export type GetProductDetailRequest = Product;

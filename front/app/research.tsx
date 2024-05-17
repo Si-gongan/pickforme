@@ -43,7 +43,7 @@ export default function ResearchScreen() {
   }
   const handleSubmit = () => {
     addRequest(data);
-    router.push('(tabs)/requests')
+    router.back();
   }
   const disabled = !data.link;
   return (

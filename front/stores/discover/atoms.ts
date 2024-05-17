@@ -31,8 +31,26 @@ export const loadingStatusAtom = atom({
 export const isSearchingAtom = atom(false);
 export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
 
-export const searchProductsAtom = atom(null, async (get, set, params: SearchProductsRequest) => {
+export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink, ...params }: SearchProductsRequest) => {
   set(isSearchingAtom, true);
+  const {data: { product } } = await GetProductFromUrl({ url: params.query });
+  if (product?.id !== undefined && onLink) {
+    set(clipboardProductAtom, product);
+  if (!get(searchResultAtom)?.products.length) {
+    set(searchResultAtom, {
+      total: 1,
+      count: 1,
+      per_page: 1,
+      page: 1,
+      last_page: 1,
+      products: [product],
+    });
+  }
+
+    onLink(`/discover-detail?productId=${product.id}`);
+    set(isSearchingAtom, false);
+    return;
+  }
   if (params.page === 1) {
     set(searchResultAtom, undefined);
   }
@@ -41,11 +59,12 @@ export const searchProductsAtom = atom(null, async (get, set, params: SearchProd
   if (searchResult) {
     set(searchResultAtom, {
       ...data,
-      products: searchResult.products.concat(data.products),
+      products: searchResult.products.concat(data.products.map((item) => ({ ...item, platform: 'coupang-ict' }))),
     });
   } else {
     set(searchResultAtom, data);
   }
+  onQuery?.();
   set(isSearchingAtom, false);
 });
 

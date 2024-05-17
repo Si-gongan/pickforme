@@ -12,7 +12,6 @@ import { Text, View } from '../../components/Themed';
 import { formatDate } from '../../utils/common';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/DiscoverProduct';
-import SearchProductCard from '../../components/SearchProduct';
 
 import DiscoverIcon from '../../assets/images/tabbar/requests.svg';
 
@@ -54,10 +53,8 @@ export default function DiscoverScreen() {
           data={wishProducts}
           numColumns={2}
           keyExtractor={(product) => `wishlist-${product.id}`}
-          renderItem={({ item: product }) => product.id ? (
+          renderItem={({ item: product }) => (
             <ProductCard product={product} />
-          ) : (
-            <SearchProductCard product={product} />
           )}
           ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
         />
@@ -167,6 +164,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     paddingHorizontal: 20,
     marginLeft: 7,
     marginRight: 7,
+    alignItems: 'center',
   },
   searchItem: {
   },

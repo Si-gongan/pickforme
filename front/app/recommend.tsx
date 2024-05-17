@@ -31,7 +31,7 @@ export default function RecommendScreen() {
   const disabled = !data.price;
   const handleSubmit = useCheckPoint(1, () => {
     addRequest(data);
-    router.push('(tabs)/requests')
+    router.back();
   });
 
   const openShareDesc = () => {
