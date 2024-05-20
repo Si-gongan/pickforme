@@ -21,15 +21,15 @@ enum TABS {
 
 
 const tabName = {
-  [TABS.CAPTION]: '이미지 설명',
-  [TABS.REPORT]: '상세페이지 설명',
+  [TABS.CAPTION]: '상품 이미지',
+  [TABS.REPORT]: '자세한 설명',
   [TABS.REVIEW]: '리뷰 요약',
 }
 
 const loadingMessages = {
   [TABS.CAPTION]: 'AI가 상품 이미지를 분석하고 있어요.',
-  [TABS.REPORT]: '쿠팡의 상품 상세페이지를 요약하고 있어요.',
-  [TABS.REVIEW]: '쿠팡의 리뷰 10개를 ai가 요약하고 있어요.',
+  [TABS.REPORT]: 'AI가 상품 상세페이지를 요약하고 있어요.',
+  [TABS.REVIEW]: 'AI가 상품 리뷰들을 요약하고 있어요.',
 }
 
 
