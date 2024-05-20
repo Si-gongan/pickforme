@@ -44,10 +44,11 @@ export default function DiscoverScreen() {
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
-  const product = [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`);
+  const [wishlist,setWishlist] = useAtom(wishProductsAtom);
+  const already = wishlist.find((wishProduct) => `${wishProduct.id}` === productId);
+  const product = [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
 
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
-  const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const loadingStatus = useAtomValue(loadingStatusAtom);
   React.useEffect(() => {
     if (product) {
@@ -60,7 +61,6 @@ export default function DiscoverScreen() {
     }
     await WebBrowser.openBrowserAsync(product.url);
   }
-  const already = wishlist.find((wishProduct) => wishProduct.id === product?.id);
   const handleClickWish = async () => {
     if (product) {
       if (already) {

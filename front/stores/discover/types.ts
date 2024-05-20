@@ -9,7 +9,8 @@ export interface Product {
 	"reviews": number,
 	"ratings": number,
 	"url": string,
-	"thumbnail": string
+	"thumbnail": string,
+  platform: string,
 }
 
 export interface GetProductFromUrlRequest {

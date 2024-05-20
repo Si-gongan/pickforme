@@ -20,7 +20,8 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const handlePress = () => {
-    if (product.id) {
+    console.log(product.platform);
+    if (product.platform === 'coupang') {
       router.push(`/discover-detail-main?productId=${product.id}`);
     } else {
       router.push(`/discover-detail?productId=${product.id}`);

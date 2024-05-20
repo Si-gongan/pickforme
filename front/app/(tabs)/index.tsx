@@ -160,7 +160,6 @@ export default function DiscoverScreen() {
     setCategory(categoryName[id as keyof typeof categoryName]);
     getMainProducts(id);
   }, [getMainProducts]);
-  console.log(isSearching);
   return (
     <View style={styles.container}>
       <View style={styles.horizontalPadder}>

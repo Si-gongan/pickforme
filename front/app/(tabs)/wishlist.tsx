@@ -53,8 +53,11 @@ export default function DiscoverScreen() {
           data={wishProducts}
           numColumns={2}
           keyExtractor={(product) => `wishlist-${product.id}`}
-          renderItem={({ item: product }) => (
+          renderItem={({ item: product, index: i }) => (
+            <>
             <ProductCard product={product} />
+            {(i === wishProducts.length - 1) && (wishProducts.length % 2 === 1) && <View style={styles.empty} /> }
+            </>
           )}
           ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
         />
@@ -89,6 +92,10 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   seperatorRow: {
     height: 15,
     width: 1,
+    backgroundColor: 'transparent',
+  },
+  empty: {
+    width: 140,
     backgroundColor: 'transparent',
   },
   seperator: {
