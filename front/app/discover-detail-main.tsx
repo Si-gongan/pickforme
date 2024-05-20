@@ -137,8 +137,7 @@ export default function DiscoverScreen() {
           </View>
         <View style={styles.seperator} />
          <View style={styles.tabWrap}>
-        {Object.values(TABS).map((TAB) => 
-        (product.id < 100000 || TAB !== TABS.REPORT) && (
+        {Object.values(TABS).map((TAB) => (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={styles.tabButton}

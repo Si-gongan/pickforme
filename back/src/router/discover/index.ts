@@ -51,7 +51,7 @@ router.post('/product', async (ctx) => {
     } else {
   const {
     data
-  } = await client.get(`${platform === 'coupang-ict' ? '/coupang-ict' : '/coupang'}/${id}`, {
+  } = await client.get(`/coupang/${id}`, {
   });
   ctx.body = data;
     }
@@ -166,7 +166,7 @@ router.post('/search', async (ctx) => {
   } = <any>ctx.request;
   const {
     data,
-  } = await client.get(`/coupang-ict?keyword=${encodeURIComponent(query)}&page=${page}`)
+  } = await client.get(`/coupang?keyword=${encodeURIComponent(query)}&page=${page}`)
   ctx.body = data;
 });
 
