@@ -16,14 +16,9 @@ const HeaderLeft: React.FC<HeaderBackButtonProps> = (props) => {
   const router = useRouter();
   if (props.canGoBack) {
     return (
-      <Button
-        title='뒤로가기'
-        color='tertiary'
-        size='small'
-        onPress={() => router.back()}
-        style={styles.backButton}
-        textStyle={styles.backText}
-      />
+        <Pressable onPress={() => router.back()} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
+          <Image style={styles.backButton} source={require('../assets/images/icBack.png')} />
+        </Pressable>
     );
   }
   return (
@@ -40,9 +35,11 @@ export default HeaderLeft;
 
 const styles = StyleSheet.create({
   backWrap: {},
-  backButton: { width: 89 },
-  backText: {
-    textDecorationLine: 'underline',
+  backButton: {
+    width: 24,
+    height: 24,
+    marginRight: 5,
+    flexShrink: 0,
   },
   logoWrap: {
     flexDirection: 'row',

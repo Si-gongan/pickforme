@@ -29,6 +29,7 @@ router.get('/products/:id', async (ctx) => {
     local,
     reports,
   };
+  console.log(ctx.body);
 });
 
 router.post('/product', async (ctx) => {
@@ -41,6 +42,7 @@ router.post('/product', async (ctx) => {
       },
     },
   } = <any>ctx.request;
+  console.log(id,url,platform);
   if (id) {
    const section = await db.DiscoverSection.findOne(
       { 'products.productId': id },
@@ -49,11 +51,11 @@ router.post('/product', async (ctx) => {
     if (section) {
       ctx.body = { product: section.products[0].detail };
     } else {
-  const {
-    data
-  } = await client.get(`/coupang/${id}`, {
-  });
-  ctx.body = data;
+      const {
+        data
+      } = await client.get(`/coupang/${id}`, {
+      });
+      ctx.body = data;
     }
   } else if (url) {
     const {

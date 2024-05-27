@@ -123,7 +123,7 @@ export const getProductDetailReportAtom = atom(null, async (get, set, product: G
   }
 });
 
-export const wishProductsAtom = atomWithStorage<Product[]>('wishlist', []);
+export const wishProductsAtom = atomWithStorage<Product[]>('wishlist2', []);
 
 export const clipboardProductAtom = atom<Product | void>(undefined);
 

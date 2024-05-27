@@ -20,12 +20,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const handlePress = () => {
-    console.log(product.platform);
-    if (product.platform === 'coupang') {
-      router.push(`/discover-detail-main?productId=${product.id}`);
-    } else {
-      router.push(`/discover-detail?productId=${product.id}`);
-    }
+    router.push(`/discover-detail-main?productId=${product.id}`);
   }
   return (
     <Pressable
@@ -36,75 +31,44 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product }, ref) => {
             accessibilityLabel={`${product.name} ${numComma(product.price)}원`}
             style={styles.pressable}
             >
-      <Image style={styles.thumbnail} source={{ uri: product.thumbnail }} />
-      <View style={styles.footer}>
-        <View style={styles.footerText}
-        >
-          <Text style={styles.productTitle} numberOfLines={2}>
+            <View style={styles.wrap}>
+          <Text style={styles.name} accessible>
             {product.name}
           </Text>
           <Text style={styles.price} accessible>
             {numComma(product.price)}원
           </Text>
-        </View>
-        <View style={styles.buttonWrap}>
-          <Button
-            size='small'
-            accessible={false}
-            title='자세히보기'
-            onPress={handlePress}
-            style={styles.button}
-          />
-        </View>
-      </View>
+            </View>
     </Pressable>
   );
 });
 
 const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   pressable: {
-    width: 140,
-    height: '100%',
+    width: '100%',
   },
-  thumbnail: {
-    height: 120,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+  wrap: {
+    borderRadius: 4,
+    padding: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    gap: 20,
+    width: '100%',
+    backgroundColor: '#F1F1F1',
   },
-  productTitle: {
-    fontSize: 9,
-    lineHeight: 11,
+  name: {
+    fontSize: 12,
+    color: '#1E1E1E',
+    fontWeight: '500',
+    lineHeight: 20,
+    flex: 1,
   },
   price: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  productDesc: {
-    marginTop: 10,
-    marginBottom: 12,
-  },
-  buttonWrap: {
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    gap: 10,
-    justifyContent: 'flex-end',
-  },
-  button: {
-    paddingHorizontal: 12,
-  },
-  footerText: {
-    height: 40,
-    backgroundColor: 'transparent',
-  },
-  footer: {
-    backgroundColor: Colors[colorScheme].card.secondary,
-    flexDirection: 'column',
-    gap: 4,
-    paddingTop: 6,
-    paddingBottom: 10,
-    paddingHorizontal: 7,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    fontSize: 12,
+    lineHeight: 14.52,
+    color: '#1E1E1E',
+    fontWeight: '700',
   },
 });
 export default ProductCard;

@@ -22,6 +22,7 @@ import HeaderLeft from '../components/HeaderLeft';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import LackBottomSheet from '../components/BottomSheet/Lack';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
+import RequestBottomSheet from '../components/BottomSheet/Request';
 import CommonBottomSheet from '../components/BottomSheet/Common';
 import ReviewBottomSheet from '../components/BottomSheet/Review';
 
@@ -96,7 +97,7 @@ function RootLayoutNav() {
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="how" options={{ headerShown: false }} />
-            {["notification", "discover-detail-main", "discover-detail", "(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "faq", "recommend-sample", "research-sample"].map((name) => (
+            {["notification", "discover-detail-main", "(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "faq", "recommend-sample", "research-sample"].map((name) => (
               <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
             ))}
             <Stack.Screen name="notices" options={{ ...hideHeaderOption, headerTitle: undefined, title: '공지사항' }} />
@@ -108,6 +109,7 @@ function RootLayoutNav() {
           <LackBottomSheet />
           <GreetingBottomSheet />
           <ReviewBottomSheet />
+          <RequestBottomSheet />
           {bottomSheets.map((info, i) => (
             <CommonBottomSheet info={info} index={i} />
           ))}

@@ -21,17 +21,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   large: {
-    minHeight: 57,
+    minHeight: 50,
     paddingVertical: 16,
-    borderRadius: 15,
+    borderRadius: 4,
   },
   medium: {
     minHeight: 36,
-    borderRadius: 10,
+    borderRadius: 4,
   },
   small: {
     minHeight: 31,
-    borderRadius: 7,
+    borderRadius: 4,
   },
   pressed: {
   },

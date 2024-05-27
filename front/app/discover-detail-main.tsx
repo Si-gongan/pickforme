@@ -5,8 +5,13 @@ import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import Colors from '../constants/Colors';
-import { wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { 
+  requestBottomSheetAtom
+  } from '../stores/request/atoms';
 import { Product } from '../stores/discover/types';
+import { pushBottomSheetAtom } from '../stores/layout/atoms';
+
 
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
@@ -43,10 +48,12 @@ export default function DiscoverScreen() {
   const styles = useStyles(colorScheme);
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
+    const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
+  const searchResult = useAtomValue(searchResultAtom);
   const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const already = wishlist.find((wishProduct) => `${wishProduct.id}` === productId);
-  const product = [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
+    const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
 
   const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
@@ -54,7 +61,7 @@ export default function DiscoverScreen() {
     if (product) {
       getProductDetail(product);
     }
-  }, [getProductDetail, product]);
+  }, [getProductDetail, productId]);
   const handleClickBuy = async () => {
     if (!product) {
       return;
@@ -76,14 +83,16 @@ export default function DiscoverScreen() {
     }
     await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj');
   }
+    const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
+
   const handleClickRequest = () => {
     if (!product) {
       return;
     }
-    router.push({ pathname: '/research', params: { link: encodeURIComponent(product.url) }});
+    setRequestBottomSheet(product);
   }
 
-  const hasDetail = !!productDetail?.product?.id && !!product?.id && `${productDetail?.product?.id}` === `${product?.id}`;
+  const hasDetail = productDetail?.product?.id !== undefined && product?.id !== undefined && `${productDetail?.product?.id}` === `${product?.id}`;
   const handlePressTab = (nextTab: TABS) => {
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       if (nextTab === TABS.REPORT) {
@@ -95,34 +104,34 @@ export default function DiscoverScreen() {
     }
     setTab(nextTab);
   }
+  console.log(productDetail?.product);
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
       {!!product && (
-      <View style={styles.inner}>
-        <Image style={styles.image} source={{ uri: product.thumbnail }} />
+      <View>
+        <View style={styles.inner}>
         <Text style={styles.name}>
           {product.name}
         </Text>
-          <Text style={styles.price}>
-            {numComma(product.price || 0)}원
-          </Text>
-        <View style={styles.seperator} />
+        <View style={styles.priceWrap}>
+          {productDetail?.product?.discountRate !== undefined && product.price !== productDetail.product.discountRate && (
+            <Text style={styles.discountRate}>
+              {numComma(productDetail.product.discountRate)}
+            </Text>
+          )}
+            <Text style={styles.price}>
+              {numComma(product.price || 0)}원
+            </Text>
+          {productDetail?.product?.originPrice !== undefined && product.price !== productDetail.product.originPrice && (
+            <Text style={styles.originPrice}>
+              {numComma(productDetail.product.originPrice)}
+            </Text>
+          )}
+        </View>
+              {hasDetail && productDetail.product && (
           <View style={styles.table}>
             <View style={styles.tableList}>
-              <Text style={[styles.tableHeader, styles.tableTitle]}>
-                상품 정보
-              </Text>
-              {hasDetail && productDetail.product && (
-              <>
-              <View style={styles.tableRow} accessible>
-                <Text style={styles.tableHeader}>
-                  평점
-                </Text>
-                <Text style={styles.tableItem}>
-                  {Math.floor(productDetail.product.ratings / 20 * 10) / 10} 점
-                </Text>
-              </View>
               <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
                    리뷰 개수
@@ -131,16 +140,25 @@ export default function DiscoverScreen() {
                   {productDetail.product.reviews || 0} 개
                 </Text>
               </View>
-              </>
-              )}
+              <View style={styles.tableRow} accessible>
+                <Text style={styles.tableHeader}>
+                  평점
+                </Text>
+                <Text style={styles.tableItem}>
+                  {Math.floor(productDetail.product.ratings / 20 * 10) / 10} 점
+                </Text>
+              </View>
             </View>
           </View>
-        <View style={styles.seperator} />
-         <View style={styles.tabWrap}>
+       )}
+        </View>
+       <View style={styles.tabWrap}>
         {Object.values(TABS).map((TAB) => (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
-              style={styles.tabButton}
+              style={[styles.tabButton, tab === TAB && styles.tabButtonActive]}
+              textStyle={[styles.tabButtonText, tab === TAB && styles.tabButtonTextActive]}
+              variant='text'
               title={tabName[TAB]}
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
@@ -209,13 +227,15 @@ export default function DiscoverScreen() {
         <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={styles.button} color='tertiary' size='small' />
       </View>
       ) : (
+      <>
       <View style={styles.buttonOuter}>
-        <Button title='매니저에게 상품 설명 받기' onPress={handleClickRequest} style={styles.button} color='tertiary' size='small' />
+        <Button title='구매하러 가기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
+      <View style={styles.buttonOuter}>
+        <Button title='매니저에게 물어보기' onPress={handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
+      </View>
+      </>
       )}
-      <View style={styles.buttonOuter}>
-        <Button title='구매하기' onPress={handleClickBuy} style={styles.button} size='small' />
-      </View>
         {already ? ( 
           <Pressable
             onPress={handleClickWish}
@@ -262,15 +282,26 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     backgroundColor: Colors[colorScheme].borderColor.tertiary,
   },
   name: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    lineHeight: 21,
+    lineHeight: 20,
+    marginBottom: 11,
+  },
+  priceWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   price: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 22,
   },
-  originalPrice: {
+  discountRate: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 22,
+  },
+  originPrice: {
     color: '#576084',
     fontSize: 20,
     fontStyle: 'italic',
@@ -284,7 +315,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginVertical: 25,
   },
   table: {
-    paddingHorizontal: 14,
+    marginTop: 31,
     flexDirection: 'column',
   },
   tableTitle: {
@@ -315,20 +346,33 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     alignContent: 'stretch',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
   },
   tab: {
     flex: 1,
   },
   tabButton: {
+    padding: 16,
+    flex: 1,
     flexDirection: 'row',
+    borderRadius: 0,
+    borderBottomWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  tabButtonActive: {
+    borderBottomColor: Colors[colorScheme].text.primary,
+    borderBottomWidth: 2,
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 17,
+  },
+  tabButtonTextActive: {
+    color: Colors[colorScheme].text.primary,
+    fontWeight: '700',
   },
   detailWrap: {
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: Colors[colorScheme].borderColor.tertiary,
-    padding: 20,
-    marginTop: 26,
+    padding: 28,
   },
   reviewListTitle: {
     fontSize: 14,
@@ -354,8 +398,13 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flexDirection: 'row',
   },
   button: {
-    borderRadius: 10,
+    borderRadius: 4,
     height: 50,
+  },
+  button2: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: Colors[colorScheme].buttonBackground.primary,
   },
   heartIcon: {
     width: 24,

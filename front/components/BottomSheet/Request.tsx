@@ -1,0 +1,107 @@
+import { useRef,useState } from 'react';
+import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import BottomSheet from 'react-native-modal';
+
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
+import * as Clipboard from 'expo-clipboard';
+
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+import { previewAtom, getPreviewAtom, requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
+import { ResearchRequestParams } from '../../stores/request/types';
+import Colors from '../../constants/Colors';
+import { pushBottomSheetAtom } from '../../stores/layout/atoms';
+import { Props, styles } from './Base';
+
+import Button from '../Button';
+import { Text, View } from '../Themed';
+
+export default function ResearchBottomSheet() {
+    const headerTitleRef = useRef(null);
+
+  const addRequest = useSetAtom(addRequestAtom);
+  const getPreview = useSetAtom(getPreviewAtom);
+  const preview = useAtomValue(previewAtom);
+  const colorScheme = useColorScheme();
+  const localStyles = useLocalStyles(colorScheme);
+  const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
+  const [isShareChecked, setIsShareChecked] = useState(false);
+
+  const [data, setData] = useState<ResearchRequestParams>({
+    type: 'RESEARCH',
+    link: '',
+    text: '',
+  });
+  const handleClickPaste = async () => {
+    const text = await Clipboard.getStringAsync();
+    if (text) {
+      getPreview({ link: text });
+      setData({ ...data, link: text });
+    }
+  }
+  const handleClickReset = () => {
+    setData({ ...data, link: '' });
+  }
+  const handleSubmit = () => {
+    addRequest(data);
+    onClose();
+  }
+  const disabled = !data.link;
+  const [product,setProduct] = useAtom(requestBottomSheetAtom);
+  const onClose = () => {
+    setData({ ...data, text: '' });
+    setProduct(undefined);
+  }
+  return (
+    <BottomSheet
+      style={styles.base}
+      isVisible={!!product}
+      onBackButtonPress={onClose}
+      onBackdropPress={onClose}
+    >
+      <View style={[styles.bottomSheet, localStyles.root]}>
+          <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
+            상품에 대해 궁금한 점을 자유롭게 적어주세요.
+          </Text>
+          <View style={localStyles.textAreaContainer} >
+            <TextInput
+              style={[localStyles.textArea, localStyles.textAreaBig]}
+              underlineColorAndroid="transparent"
+              numberOfLines={4}
+              textAlignVertical='top'
+              multiline
+              onChangeText={(text) => setData({ ...data, text })}
+            />
+          </View>
+          <Button title='1픽으로 매니저에게 물어보기' onPress={handleSubmit} disabled={disabled} />
+        </View>
+    </BottomSheet>
+  );
+}
+
+const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
+  root: {
+  },
+  title: {
+    fontSize: 14,
+    lineHeight: 17,
+    fontWeight: '400',
+    marginBottom: 20,
+    color: '#1e1e1e',
+  },
+  textAreaContainer: {
+    width: '100%',
+    borderColor: Colors[colorScheme].borderColor.primary,
+    borderWidth: 1,
+    padding: 5,
+    marginBottom: 24,
+  },
+  textArea: {
+    color: Colors[colorScheme].text.primary,
+  },
+  textAreaBig: {
+    height: 73,
+  },
+  buttonText: {
+    color: Colors[colorScheme].text.primary,
+  },
+});

@@ -48,10 +48,8 @@ export default function DiscoverScreen() {
         <Text style={styles.loading}>위시리스트가 비어있습니다.</Text>
       ) : (
                 <FlatList
-                         columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.searchList}
           data={wishProducts}
-          numColumns={2}
           keyExtractor={(product) => `wishlist-${product.id}`}
           renderItem={({ item: product, index: i }) => (
             <>
@@ -90,7 +88,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flex: 1,
   },
   seperatorRow: {
-    height: 15,
+    height: 12,
     width: 1,
     backgroundColor: 'transparent',
   },
@@ -174,11 +172,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     alignItems: 'center',
   },
   searchItem: {
-  },
-  columnWrapper: {
-    gap: 14,
-    marginLeft: -7,
-    paddingRight: 7,
   },
   loading: {
     paddingHorizontal: 20,
