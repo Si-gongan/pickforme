@@ -53,12 +53,12 @@ export default function DiscoverScreen() {
   const styles = useStyles(colorScheme);
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
-    const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
+  const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const requests = useAtomValue(requestsAtom);
-  const request = requests.find(request => `${request.product.url}` === productUrl || `${request.product.id}` === productId);
+  const request = requests.filter(request => request.product).find(request => `${request.product.url}` === productUrl || `${request.product.id}` === productId);
   const already = wishlist.find((wishProduct) => `${wishProduct.url}` === productUrl || `${wishProduct.id}` === productId);
   const product = (request?.product) || searchResult?.products.find((searchItem) => searchItem.url === productUrl || `${searchItem.id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
 
@@ -100,7 +100,6 @@ export default function DiscoverScreen() {
   });
 
   const hasDetail = productDetail?.product?.url !== undefined && product?.url !== undefined && `${productDetail?.product?.url}` === `${product?.url}`;
-  console.log({ hasDetail, product, productDetail });
   const handlePressTab = (nextTab: (TABS | 'answer')) => {
     if (nextTab === 'answer') {
     setTab(nextTab);
@@ -186,7 +185,12 @@ export default function DiscoverScreen() {
       ) : (
       <>
         {(loadingStatus[tab] <= 1 || !hasDetail) ? (
-          <View style={styles.detailWrap}><ActivityIndicator style={styles.loadingIcon} /><Text>{loadingMessages[tab]}</Text></View>
+          <View style={styles.detailWrap}>
+            <View style={styles.indicatorWrap}>
+              <ActivityIndicator style={styles.loadingIcon} />
+              <Text>{loadingMessages[tab]}</Text>
+            </View>
+          </View>
         ) : (!!productDetail?.[tab] ? (
           <>
               {tab !== 'review' ? (
@@ -434,4 +438,9 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   loadingIcon: {
   },
+  indicatorWrap: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  }
 });
