@@ -184,7 +184,7 @@ export default function DiscoverScreen() {
         </View>
       </View>
       {isSearching ? (
-          <Text style={styles.loading}>검색중입니다.</Text>
+          <Text style={styles.loading}>검색하신 상품을 로딩중이에요.</Text>
       ) : (
       !!query.length ? (
               <ScrollView style={styles.scrollView}>
@@ -275,8 +275,9 @@ export default function DiscoverScreen() {
       ))}
         {!!clipboardProduct && (
         <Pressable onPress={() => {
-            setClipboardProduct('');
-              router.push(`/discover-detail-main?productId=${clipboardProduct.id}`);
+            const url = clipboardProduct.url;
+            // setClipboardProduct('');
+            router.push(`/discover-detail-main?productUrl=${encodeURIComponent(url)}`);
           }} accessibilityRole='button' accessibilityLabel='클립보드 상품 검색' accessible>
           <View style={styles.clipboardWrap}>
           <View style={styles.clipboardText}>

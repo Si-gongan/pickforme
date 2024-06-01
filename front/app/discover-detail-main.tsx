@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
-import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
@@ -36,15 +36,16 @@ const tabName = {
 } as const;
 
 const loadingMessages = {
-  [TABS.CAPTION]: 'AI가 상품 이미지를 분석하고 있어요.',
-  [TABS.REPORT]: 'AI가 상품 상세페이지를 요약하고 있어요.',
-  [TABS.REVIEW]: 'AI가 상품 리뷰들을 요약하고 있어요.',
-  answer: '매니저 답변',
+  [TABS.CAPTION]: '상품의 이미지 설명을 생성중이에요. ',
+  [TABS.REPORT]: '상품의 자세한 설명을 생성중이에요. ',
+  [TABS.REVIEW]: '상품의 리뷰를 AI가 요약중이에요.',
+  answer: '매니저가 질문을 확인중이에요. 2시간 내로 답변이 도착할 거예요.',
 } as const;
 
 
 export default function DiscoverScreen() {
-  const { productId } = useLocalSearchParams();
+  const { productId, productUrl: productUrlBase } = useLocalSearchParams();
+  const productUrl = productUrlBase ? decodeURIComponent(`${productUrlBase}`) : undefined;
   const router = useRouter();
   const productDetail = useAtomValue(productDetailAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
@@ -57,9 +58,9 @@ export default function DiscoverScreen() {
   const searchResult = useAtomValue(searchResultAtom);
   const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const requests = useAtomValue(requestsAtom);
-  const request = requests.find(request => `${request.product.id}` === productId);
-  const already = wishlist.find((wishProduct) => `${wishProduct.id}` === productId);
-    const product = (request?.product) || searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
+  const request = requests.find(request => `${request.product.url}` === productUrl || `${request.product.id}` === productId);
+  const already = wishlist.find((wishProduct) => `${wishProduct.url}` === productUrl || `${wishProduct.id}` === productId);
+  const product = (request?.product) || searchResult?.products.find((searchItem) => searchItem.url === productUrl || `${searchItem.id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
 
   const [tab, setTab] = React.useState<TABS | 'answer'>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
@@ -98,7 +99,8 @@ export default function DiscoverScreen() {
     setRequestBottomSheet(product);
   });
 
-  const hasDetail = productDetail?.product?.id !== undefined && product?.id !== undefined && `${productDetail?.product?.id}` === `${product?.id}`;
+  const hasDetail = productDetail?.product?.url !== undefined && product?.url !== undefined && `${productDetail?.product?.url}` === `${product?.url}`;
+  console.log({ hasDetail, product, productDetail });
   const handlePressTab = (nextTab: (TABS | 'answer')) => {
     if (nextTab === 'answer') {
     setTab(nextTab);
@@ -162,7 +164,7 @@ export default function DiscoverScreen() {
        )}
         </View>
        <View style={styles.tabWrap}>
-        {[...Object.values(TABS), 'answer' as const].map((TAB) => (
+        {[...Object.values(TABS), ...(request?.product ? ['answer' as const] : [])].map((TAB) => (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={[styles.tabButton, tab === TAB && styles.tabButtonActive]}
@@ -179,12 +181,12 @@ export default function DiscoverScreen() {
       </View>
       {tab === 'answer' ? (
        <View style={styles.detailWrap}>
-         <Text>{request?.answer?.text || '매니저가 답변을 준비중입니다'}</Text>
+         <Text>{request?.answer?.text || loadingMessages['answer']}</Text>
        </View>
       ) : (
       <>
         {(loadingStatus[tab] <= 1 || !hasDetail) ? (
-          <View style={styles.detailWrap}><Text>{loadingMessages[tab]}</Text></View>
+          <View style={styles.detailWrap}><ActivityIndicator style={styles.loadingIcon} /><Text>{loadingMessages[tab]}</Text></View>
         ) : (!!productDetail?.[tab] ? (
           <>
               {tab !== 'review' ? (
@@ -429,5 +431,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   buttonOuter: {
     flex: 1,
+  },
+  loadingIcon: {
   },
 });

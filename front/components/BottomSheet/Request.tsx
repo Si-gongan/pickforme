@@ -67,6 +67,8 @@ export default function ResearchBottomSheet() {
           </Text>
           <View style={localStyles.textAreaContainer} >
             <TextInput
+              accessibilityRole='none'
+              accessibilityHint='텍스트 입력창'
               style={[localStyles.textArea, localStyles.textAreaBig]}
               underlineColorAndroid="transparent"
               numberOfLines={4}

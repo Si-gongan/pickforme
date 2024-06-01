@@ -46,8 +46,8 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
       products: [product],
     });
   }
-
-    onLink(`/discover-detail-main?productId=${product.id}`);
+    console.log(product.url, encodeURIComponent(product.url));
+    onLink(`/discover-detail-main?productUrl=${encodeURIComponent(product.url)}`);
     set(isSearchingAtom, false);
     return;
   }

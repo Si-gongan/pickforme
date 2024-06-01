@@ -42,7 +42,6 @@ router.post('/product', async (ctx) => {
       },
     },
   } = <any>ctx.request;
-  console.log(id,url,platform);
   if (id) {
    const section = await db.DiscoverSection.findOne(
       { 'products.productId': id },
