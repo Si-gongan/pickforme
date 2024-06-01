@@ -4,6 +4,9 @@ import { Image, TextInput, Pressable, FlatList, ScrollView, View as ViewBase, St
 import { useRouter, Link } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 
+import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
+
+import useCheckLogin from '../../hooks/useCheckLogin';
 import { wishProductsAtom } from '../../stores/discover/atoms';
 import { Product } from '../../stores/discover/types';
 import Colors from '../../constants/Colors';
@@ -19,12 +22,34 @@ import { useFocusEffect } from '@react-navigation/core';
 import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 
+enum TABS {
+  PRODUCT = 'PRODUCT',
+  REQUEST = 'REQUEST',
+};
+
+const tabName = {
+  [TABS.PRODUCT]: '찜한 상품',
+  [TABS.REQUEST]: '매니저에게 문의한 상품',
+}
+
+
 export default function DiscoverScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
   const wishProducts = useAtomValue(wishProductsAtom);
   const headerTitleRef = useRef<TextBase>(null);
+  const [tab, setTab] = React.useState<TABS>(TABS.PRODUCT);
+
+  const getRequests = useSetAtom(getRequestsAtom);
+  const requests = useAtomValue(requestsAtom);
+
+  React.useEffect(() => {
+    if (tab === TABS.REQUEST) {
+      getRequests();
+    }
+  }, [getRequests, tab]);
+
   useFocusEffect(
   React.useCallback(
     () => {
@@ -36,6 +61,8 @@ export default function DiscoverScreen() {
       }
     }, []),
   );
+
+  const handleClickRequest = useCheckLogin(() => setTab(TABS.REQUEST));
   return (
     <View style={styles.container}>
       <View style={styles.horizontalPadder}>
@@ -44,21 +71,56 @@ export default function DiscoverScreen() {
         <Text style={styles.title} accessibilityRole='header' ref={headerTitleRef}>위시리스트</Text>
         </View>
       </View>
+             <View style={styles.tabWrap}>
+        {Object.values(TABS).map((TAB) => (
+          <View style={styles.tab} key={`Wish-Tab-${TAB}`}>
+            <Button
+              style={[styles.tabButton, tab === TAB && styles.tabButtonActive]}
+              textStyle={[styles.tabButtonText, tab === TAB && styles.tabButtonTextActive]}
+              variant='text'
+              title={tabName[TAB]}
+              size='medium'
+              color={tab === TAB ? 'primary' : 'tertiary'}
+              onPress={TAB === TABS.REQUEST ? handleClickRequest : () => setTab(TAB)}
+              accessibilityLabel={tabName[TAB]}
+            />
+          </View>
+        ))}
+      </View>
+      {tab === 'PRODUCT' && (
+        <>
       {!wishProducts.length ? (
-        <Text style={styles.loading}>위시리스트가 비어있습니다.</Text>
+        <Text style={styles.loading}>찜한 상품이 없습니다.</Text>
       ) : (
                 <FlatList
           contentContainerStyle={styles.searchList}
           data={wishProducts}
-          keyExtractor={(product) => `wishlist-${product.id}`}
+          keyExtractor={(product) => `wishlist-wish-${product.id}`}
           renderItem={({ item: product, index: i }) => (
-            <>
             <ProductCard product={product} />
-            {(i === wishProducts.length - 1) && (wishProducts.length % 2 === 1) && <View style={styles.empty} /> }
-            </>
           )}
           ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
         />
+      )}
+        </>
+      )}
+      {tab === 'REQUEST' && (
+      <>
+          {!wishProducts.length ? (
+        <Text style={styles.loading}>문의한 상품이 없습니다.</Text>
+      ) : (
+                <FlatList
+          contentContainerStyle={styles.searchList}
+          data={requests}
+          keyExtractor={(request) => `wishlist-request-${request._id}`}
+          renderItem={({ item: request, index: i }) => (
+            <ProductCard product={request.product} />
+          )}
+          ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
+        />
+      )}
+      </>
+
       )}
     </View>
   );
@@ -167,6 +229,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   searchList: {
     paddingHorizontal: 20,
+    paddingTop: 13,
     marginLeft: 7,
     marginRight: 7,
     alignItems: 'center',
@@ -185,6 +248,35 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     color: Colors[colorScheme].text.primary,
     marginRight: 9,
     marginTop: 2,
+  },
+   tabWrap: {
+    flexDirection: 'row',
+    alignContent: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tab: {
+    flex: 1,
+  },
+  tabButton: {
+    padding: 16,
+    flexDirection: 'row',
+    borderRadius: 0,
+    borderBottomWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  tabButtonActive: {
+    borderBottomColor: Colors[colorScheme].text.primary,
+    borderBottomWidth: 2,
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 17,
+  },
+  tabButtonTextActive: {
+    color: Colors[colorScheme].text.primary,
+    fontWeight: '700',
   },
 });
 

@@ -4,6 +4,7 @@ import { Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'r
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
+import useCheckLogin from '../hooks/useCheckLogin';
 import Colors from '../constants/Colors';
 import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
 import { 
@@ -11,6 +12,7 @@ import {
   } from '../stores/request/atoms';
 import { Product } from '../stores/discover/types';
 import { pushBottomSheetAtom } from '../stores/layout/atoms';
+import { requestsAtom } from '../stores/request/atoms';
 
 
 import Button from '../components/Button';
@@ -30,13 +32,15 @@ const tabName = {
   [TABS.CAPTION]: '상품 이미지',
   [TABS.REPORT]: '자세한 설명',
   [TABS.REVIEW]: '리뷰 요약',
-}
+  answer: '매니저 답변',
+} as const;
 
 const loadingMessages = {
   [TABS.CAPTION]: 'AI가 상품 이미지를 분석하고 있어요.',
   [TABS.REPORT]: 'AI가 상품 상세페이지를 요약하고 있어요.',
   [TABS.REVIEW]: 'AI가 상품 리뷰들을 요약하고 있어요.',
-}
+  answer: '매니저 답변',
+} as const;
 
 
 export default function DiscoverScreen() {
@@ -52,10 +56,12 @@ export default function DiscoverScreen() {
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const [wishlist,setWishlist] = useAtom(wishProductsAtom);
+  const requests = useAtomValue(requestsAtom);
+  const request = requests.find(request => `${request.product.id}` === productId);
   const already = wishlist.find((wishProduct) => `${wishProduct.id}` === productId);
-    const product = searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
+    const product = (request?.product) || searchResult?.products.find(({ id }) => `${id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
 
-  const [tab, setTab] = React.useState<TABS>(TABS.CAPTION);
+  const [tab, setTab] = React.useState<TABS | 'answer'>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
   React.useEffect(() => {
     if (product) {
@@ -85,15 +91,19 @@ export default function DiscoverScreen() {
   }
     const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
 
-  const handleClickRequest = () => {
+  const handleClickRequest = useCheckLogin(() => {
     if (!product) {
       return;
     }
     setRequestBottomSheet(product);
-  }
+  });
 
   const hasDetail = productDetail?.product?.id !== undefined && product?.id !== undefined && `${productDetail?.product?.id}` === `${product?.id}`;
-  const handlePressTab = (nextTab: TABS) => {
+  const handlePressTab = (nextTab: (TABS | 'answer')) => {
+    if (nextTab === 'answer') {
+    setTab(nextTab);
+    return;
+    }
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       if (nextTab === TABS.REPORT) {
         getProductDetailReport(product);
@@ -104,7 +114,6 @@ export default function DiscoverScreen() {
     }
     setTab(nextTab);
   }
-  console.log(productDetail?.product);
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -153,7 +162,7 @@ export default function DiscoverScreen() {
        )}
         </View>
        <View style={styles.tabWrap}>
-        {Object.values(TABS).map((TAB) => (
+        {[...Object.values(TABS), 'answer' as const].map((TAB) => (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={[styles.tabButton, tab === TAB && styles.tabButtonActive]}
@@ -168,6 +177,12 @@ export default function DiscoverScreen() {
           </View>
         ))}
       </View>
+      {tab === 'answer' ? (
+       <View style={styles.detailWrap}>
+         <Text>{request?.answer?.text || '매니저가 답변을 준비중입니다'}</Text>
+       </View>
+      ) : (
+      <>
         {(loadingStatus[tab] <= 1 || !hasDetail) ? (
           <View style={styles.detailWrap}><Text>{loadingMessages[tab]}</Text></View>
         ) : (!!productDetail?.[tab] ? (
@@ -218,6 +233,8 @@ export default function DiscoverScreen() {
               <Text>정보를 불러오는데 실패했습니다.</Text>
             </View>
           ))}
+      </>
+      )}
       </View>
       )}
       </ScrollView>
@@ -232,7 +249,7 @@ export default function DiscoverScreen() {
         <Button title='구매하러 가기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
       <View style={styles.buttonOuter}>
-        <Button title='매니저에게 물어보기' onPress={handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
+        <Button title='매니저에게 물어보기' onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
       </View>
       </>
       )}
@@ -351,7 +368,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flex: 1,
   },
   tabButton: {
-    padding: 16,
+    paddingVertical: 16,
     flex: 1,
     flexDirection: 'row',
     borderRadius: 0,

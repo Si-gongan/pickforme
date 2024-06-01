@@ -113,6 +113,10 @@ export default function DiscoverScreen() {
     searchProducts({ query: text, page: 1, onLink: router.push, onQuery: () => setQuery(text) });
   }
 
+  const handleClickReset = () => {
+    setText('');
+  }
+
   const handleClickMore = (key: keyof typeof length) => {
     const nextNum = Math.min(mainProducts[key].length, length[key] + 5);
     setLength({
@@ -159,6 +163,16 @@ export default function DiscoverScreen() {
             onChangeText={(text) => setText(text)}
             placeholder='상품을 검색하세요'
           />
+          {!!text.length && (
+          <Pressable
+            onPress={handleClickReset}
+            accessible
+            accessibilityLabel="비우기"
+            accessibilityRole='button'
+          >
+            <Image style={styles.resetIcon} source={require('../../assets/images/discover/icReset.png')} />
+          </Pressable>
+          )}
           <Pressable
             onPress={handleClickSend}
             accessible
@@ -353,9 +367,17 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flex: 1,
     width: '100%',
   },
-  sendIcon: {
+  resetIcon: {
     flexShrink: 0,
     marginLeft: 14,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendIcon: {
+    flexShrink: 0,
+    marginLeft: 3,
     width: 20,
     height: 20,
     justifyContent: 'center',

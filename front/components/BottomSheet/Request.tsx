@@ -7,10 +7,13 @@ import * as Clipboard from 'expo-clipboard';
 
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { previewAtom, getPreviewAtom, requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
+import { isShowLackModalAtom } from '../../stores/auth/atoms';
+
 import { ResearchRequestParams } from '../../stores/request/types';
 import Colors from '../../constants/Colors';
 import { pushBottomSheetAtom } from '../../stores/layout/atoms';
 import { Props, styles } from './Base';
+import useCheckPoint from '../../hooks/useCheckPoint';
 
 import Button from '../Button';
 import { Text, View } from '../Themed';
@@ -18,38 +21,38 @@ import { Text, View } from '../Themed';
 export default function ResearchBottomSheet() {
     const headerTitleRef = useRef(null);
 
+  const isShowLackModalVisible = useAtomValue(isShowLackModalAtom);
+
   const addRequest = useSetAtom(addRequestAtom);
-  const getPreview = useSetAtom(getPreviewAtom);
   const preview = useAtomValue(previewAtom);
   const colorScheme = useColorScheme();
   const localStyles = useLocalStyles(colorScheme);
   const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
   const [isShareChecked, setIsShareChecked] = useState(false);
 
-  const [data, setData] = useState<ResearchRequestParams>({
+  const [data, setData] = useState<Omit<ResearchRequestParams, 'product'>>({
     type: 'RESEARCH',
     link: '',
     text: '',
   });
-  const handleClickPaste = async () => {
-    const text = await Clipboard.getStringAsync();
-    if (text) {
-      getPreview({ link: text });
-      setData({ ...data, link: text });
+  const checkPoint = useCheckPoint(1, (params: ResearchRequestParams) => {
+    if (product) {
+      addRequest(params);
     }
-  }
-  const handleClickReset = () => {
-    setData({ ...data, link: '' });
-  }
+  });
   const handleSubmit = () => {
-    addRequest(data);
+    const params = { ...data, product };
     onClose();
+    checkPoint(params);
   }
-  const disabled = !data.link;
+  const disabled = !data.text;
   const [product,setProduct] = useAtom(requestBottomSheetAtom);
   const onClose = () => {
     setData({ ...data, text: '' });
     setProduct(undefined);
+  }
+  if (isShowLackModalVisible) {
+    return;
   }
   return (
     <BottomSheet

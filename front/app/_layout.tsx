@@ -106,10 +106,10 @@ function RootLayoutNav() {
             <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
           </Stack>
           <LoginBottomSheet />
-          <LackBottomSheet />
           <GreetingBottomSheet />
           <ReviewBottomSheet />
           <RequestBottomSheet />
+          <LackBottomSheet />
           {bottomSheets.map((info, i) => (
             <CommonBottomSheet info={info} index={i} />
           ))}

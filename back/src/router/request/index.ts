@@ -21,7 +21,10 @@ router.post('/', requireAuth, async (ctx) => {
     return;
   }
   const {
-    body,
+    body: {
+      product,
+      ...body
+    },
   } = <any>ctx.request;
   const requestName = `픽포미 ${body.type === RequestType.RESEARCH ? '분석' : '추천'}`;
   if (body.type !== RequestType.AI) {
@@ -33,19 +36,11 @@ router.post('/', requireAuth, async (ctx) => {
       userId: user._id,
     });
   }
-  const {
-    data: {
-      title: name,
-    },
-  } = await client.post<{ title: string }>('/report/title', {
-    url: body.link,
-    text: `${body.price}\n${body.text}`,
-    // "messages" : list(string)
-  });
   const request = await db.Request.create({
     ...body,
     userId: user._id,
-    name,
+    name: product.name,
+    product,
   });
   if (body.type !== RequestType.AI) {
     const chat = await db.Chat.create({
@@ -62,19 +57,12 @@ router.post('/', requireAuth, async (ctx) => {
     await request.save();
 
     // slack
-    const slack_msg = body.type === RequestType.RECOMMEND
-      ? `픽포미 추천 의뢰가 도착했습니다.\n
-제목: ${name}\n
-상품 및 가격대: ${body.price}\n
-상세 조건: ${body.text}
-
+    const slack_msg = 
+      `픽포미 의뢰가 도착했습니다.\n
+상품명: ${product.name}
+url: ${product.url}
 `
-      : `픽포미 분석 의뢰가 도착했습니다.\n
-제목: ${name}\n
-링크: ${body.link}\n
-참고사항: ${body.text}
-`;
-/*
+    /*
     slack.post('/chat.postMessage', {
       text: slack_msg, channel: 'C05NTFL1Q4C',
     });
@@ -82,7 +70,7 @@ router.post('/', requireAuth, async (ctx) => {
   }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
   ctx.body = {
-    request: await request.populate('chats'),
+    request,
     point: user.point,
   };
   ctx.status = 200;

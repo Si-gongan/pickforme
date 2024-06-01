@@ -37,6 +37,18 @@ const RequestSchema = new mongoose.Schema({
   link: {
     type: String,
   },
+  product: {
+    id: Number,
+    name: String,
+    option: String,
+    price: Number,
+    origin_price: Number,
+    discount_rate: Number,
+    reviews: Number,
+    ratings: Number,
+    url: String,
+    thumbnail: String,
+  },
   answer: {
     default: undefined,
     type: {

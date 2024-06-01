@@ -1,4 +1,4 @@
-import { Product as ChatProduct } from '../discover/types';
+import { Product as DiscoverProduct } from '../discover/types';
 
 interface Review {
   text: string,
@@ -18,7 +18,7 @@ export interface Chat {
   questions?: string[],
   text: string,
   requestId: string,
-  products?: ChatProduct[],
+  products?: DiscoverProduct[],
   button?: {
     text: string,
     deeplink: string,
@@ -54,6 +54,7 @@ interface RequestBase {
   text: string,                              
   review: Review,
   unreadCount: number,
+  product: DiscoverProduct,
   answer?: {
     text: string,
     products: Product[]
@@ -65,12 +66,14 @@ export interface RecommendRequestParams {
   price: string,
   text: string,
   isPublic: boolean,
+  prodcut: DiscoverProduct,
 }
 
 export interface ResearchRequestParams {
   text: string,                              
   type: 'RESEARCH',
   link: string,
+  product: DiscoverProduct,
 }
 
 export interface AIRequestParams {
