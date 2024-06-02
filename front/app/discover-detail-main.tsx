@@ -127,7 +127,7 @@ export default function DiscoverScreen() {
         <View style={styles.priceWrap}>
           {productDetail?.product?.discount_rate !== undefined && product.price !== productDetail.product.discount_rate && (
             <Text style={styles.discount_rate}>
-              {numComma(productDetail.product.discount_rate)}
+              {numComma(productDetail.product.discount_rate)}%
             </Text>
           )}
             <Text style={styles.price}>
@@ -144,7 +144,7 @@ export default function DiscoverScreen() {
             <View style={styles.tableList}>
               <View style={styles.tableRow} accessible>
                 <Text style={styles.tableHeader}>
-                   리뷰 개수
+                   리뷰
                 </Text>
                 <Text style={styles.tableItem}>
                   {productDetail.product.reviews || 0} 개
@@ -318,16 +318,18 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     lineHeight: 22,
+    marginRight: 6,
   },
   discount_rate: {
     fontSize: 18,
     fontWeight: '700',
     lineHeight: 22,
+    color: '#4A5CA0',
+    marginRight: 6,
   },
   origin_price: {
     color: '#576084',
-    fontSize: 20,
-    fontStyle: 'italic',
+    fontSize: 13,
     fontWeight: '500',
     textDecorationLine: 'line-through',
   },

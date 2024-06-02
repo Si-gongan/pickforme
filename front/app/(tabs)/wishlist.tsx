@@ -229,8 +229,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   searchList: {
     paddingHorizontal: 20,
     paddingTop: 13,
-    marginLeft: 7,
-    marginRight: 7,
     alignItems: 'center',
   },
   searchItem: {
