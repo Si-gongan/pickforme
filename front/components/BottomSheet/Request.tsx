@@ -1,5 +1,5 @@
 import { useRef,useState } from 'react';
-import { TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { Platform, KeyboardAvoidingView, TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import BottomSheet from 'react-native-modal';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
@@ -61,7 +61,11 @@ export default function ResearchBottomSheet() {
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
     >
-      <View style={[styles.bottomSheet, localStyles.root]}>
+       <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View
+        style={[styles.bottomSheet, localStyles.root]}>
           <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
             상품에 대해 궁금한 점을 자유롭게 적어주세요.
           </Text>
@@ -77,14 +81,16 @@ export default function ResearchBottomSheet() {
               onChangeText={(text) => setData({ ...data, text })}
             />
           </View>
-          <Button title='1픽으로 매니저에게 물어보기' onPress={handleSubmit} disabled={disabled} />
+          <Button style={styles.button} title='1픽으로 매니저에게 물어보기' onPress={handleSubmit} disabled={disabled} />
         </View>
+        </KeyboardAvoidingView>
     </BottomSheet>
   );
 }
 
 const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   root: {
+    paddingBottom: 40,
   },
   title: {
     fontSize: 14,
@@ -104,7 +110,7 @@ const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     color: Colors[colorScheme].text.primary,
   },
   textAreaBig: {
-    height: 73,
+    height: 116,
   },
   buttonText: {
     color: Colors[colorScheme].text.primary,

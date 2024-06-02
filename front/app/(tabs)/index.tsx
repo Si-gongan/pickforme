@@ -82,9 +82,27 @@ export default function DiscoverScreen() {
   const searchResult = useAtomValue(searchResultAtom);
   const handleSearchMore = useSetAtom(searchMoreAtom);
   const isSearching = useAtomValue(isSearchingAtom);
+  const searchLoadingRef = useRef(null);
+  const searchResultRef = useRef(null);
   const [category, setCategory] = React.useState('');
   const clipboardProduct = useAtomValue(clipboardProductAtom);
   const setClipboardProduct = useSetAtom(setClipboardProductAtom);
+
+  React.useEffect(() => {
+    let timer = setTimeout(() => {
+      const ref = isSearching ? searchLoadingRef : searchResultRef;
+      if (ref.current) {
+        const nodeHandle = findNodeHandle(ref.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+        }
+      }
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [isSearching]);
+
   React.useEffect(() => {
     Clipboard.getStringAsync().then((text) => {
       if (!text.length) {
@@ -94,6 +112,25 @@ export default function DiscoverScreen() {
     });
   }, []);
 
+  React.useEffect(() => {
+    let timer = setTimeout(() => {
+      const ref = clipboardRef;
+      if (ref.current) {
+        const nodeHandle = findNodeHandle(ref.current);
+        if (nodeHandle) {
+          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          timer = setTimeout(() => {
+            setClipboardProduct('');
+          }, 4500);
+        }
+      }
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+    }
+  }, []);
+
+  const clipboardRef = useRef(null);
   const focusRef1 = useRef<ViewBase>(null);
   const focusRef2 = useRef<ViewBase>(null);
 
@@ -161,7 +198,7 @@ export default function DiscoverScreen() {
             accessible
             accessibilityLabel="검색어 입력창"
             onChangeText={(text) => setText(text)}
-            placeholder='상품을 검색하세요'
+            placeholder='찾고 싶은 상품 키워드 또는 링크를 입력해 보세요'
           />
           {!!text.length && (
           <Pressable
@@ -184,10 +221,11 @@ export default function DiscoverScreen() {
         </View>
       </View>
       {isSearching ? (
-          <Text style={styles.loading}>검색하신 상품을 로딩중이에요.</Text>
+          <Text style={styles.loading} ref={searchLoadingRef}>검색하신 상품을 로딩중이에요.</Text>
       ) : (
       !!query.length ? (
-              <ScrollView style={styles.scrollView}>
+              <ScrollView style={styles.scrollView}
+                ref={searchResultRef}>
         {!!searchResult?.products.length && (
                 <FlatList
                 scrollEnabled={false}
@@ -276,19 +314,22 @@ export default function DiscoverScreen() {
         {!!clipboardProduct && (
         <Pressable onPress={() => {
             const url = clipboardProduct.url;
-            // setClipboardProduct('');
+            setClipboardProduct('');
             router.push(`/discover-detail-main?productUrl=${encodeURIComponent(url)}`);
-          }} accessibilityRole='button' accessibilityLabel='클립보드 상품 검색' accessible>
-          <View style={styles.clipboardWrap}>
+          }}
+            ref={clipboardRef}>
+          <View style={styles.clipboardWrap}
+            accessibilityRole='button' accessibilityLabel='상품 링크가 복사되었어요. 복사한 링크 상품 상세페이지 설명 보기' accessible
+          >
           <View style={styles.clipboardText}>
-            <Text style={styles.clipboardTitle}>
+            <Text style={styles.clipboardTitle} accessible={false}>
               상품 링크가 복사되었어요
             </Text>
-            <Text style={styles.clipboardDesc}>
+            <Text style={styles.clipboardDesc} accessible={false}>
               복사한 링크 상품 상세페이지 설명 보기 &gt;
             </Text>
           </View>
-             <Pressable onPress={() => setClipboardProduct('')} accessibilityRole='button' accessibilityLabel='클립보드 닫기' accessible>
+             <Pressable onPress={() => setClipboardProduct('')} accessibilityRole='button' accessibilityLabel='닫기' accessible>
               <Image style={styles.closeButtonImage} source={require('../../assets/images/icClose.png')} />
             </Pressable>
           </View>

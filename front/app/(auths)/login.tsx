@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import React from "react";
 import { ViewProps, Platform, Image, StyleSheet } from 'react-native';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -27,6 +27,7 @@ const LoginScreen: React.FC<Props> = (props) => {
   const [isDone, setIsDone] = React.useState(false);
   const colorScheme = useColorScheme();
   const [isOnboardingFinished, setIsOnboardingFinished ] = useAtom(isOnboardingFinishedAtom);
+  const pathname = usePathname();
   const loginKakao = useSetAtom(loginKakaoAtom);
   const loginApple = useSetAtom(loginAppleAtom);
   const loginGoogle = useSetAtom(loginGoogleAtom);
@@ -44,8 +45,8 @@ const LoginScreen: React.FC<Props> = (props) => {
       setIsDone(true);
       if (isOnboardingFinished !== 'true') {
         setIsOnboardingFinished('true');
-        router.replace('/how/app1');
-      } else {
+      }
+      if (pathname === '/login') {
         router.replace('/(tabs)');
       }
     }
