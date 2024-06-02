@@ -125,17 +125,17 @@ export default function DiscoverScreen() {
           {product.name}
         </Text>
         <View style={styles.priceWrap}>
-          {productDetail?.product?.discountRate !== undefined && product.price !== productDetail.product.discountRate && (
-            <Text style={styles.discountRate}>
-              {numComma(productDetail.product.discountRate)}
+          {productDetail?.product?.discount_rate !== undefined && product.price !== productDetail.product.discount_rate && (
+            <Text style={styles.discount_rate}>
+              {numComma(productDetail.product.discount_rate)}
             </Text>
           )}
             <Text style={styles.price}>
               {numComma(product.price || 0)}원
             </Text>
-          {productDetail?.product?.originPrice !== undefined && product.price !== productDetail.product.originPrice && (
-            <Text style={styles.originPrice}>
-              {numComma(productDetail.product.originPrice)}
+          {productDetail?.product?.origin_price !== undefined && product.price !== productDetail.product.origin_price && (
+            <Text style={styles.origin_price}>
+              {numComma(productDetail.product.origin_price)}
             </Text>
           )}
         </View>
@@ -187,7 +187,7 @@ export default function DiscoverScreen() {
         {(loadingStatus[tab] <= 1 || !hasDetail) ? (
           <View style={styles.detailWrap}>
             <View style={styles.indicatorWrap}>
-              <ActivityIndicator style={styles.loadingIcon} />
+              <ActivityIndicator style={styles.loadingIcon} accessible={false}/>
               <Text>{loadingMessages[tab]}</Text>
             </View>
           </View>
@@ -319,12 +319,12 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontWeight: '700',
     lineHeight: 22,
   },
-  discountRate: {
+  discount_rate: {
     fontSize: 18,
     fontWeight: '700',
     lineHeight: 22,
   },
-  originPrice: {
+  origin_price: {
     color: '#576084',
     fontSize: 20,
     fontStyle: 'italic',

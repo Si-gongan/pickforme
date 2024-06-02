@@ -108,7 +108,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product, type = 'normal' }, r
           <View style={styles.wrap4}>
             <Text numberOfLines={1} style={styles.name} accessible>{product.name}</Text>
             <View style={styles.wrap5}>
-              <Text style={styles.discountRate} accessible>{(product.discount_rate ?? 0) !== 0  ? `${product.discount_rate}%` : ''}</Text>
+              <Text style={styles.discount_rate} accessible>{(product.discount_rate ?? 0) !== 0  ? `${product.discount_rate}%` : ''}</Text>
               <Text style={styles.price} accessible>{numComma(product.price)}원</Text>
             </View>
           </View>
@@ -189,7 +189,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     color: '#1E1E1E',
     fontWeight: 'bold',
   },
-  discountRate: {
+  discount_rate: {
     fontSize: 12,
     color: '#4A5CA0',
     fontWeight: 'bold',
