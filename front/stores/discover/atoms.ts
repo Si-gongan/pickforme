@@ -105,22 +105,39 @@ export const getProductDetailAtom = atom(null, async (get, set, product: GetProd
   }
 });
 
-export const getProductDetailReviewAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
+export const getProductDetailReviewAtom = atom(null, async (get, set, product: GetProductDetailRequest, reviews: string[]) => {
   set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
-  const { data: productDetail } = await GetProductDetailsReviewAPI(product)
+  const { data: productDetail } = await GetProductDetailsReviewAPI(product, reviews)
   if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
     set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
     set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
   }
 });
 
-export const getProductDetailReportAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
+export const getProductDetailReportAtom = atom(null, async (get, set, product: GetProductDetailRequest, images: string[]) => {
   set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.LOADING });
-  const { data: productDetail } = await GetProductDetailsReportAPI(product)
+  const { data: productDetail } = await GetProductDetailsReportAPI(product, images)
   if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
     set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
     set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.FINISH });
   }
+});
+
+export const getProductDetailCaptionAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
+  set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.LOADING });
+  const { data: productDetail } = await GetProductDetailsCaptionAPI(product)
+  if (get(productDetailAtom)?.id?.toString() === product.id.toString()) {
+    set(productDetailAtom, { id: `${product.id}`, ...get(productDetailAtom), ...productDetail });
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
+  }
+});
+
+export const setProductLoadingStatusAtom = atom(null, async (get, set, { caption, review, report }: { caption?: LoadingStatus, review?: LoadingStatus, report?: LoadingStatus }) => {
+  set(loadingStatusAtom, {
+    caption: caption ?? get(loadingStatusAtom).caption,
+    review: review ?? get(loadingStatusAtom).review,
+    report: report ?? get(loadingStatusAtom).report,
+  });
 });
 
 export const wishProductsAtom = atomWithStorage<Product[]>('wishlist2', []);

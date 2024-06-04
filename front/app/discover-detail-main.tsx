@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { ActivityIndicator, Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 import useCheckLogin from '../hooks/useCheckLogin';
 import Colors from '../constants/Colors';
-import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom } from '../stores/discover/atoms';
+import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailCaptionAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom, setProductLoadingStatusAtom } from '../stores/discover/atoms';
 import { 
   requestBottomSheetAtom
   } from '../stores/request/atoms';
@@ -19,6 +19,7 @@ import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 import { numComma } from '../utils/common';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
+import { useWebView } from './webviewUtils';
 
     
 enum TABS {
@@ -51,17 +52,26 @@ export default function DiscoverScreen() {
   const mainProducts = useAtomValue(mainProductsAtom);
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+
+  const [images, setImages] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<string[]>([]);
+  const ImageWebView = useWebView({ productId, productUrl, type: 'images', onMessage: setImages });
+  const ReviewWebView = useWebView({ productId, productUrl, type: 'reviews', onMessage: setReviews });
+
   const getProductDetail = useSetAtom(getProductDetailAtom);
+  const getProductDetailCaption = useSetAtom(getProductDetailCaptionAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
+  const setProductLoadingStatus = useSetAtom(setProductLoadingStatusAtom);
+
   const searchResult = useAtomValue(searchResultAtom);
   const [wishlist,setWishlist] = useAtom(wishProductsAtom);
   const requests = useAtomValue(requestsAtom);
   const request = requests.filter(request => request.product).find(request => `${request.product.url}` === productUrl || `${request.product.id}` === productId);
   const already = wishlist.find((wishProduct) => `${wishProduct.url}` === productUrl || `${wishProduct.id}` === productId);
   const product = (request?.product) || searchResult?.products.find((searchItem) => searchItem.url === productUrl || `${searchItem.id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
-  console.log(product, request);
+  const isLocal = mainProducts.local.map(section => section.products).flat().find(({ id }) => `${id}` === `${productId}`) !== undefined;
 
   const [tab, setTab] = React.useState<TABS | 'answer'>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
@@ -70,6 +80,12 @@ export default function DiscoverScreen() {
       getProductDetail(product);
     }
   }, [getProductDetail, productId]);
+  useEffect(() => {
+    if (images.length > 0 && reviews.length > 0) {
+        console.log('Images and reviews loaded');
+    }
+  }, [images, reviews]);
+
   const handleClickBuy = async () => {
     if (!product) {
       return;
@@ -91,7 +107,7 @@ export default function DiscoverScreen() {
     }
     await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj');
   }
-    const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
+  const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
 
   const handleClickRequest = useCheckLogin(() => {
     if (!product) {
@@ -108,16 +124,70 @@ export default function DiscoverScreen() {
     }
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       if (nextTab === TABS.REPORT) {
-        getProductDetailReport(product);
+        if (!isLocal && images.length === 0) {
+          // 1초씩 10번 시도
+          let count = 0;
+          const interval = setInterval(() => {
+            if (count >= 10) {
+              clearInterval(interval);
+              setProductLoadingStatus({ report: 2 });
+              return;
+            } else if (images.length > 0){
+              clearInterval(interval);
+              getProductDetailReport(product, images);
+              return; 
+            }
+            count++;
+          }, 1000);
+        } else {
+          getProductDetailReport(product, images);
+        }
       }
       if (nextTab === TABS.REVIEW) {
-        getProductDetailReview(product);
+        if (!isLocal && reviews.length === 0) {
+          // 1초씩 10번 시도
+          let count = 0;
+          const interval = setInterval(() => {
+            if (count >= 10) {
+              clearInterval(interval);
+              setProductLoadingStatus({ review: 2 });
+              return;
+            } else if (reviews.length > 0){
+              clearInterval(interval);
+              getProductDetailReview(product, reviews);
+              return;
+            }
+            count++;
+          }, 1000);
+        } else {
+          getProductDetailReview(product, reviews);
+        }
       }
     }
     setTab(nextTab);
   }
+  const handleRegenerate = () => {
+    if (!product) {
+      return;
+    }
+    if (tab === TABS.REPORT) {
+      getProductDetailReport(product, images);
+    }
+    if (tab === TABS.REVIEW) {
+      getProductDetailReview(product, reviews);
+    }
+    if (tab === TABS.CAPTION) {
+      getProductDetailCaption(product);
+    }
+  }
   return (
     <View style={styles.container}>
+
+      <View>
+        { ImageWebView }
+        { ReviewWebView }
+      </View>
+      
       <ScrollView style={styles.scrollView}>
       {!!product && (
       <View>
@@ -127,8 +197,8 @@ export default function DiscoverScreen() {
         </Text>
         <View style={styles.priceWrap}>
           {productDetail?.product?.discount_rate !== undefined && product.price !== productDetail.product.discount_rate && (
-            <Text style={styles.discount_rate} accessibilityLabel={`${productDetail.product.discount_rate}% 할인`}>
-              {productDetail.product.discount_rate}%
+            <Text style={styles.discount_rate}>
+              {numComma(productDetail.product.discount_rate)}%
             </Text>
           )}
             <Text style={styles.price}>
@@ -238,6 +308,13 @@ export default function DiscoverScreen() {
           ): (
             <View style={styles.detailWrap}>
               <Text>정보를 불러오는데 실패했습니다.</Text>
+              <Pressable 
+                onPress={handleRegenerate} 
+                accessible 
+                accessibilityRole='button' 
+                accessibilityLabel='다시 생성하기'>
+                <Text>다시 생성하기</Text>
+              </Pressable>
             </View>
           ))}
       </>
@@ -246,17 +323,19 @@ export default function DiscoverScreen() {
       )}
       </ScrollView>
       <View style={styles.buttonWrap}>
+      {['1001','1002','1003'].includes(`${productId}`) ? (
+      <View style={styles.buttonOuter}>
+        <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={styles.button} color='tertiary' size='small' />
+      </View>
+      ) : (
+      <>
       <View style={styles.buttonOuter}>
         <Button title='구매하러 가기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
-      {['1001','1002','1003'].includes(`${productId}`) ? (
-      <View style={styles.buttonOuter}>
-        <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={[styles.button, styles.button2]} color='tertiary' size='small' />
-      </View>
-      ) : (
       <View style={styles.buttonOuter}>
         <Button title='매니저에게 물어보기' onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
       </View>
+      </>
       )}
         {already ? ( 
           <Pressable
@@ -322,7 +401,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   discount_rate: {
     fontSize: 18,
     fontWeight: '700',
-    marginRight: 6,
     lineHeight: 22,
     color: '#4A5CA0',
     marginRight: 6,
@@ -332,7 +410,6 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     textDecorationLine: 'line-through',
-    marginRight: 6,
   },
   seperator: {
     width: '100%',

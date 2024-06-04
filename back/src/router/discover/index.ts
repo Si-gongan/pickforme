@@ -29,7 +29,6 @@ router.get('/products/:id', async (ctx) => {
     local,
     reports,
   };
-  console.log(ctx.body);
 });
 
 router.post('/product', async (ctx) => {
@@ -100,7 +99,9 @@ router.post('/product/detail/new-report', async (ctx) => {
       product: {
         id,
         url,
+        name
       },
+      images,
     },
   } = <any>ctx.request;
     const section = await db.DiscoverSection.findOne(
@@ -115,11 +116,16 @@ router.post('/product/detail/new-report', async (ctx) => {
   }
 
 
-  const {
-    data
-  } = await client.post('/ai-report',  id ? { id } : {
-    url,
-  }).catch(() => ({ data: {} }));
+  // const {
+  //   data
+  // } = await client.post('/ai-report',  id ? { id } : {
+  //   url,
+  // }).catch(() => ({ data: {} }));
+  // ctx.body = {
+  //   report: data.report,
+  // };
+
+  const { data } = await client.post('/test/ai-report', { id, url, name, images }).catch(() => ({ data: {} }));
   ctx.body = {
     report: data.report,
   };
@@ -131,7 +137,9 @@ router.post('/product/detail/review', async (ctx) => {
       product: { 
         id,
         url,
-      },                    
+        name
+      },
+      reviews,           
     },                      
   } = <any>ctx.request;     
       const section = await db.DiscoverSection.findOne(
@@ -145,17 +153,21 @@ router.post('/product/detail/review', async (ctx) => {
     return;
   }
 
-  const {
-    data: {
-      summary: review,
-    } = {
-      summary: { pros: [], cons: [] },
-    }
-  } = await client.post('/review-summary', id ? { id } : {
-    url,
-  }).catch(() => ({ data: { } }));
+  // const {
+  //   data: {
+  //     summary: review,
+  //   } = {
+  //     summary: { pros: [], cons: [] },
+  //   }
+  // } = await client.post('/review-summary', id ? { id } : {
+  //   url,
+  // }).catch(() => ({ data: { } }));
+  // ctx.body = {
+  //   review,
+  // };
+  const { data } = await client.post('/test/review-summary', { id, url, name, reviews }).catch(() => ({ data: {} }));
   ctx.body = {
-    review,
+    review: data.summary,
   };
 });
 router.post('/search', async (ctx) => {
