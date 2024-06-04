@@ -61,6 +61,7 @@ export default function DiscoverScreen() {
   const request = requests.filter(request => request.product).find(request => `${request.product.url}` === productUrl || `${request.product.id}` === productId);
   const already = wishlist.find((wishProduct) => `${wishProduct.url}` === productUrl || `${wishProduct.id}` === productId);
   const product = (request?.product) || searchResult?.products.find((searchItem) => searchItem.url === productUrl || `${searchItem.id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
+  console.log(product, request);
 
   const [tab, setTab] = React.useState<TABS | 'answer'>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
@@ -126,8 +127,8 @@ export default function DiscoverScreen() {
         </Text>
         <View style={styles.priceWrap}>
           {productDetail?.product?.discount_rate !== undefined && product.price !== productDetail.product.discount_rate && (
-            <Text style={styles.discount_rate}>
-              {numComma(productDetail.product.discount_rate)}%
+            <Text style={styles.discount_rate} accessibilityLabel={`${productDetail.product.discount_rate}% 할인`}>
+              {productDetail.product.discount_rate}%
             </Text>
           )}
             <Text style={styles.price}>
@@ -245,19 +246,17 @@ export default function DiscoverScreen() {
       )}
       </ScrollView>
       <View style={styles.buttonWrap}>
-      {['1001','1002','1003'].includes(`${productId}`) ? (
-      <View style={styles.buttonOuter}>
-        <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={styles.button} color='tertiary' size='small' />
-      </View>
-      ) : (
-      <>
       <View style={styles.buttonOuter}>
         <Button title='구매하러 가기' onPress={handleClickBuy} style={styles.button} size='small' />
       </View>
+      {['1001','1002','1003'].includes(`${productId}`) ? (
+      <View style={styles.buttonOuter}>
+        <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={[styles.button, styles.button2]} color='tertiary' size='small' />
+      </View>
+      ) : (
       <View style={styles.buttonOuter}>
         <Button title='매니저에게 물어보기' onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
       </View>
-      </>
       )}
         {already ? ( 
           <Pressable
@@ -323,6 +322,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   discount_rate: {
     fontSize: 18,
     fontWeight: '700',
+    marginRight: 6,
     lineHeight: 22,
     color: '#4A5CA0',
     marginRight: 6,
@@ -332,6 +332,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     textDecorationLine: 'line-through',
+    marginRight: 6,
   },
   seperator: {
     width: '100%',

@@ -43,6 +43,7 @@ export default function DiscoverScreen() {
 
   const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom);
+  console.log(1111, requests);
 
   React.useEffect(() => {
     if (tab === TABS.REQUEST) {
