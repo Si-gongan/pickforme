@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 import useCheckLogin from '../hooks/useCheckLogin';
 import Colors from '../constants/Colors';
-import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, getProductDetailCaptionAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom, setProductLoadingStatusAtom } from '../stores/discover/atoms';
+import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, initProductDetailAtom, getProductDetailCaptionAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom, setProductLoadingStatusAtom } from '../stores/discover/atoms';
 import { 
   requestBottomSheetAtom
   } from '../stores/request/atoms';
@@ -59,6 +59,7 @@ export default function DiscoverScreen() {
   const ReviewWebView = useWebView({ productId, productUrl, type: 'reviews', onMessage: setReviews });
 
   const getProductDetail = useSetAtom(getProductDetailAtom);
+  const initProductDetail = useSetAtom(initProductDetailAtom);
   const getProductDetailCaption = useSetAtom(getProductDetailCaptionAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
   const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
@@ -75,11 +76,16 @@ export default function DiscoverScreen() {
 
   const [tab, setTab] = React.useState<TABS | 'answer'>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
-  React.useEffect(() => {
+  useEffect(() => {
+    initProductDetail();
+  }, []);
+
+  useEffect(() => {
     if (product) {
       getProductDetail(product);
     }
   }, [getProductDetail, productId]);
+  
   useEffect(() => {
     if (images.length > 0 && reviews.length > 0) {
         console.log('Images and reviews loaded');
@@ -193,20 +199,20 @@ export default function DiscoverScreen() {
       <View>
         <View style={styles.inner}>
         <Text style={styles.name}>
-          {product.name}
+          {product.name ?? ''}
         </Text>
         <View style={styles.priceWrap}>
-          {productDetail?.product?.discount_rate !== undefined && product.price !== productDetail.product.discount_rate && (
-            <Text style={styles.discount_rate}>
-              {numComma(productDetail.product.discount_rate)}%
+          {(productDetail?.product?.discount_rate ?? 0 !== 0) && (
+            <Text style={styles.discount_rate} acceessibilityLabel={`할인률 ${productDetail?.product?.discount_rate ?? 0}%`}>
+              {productDetail?.product?.discount_rate ?? 0}%
             </Text>
           )}
-            <Text style={styles.price}>
-              {numComma(product.price || 0)}원
+            <Text style={styles.price} accessibilityLabel={`판매가 ${productDetail?.product?.price ?? 0}원`}>
+              {numComma(productDetail?.product?.price ?? 0)}원
             </Text>
-          {productDetail?.product?.origin_price !== undefined && product.price !== productDetail.product.origin_price && (
-            <Text style={styles.origin_price}>
-              {numComma(productDetail.product.origin_price)}
+          {((productDetail?.product?.origin_price ?? 0 !== 0) && (productDetail?.product?.price !== productDetail?.product?.origin_price)) && (
+            <Text style={styles.origin_price} accessibilityLabel={`정가 ${productDetail?.product?.origin_price ?? 0}원`}>
+              {numComma(productDetail?.product?.origin_price ?? 0)}
             </Text>
           )}
         </View>
@@ -323,20 +329,18 @@ export default function DiscoverScreen() {
       )}
       </ScrollView>
       <View style={styles.buttonWrap}>
-      {['1001','1002','1003'].includes(`${productId}`) ? (
-      <View style={styles.buttonOuter}>
-        <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={styles.button} color='tertiary' size='small' />
-      </View>
-      ) : (
-      <>
-      <View style={styles.buttonOuter}>
-        <Button title='구매하러 가기' onPress={handleClickBuy} style={styles.button} size='small' />
-      </View>
-      <View style={styles.buttonOuter}>
-        <Button title='매니저에게 물어보기' onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
-      </View>
-      </>
-      )}
+        <View style={styles.buttonOuter}>
+          <Button title='구매하러 가기' onPress={handleClickBuy} style={styles.button} size='small' />
+        </View>
+        {['1001', '1002', '1003'].includes(`${productId}`) ? (
+        <View style={styles.buttonOuter}>
+          <Button title='대리구매 요청하기' onPress={handleClickBuy2} style={[styles.button, styles.button2]} color='tertiary' size='small' />
+        </View>
+        ) : (
+        <View style={styles.buttonOuter}>
+          <Button title='매니저에게 물어보기' onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
+        </View>
+        )}
         {already ? ( 
           <Pressable
             onPress={handleClickWish}

@@ -59,8 +59,9 @@ router.post('/', requireAuth, async (ctx) => {
     // slack
     const slack_msg = 
       `픽포미 의뢰가 도착했습니다.\n
-상품명: ${product.name}
-url: ${product.url}
+상품명: ${product.name}\n
+의뢰 내용: ${body.text}\n
+상품 링크: ${product.url}
 `
     slack.post('/chat.postMessage', {
       text: slack_msg, channel: 'C05NTFL1Q4C',

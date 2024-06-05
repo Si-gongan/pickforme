@@ -43,12 +43,12 @@ export default function DiscoverScreen() {
 
   const getRequests = useSetAtom(getRequestsAtom);
   const requests = useAtomValue(requestsAtom);
-  console.log(1111, requests);
 
   React.useEffect(() => {
     if (tab === TABS.REQUEST) {
       getRequests();
     }
+    
   }, [getRequests, tab]);
 
   useFocusEffect(
@@ -95,7 +95,7 @@ export default function DiscoverScreen() {
       ) : (
                 <FlatList
           contentContainerStyle={styles.searchList}
-          data={wishProducts}
+          data={wishProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
           keyExtractor={(product) => `wishlist-wish-${product.id}`}
           renderItem={({ item: product, index: i }) => (
             <ProductCard product={product} type={'liked'} />
@@ -112,7 +112,7 @@ export default function DiscoverScreen() {
       ) : (
                 <FlatList
           contentContainerStyle={styles.searchList}
-          data={requests.filter(request => request.product)}
+          data={requests.filter(request => request.product).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
           keyExtractor={(request) => `wishlist-request-${request._id}`}
           renderItem={({ item: request, index: i }) => (
             <ProductCard product={request.product} type={'request'} />

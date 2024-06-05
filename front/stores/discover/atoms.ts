@@ -36,16 +36,16 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
   const {data: { product } } = await GetProductFromUrl({ url: params.query });
   if (product?.id !== undefined && onLink) {
     set(clipboardProductAtom, product);
-  if (!get(searchResultAtom)?.products.length) {
-    set(searchResultAtom, {
-      total: 1,
-      count: 1,
-      per_page: 1,
-      page: 1,
-      last_page: 1,
-      products: [product],
-    });
-  }
+    if (!get(searchResultAtom)?.products.length) {
+      set(searchResultAtom, {
+        total: 1,
+        count: 1,
+        per_page: 1,
+        page: 1,
+        last_page: 1,
+        products: [product],
+      });
+    }
     console.log(product.url, encodeURIComponent(product.url));
     onLink(`/discover-detail-main?productUrl=${encodeURIComponent(product.url)}`);
     set(isSearchingAtom, false);
@@ -84,6 +84,11 @@ export const getMainProductsAtom = atom(null, async (get, set, categoryId: strin
   });
 });
 export const productDetailAtom = atom<DiscoverDetailState | void>(undefined);
+
+export const initProductDetailAtom = atom(null, async (get, set) => {
+  set(productDetailAtom, { product: undefined } as DiscoverDetailState);
+  set(loadingStatusAtom, { caption: LoadingStatus.INIT, review: LoadingStatus.INIT, report: LoadingStatus.INIT });
+});
 
 export const getProductDetailAtom = atom(null, async (get, set, product: GetProductDetailRequest) => {
   const { data } = await GetProductDetailMainAPI(product)

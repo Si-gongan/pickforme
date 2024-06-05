@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, ReactElement } from 'react';
+import React, { useRef, useState, useEffect, ReactElement } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 type WebViewType = 'images' | 'reviews';
@@ -12,6 +12,7 @@ interface WebViewProps {
 
 export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewProps): ReactElement => {
     const webViewRef = useRef<WebView>(null);
+    const [error, setError] = useState<boolean>(false);
     const maxRetries = 10;
     let retryCount = 0;
 
@@ -79,7 +80,6 @@ export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewPr
 
     const handleMessage = (event: WebViewMessageEvent) => {
         const data = event.nativeEvent.data;
-
         try {
             const parsedData = JSON.parse(data);
 
@@ -96,16 +96,23 @@ export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewPr
         }
     };
 
+    const handleError = (event: any) => {
+        console.warn('WebView error:', event.nativeEvent);
+        setError(true);
+    };
+
     const webViewUrl = productUrl ? productUrl : type === 'images'
         ? `https://m.coupang.com/vm/products/${productId}`
         : `https://m.coupang.com/vm/products/${productId}/brand-sdp/reviews/detail`;
 
     return (
+        error ? <></> : 
         <WebView
             ref={webViewRef}
             source={{ uri: webViewUrl }}
             onMessage={handleMessage}
             onLoadEnd={runJavaScript}
+            onError={handleError}
             style={{ width: 375, height: 0 }} // 웹뷰 화면을 숨김
         />
     );
