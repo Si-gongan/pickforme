@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, ReactElement } from 'react';
-import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { WebView, WebViewMessageEvent, WebViewNavigation } from 'react-native-webview';
 
 type WebViewType = 'images' | 'reviews';
 
@@ -27,17 +27,24 @@ export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewPr
                     urls.push(imgElement.src);
                 }
             });
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'images', content: urls }));
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'images', content: urls }));
+            }
         })();
+        true;
     ` : `
         (function() {
             const divs = document.querySelectorAll('div[class*="review-content"]');
             const divContents = [];
             divs.forEach(div => {
-                divContents.push(div.innerText);
+                divContents.push(div.innerText.trim());
             });
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'reviews', content: divContents }));
+            const uniqueContents = Array.from(new Set(divContents)); // 중복 제거
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'reviews', content: uniqueContents }));
+            }
         })();
+        true;
     `) : 
     (type === 'images' ? `
         (function() {
@@ -49,8 +56,11 @@ export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewPr
                     urls.push(element.src);
                 }
             });
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'images', content: urls }));
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'images', content: urls }));
+            }
         })();
+        true;
     ` : `
         (function() {
             const divs = document.querySelectorAll('div[class*="review"]');
@@ -61,8 +71,11 @@ export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewPr
                 }
             });
             const uniqueContents = Array.from(new Set(divContents));
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'reviews', content: divContents }));
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'reviews', content: uniqueContents }));
+            }
         })();
+        true;
     `);
 
     const runJavaScript = () => {
@@ -76,7 +89,7 @@ export const useWebView = ({ productId, productUrl, type, onMessage }: WebViewPr
     useEffect(() => {
         retryCount = 0;
         runJavaScript();
-    }, [productId,productUrl]);
+    }, [productId, productUrl]);
 
     const handleMessage = (event: WebViewMessageEvent) => {
         const data = event.nativeEvent.data;

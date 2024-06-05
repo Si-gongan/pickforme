@@ -189,7 +189,7 @@ export default function DiscoverScreen() {
   return (
     <View style={styles.container}>
 
-      <View>
+      <View accessible={false}>
         { ImageWebView }
         { ReviewWebView }
       </View>
@@ -202,16 +202,16 @@ export default function DiscoverScreen() {
           {product.name ?? ''}
         </Text>
         <View style={styles.priceWrap}>
-          {(productDetail?.product?.discount_rate ?? 0 !== 0) && (
-            <Text style={styles.discount_rate} acceessibilityLabel={`할인률 ${productDetail?.product?.discount_rate ?? 0}%`}>
+          {((productDetail?.product?.discount_rate ?? 0) !== 0) && (
+            <Text style={styles.discount_rate} accessibilityLabel={`${productDetail?.product?.discount_rate ?? 0}% 할인`}>
               {productDetail?.product?.discount_rate ?? 0}%
             </Text>
           )}
-            <Text style={styles.price} accessibilityLabel={`판매가 ${productDetail?.product?.price ?? 0}원`}>
+            <Text style={styles.price} accessibilityLabel={`${productDetail?.product?.price ?? 0}원`}>
               {numComma(productDetail?.product?.price ?? 0)}원
             </Text>
-          {((productDetail?.product?.origin_price ?? 0 !== 0) && (productDetail?.product?.price !== productDetail?.product?.origin_price)) && (
-            <Text style={styles.origin_price} accessibilityLabel={`정가 ${productDetail?.product?.origin_price ?? 0}원`}>
+          {(((productDetail?.product?.origin_price ?? 0) !== 0) && (productDetail?.product?.price !== productDetail?.product?.origin_price)) && (
+            <Text style={styles.origin_price} accessibilityLabel={`할인 전 가격 ${productDetail?.product?.origin_price ?? 0}원`}>
               {numComma(productDetail?.product?.origin_price ?? 0)}
             </Text>
           )}
