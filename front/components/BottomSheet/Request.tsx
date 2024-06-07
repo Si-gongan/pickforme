@@ -8,6 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { previewAtom, getPreviewAtom, requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
 import { isShowLackModalAtom } from '../../stores/auth/atoms';
+import { scrapedProductDetailAtom } from '../../stores/discover/atoms';
 
 import { ResearchRequestParams } from '../../stores/request/types';
 import Colors from '../../constants/Colors';
@@ -19,7 +20,7 @@ import Button from '../Button';
 import { Text, View } from '../Themed';
 
 export default function ResearchBottomSheet() {
-    const headerTitleRef = useRef(null);
+  const headerTitleRef = useRef(null);
 
   const isShowLackModalVisible = useAtomValue(isShowLackModalAtom);
 
@@ -29,6 +30,8 @@ export default function ResearchBottomSheet() {
   const localStyles = useLocalStyles(colorScheme);
   const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
   const [isShareChecked, setIsShareChecked] = useState(false);
+
+  const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
 
   const [data, setData] = useState<Omit<ResearchRequestParams, 'product'>>({
     type: 'RESEARCH',
@@ -41,7 +44,7 @@ export default function ResearchBottomSheet() {
     }
   });
   const handleSubmit = () => {
-    const params = { ...data, product };
+    const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews};
     onClose();
     checkPoint(params);
   }

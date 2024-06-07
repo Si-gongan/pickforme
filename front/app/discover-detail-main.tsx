@@ -6,10 +6,8 @@ import * as WebBrowser from 'expo-web-browser';
 
 import useCheckLogin from '../hooks/useCheckLogin';
 import Colors from '../constants/Colors';
-import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, initProductDetailAtom, getProductDetailCaptionAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom, setProductLoadingStatusAtom } from '../stores/discover/atoms';
-import { 
-  requestBottomSheetAtom
-  } from '../stores/request/atoms';
+import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, initProductDetailAtom, getProductDetailCaptionAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom, setProductLoadingStatusAtom, scrapedProductDetailAtom, setScrapedProductDetailAtom } from '../stores/discover/atoms';
+import { requestBottomSheetAtom } from '../stores/request/atoms';
 import { Product } from '../stores/discover/types';
 import { pushBottomSheetAtom } from '../stores/layout/atoms';
 import { requestsAtom } from '../stores/request/atoms';
@@ -53,10 +51,10 @@ export default function DiscoverScreen() {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
 
-  const [images, setImages] = useState<string[]>([]);
-  const [reviews, setReviews] = useState<string[]>([]);
-  const ImageWebView = useWebView({ productId, productUrl, type: 'images', onMessage: setImages });
-  const ReviewWebView = useWebView({ productId, productUrl, type: 'reviews', onMessage: setReviews });
+  const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
+  const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
+  const ImageWebView = useWebView({ productId, productUrl, type: 'images', onMessage: (data) => setScrapedProductDetail({ images: data })});
+  const ReviewWebView = useWebView({ productId, productUrl, type: 'reviews', onMessage: (data) => setScrapedProductDetail({ reviews: data })});
 
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const initProductDetail = useSetAtom(initProductDetailAtom);
@@ -85,12 +83,12 @@ export default function DiscoverScreen() {
       getProductDetail(product);
     }
   }, [getProductDetail, productId]);
-  
+
   useEffect(() => {
-    if (images.length > 0 && reviews.length > 0) {
-        console.log('Images and reviews loaded');
+    if (scrapedProductDetail.images!.length > 0 && scrapedProductDetail.reviews!.length > 0) {
+      console.log('images and reviews are ready');
     }
-  }, [images, reviews]);
+  }, [scrapedProductDetail]);
 
   const handleClickBuy = async () => {
     if (!product) {
@@ -130,7 +128,7 @@ export default function DiscoverScreen() {
     }
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       if (nextTab === TABS.REPORT) {
-        if (!isLocal && images.length === 0) {
+        if (!isLocal && scrapedProductDetail.images!.length === 0) {
           // 1초씩 10번 시도
           let count = 0;
           const interval = setInterval(() => {
@@ -138,19 +136,19 @@ export default function DiscoverScreen() {
               clearInterval(interval);
               setProductLoadingStatus({ report: 2 });
               return;
-            } else if (images.length > 0){
+            } else if (scrapedProductDetail.images!.length > 0){
               clearInterval(interval);
-              getProductDetailReport(product, images);
+              getProductDetailReport(product, scrapedProductDetail.images!);
               return; 
             }
             count++;
           }, 1000);
         } else {
-          getProductDetailReport(product, images);
+          getProductDetailReport(product, scrapedProductDetail.images!);
         }
       }
       if (nextTab === TABS.REVIEW) {
-        if (!isLocal && reviews.length === 0) {
+        if (!isLocal && scrapedProductDetail.reviews!.length === 0) {
           // 1초씩 10번 시도
           let count = 0;
           const interval = setInterval(() => {
@@ -158,15 +156,15 @@ export default function DiscoverScreen() {
               clearInterval(interval);
               setProductLoadingStatus({ review: 2 });
               return;
-            } else if (reviews.length > 0){
+            } else if (scrapedProductDetail.reviews!.length > 0){
               clearInterval(interval);
-              getProductDetailReview(product, reviews);
+              getProductDetailReview(product, scrapedProductDetail.reviews!);
               return;
             }
             count++;
           }, 1000);
         } else {
-          getProductDetailReview(product, reviews);
+          getProductDetailReview(product, scrapedProductDetail.reviews!);
         }
       }
     }
@@ -177,10 +175,10 @@ export default function DiscoverScreen() {
       return;
     }
     if (tab === TABS.REPORT) {
-      getProductDetailReport(product, images);
+      getProductDetailReport(product, scrapedProductDetail.images!);
     }
     if (tab === TABS.REVIEW) {
-      getProductDetailReview(product, reviews);
+      getProductDetailReview(product, scrapedProductDetail.reviews!);
     }
     if (tab === TABS.CAPTION) {
       getProductDetailCaption(product);

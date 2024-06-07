@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { GetProductDetailRequest, SearchProductsRequest, SearchProductsResponse, DiscoverState, DiscoverDetailState, Product } from './types';
+import { GetProductDetailRequest, SearchProductsRequest, SearchProductsResponse, DiscoverState, DiscoverDetailState, Product, ScrapedProductDetail } from './types';
 import { atomWithStorage } from '../utils';
 
 import {
@@ -169,4 +169,13 @@ export const setClipboardProductAtom = atom(null, async (get,set, text: string) 
       products: [product],
     });
   }
+});
+
+export const scrapedProductDetailAtom = atom<ScrapedProductDetail>({
+  images: [],
+  reviews: [],
+});
+
+export const setScrapedProductDetailAtom = atom(null, async (get, set, { images, reviews }: ScrapedProductDetail) => {
+  set(scrapedProductDetailAtom, { images: images ?? get(scrapedProductDetailAtom).images, reviews: reviews ?? get(scrapedProductDetailAtom).reviews });
 });

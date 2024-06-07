@@ -74,6 +74,8 @@ export interface ResearchRequestParams {
   type: 'RESEARCH',
   link: string,
   product: DiscoverProduct,
+  images?: string[],
+  reviews?: string[],
 }
 
 export interface AIRequestParams {

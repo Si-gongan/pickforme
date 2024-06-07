@@ -75,3 +75,8 @@ export type GetProductDetailRequest = Product;
 export interface DiscoverDetailState extends GetProductDetailsResponse {
   id: string;
 }
+
+export interface ScrapedProductDetail {
+  images?: string[];
+  reviews?: string[];
+}
