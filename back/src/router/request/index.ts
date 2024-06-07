@@ -55,10 +55,19 @@ router.post('/', requireAuth, async (ctx) => {
     });
     request.chats = [chat._id];
     await request.save();
+  }
+  // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
+  ctx.body = {
+    request,
+    point: user.point,
+  };
+  ctx.status = 200;
 
+  // slack 의뢰 도착 알림
+  if (body.type !== RequestType.AI) {
     // slack
     const slack_msg = 
-      `픽포미 의뢰가 도착했습니다.\n
+      `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}
@@ -67,12 +76,14 @@ router.post('/', requireAuth, async (ctx) => {
       text: slack_msg, channel: 'C05NTFL1Q4C',
     });
   }
-  // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
-  ctx.body = {
-    request,
-    point: user.point,
-  };
-  ctx.status = 200;
+
+  // slack ai 응답 생성
+  if (body.type !== RequestType.AI) {
+    const { data: answer } = await client.post('/test/ai-answer', { product, ...body });
+    slack.post('/chat.postMessage', {
+      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`, channel: 'C05NTFL1Q4C',
+    });
+  }
 });
 
 router.get('/', requireAuth, async (ctx) => {
