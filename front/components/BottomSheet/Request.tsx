@@ -55,7 +55,7 @@ export default function ResearchBottomSheet() {
     setProduct(undefined);
   }
   if (isShowLackModalVisible) {
-    return;
+    return null;
   }
   return (
     <BottomSheet

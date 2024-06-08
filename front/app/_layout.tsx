@@ -19,6 +19,7 @@ import Colors from '../constants/Colors';
 import { bottomSheetsAtom } from '../stores/layout/atoms';
 import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../stores/auth/atoms';
 import HeaderLeft from '../components/HeaderLeft';
+import OnboardingBottomSheet from '../components/BottomSheet/How';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import LackBottomSheet from '../components/BottomSheet/Lack';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
@@ -109,6 +110,7 @@ function RootLayoutNav() {
           <GreetingBottomSheet />
           <ReviewBottomSheet />
           <RequestBottomSheet />
+          <OnboardingBottomSheet />
           <LackBottomSheet />
           {bottomSheets.map((info, i) => (
             <CommonBottomSheet info={info} index={i} />

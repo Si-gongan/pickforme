@@ -13,6 +13,7 @@ import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
 import {
   isOnboardingFinishedAtom,
+  isShowOnboardingModalAtom,
   loginKakaoAtom,
   loginAppleAtom,
   loginGoogleAtom,
@@ -30,6 +31,7 @@ const LoginScreen: React.FC<Props> = (props) => {
   const pathname = usePathname();
   const loginKakao = useSetAtom(loginKakaoAtom);
   const loginApple = useSetAtom(loginAppleAtom);
+  const setIsShowOnboardingModal = useSetAtom(isShowOnboardingModalAtom);
   const loginGoogle = useSetAtom(loginGoogleAtom);
   const [loginGoogleReady, loginGoogleResult, loginGoogleBase] = Google.useAuthRequest({
     expoClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
@@ -45,12 +47,13 @@ const LoginScreen: React.FC<Props> = (props) => {
       setIsDone(true);
       if (isOnboardingFinished !== 'true') {
         setIsOnboardingFinished('true');
+        setIsShowOnboardingModal(true);
       }
       if (pathname === '/login') {
         router.replace('/(tabs)');
       }
     }
-  }, [userData, isOnboardingFinished, setIsOnboardingFinished, isDone]);
+  }, [userData, isOnboardingFinished, setIsOnboardingFinished, isDone, setIsShowOnboardingModal]);
 
   React.useEffect(() => {
     if (loginGoogleResult?.type === 'success' && loginGoogleResult.authentication) {

@@ -17,7 +17,6 @@ const LackBottomSheet: React.FC<Props> = () => {
   const router = useRouter();
 
   const [visible, setVisible] = useAtom(isShowLackModalAtom);
-  console.log(visible);
 
   const onClose = () => setVisible(false);
 

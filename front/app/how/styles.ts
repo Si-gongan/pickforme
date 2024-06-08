@@ -9,13 +9,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 27,
   },
   title: {
-    fontWeight: '600',
-    fontSize: 22,
-    lineHeight: 34,
+    fontWeight: '700',
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  subtitle: {
+    fontWeight: '700',
+    fontSize: 12,
+    lineHeight: 15,
   },
   desc: {
-    fontSize: 14,
-    lineHeight: 30,
+    fontSize: 12,
+    lineHeight: 15,
   },
   section: {
     marginBottom: 34,
@@ -24,6 +29,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 17,
+  },
+  link: {
+    textDecorationLine: 'underline'
   },
   buttonWrap: {
     flexDirection: 'row',
