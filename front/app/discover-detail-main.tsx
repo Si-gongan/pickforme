@@ -261,8 +261,8 @@ export default function DiscoverScreen() {
       <>
         {(loadingStatus[tab] <= 1 || !hasDetail) ? (
           <View style={styles.detailWrap}>
-            <View style={styles.indicatorWrap}>
-              <ActivityIndicator style={styles.loadingIcon} accessible={false}/>
+            <View style={styles.indicatorWrap} accessible={true} accessibilityLabel={loadingMessages[tab]} >
+              <ActivityIndicator style={styles.loadingIcon} accessible={false} />
               <Text>{loadingMessages[tab]}</Text>
             </View>
           </View>
