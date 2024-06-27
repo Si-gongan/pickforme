@@ -11,12 +11,14 @@ enum TABS {
   ALL = 'ALL',
   RECOMMEND = 'RECOMMEND',
   RESEARCH = 'RESEARCH',
+  QUESTON = 'QUESTION',
 };
 
 const tabName = {
   [TABS.ALL]: '전체',
   [TABS.RECOMMEND]: '픽포미 추천',
   [TABS.RESEARCH]: '픽포미 분석',
+  [TABS.QUESTON]: '픽포미 질문',
 }
 export default function RequestsScreen() {
   const [tab, setTab] = React.useState<TABS>(TABS.ALL);

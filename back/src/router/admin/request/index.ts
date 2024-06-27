@@ -17,11 +17,11 @@ router.post('/answer', async (ctx) => {
   } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId);
   if (!request.answer) {
-    const deeplink = `/request?requestId=${request._id}`;
+    const deeplink = request.product.id !== 0 ? `/discover-detail-main?productId=${request.product.id}` : `/discover-detail-main?productUrl=${encodeURIComponent(request.product.url)}`;
     const chat = await db.Chat.create({
       userId: request.userId,
       requestId: request._id,
-      text: '결과 리포트가 도착했습니다. 확인 후 문의사항이 있으실 경우 채팅을 남겨주세요. 1일 뒤 자동으로 의뢰가 종료됩니다.',
+      text: `'${request.product.name}' 상품에 대한 매니저 답변이 도착했습니다. 추가 문의사항이 있으실 경우 '추가 문의하기' 버튼을 눌러주세요.`,
       createdAt: new Date(),
       isMine: false,
       button: {
@@ -43,7 +43,7 @@ router.post('/answer', async (ctx) => {
     if (user && user.pushToken && (user.push.chat === 'report' || user.push.chat === 'all')) {
       sendPush({
         to: user.pushToken,
-        body: '결과 리포트가 도착했습니다.',
+        body: `'${request.product.name.slice(0,13)}...' 상품에 대한 매니저 답변이 도착했습니다.`,
         data: { url: deeplink },
       });
     }

@@ -69,17 +69,27 @@ export interface ResearchRequestParams {
   type: 'RESEARCH',
   link: string,
 }
+
+export interface QuestionRequestParams {
+  type: 'QUESTION',
+  text: string,
+  link: string,
+}
+
 interface RecommendRequest extends RequestBase, RecommendRequestParams {
 }
 
 interface ResearchRequest extends RequestBase, ResearchRequestParams {
 }
 
+interface QuestionRequest extends RequestBase, QuestionRequestParams {
+}
+
 interface BuyRequest extends RequestBase {
   type: 'BUY',
 }
 
-export type Request = BuyRequest | RecommendRequest | ResearchRequest;
+export type Request = BuyRequest | RecommendRequest | ResearchRequest | QuestionRequest;
 
 export interface GetRequestsParams {
   start?: string,

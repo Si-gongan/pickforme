@@ -1,7 +1,6 @@
 import { atom } from 'jotai';
-import { RequestStatus, GetPreviewParams, Request, GetRequestsParams, GetRequestParams, SendChatParams, Preview, PostAnswerParams } from './types';
+import { GetPreviewParams, Request, GetRequestsParams, GetRequestParams, SendChatParams, Preview, PostAnswerParams } from './types';
 import { GetRequestsAPI, GetRequestStatsAPI, GetUserStatsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI, PostAnswerAPI } from './apis';
-import { userDataAtom } from '../auth/atoms';
 
 export const requestsAtom = atom<Request[]>([]);
 export const userStatsAtom = atom<any[]>([]);

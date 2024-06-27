@@ -10,6 +10,7 @@ export enum RequestType {
   RECOMMEND = 'RECOMMEND',
   RESEARCH = 'RESEARCH',
   AI = 'AI',
+  QUESTION = 'QUESTION'
 }
 
 const RequestSchema = new mongoose.Schema({

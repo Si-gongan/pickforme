@@ -115,16 +115,6 @@ router.post('/product/detail/new-report', async (ctx) => {
     return;
   }
 
-
-  // const {
-  //   data
-  // } = await client.post('/ai-report',  id ? { id } : {
-  //   url,
-  // }).catch(() => ({ data: {} }));
-  // ctx.body = {
-  //   report: data.report,
-  // };
-
   const { data } = await client.post('/test/ai-report', { id, url, name, images }).catch(() => ({ data: {} }));
   ctx.body = {
     report: data.report,
@@ -153,33 +143,39 @@ router.post('/product/detail/review', async (ctx) => {
     return;
   }
 
-  // const {
-  //   data: {
-  //     summary: review,
-  //   } = {
-  //     summary: { pros: [], cons: [] },
-  //   }
-  // } = await client.post('/review-summary', id ? { id } : {
-  //   url,
-  // }).catch(() => ({ data: { } }));
-  // ctx.body = {
-  //   review,
-  // };
   const { data } = await client.post('/test/review-summary', { id, url, name, reviews }).catch(() => ({ data: {} }));
   ctx.body = {
     review: data.summary,
   };
 });
+
+router.post('/product/detail/ai-answer', async (ctx) => {
+  const {
+    body: {
+      product,
+      images,
+      reviews,
+      question
+    },
+  } = <any>ctx.request;
+
+  const {
+    data
+  } = await client.post('/test/ai-answer', { product, images, reviews, text: question, model: 'gemini' }).catch(() => ({ data: {} }));
+  ctx.body = data;
+});
+
 router.post('/search', async (ctx) => {
   const {
     body: {
       query,
       page = 1,
+      sort = 'sortDesc'
     },
   } = <any>ctx.request;
   const {
     data,
-  } = await client.get(`/coupang?keyword=${encodeURIComponent(query)}&page=${page}`)
+  } = await client.get(`/coupang?keyword=${encodeURIComponent(query)}&page=${page}&sort=${sort}`).catch(() => ({ data: {} }));
   ctx.body = data;
 });
 
