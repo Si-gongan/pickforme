@@ -15,6 +15,7 @@ const ExternalLinkUnderline = styled(ExternalLink)`
 const tabName = {
   'RECOMMEND': '픽포미 추천',
   'RESEARCH': '픽포미 분석',
+  'QUESTION': '픽포미 질문',
   'BUY': '',
 }
 
