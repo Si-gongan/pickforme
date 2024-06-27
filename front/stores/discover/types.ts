@@ -1,4 +1,5 @@
 import { Request as Report } from '../request/types';
+
 export interface Product {
 	"id": number,
 	"name": string,
@@ -22,6 +23,7 @@ export interface DiscoverState extends GetMainProductsResponse {
 }
 
 export type ProductDetail = Product;
+
 interface History {
   price: number;
   regular_price: number;
@@ -47,12 +49,14 @@ export type GetProductDetailMainResponse = {
 }
 export interface GetProductDetailsResponse {
   product?: ProductDetail;
-    caption?: string,
-    report?: string,
-    review?: {
-      pros: string[]
-      cons: string[],
-    },
+  caption?: string,
+  report?: string,
+  review?: {
+    pros: string[],
+    cons: string[],
+    best: string[]
+  },
+  answer?: string,
 }
 
 export interface SearchProductsResponse {
@@ -66,6 +70,7 @@ export interface SearchProductsResponse {
 export interface SearchProductsRequest {
   page: number,
   query: string,
+  sort: string,
   onLink?: (a: string) => void;
   onQuery?: () => void;
 }

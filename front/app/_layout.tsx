@@ -7,6 +7,7 @@ import { Suspense, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { Provider as JotaiProvider } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import useInterceptor from '../hooks/useInterceptor';
 import useColorScheme from '../hooks/useColorScheme';
 import useSocket from '../hooks/useSocket';

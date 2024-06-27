@@ -3,53 +3,67 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { ActivityIndicator, Image, TextInput, Pressable, FlatList, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import Markdown from 'react-native-markdown-display';
 
 import useCheckLogin from '../hooks/useCheckLogin';
 import Colors from '../constants/Colors';
-import { searchResultAtom, wishProductsAtom, mainProductsAtom, productDetailAtom, initProductDetailAtom, getProductDetailCaptionAtom, getProductDetailReviewAtom, getProductDetailReportAtom, getProductDetailAtom, loadingStatusAtom, setProductLoadingStatusAtom, scrapedProductDetailAtom, setScrapedProductDetailAtom } from '../stores/discover/atoms';
+import { searchResultAtom, 
+  wishProductsAtom, 
+  mainProductsAtom, 
+  productDetailAtom, 
+  initProductDetailAtom, 
+  getProductDetailCaptionAtom, 
+  getProductDetailReviewAtom, 
+  getProductDetailReportAtom, 
+  getProductDetailAIAnswerAtom,
+  getProductDetailAtom, 
+  loadingStatusAtom, 
+  setProductLoadingStatusAtom, 
+  scrapedProductDetailAtom, 
+  setScrapedProductDetailAtom
+} from '../stores/discover/atoms';
+
+import { sendLogAtom } from '../stores/log/atoms';
 import { requestBottomSheetAtom } from '../stores/request/atoms';
-import { Product } from '../stores/discover/types';
-import { pushBottomSheetAtom } from '../stores/layout/atoms';
 import { requestsAtom } from '../stores/request/atoms';
 
 
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
-import { numComma } from '../utils/common';
+import { numComma, formatDate, formatTime } from '../utils/common';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { useWebView } from './webviewUtils';
-
     
 enum TABS {
   CAPTION = 'caption',
   REPORT = 'report',
   REVIEW = 'review',
+  QUESTION = 'question',
 };
 
-
 const tabName = {
-  [TABS.CAPTION]: '상품 이미지',
-  [TABS.REPORT]: '자세한 설명',
+  [TABS.CAPTION]: '이미지 설명',
+  [TABS.REPORT]: '상세페이지 설명',
   [TABS.REVIEW]: '리뷰 요약',
-  answer: '매니저 답변',
+  [TABS.QUESTION]: '질문 하기',
 } as const;
 
 const loadingMessages = {
-  [TABS.CAPTION]: '상품의 이미지 설명을 생성중이에요. ',
-  [TABS.REPORT]: '상품의 자세한 설명을 생성중이에요. ',
+  [TABS.CAPTION]: '상품의 이미지 설명을 생성중이에요.',
+  [TABS.REPORT]: '상품의 자세한 설명을 생성중이에요.',
   [TABS.REVIEW]: '상품의 리뷰를 AI가 요약중이에요.',
-  answer: '매니저가 질문을 확인중이에요. 2시간 내로 답변이 도착할 거예요.',
+  [TABS.QUESTION]: 'AI 포미가 질문에 대한 답변을 생성중이에요.',
+  'manager': '매니저가 질문에 대한 답변을 준비중이에요. 2시간 내로 답변이 도착할 거에요.',
 } as const;
 
 
 export default function DiscoverScreen() {
   const { productId, productUrl: productUrlBase } = useLocalSearchParams();
   const productUrl = productUrlBase ? decodeURIComponent(`${productUrlBase}`) : undefined;
-  const router = useRouter();
-  const productDetail = useAtomValue(productDetailAtom);
-  const mainProducts = useAtomValue(mainProductsAtom);
+
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+  const markdownStyles = StyleSheet.create({text: { fontSize: 14, lineHeight: 20, color: Colors[colorScheme].text.primary}});
 
   const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
   const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
@@ -60,26 +74,34 @@ export default function DiscoverScreen() {
   const initProductDetail = useSetAtom(initProductDetailAtom);
   const getProductDetailCaption = useSetAtom(getProductDetailCaptionAtom);
   const getProductDetailReport = useSetAtom(getProductDetailReportAtom);
-  const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
   const getProductDetailReview = useSetAtom(getProductDetailReviewAtom);
+  const getProductDetailAIAnswer = useSetAtom(getProductDetailAIAnswerAtom);
+  const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
   const setProductLoadingStatus = useSetAtom(setProductLoadingStatusAtom);
+  const sendLog = useSetAtom(sendLogAtom);
 
+  const productDetail = useAtomValue(productDetailAtom);
+  const mainProducts = useAtomValue(mainProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
-  const [wishlist,setWishlist] = useAtom(wishProductsAtom);
+  const [wishlist, setWishlist] = useAtom(wishProductsAtom);
   const requests = useAtomValue(requestsAtom);
   const request = requests.filter(request => request.product).find(request => `${request.product.url}` === productUrl || `${request.product.id}` === productId);
   const already = wishlist.find((wishProduct) => `${wishProduct.url}` === productUrl || `${wishProduct.id}` === productId);
   const product = (request?.product) || searchResult?.products.find((searchItem) => searchItem.url === productUrl || `${searchItem.id}` === `${productId}`) || [...(mainProducts.local.map(section => section.products).flat()), ...mainProducts.special, ...mainProducts.random, ].find(({ id }) => `${id}` === `${productId}`) || already;
   const isLocal = mainProducts.local.map(section => section.products).flat().find(({ id }) => `${id}` === `${productId}`) !== undefined;
 
-  const [tab, setTab] = React.useState<TABS | 'answer'>(TABS.CAPTION);
+  const [tab, setTab] = useState<TABS>(TABS.CAPTION);
   const loadingStatus = useAtomValue(loadingStatusAtom);
+
+  const [question, setQuestion] = useState('');
+
   useEffect(() => {
     initProductDetail();
   }, []);
 
   useEffect(() => {
     if (product) {
+      sendLog({ product: { id: productId, url: productUrl }, action: 'caption', metaData: {}});
       getProductDetail(product);
     }
   }, [getProductDetail, productId]);
@@ -94,14 +116,28 @@ export default function DiscoverScreen() {
     if (!product) {
       return;
     }
+    sendLog({ product: { id: productId, url: productUrl }, action: 'link', metaData: {}});
     await WebBrowser.openBrowserAsync(product.url);
   }
+
+  const handleClickSend = async () => {
+    if (!product) {
+      return;
+    }
+    if (!question) {
+      return;
+    }
+    getProductDetailAIAnswer(product, question);
+    setQuestion('');
+  }
+
   const handleClickWish = async () => {
     if (product) {
       if (already) {
         setWishlist(wishlist.filter((wishProduct) => wishProduct !== already));
       } else {
         setWishlist([...wishlist, product]);
+        sendLog({ product: { id: productId, url: productUrl }, action: 'like', metaData: {}});
       }
     }
   }
@@ -111,7 +147,6 @@ export default function DiscoverScreen() {
     }
     await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj');
   }
-  const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
 
   const handleClickRequest = useCheckLogin(() => {
     if (!product) {
@@ -121,10 +156,10 @@ export default function DiscoverScreen() {
   });
 
   const hasDetail = productDetail?.product?.url !== undefined && product?.url !== undefined && `${productDetail?.product?.url}` === `${product?.url}`;
-  const handlePressTab = (nextTab: (TABS | 'answer')) => {
-    if (nextTab === 'answer') {
-    setTab(nextTab);
-    return;
+  const handlePressTab = (nextTab: (TABS)) => {
+    if (nextTab === TABS.QUESTION) {
+      setTab(nextTab);
+      return;
     }
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab] && product) {
       if (nextTab === TABS.REPORT) {
@@ -138,13 +173,15 @@ export default function DiscoverScreen() {
               return;
             } else if (scrapedProductDetail.images!.length > 0){
               clearInterval(interval);
-              getProductDetailReport(product, scrapedProductDetail.images!);
+              sendLog({ product: { id: productId, url: productUrl }, action: 'report', metaData: {}});
+              getProductDetailReport(product);
               return; 
             }
             count++;
           }, 1000);
         } else {
-          getProductDetailReport(product, scrapedProductDetail.images!);
+          sendLog({ product: { id: productId, url: productUrl }, action: 'report', metaData: {}});
+          getProductDetailReport(product);
         }
       }
       if (nextTab === TABS.REVIEW) {
@@ -158,13 +195,15 @@ export default function DiscoverScreen() {
               return;
             } else if (scrapedProductDetail.reviews!.length > 0){
               clearInterval(interval);
-              getProductDetailReview(product, scrapedProductDetail.reviews!);
+              sendLog({ product: { id: productId, url: productUrl }, action: 'review', metaData: {}});
+              getProductDetailReview(product);
               return;
             }
             count++;
           }, 1000);
         } else {
-          getProductDetailReview(product, scrapedProductDetail.reviews!);
+          sendLog({ product: { id: productId, url: productUrl }, action: 'review', metaData: {}});
+          getProductDetailReview(product);
         }
       }
     }
@@ -175,10 +214,10 @@ export default function DiscoverScreen() {
       return;
     }
     if (tab === TABS.REPORT) {
-      getProductDetailReport(product, scrapedProductDetail.images!);
+      getProductDetailReport(product);
     }
     if (tab === TABS.REVIEW) {
-      getProductDetailReview(product, scrapedProductDetail.reviews!);
+      getProductDetailReview(product);
     }
     if (tab === TABS.CAPTION) {
       getProductDetailCaption(product);
@@ -238,7 +277,7 @@ export default function DiscoverScreen() {
        )}
         </View>
        <View style={styles.tabWrap}>
-        {[...Object.values(TABS), ...(request?.product ? ['answer' as const] : [])].map((TAB) => (
+        {Object.values(TABS).map((TAB) => (
           <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
             <Button
               style={[styles.tabButton, tab === TAB && styles.tabButtonActive]}
@@ -248,15 +287,60 @@ export default function DiscoverScreen() {
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
               onPress={() => handlePressTab(TAB)}
-              accessibilityLabel={tabName[TAB]}
+              accessibilityLabel={tab === TAB ? `${tabName[TAB]} 탭 선택됨` : `${tabName[TAB]} 탭`}
             />
           </View>
         ))}
       </View>
-      {tab === 'answer' ? (
-       <View style={styles.detailWrap}>
-         <Text>{request?.answer?.text || loadingMessages['answer']}</Text>
-       </View>
+
+      {tab === TABS.QUESTION ? (
+        <View style={styles.detailWrap}>
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={[styles.textArea]}
+              underlineColorAndroid="transparent"
+              value={question}
+              returnKeyType='done'
+              onSubmitEditing={() => handleClickSend()}
+              accessible
+              accessibilityLabel="검색어 입력창"
+              onChangeText={(text) => setQuestion(text)}
+              placeholder='상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요'
+            />
+            <Pressable
+              onPress={handleClickSend}
+              accessible
+              accessibilityLabel="검색하기"
+              accessibilityRole='button'
+            >
+              <Image style={styles.sendIcon} source={require('../assets/images/discover/downSquareArrow.png')} />
+            </Pressable>
+          </View>
+          {loadingStatus[tab] === 1 ? 
+            <View style={styles.indicatorWrap} accessible={true} accessibilityLabel={loadingMessages[tab]} >
+              <ActivityIndicator style={styles.loadingIcon} accessible={false} />
+              <Text>{loadingMessages[tab]}</Text>
+            </View>
+           : loadingStatus[tab] === 2 ? 
+            <Markdown style={markdownStyles}>
+              {`**AI 포미:** ${productDetail?.answer}`}
+            </Markdown>
+           : <></>}
+          
+          {request ? 
+            (request.answer?.text ? 
+              <>
+                <View style={styles.seperator}></View>
+                <Text style={styles.boldText}>다음은 질문에 대한 매니저의 답변이에요.</Text>
+                <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${request?.answer?.text}`}</Markdown>
+                <Text>{`${formatDate(request?.updatedAt)} ${formatTime(request?.updatedAt)}`}</Text>
+              </> 
+            : <>
+                <View style={styles.seperator}></View>
+                <Text>{loadingMessages['manager']}</Text>
+              </>) 
+            : <></>}
+        </View>
       ) : (
       <>
         {(loadingStatus[tab] <= 1 || !hasDetail) ? (
@@ -270,7 +354,7 @@ export default function DiscoverScreen() {
           <>
               {tab !== 'review' ? (
                 <View style={styles.detailWrap}>
-                  <Text>{productDetail?.[tab]}</Text>
+                  <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
                 </View>
               ) : (
                 <>
@@ -283,11 +367,11 @@ export default function DiscoverScreen() {
                   {productDetail?.[tab]?.pros?.length !== 0 && (
                     <View style={styles.detailWrap} accessible={true}>
                       <Text style={styles.reviewListTitle}>
-                        긍정 리뷰 요약
+                        긍정적인 리뷰
                       </Text>
                       {productDetail?.[tab]?.pros.map((row, i) => (
                         <View style={styles.reviewListRow} key={`discover-detail-${product.id}-pros-row-${i}`}>
-                          <Text accessible={false}>{`\u2022`}</Text>
+                          <Text accessible={false}>{`\u2022 `}</Text>
                           <Text style={styles.reviewListRowText}>{row}</Text>
                         </View>
                       ))}
@@ -296,13 +380,25 @@ export default function DiscoverScreen() {
                   {productDetail?.[tab]?.cons?.length !== 0 && (
                     <View style={styles.detailWrap} accessible={true}>
                       <Text style={styles.reviewListTitle}>
-                        부정 리뷰 요약
+                        부정적인 리뷰
                       </Text>
                       {productDetail?.[tab]?.cons.map((row, i) => (
                         <View style={styles.reviewListRow} key={`discover-detail-${product.id}-cons-row-${i}`}>
-                          <Text accessible={false}>{`\u2022`}</Text>
+                          <Text accessible={false}>{`\u2022 `}</Text>
                           <Text style={styles.reviewListRowText}>{row}</Text>
                         </View>
+                      ))}
+                    </View>
+                  )}
+                  {productDetail?.[tab]?.best?.length !== 0 && (
+                    <View style={styles.detailWrap} accessible={true}>
+                      <Text style={styles.reviewListTitle}>
+                        베스트 리뷰
+                      </Text>
+                      {productDetail?.[tab]?.best.map((row, i) => (
+                        <Markdown style={markdownStyles} key={`discover-detail-${product.id}-best-row-${i}`}>
+                          {`**리뷰 ${i+1} :** ${row}`}
+                        </Markdown>
                       ))}
                     </View>
                   )}
@@ -336,7 +432,7 @@ export default function DiscoverScreen() {
         </View>
         ) : (
         <View style={styles.buttonOuter}>
-          <Button title='매니저에게 물어보기' onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
+          <Button title={request ? '추가 문의하기' : '매니저에게 물어보기'} onPress={request ? handleClickBuy2 : handleClickRequest} style={[styles.button, styles.button2]} color='tertiary' size='small' />
         </View>
         )}
         {already ? ( 
@@ -524,5 +620,36 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
+  },
+  inputWrap: {
+    flex: 1,
+    marginBottom: 16,
+    paddingLeft: 12,
+    paddingRight: 8,
+    paddingVertical: 8,
+    borderRadius: 8,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    borderColor: '#5F5F5F',
+    borderWidth: 1,
+    flexDirection: 'row',
+  },
+  textArea: {
+    fontSize: 14,
+    flex: 1,
+    width: '100%',
+  },
+  sendIcon: {
+    flexShrink: 0,
+    marginLeft: 3,
+    width: 26,
+    height: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  boldText: {
+    fontWeight: '700',
   }
 });

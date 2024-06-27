@@ -1,19 +1,18 @@
 import { useRef,useState } from 'react';
-import { Platform, KeyboardAvoidingView, TextInput, ScrollView, StyleSheet, Pressable, FlatList, Image } from 'react-native';
+import { Platform, KeyboardAvoidingView, TextInput, StyleSheet } from 'react-native';
 import BottomSheet from 'react-native-modal';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
-import * as Clipboard from 'expo-clipboard';
 
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
-import { previewAtom, getPreviewAtom, requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
+import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
 import { isShowLackModalAtom } from '../../stores/auth/atoms';
 import { scrapedProductDetailAtom } from '../../stores/discover/atoms';
+import { sendLogAtom } from '../../stores/log/atoms';
 
-import { ResearchRequestParams } from '../../stores/request/types';
+import { QuestionRequestParams } from '../../stores/request/types';
 import Colors from '../../constants/Colors';
-import { pushBottomSheetAtom } from '../../stores/layout/atoms';
-import { Props, styles } from './Base';
+import { styles } from './Base';
 import useCheckPoint from '../../hooks/useCheckPoint';
 
 import Button from '../Button';
@@ -25,28 +24,29 @@ export default function ResearchBottomSheet() {
   const isShowLackModalVisible = useAtomValue(isShowLackModalAtom);
 
   const addRequest = useSetAtom(addRequestAtom);
-  const preview = useAtomValue(previewAtom);
   const colorScheme = useColorScheme();
   const localStyles = useLocalStyles(colorScheme);
-  const pushBottomSheet = useSetAtom(pushBottomSheetAtom);
-  const [isShareChecked, setIsShareChecked] = useState(false);
 
   const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
 
-  const [data, setData] = useState<Omit<ResearchRequestParams, 'product'>>({
-    type: 'RESEARCH',
+  const sendLog = useSetAtom(sendLogAtom);
+
+  const [data, setData] = useState<Omit<QuestionRequestParams, 'product'>>({
+    type: 'QUESTION',
     link: '',
     text: '',
   });
-  const checkPoint = useCheckPoint(1, (params: ResearchRequestParams) => {
+  const checkPoint = useCheckPoint(1, (params: QuestionRequestParams) => {
     if (product) {
       addRequest(params);
+      
     }
   });
   const handleSubmit = () => {
     const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews};
     onClose();
     checkPoint(params);
+    sendLog({ product: { id: product?.id, url: product?.url }, action: 'request', metaData: {}});
   }
   const disabled = !data.text;
   const [product,setProduct] = useAtom(requestBottomSheetAtom);

@@ -4,23 +4,23 @@ import { Text, View } from './Themed';
 import { Product } from '../stores/discover/types';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { useRouter } from 'expo-router';
+import { setProductGroupAtom } from '../stores/log/atoms';
 
 import { useAtomValue, useSetAtom } from 'jotai';
 import { forwardRef, useState } from 'react';
 import { numComma } from '../utils/common';
-import Colors from '../constants/Colors';
-import Button from '../components/Button';
 
 interface Props {
   product: Product;
-  type: 'normal' | 'liked' | 'request';
+  type: String;
 }
-const ProductCard = forwardRef<ViewBase, Props>(({ product, type = 'normal' }, ref) => {
-    const router = useRouter();
-
+const ProductCard = forwardRef<ViewBase, Props>(({ product, type }, ref) => {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
+  const setProductGroup = useSetAtom(setProductGroupAtom);
   const handlePress = () => {
+    setProductGroup(type);
     if (product.id) {
       router.push(`/discover-detail-main?productId=${product.id}`);
     } else {

@@ -50,6 +50,7 @@ interface RequestBase {
   name: string,
   status: RequestStatus,
   createdAt: string,
+  updatedAt: string,
   chats: Chat[],
   text: string,                              
   review: Review,
@@ -66,16 +67,21 @@ export interface RecommendRequestParams {
   price: string,
   text: string,
   isPublic: boolean,
-  prodcut: DiscoverProduct,
+  product: DiscoverProduct,
 }
 
 export interface ResearchRequestParams {
   text: string,                              
   type: 'RESEARCH',
   link: string,
+  product: DiscoverProduct
+}
+
+export interface QuestionRequestParams {
+  type: 'QUESTION',
+  text: string,
+  link: string,
   product: DiscoverProduct,
-  images?: string[],
-  reviews?: string[],
 }
 
 export interface AIRequestParams {
@@ -97,7 +103,7 @@ interface BuyRequest extends RequestBase {
 }
 
 export type Request = BuyRequest | RecommendRequest | ResearchRequest | AIRequest;
-export type RequestParams = RecommendRequestParams | ResearchRequestParams | AIRequestParams;
+export type RequestParams = RecommendRequestParams | ResearchRequestParams | QuestionRequestParams | AIRequestParams;
 
 export interface PostRequestResponse {
   request: Request,
