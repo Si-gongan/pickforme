@@ -93,9 +93,9 @@ export default function DiscoverScreen() {
       {!wishProducts.length ? (
         <Text style={styles.loading}>찜한 상품이 없습니다.</Text>
       ) : (
-                <FlatList
+        <FlatList
           contentContainerStyle={styles.searchList}
-          data={wishProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
+          data={wishProducts.slice().reverse()}
           keyExtractor={(product) => `wishlist-wish-${product.id}`}
           renderItem={({ item: product, index: i }) => (
             <ProductCard product={product} type={'liked'} />
@@ -110,7 +110,7 @@ export default function DiscoverScreen() {
           {!requests.filter(request => request.product).length ? (
         <Text style={styles.loading}>문의한 상품이 없습니다.</Text>
       ) : (
-                <FlatList
+        <FlatList
           contentContainerStyle={styles.searchList}
           data={requests.filter(request => request.product).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
           keyExtractor={(request) => `wishlist-request-${request._id}`}
