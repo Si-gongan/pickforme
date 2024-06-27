@@ -5,17 +5,13 @@ import { useRouter, Link } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 
 import Colors from '../../constants/Colors';
-import { setClipboardProductAtom, clipboardProductAtom, isSearchingAtom, searchMoreAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
+import { setClipboardProductAtom, clipboardProductAtom, isSearchingAtom, searchSorterAtom, searchMoreAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
+import { setProductGroupAtom } from '../../stores/log/atoms';
 
-import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
-import { formatDate } from '../../utils/common';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/DiscoverProduct';
 
-import DiscoverIcon from '../../assets/images/tabbar/index.svg';
-
-import { useFocusEffect } from '@react-navigation/core';
 import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 const categoryName = {
@@ -61,16 +57,30 @@ const CATEGORIES = [
   '1030',
 ];
 
+const SORTERS = [
+  'scoreDesc',
+  'salePriceAsc',
+  'salePriceDesc',
+  'saleCountDesc',
+  'latestAsc'
+];
 
+const SORTER_NAME = [
+  '추천순',
+  '낮은가격순',
+  '높은가격순',
+  '판매량순',
+  '최신순'
+];
 
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
-   return     (
+   return (
     <Pressable onPress={onClick} accessibilityRole='button' accessibilityLabel='상품 더보기' accessible style={styles.more}>
-            <Text style={styles.moreText}> 상품 더보기</Text>
-          </Pressable>
-          );
+      <Text style={styles.moreText}> 상품 더보기</Text>
+    </Pressable>
+  );
 }
 
 export default function DiscoverScreen() {
@@ -80,6 +90,7 @@ export default function DiscoverScreen() {
   const colorScheme = useColorScheme();
   const searchProducts = useSetAtom(searchProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
+  const searchSorter = useAtomValue(searchSorterAtom);
   const handleSearchMore = useSetAtom(searchMoreAtom);
   const isSearching = useAtomValue(isSearchingAtom);
   const searchLoadingRef = useRef(null);
@@ -87,6 +98,7 @@ export default function DiscoverScreen() {
   const [category, setCategory] = React.useState('');
   const clipboardProduct = useAtomValue(clipboardProductAtom);
   const setClipboardProduct = useSetAtom(setClipboardProductAtom);
+  const setProductGroup = useSetAtom(setProductGroupAtom);
 
   React.useEffect(() => {
     let timer = setTimeout(() => {
@@ -146,8 +158,9 @@ export default function DiscoverScreen() {
     random: 5,
   });
   const [text, setText ] =React.useState('');
-  const handleClickSend = () => {
-    searchProducts({ query: text, page: 1, onLink: router.push, onQuery: () => setQuery(text) });
+
+  const handleClickSend = (sort: string) => {
+    searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
   }
 
   const handleClickReset = () => {
@@ -184,9 +197,9 @@ export default function DiscoverScreen() {
     <View style={styles.container}>
       <View style={[styles.horizontalPadder,styles.searchContainer]}>
         {!!query.length && (
-    <Pressable onPress={() => setQuery('')} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
-          <Image style={styles.backButton} source={require('../../assets/images/icBack.png')} />
-        </Pressable>
+          <Pressable onPress={() => setQuery('')} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
+            <Image style={styles.backButton} source={require('../../assets/images/icBack.png')} />
+          </Pressable>
         )}
         <View style={styles.inputWrap}>
           <TextInput
@@ -194,7 +207,7 @@ export default function DiscoverScreen() {
             underlineColorAndroid="transparent"
             value={text}
             returnKeyType='done'
-            onSubmitEditing={() => handleClickSend()}
+            onSubmitEditing={() => handleClickSend(searchSorter)}
             accessible
             accessibilityLabel="검색어 입력창"
             onChangeText={(text) => setText(text)}
@@ -211,7 +224,7 @@ export default function DiscoverScreen() {
           </Pressable>
           )}
           <Pressable
-            onPress={handleClickSend}
+            onPress={() => handleClickSend(searchSorter)}
             accessible
             accessibilityLabel="검색하기"
             accessibilityRole='button'
@@ -221,24 +234,43 @@ export default function DiscoverScreen() {
         </View>
       </View>
       {isSearching ? (
-          <Text style={styles.loading} ref={searchLoadingRef}>검색하신 상품을 로딩중이에요.</Text>
+        <Text style={styles.loading} ref={searchLoadingRef}>검색하신 상품을 로딩중이에요.</Text>
       ) : (
       !!query.length ? (
-              <ScrollView style={styles.scrollView}
-                ref={searchResultRef}>
-        {!!searchResult?.products.length && (
-                <FlatList
+        <>
+          <View style={styles.sorterSelector}>
+            {SORTERS.map((sort, idx) => (
+              <Pressable
+                key={`sort-${sort}`}
+                onPress={() => searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) })}
+                accessible
+                accessibilityRole='button'
+                accessibilityLabel={SORTER_NAME[idx]}
+              >
+                <Text style={sort === searchSorter && styles.selectedSorter}>{SORTER_NAME[idx]}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.productCountWraper}>
+            <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+          </View>
+          
+          <ScrollView style={styles.scrollView} ref={searchResultRef}>
+            {!!searchResult?.products.length && (
+              <FlatList
                 scrollEnabled={false}
-          contentContainerStyle={styles.searchList}
-          data={searchResult.products}
-          keyExtractor={(product) => `search-${product.id}`}
-          renderItem={({ item: product }) => <ProductCard product={product} />}
-          ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-          onEndReached={() => handleSearchMore(query)}
-        />
-        )}
-        {!isSearching && !searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
-        </ScrollView>
+                contentContainerStyle={styles.searchList}
+                data={searchResult.products}
+                keyExtractor={(product) => `search-${product.id}`}
+                renderItem={({ item: product }) => <ProductCard product={product} type='search' />}
+                ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+                onEndReached={() => handleSearchMore(query)}
+              />
+            )}
+            {!searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
+          </ScrollView>
+        </>
       ) : (
       <ScrollView style={styles.scrollView}>
       {mainProducts.local.filter(({ order }) => order < 0).sort((a,b) => a.order - b.order).map((section) => (
@@ -252,7 +284,7 @@ export default function DiscoverScreen() {
             data={section.products}
             keyExtractor={(product) => `random-${product.id}`}
             ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-            renderItem={({ item: product }) => <ProductCard product={product} />}
+            renderItem={({ item: product }) => <ProductCard product={product} type='local' />}
           />
         </View>
       ))}
@@ -269,7 +301,7 @@ export default function DiscoverScreen() {
         data={mainProducts.random.slice(0,length.random)}
         keyExtractor={(product) => `random-${product.id}`}
         ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.id ? focusRef1 : undefined} product={product} />}
+        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.id ? focusRef1 : undefined} product={product} type='bestcategories'/>}
         ListFooterComponentStyle={styles.listFooter}
         ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
       />
@@ -287,7 +319,7 @@ export default function DiscoverScreen() {
         data={mainProducts.special.slice(0,length.special)}
         keyExtractor={(product) => `special-${product.id}`}
         ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.id ? focusRef2 : undefined} product={product} />}
+        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.id ? focusRef2 : undefined} product={product} type='goldbox'/>}
         ListFooterComponentStyle={styles.listFooter}
         ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
       />
@@ -305,7 +337,7 @@ export default function DiscoverScreen() {
             data={section.products}
             keyExtractor={(product) => `random-${product.id}`}
             ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-            renderItem={({ item: product }) => <ProductCard product={product} />}
+            renderItem={({ item: product }) => <ProductCard product={product} type='local'/>}
           />
         </View>
       ))}
@@ -315,6 +347,7 @@ export default function DiscoverScreen() {
         <Pressable onPress={() => {
             const url = clipboardProduct.url;
             setClipboardProduct('');
+            setProductGroup('link');
             router.push(`/discover-detail-main?productUrl=${encodeURIComponent(url)}`);
           }}
             ref={clipboardRef}>
@@ -434,6 +467,15 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   backText: {
     textDecorationLine: 'underline',
   },
+  sorterSelector: {
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10
+  },
+  selectedSorter: {
+    fontWeight: '700',
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -444,6 +486,17 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     paddingBottom: 44,
   },
   searchItem: {
+  },
+  productCountWraper: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#d9d9d9',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  productCount: {
+    fontWeight: '700'
   },
   loading: {
     paddingHorizontal: 20,
@@ -475,16 +528,16 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     backgroundColor: 'transparent',
   },
   clipboardTitle: {
-fontSize: 12,
+    fontSize: 12,
     color: 'white',
     marginBottom: 9,
-fontWeight: '700',
-lineHeight: 14.52,
+    fontWeight: '700',
+    lineHeight: 14.52,
   },
   clipboardDesc: {
     color: 'white',
-fontSize: 12,
-lineHeight: 14.52,
+    fontSize: 12,
+    lineHeight: 14.52,
   },
   closeButtonImage: {
     width: 24,
