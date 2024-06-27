@@ -6,6 +6,7 @@ import purchaseRouter from './purchase';
 import adminRouter from './admin';
 import noticeRouter from './notice';
 import discoverRouter from './discover';
+import logRouter from './log';
 
 const router = new Router();
 
@@ -16,12 +17,14 @@ const router = new Router();
   requestRouter,
   purchaseRouter,
   discoverRouter,
+  logRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
 });
 
 import db from '../models';
 import * as fs from 'fs';
+
 router.get('/export', async (ctx) => {
   const requests = await db.Request.find({
   }).populate('userId').sort({

@@ -12,10 +12,16 @@ import Event from './event';
 import Notice from './notice';
 import Notification from './notification';
 import DiscoverSection from './discoverSection';
+import Log from './log';
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 const uri = process.env.MONGO_URI!;
 
-mongoose.connect(uri);
+mongoose.connect(uri, {
+  dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'test',
+});
 
 const db = {
   User,
@@ -30,6 +36,7 @@ const db = {
   Event,
   Notice,
   Notification,
+  Log
 };
 
 export default db;

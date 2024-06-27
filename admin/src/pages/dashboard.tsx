@@ -1,21 +1,32 @@
 import React, {useEffect, useState} from 'react';
-import { useSetAtom, useAtomValue } from 'jotai';
-import Link from 'next/link';
+import { useSetAtom, useAtomValue, useAtom } from 'jotai';
 import styled from '@emotion/styled';
 import { getRequestsAtom, getUserStatsAtom, getRequestStatsAtom, requestsAtom, userStatsAtom, requestStatsAtom } from '@/stores/request/atoms';
 import { getUsersAtom, usersAtom } from '@/stores/user/atoms';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { logsAtom, getLogsAtom } from '@/stores/log/atoms'; 
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { eachDayOfInterval, startOfToday, sub, subMonths, startOfWeek, eachWeekOfInterval, format, parseISO } from 'date-fns';
+
+type ActionType = 'caption' | 'report' | 'review' | 'like' | 'link' | 'request' | 'question';
+
+// DayCounts 인터페이스 정의
+interface DayCounts {
+  date: string;
+  [key: string]: number | string; // 인덱스 시그니처 추가
+}
 
 export default function DashboardScreen() {
   const requests = useAtomValue(requestsAtom);
   const users = useAtomValue(usersAtom);
   const userStats = useAtomValue(userStatsAtom); 
   const requestStats = useAtomValue(requestStatsAtom);
+  const logs = useAtomValue(logsAtom);
+
   const getRequests = useSetAtom(getRequestsAtom);
   const getUsers = useSetAtom(getUsersAtom);
   const getUserStats = useSetAtom(getUserStatsAtom); 
   const getRequestsStats = useSetAtom(getRequestStatsAtom);
+  const getLogs = useSetAtom(getLogsAtom);
 
   const today = startOfToday();
   const threeMonthsAgo = subMonths(today, 3);
@@ -24,12 +35,16 @@ export default function DashboardScreen() {
   const [userEndDate, setUserEndDate] = useState(format(today, 'yyyy-MM-dd'));
   const [requestStartDate, setRequestStartDate] = useState(format(threeMonthsAgo, 'yyyy-MM-dd'));
   const [requestEndDate, setRequestEndDate] = useState(format(today, 'yyyy-MM-dd'));
+  const [logStartDate, setLogStartDate] = useState(format(threeMonthsAgo, 'yyyy-MM-dd'));
+  const [logEndDate, setLogEndDate] = useState(format(today, 'yyyy-MM-dd'));
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
   const userSignupData = calculateUserSignups(users);
 
   useEffect(() => {
     getRequests({});
     getUsers({});
+    getLogs({});
     getUserStats();
     getRequestsStats();
   }, []);
@@ -37,23 +52,28 @@ export default function DashboardScreen() {
   useEffect(() => {
     if (userStartDate < userEndDate){
       getUsers({start: userStartDate, end: userEndDate})
-    } else {
-
     }
   }, [userStartDate, userEndDate]);
 
   useEffect(() => {
     if (requestStartDate < requestEndDate){
       getRequests({start: requestStartDate, end: requestEndDate})
-    } else {
-
     }
   }, [requestStartDate, requestEndDate]);
+
+  useEffect(() => {
+    if (logStartDate < logEndDate){
+      getLogs({start: logStartDate, end: logEndDate})
+    }
+  }, [logStartDate, logEndDate]);
+
+  // 서비스 통계
 
   const statsByType = {
     AI: userStats.filter(stat => stat._id.type === 'AI'),
     RECOMMEND: userStats.filter(stat => stat._id.type === 'RECOMMEND'),
     RESEARCH: userStats.filter(stat => stat._id.type === 'RESEARCH'),
+    QUESTION: userStats.filter(stat => stat._id.type === 'QUESTION'),
   };
 
   const renderStatsTable = (stats:any, title:string) => (
@@ -80,6 +100,37 @@ export default function DashboardScreen() {
 
   const graphData = aggregateRequestsByDateForAllTypes(requests);
 
+  // Log 데이터
+
+  const groupOptions = ['bestcategories', 'goldbox', 'local', 'search', 'link', 'liked', 'request'];
+  const actionTypes: ActionType[] = ['caption', 'report', 'review', 'like', 'link', 'request', 'question'];
+
+  const toggleGroup = (group: string) => {
+    setSelectedGroups(prev => 
+      prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
+    );
+  };
+
+  const filteredLogs = logs.filter(log => 
+    selectedGroups.length === 0 || selectedGroups.includes(log.product.group)
+  );
+
+  const dailyActionCounts: DayCounts[] = eachDayOfInterval({
+    start: parseISO(logStartDate),
+    end: parseISO(logEndDate)
+  }).map(date => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    const dayCounts: DayCounts = { date: dateString };
+    actionTypes.forEach(action => {
+      dayCounts[action] = filteredLogs.filter(log => 
+        format(parseISO(log.createdAt), 'yyyy-MM-dd') === dateString && log.action === action
+      ).length;
+    });
+    return dayCounts;
+  });
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
+
   return (
     <Container>
       <Title>대시보드</Title>
@@ -105,12 +156,13 @@ export default function DashboardScreen() {
           <StatsTablesContainer>
             {renderStatsTable(statsByType.RECOMMEND, '상품 추천')}
             {renderStatsTable(statsByType.RESEARCH, '상품 분석')}
+            {renderStatsTable(statsByType.QUESTION, '상품 질문')}
             {renderStatsTable(statsByType.AI, 'AI 포미')}
           </StatsTablesContainer>
         </SectionTop>
-        <SectionBottom>
+        <SectionMiddle>
           <GraphTitle>서비스 통계</GraphTitle>
-          <div>상품 추천: {requests.filter(e => e.type === 'RECOMMEND').length }회 / 상품 분석: {requests.filter(e => e.type === 'RESEARCH').length }회</div>
+          <div>상품 추천: {requests.filter(e => e.type === 'RECOMMEND').length }회 / 상품 분석: {requests.filter(e => e.type === 'RESEARCH').length }회 / 상품 질문: {requests.filter(e => e.type === 'QUESTION').length }회 </div>
           <DateRangeSelector>
             <input type="date" value={requestStartDate} onChange={(e) => setRequestStartDate(e.target.value)} />
             <input type="date" value={requestEndDate} onChange={(e) => setRequestEndDate(e.target.value)} />
@@ -125,10 +177,11 @@ export default function DashboardScreen() {
               {/*<Bar dataKey="AI" fill="#8884d8" />*/}
               <Bar dataKey="RECOMMEND" fill="#82ca9d" />
               <Bar dataKey="RESEARCH" fill="#ffc658" />
+              <Bar dataKey="QUESTION" fill="#ff7300" />
             </BarChart>
           </ResponsiveContainer>
-        </SectionBottom>
-        <SectionBottom>
+        </SectionMiddle>
+        <SectionMiddle>
           <GraphTitle>리뷰 통계</GraphTitle>
           <StyledTable>
             <thead>
@@ -164,6 +217,42 @@ export default function DashboardScreen() {
               </ReviewTableContainer>
             ))}
           </ReviewTextsContainer>
+        </SectionMiddle>
+        <SectionBottom>
+          <GraphTitle>로그 통계</GraphTitle>
+          <GroupSelector>
+            {groupOptions.map(group => (
+              <GroupButton 
+                key={group} 
+                onClick={() => toggleGroup(group)}
+                selected={selectedGroups.includes(group)}
+              >
+                {group}
+              </GroupButton>
+            ))}
+          </GroupSelector>
+          <DateRangeSelector>
+            <input type="date" value={logStartDate} onChange={(e) => setLogStartDate(e.target.value)} />
+            <input type="date" value={logEndDate} onChange={(e) => setLogEndDate(e.target.value)} />
+          </DateRangeSelector>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={dailyActionCounts}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {actionTypes.map((action, index) => (
+                <Line 
+                  key={action}
+                  type="monotone"
+                  dataKey={action}
+                  stroke={COLORS[index % COLORS.length]}
+                  activeDot={{ r: 8 }}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         </SectionBottom>
       </Content>
     </Container>
@@ -211,7 +300,7 @@ const aggregateRequestsByDateForAllTypes = (requests: any[]) => {
   // 3. 집계 및 빈 데이터 채우기
   const aggregatedData = allWeeks.reduce((acc: any, weekStart) => {
     const formattedWeekStart = format(weekStart, 'yyyy-MM-dd');
-    acc[formattedWeekStart] = { weekStart: formattedWeekStart, AI: 0, RECOMMEND: 0, RESEARCH: 0 };
+    acc[formattedWeekStart] = { weekStart: formattedWeekStart, AI: 0, RECOMMEND: 0, RESEARCH: 0, QUESTION: 0};
     return acc;
   }, {});
 
@@ -250,17 +339,26 @@ const SectionTop = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   height: 450px;
-  overflow-y: auto; /* 세로 방향으로만 내용이 넘칠 경우 스크롤바 표시 */
-  margin-bottom: 20px; /* 섹션 간의 간격 조정 */
+  overflow-y: auto;
+  margin-bottom: 20px; 
+`;
+
+const SectionMiddle = styled.div`
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  height: 450px; 
+  overflow-y: auto; 
+  margin-bottom: 20px; 
 `;
 
 const SectionBottom = styled.div`
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  height: 450px; /* 예시로 450px의 고정 높이 설정 */
-  overflow-y: auto; /* 세로 방향으로만 내용이 넘칠 경우 스크롤바 표시 */
-  margin-bottom: 20px; /* 섹션 간의 간격 조정 */
+  height: 550px; 
+  overflow-y: auto; 
+  margin-bottom: 20px;
 `;
 
 const GraphTitle = styled.h2`
@@ -309,4 +407,23 @@ const ReviewTextsContainer = styled.div`
 const ReviewTableContainer = styled.div`
   flex: 1; /* 각 테이블 컨테이너가 가능한 공간을 균등하게 차지하도록 함 */
   min-width: 250px; /* 최소 너비 설정으로 너무 작게 줄어들지 않도록 함 */
+`;
+
+const GroupSelector = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+`;
+
+const GroupButton = styled.button<{ selected: boolean }>`
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: ${props => props.selected ? '#007bff' : 'white'};
+  color: ${props => props.selected ? 'white' : 'black'};
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => props.selected ? '#0056b3' : '#e9ecef'};
+  }
 `;
