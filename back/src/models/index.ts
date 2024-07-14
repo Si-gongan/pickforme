@@ -5,7 +5,6 @@ import Session from './session';
 import Request from './request';
 import Chat from './chat';
 import Product from './product';
-import Buy from './buy';
 import PickHistory from './pickHistory';
 import Purchase from './purchase';
 import Event from './event';
@@ -13,6 +12,7 @@ import Notice from './notice';
 import Notification from './notification';
 import DiscoverSection from './discoverSection';
 import Log from './log';
+import Item from './item';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -29,14 +29,14 @@ const db = {
   Request,
   Chat,
   Product,
-  Buy,
   DiscoverSection,
   Purchase,
   PickHistory,
   Event,
   Notice,
   Notification,
-  Log
+  Log,
+  Item
 };
 
 export default db;

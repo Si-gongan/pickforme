@@ -102,8 +102,6 @@ PODS:
     - ExpoModulesCore
   - ExpoHaptics (12.2.1):
     - ExpoModulesCore
-  - ExpoHaptics (12.2.1):
-    - ExpoModulesCore
   - ExpoKeepAwake (12.0.1):
     - ExpoModulesCore
   - ExpoModulesCore (1.2.7):
@@ -775,11 +773,7 @@ SPEC CHECKSUMS:
   ExpoAppleAuthentication: 7bd5e4150d59e8df37aa80b425850ae88adf9e65
   ExpoClipboard: 9b87df0ad145e3aa841614fab6aea54b7a604850
   ExpoCrypto: 9105610a09cd6290b900bd82fc5d190e489125a3
-<<<<<<< Updated upstream
-  ExpoDevice: 1c1b0c9cad96c292c1de73948649cfd654b2b3c0
-=======
   ExpoDevice: e0bebf68f978b3d353377ce42e73c20c0a070215
->>>>>>> Stashed changes
   ExpoHaptics: 5156bc5160d8e04c170dd6e645a71154951a2ad9
   ExpoKeepAwake: 69f5f627670d62318410392d03e0b5db0f85759a
   ExpoModulesCore: 653958063a301098b541ae4dfed1ac0b98db607b
@@ -817,11 +811,7 @@ SPEC CHECKSUMS:
   react-native-receive-sharing-intent: 62ab28c50e6ae56d32b9e841d7452091312a0bc7
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: 39c2d8be3328df5d437ac1700f4f3a4f75716acc
-<<<<<<< Updated upstream
-  react-native-webview: 8c5ca05ee27dc9622b07b13050c0edd411c2c596
-=======
   react-native-webview: 994b9f8fbb504d6314dc40d83f94f27c6831b3bf
->>>>>>> Stashed changes
   React-perflogger: 4987ad83731c23d11813c84263963b0d3028c966
   React-RCTActionSheet: 5ad952b2a9740d87a5bd77280c4bc23f6f89ea0c
   React-RCTAnimation: d2de22af3f536cc80bb5b3918e1a455114d1b985

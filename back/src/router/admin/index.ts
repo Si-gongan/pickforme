@@ -12,7 +12,7 @@ const router = new Router({
   prefix: '/admin',
 });
 
-router.use(requireAuth, requireAdmin);
+// router.use(requireAuth, requireAdmin);
 [
   requestRouter,
   notificationRouter,

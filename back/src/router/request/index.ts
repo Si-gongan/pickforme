@@ -168,26 +168,6 @@ router.get('/detail/:requestId', requireAuth, async (ctx) => {
   ctx.body = res;
 });
 
-router.get('/buy', requireAuth, async (ctx) => {
-  const query = {
-    userId: ctx.state.user._id,
-  };
-  const buy = await db.Buy.findOne(query);
-  ctx.body = !!buy;
-});
-router.post('/buy', requireAuth, async (ctx) => {
-  const query = {
-    userId: ctx.state.user._id,
-  };
-  const buy = await db.Buy.findOne(query);
-  ctx.body = !buy;
-  if (buy) {
-    await db.Buy.deleteOne(query);
-  } else {
-    await db.Buy.create(query);
-  }
-});
-
 // 채팅 입력
 router.post('/chat', requireAuth, async (ctx) => {
   const {

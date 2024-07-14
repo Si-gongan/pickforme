@@ -4,9 +4,7 @@ const DiscoverSectionSchema = new mongoose.Schema({
   name: String,
   order: Number,
   products: [{
-    id: Number,
     name: String,
-    option: String,
     price: Number,
     origin_price: Number,
     discount_rate: Number,
@@ -14,17 +12,12 @@ const DiscoverSectionSchema = new mongoose.Schema({
     ratings: Number,
     url: String,
     thumbnail: String,
-    detail: {
-      id: Number,
-      productId: Number,
-      reviews: Number,
-      ratings: Number,
-    },
     caption: String,
     report: String,
     review: {
       pros: [String],
-      cons: [String]
+      cons: [String],
+      bests: [String]
     },
   }]
 }, {
