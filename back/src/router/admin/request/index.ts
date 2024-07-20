@@ -40,7 +40,7 @@ router.post('/answer', async (ctx) => {
       });
     }
     const user = await db.User.findById(request.userId);
-    if (user && user.pushToken && (user.push.chat === 'report' || user.push.chat === 'all')) {
+    if (user && user.pushToken && (user.push.service === 'on')) {
       sendPush({
         to: user.pushToken,
         body: `'${request.product.name.slice(0,13)}...' 상품에 대한 매니저 답변이 도착했습니다.`,
@@ -189,7 +189,7 @@ router.post('/chat', async (ctx) => {
     });
   }
   const user = await db.User.findById(request.userId);
-  if (user && user.pushToken && user.push.chat === 'all') {
+  if (user && user.pushToken && user.push.service === 'on') {
     sendPush({
       to: user.pushToken,
       body: chat.text,

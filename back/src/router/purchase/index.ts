@@ -31,25 +31,17 @@ router.post('/', requireAuth, async (ctx) => {
   try {
     const purchase = await iapValidator.validate(receipt, product.productId);
     if (purchase) {
-      await db.Purchase.create({
+      const _purchase = await db.Purchase.create({
         userId: ctx.state.user._id,
         product,
         purchase,
         receipt,
       });
-      const {
-        point,
-      } = product;
-      user.point += point;
-      await user.save();
-      await db.PickHistory.create({
-        usage: product.type === ProductType.SUBSCRIPTION ? `멤버십 충전 - ${product.displayName}` : `충전 - ${product.displayName}`,
-        point: user.point,
-        diff: point,
-        userId: user._id,
-      });
-      ctx.body = user.point;
+      ctx.body = _purchase;
       ctx.status = 200;
+      // user.membership.level = 1;
+      // user.membership.expireAt = new Date(purchase.expirationDate ?? new Date(Date.now() + 31 * 24 * 60 * 60 * 1000));
+      // user.save();
       return;
     }
   } catch (e) {
@@ -78,12 +70,20 @@ router.get('/subscription', requireAuth, async (ctx) => {
   ctx.status = 200;
 });
 
-router.get('/history', requireAuth, async (ctx) => {
-  const usages = await db.PickHistory.find({
-    userId: ctx.state.user._id,
+router.get('/subscriptions', requireAuth, async (ctx) => {
+  const subscriptions = await db.Purchase.find({
+    userId: ctx.state.user._id, 'product.type': ProductType.SUBSCRIPTION,
   });
-  ctx.body = usages;
+  ctx.body = subscriptions;
   ctx.status = 200;
 });
+
+// router.get('/history', requireAuth, async (ctx) => {
+//   const usages = await db.PickHistory.find({
+//     userId: ctx.state.user._id,
+//   });
+//   ctx.body = usages;
+//   ctx.status = 200;
+// });
 
 export default router;

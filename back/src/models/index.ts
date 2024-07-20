@@ -5,7 +5,6 @@ import Session from './session';
 import Request from './request';
 import Chat from './chat';
 import Product from './product';
-import PickHistory from './pickHistory';
 import Purchase from './purchase';
 import Event from './event';
 import Notice from './notice';
@@ -31,7 +30,6 @@ const db = {
   Product,
   DiscoverSection,
   Purchase,
-  PickHistory,
   Event,
   Notice,
   Notification,

@@ -7,7 +7,6 @@ import {
   UserDocument,
   UserModel,
   LocalRegisterPayload,
-  PushChat,
   PushService,
 } from './types';
 
@@ -28,15 +27,14 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  lastLoginAt: {
+    type: Date,
+    default: Date.now,
+  },
   pushToken: {
     type: String,
   },
   push: {
-    chat: {
-      type: String,
-      enum: Object.values(PushChat),
-      default: PushChat.all,
-    },
     service: {
       type: String,
       enum: Object.values(PushService),

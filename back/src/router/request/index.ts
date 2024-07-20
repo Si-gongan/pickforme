@@ -27,15 +27,15 @@ router.post('/', requireAuth, async (ctx) => {
     },
   } = <any>ctx.request;
   const requestName = `픽포미 ${body.type === RequestType.RESEARCH ? '분석' : '추천'}`;
-  if (body.type !== RequestType.AI) {
-    await user.usePoint(1);
-    await db.PickHistory.create({
-      usage: requestName,
-      point: user.point,
-      diff: -1,
-      userId: user._id,
-    });
-  }
+  // if (body.type !== RequestType.AI) {
+  //   await user.usePoint(1);
+  //   await db.PickHistory.create({
+  //     usage: requestName,
+  //     point: user.point,
+  //     diff: -1,
+  //     userId: user._id,
+  //   });
+  // }
   const request = await db.Request.create({
     ...body,
     userId: user._id,
@@ -57,10 +57,7 @@ router.post('/', requireAuth, async (ctx) => {
     await request.save();
   }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
-  ctx.body = {
-    request,
-    point: user.point,
-  };
+  ctx.body = request;
   ctx.status = 200;
 
   // slack 의뢰 도착 알림
@@ -79,7 +76,7 @@ router.post('/', requireAuth, async (ctx) => {
 
   // slack ai 응답 생성
   if (body.images !== undefined) {
-    const { data: { answer } } = await client.post('/test/ai-answer', { product, ...body });
+    const { data: { answer } } = await client.post('/test/ai-answer', { product, ...body, model: 'gpt' });
     slack.post('/chat.postMessage', {
       text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`, channel: 'C05NTFL1Q4C',
     });
@@ -169,94 +166,94 @@ router.get('/detail/:requestId', requireAuth, async (ctx) => {
 });
 
 // 채팅 입력
-router.post('/chat', requireAuth, async (ctx) => {
-  const {
-    body,
-  } = <any>ctx.request;
-  const request = await db.Request.findById(body.requestId);
-  if (!request) {
-    ctx.status = 404;
-    return;
-  }
-  const chat = await db.Chat.create({
-    ...(body as Object),
-    isMine: true,
-    userId: ctx.state.user._id,
-  });
-  request.chats.push(chat._id);
-  request.unreadCount = 0;
-  if (request.type === RequestType.AI) {
-    (async () => {
-      const responseBody = {
-        text: '',
-        products: [],
-        questions: [],
-      };
-      try {
-        const {
-          data: {
-            answer: message,
-            data,
-          },
-        } = await client.post<{ answer: string, data: any }>('/shopping-chat', {
-          text: body.text,
-          ...(request.data ? {
-            data: request.data,
-          } : {}),
-        });
-        if (data) {
-          request.data = data;
-          if (data.products) {
-            responseBody.products = data.products;
-          }
-          if (data.questions) {
-            responseBody.questions = data.questions;
-          }
-        }
-        responseBody.text = message;
-      } catch (e) {
-        responseBody.text = '죄송합니다. 다시 시도해주세요.';
-      }
-      const autoChat = await db.Chat.create({
-        requestId: body.requestId,
-        isMine: false,
-        userId: ctx.state.user._id,
-        ...responseBody,
-      });
-      request.chats.push(autoChat._id);
-      request.unreadCount += 1;
-      await request.save();
+// router.post('/chat', requireAuth, async (ctx) => {
+//   const {
+//     body,
+//   } = <any>ctx.request;
+//   const request = await db.Request.findById(body.requestId);
+//   if (!request) {
+//     ctx.status = 404;
+//     return;
+//   }
+//   const chat = await db.Chat.create({
+//     ...(body as Object),
+//     isMine: true,
+//     userId: ctx.state.user._id,
+//   });
+//   request.chats.push(chat._id);
+//   request.unreadCount = 0;
+//   if (request.type === RequestType.AI) {
+//     (async () => {
+//       const responseBody = {
+//         text: '',
+//         products: [],
+//         questions: [],
+//       };
+//       try {
+//         const {
+//           data: {
+//             answer: message,
+//             data,
+//           },
+//         } = await client.post<{ answer: string, data: any }>('/shopping-chat', {
+//           text: body.text,
+//           ...(request.data ? {
+//             data: request.data,
+//           } : {}),
+//         });
+//         if (data) {
+//           request.data = data;
+//           if (data.products) {
+//             responseBody.products = data.products;
+//           }
+//           if (data.questions) {
+//             responseBody.questions = data.questions;
+//           }
+//         }
+//         responseBody.text = message;
+//       } catch (e) {
+//         responseBody.text = '죄송합니다. 다시 시도해주세요.';
+//       }
+//       const autoChat = await db.Chat.create({
+//         requestId: body.requestId,
+//         isMine: false,
+//         userId: ctx.state.user._id,
+//         ...responseBody,
+//       });
+//       request.chats.push(autoChat._id);
+//       request.unreadCount += 1;
+//       await request.save();
 
-      const session = await db.Session.findOne({
-        userId: ctx.state.user._id,
-      });
-      if (session) {
-        socket.emit(session.connectionId, 'message', {
-          chat: autoChat, unreadCount: request.unreadCount,
-        });
-      }
-      const user = await db.User.findById(ctx.state.user._id);
-      if (user && user.pushToken && user.push.chat === 'all') {
-        sendPush({
-          to: user.pushToken,
-          body: autoChat.text,
-          data: { url: `/chat?requestId=${request._id}` },
-        });
-      }
-    })();
-  } else {
-    const slack_msg = `
-채팅이 도착했습니다.\n
-${body.text}
-    `;
-    slack.post('/chat.postMessage', {
-      text: slack_msg, channel: 'C05NTFL1Q4C',
-    });
-  }
-  await request.save();
-  // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
-  ctx.body = chat;
-  ctx.status = 200;
-});
+//       const session = await db.Session.findOne({
+//         userId: ctx.state.user._id,
+//       });
+//       if (session) {
+//         socket.emit(session.connectionId, 'message', {
+//           chat: autoChat, unreadCount: request.unreadCount,
+//         });
+//       }
+//       const user = await db.User.findById(ctx.state.user._id);
+//       if (user && user.pushToken && user.push.chat === 'all') {
+//         sendPush({
+//           to: user.pushToken,
+//           body: autoChat.text,
+//           data: { url: `/chat?requestId=${request._id}` },
+//         });
+//       }
+//     })();
+//   } else {
+//     const slack_msg = `
+// 채팅이 도착했습니다.\n
+// ${body.text}
+//     `;
+//     slack.post('/chat.postMessage', {
+//       text: slack_msg, channel: 'C05NTFL1Q4C',
+//     });
+//   }
+//   await request.save();
+//   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
+//   ctx.body = chat;
+//   ctx.status = 200;
+// });
 
 export default router;

@@ -71,27 +71,27 @@ const checkSubs = async () => {
         await purchase.save();
         const user = await db.User.findById(purchase.userId);
         if (user) {
-          user.point += purchase.product.point;
-          await db.PickHistory.create({
-            usage: `멤버십 충전 - ${purchase.product.displayName}`,
-            point: user.point,
-            diff: purchase.product.point,
-            userId: user._id,
-          });
+          // user.point += purchase.product.point;
+          // await db.PickHistory.create({
+          //   usage: `멤버십 충전 - ${purchase.product.displayName}`,
+          //   point: user.point,
+          //   diff: purchase.product.point,
+          //   userId: user._id,
+          // });
 
-          await user.save();
-          const session = await db.Session.findOne({
-            userId: user._id,
-          });
-          if (session) {
-            socket.emit(session.connectionId, 'point', user.point);
-          }
-          if (user.pushToken) {
-            sendPush({
-              to: user.pushToken,
-              body: '멤버십 픽이 충전되었습니다',
-            });
-          }
+          // await user.save();
+          // const session = await db.Session.findOne({
+          //   userId: user._id,
+          // });
+          // if (session) {
+          //   socket.emit(session.connectionId, 'point', user.point);
+          // }
+          // if (user.pushToken) {
+          //   sendPush({
+          //     to: user.pushToken,
+          //     body: '멤버십 픽이 충전되었습니다',
+          //   });
+          // }
         }
       }
     } else {

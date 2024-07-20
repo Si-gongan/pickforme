@@ -1,6 +1,10 @@
 import Router from '@koa/router';
 import db from 'models';
 import client from 'utils/axios';
+import requireAuth from 'middleware/jwt';
+import {
+  ProductType,
+} from 'models/product';
 
 const router = new Router({
   prefix: '/discover',
@@ -169,7 +173,7 @@ router.post('/product/detail/review', async (ctx) => {
   }
 });
 
-router.post('/product/detail/ai-answer', async (ctx) => {
+router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
   const {
     body: {
       product,
@@ -181,8 +185,19 @@ router.post('/product/detail/ai-answer', async (ctx) => {
 
   const {
     data
-  } = await client.post('/test/ai-answer', { product, images, reviews, text: question, model: 'gemini' }).catch(() => ({ data: {} }));
+  } = await client.post('/test/ai-answer', { product, images, reviews, text: question }).catch(() => ({ data: {} }));
   ctx.body = data;
+  
+  const user = await db.User.findById(ctx.state.user._id);
+  if (user) {
+    const subscription = await db.Purchase.findOne({
+      userId: ctx.state.user._id, isExpired: false, 'product.type': ProductType.SUBSCRIPTION,
+    });
+    if (!subscription) {
+      user.point -= 1;
+      await user.save();
+    }
+  }
 });
 
 router.post('/search', async (ctx) => {

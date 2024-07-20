@@ -27,10 +27,10 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     enum: Object.values(Platform),
   },
-  point: {
-    type: Number,
-    required: [true, 'can\'t be blank'],
-  },
+  // point: {
+  //   type: Number,
+  //   required: [true, 'can\'t be blank'],
+  // },
 }, {
   timestamps: true,
 });
@@ -47,37 +47,39 @@ model.find({}).then((products) => {
     displayName: '픽포미 베이직',
     point: 10,
     type: ProductType.SUBSCRIPTION,
-  }, {
-    platform: Platform.IOS,
-    displayName: '픽포미 1픽',
-    productId: 'pickforme_1pick',
-    type: ProductType.PURCHASE,
-    point: 1,
-  }, {
-    platform: Platform.IOS,
-    displayName: '픽포미 5픽',
-    productId: 'pickforme_5pick',
-    type: ProductType.PURCHASE,
-    point: 5,
-  }, {
-    platform: Platform.ANDROID,
-    displayName: '픽포미 베이직',
-    productId: 'pickforme_basic',
-    point: 10,
-    type: ProductType.SUBSCRIPTION,
-  }, {
-    platform: Platform.ANDROID,
-    displayName: '픽포미 1픽',
-    productId: 'pickforme_1pick',
-    type: ProductType.PURCHASE,
-    point: 1,
-  }, {
-    platform: Platform.ANDROID,
-    productId: 'pickforme_5pick',
-    displayName: '픽포미 5픽',
-    type: ProductType.PURCHASE,
-    point: 5,
-  }]);
+  }, 
+  // {
+  //   platform: Platform.IOS,
+  //   displayName: '픽포미 1픽',
+  //   productId: 'pickforme_1pick',
+  //   type: ProductType.PURCHASE,
+  //   point: 1,
+  // }, {
+  //   platform: Platform.IOS,
+  //   displayName: '픽포미 5픽',
+  //   productId: 'pickforme_5pick',
+  //   type: ProductType.PURCHASE,
+  //   point: 5,
+  // }, {
+  //   platform: Platform.ANDROID,
+  //   displayName: '픽포미 베이직',
+  //   productId: 'pickforme_basic',
+  //   point: 10,
+  //   type: ProductType.SUBSCRIPTION,
+  // }, {
+  //   platform: Platform.ANDROID,
+  //   displayName: '픽포미 1픽',
+  //   productId: 'pickforme_1pick',
+  //   type: ProductType.PURCHASE,
+  //   point: 1,
+  // }, {
+  //   platform: Platform.ANDROID,
+  //   productId: 'pickforme_5pick',
+  //   displayName: '픽포미 5픽',
+  //   type: ProductType.PURCHASE,
+  //   point: 5,
+  // }      
+  ]);
 });
 
 export default model;

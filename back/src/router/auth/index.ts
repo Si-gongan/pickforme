@@ -11,28 +11,55 @@ const router = new Router({
   prefix: '/auth',
 });
 
+// 이벤트 기간 설정
+const EVENT_START_DATE = new Date('2024-07-12');
+const EVENT_END_DATE = new Date('2024-07-31');
+const BONUS_POINTS = 10;
+
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({
     email,
   });
+
   let isRegister = false;
-  if (!user) {
+  let isNewLoginInEvent = false;
+
+  if (!user) { // 신규 회원
+    user = await db.User.create({
+      email, point: 0,
+    });
     const usedEmail = await db.User.findOne({
       originEmail: email,
     });
-    user = await db.User.create({
-      email, point: usedEmail ? 0 : 1,
-    });
-    if (!usedEmail) {
-      await db.PickHistory.create({
-        userId: user._id,
-        diff: 1,
-        point: user.point,
-        usage: '회원가입 지급',
-      });
+    if (!usedEmail) { // 과거 회원 기록이 없는 경우
+      // 현재 이벤트 기간에 가입한 경우
+      if (new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
+        user.point += BONUS_POINTS;
+        isNewLoginInEvent = true;
+      }
+    } else { // 과거 회원 기록이 있는 경우
+      // 과거 계정의 마지막 로그인 시점이 현재와 1초 이내일 경우 업데이트 후 신규 로그인으로 처리
+      const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
+      // 과거 회원일 때 이벤트 기간 로그인 기록이 없고, 현재 이벤트 기간에 가입한 경우
+      if ((isNewLoginAfterUpdate || usedEmail.lastLoginAt < EVENT_START_DATE) && new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
+        user.point += BONUS_POINTS;
+        isNewLoginInEvent = true;
+      }
     }
     isRegister = true;
+  } else { // 기존 회원
+    // 지금 로그인 시점이 lastLoginAt과 1초 이내일 경우 업데이트 후 신규 로그인으로 처리
+    const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
+    // 이벤트 기간 내 첫 로그인 일 경우
+    if ((isNewLoginAfterUpdate || user.lastLoginAt < EVENT_START_DATE) && new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
+      user.point += BONUS_POINTS;
+      isNewLoginInEvent = true;
+    }
+    // update last login date
+    user.lastLoginAt = new Date();
+    await user.save();
   }
+
   const token = await user.generateToken();
   return {
     user: {
@@ -40,6 +67,7 @@ const handleLogin = async (email: string) => {
       token,
     },
     isRegister,
+    isNewLoginInEvent
   };
 };
 
