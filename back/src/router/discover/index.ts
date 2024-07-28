@@ -20,19 +20,15 @@ router.get('/products/:category_id', async (ctx) => {
     data: {
       products: special,
     },
-  }, local, reports] = await Promise.all([
+  }, local] = await Promise.all([
     client.get(`/coupang/bestcategories/${category_id}`),
     client.get('/coupang/goldbox'),
     db.DiscoverSection.find({}),
-    db.Request.find({
-      isPublic: true,
-    }).limit(3),
   ]);
   ctx.body = {
     special,
     random,
     local,
-    reports,
   };
 });
 

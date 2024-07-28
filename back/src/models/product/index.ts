@@ -27,10 +27,10 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     enum: Object.values(Platform),
   },
-  // point: {
-  //   type: Number,
-  //   required: [true, 'can\'t be blank'],
-  // },
+  point: {
+    type: Number,
+    required: [true, 'can\'t be blank'],
+  },
 }, {
   timestamps: true,
 });

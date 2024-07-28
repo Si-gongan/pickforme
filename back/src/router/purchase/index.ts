@@ -39,6 +39,10 @@ router.post('/', requireAuth, async (ctx) => {
       });
       ctx.body = _purchase;
       ctx.status = 200;
+
+      user.point += product.point;
+      user.save();
+
       // user.membership.level = 1;
       // user.membership.expireAt = new Date(purchase.expirationDate ?? new Date(Date.now() + 31 * 24 * 60 * 60 * 1000));
       // user.save();
@@ -59,6 +63,15 @@ router.get('/products/:platform', async (ctx) => {
     platform,
   });
   ctx.body = products;
+  ctx.status = 200;
+});
+
+router.get('/purchases', requireAuth, async (ctx) => {
+  const purchases = await db.Purchase.find({
+    userId: ctx.state.user._id,
+    'product.type': ProductType.PURCHASE,
+  });
+  ctx.body = purchases;
   ctx.status = 200;
 });
 

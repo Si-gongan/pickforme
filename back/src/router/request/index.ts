@@ -60,6 +60,9 @@ router.post('/', requireAuth, async (ctx) => {
   ctx.body = request;
   ctx.status = 200;
 
+  user.point -= 1;
+  await user.save();
+
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
@@ -75,12 +78,12 @@ router.post('/', requireAuth, async (ctx) => {
   }
 
   // slack ai 응답 생성
-  if (body.images !== undefined) {
-    const { data: { answer } } = await client.post('/test/ai-answer', { product, ...body, model: 'gpt' });
-    slack.post('/chat.postMessage', {
-      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`, channel: 'C05NTFL1Q4C',
-    });
-  }
+  // if (body.images !== undefined) {
+  //   const { data: { answer } } = await client.post('/test/ai-answer', { product, ...body, model: 'gpt' });
+  //   slack.post('/chat.postMessage', {
+  //     text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`, channel: 'C05NTFL1Q4C',
+  //   });
+  // }
 });
 
 router.get('/', requireAuth, async (ctx) => {

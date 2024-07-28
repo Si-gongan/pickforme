@@ -12,9 +12,9 @@ const router = new Router({
 });
 
 // 이벤트 기간 설정
-const EVENT_START_DATE = new Date('2024-07-12');
-const EVENT_END_DATE = new Date('2024-07-31');
-const BONUS_POINTS = 10;
+const EVENT_START_DATE = new Date('2024-07-28');
+const EVENT_END_DATE = new Date('2024-08-14');
+const BONUS_POINTS = 5;
 
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({
@@ -51,14 +51,14 @@ const handleLogin = async (email: string) => {
     // 지금 로그인 시점이 lastLoginAt과 1초 이내일 경우 업데이트 후 신규 로그인으로 처리
     const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
     // 이벤트 기간 내 첫 로그인 일 경우
-    if ((isNewLoginAfterUpdate || user.lastLoginAt < EVENT_START_DATE) && new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
+    if ((isNewLoginAfterUpdate || (user.lastLoginAt < EVENT_START_DATE)) && new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
       user.point += BONUS_POINTS;
       isNewLoginInEvent = true;
     }
     // update last login date
     user.lastLoginAt = new Date();
-    await user.save();
   }
+  await user.save();
 
   const token = await user.generateToken();
   return {
