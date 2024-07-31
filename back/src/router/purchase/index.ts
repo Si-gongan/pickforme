@@ -31,6 +31,18 @@ router.post('/', requireAuth, async (ctx) => {
   try {
     const purchase = await iapValidator.validate(receipt, product.productId);
     if (purchase) {
+      
+      const exist = await db.Purchase.findOne({
+        userId: ctx.state.user._id,
+        receipt,
+      });
+      
+      if (exist) {
+        ctx.body = '이미 구매한 상품입니다.';
+        ctx.status = 400;
+        return;
+      }
+
       const _purchase = await db.Purchase.create({
         userId: ctx.state.user._id,
         product,
@@ -41,11 +53,7 @@ router.post('/', requireAuth, async (ctx) => {
       ctx.status = 200;
 
       user.point += product.point;
-      user.save();
-
-      // user.membership.level = 1;
-      // user.membership.expireAt = new Date(purchase.expirationDate ?? new Date(Date.now() + 31 * 24 * 60 * 60 * 1000));
-      // user.save();
+      await user.save();
       return;
     }
   } catch (e) {
