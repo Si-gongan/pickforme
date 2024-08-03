@@ -15,35 +15,35 @@ router.post('/answer', async (ctx) => {
   const {
     body,
   } = <any>ctx.request;
-  const request = await db.Request.findById(body.requestId);
+  const request = await db.Request.findById(body.requestId).populate('userId');
   if (!request.answer) {
     const deeplink = `/discover-detail-main?productUrl=${encodeURIComponent(request.link)}`;
-    const chat = await db.Chat.create({
-      userId: request.userId,
-      requestId: request._id,
-      text: `'${request.product.name}' 상품에 대한 매니저 답변이 도착했습니다. 추가 문의사항이 있으실 경우 '추가 문의하기' 버튼을 눌러주세요.`,
-      createdAt: new Date(),
-      isMine: false,
-      button: {
-        text: '결과물 보기',
-        deeplink,
-      },
-    });
-    request.chats.push(chat._id);
-    request.unreadCount += 1;
-    const session = await db.Session.findOne({
-      userId: request.userId,
-    });
-    if (session) {
-      socket.emit(session.connectionId, 'message', {
-        chat, unreadCount: request.unreadCount,
-      });
-    }
+    // const chat = await db.Chat.create({
+    //   userId: request.userId,
+    //   requestId: request._id,
+    //   text: `'${request.product.name}' 상품에 대한 매니저 답변이 도착했습니다. 추가 문의사항이 있으실 경우 '추가 문의하기' 버튼을 눌러주세요.`,
+    //   createdAt: new Date(),
+    //   isMine: false,
+    //   button: {
+    //     text: '결과물 보기',
+    //     deeplink,
+    //   },
+    // });
+    // request.chats.push(chat._id);
+    // request.unreadCount += 1;
+    // const session = await db.Session.findOne({
+    //   userId: request.userId,
+    // });
+    // if (session) {
+    //   socket.emit(session.connectionId, 'message', {
+    //     chat, unreadCount: request.unreadCount,
+    //   });
+    // }
     const user = await db.User.findById(request.userId);
     if (user && user.pushToken && (user.push.service === 'on')) {
       sendPush({
         to: user.pushToken,
-        body: `'${request.product.name.slice(0,13)}...' 상품에 대한 매니저 답변이 도착했습니다.`,
+        body: request.type === RequestType.QUESTION ? `'${request.product.name.slice(0,13)}...' 상품에 대한 매니저 답변이 도착했습니다.` : '매니저 답변이 도착했습니다.',
         data: { url: deeplink },
       });
     }
@@ -51,27 +51,51 @@ router.post('/answer', async (ctx) => {
   request.answer = body.answer;
   request.status = RequestStatus.SUCCESS;
   await request.save();
-  ctx.body = await request.populate('chats');
+  ctx.body = request;
 });
 
 router.get('/', async (ctx) => {
-  const { start, end } = ctx.query;
+  const { start, end, page = 1, pageSize = 10, type = 'ALL' } = ctx.query;
   const startDate = start ? new Date(start as string) : new Date('1999-01-01');
   const endDate = start ? new Date(end as string) : new Date('2999-01-01');
+  const pageNum = parseInt(page as string, 10);
+  const pageSizeNum = parseInt(pageSize as string, 10);
+  const skip = (pageNum - 1) * pageSizeNum;
 
-  const requests = await db.Request.find({
-    type: {
+  const totalRequests = await db.Request.countDocuments({
+    type: type === 'ALL' ? {
       $ne: RequestType.AI,
+    } : {
+      $eq: type,
     },
     createdAt: {
-      $gte: startDate, // '이상'
-      $lte: endDate   // '이하'
+      $gte: startDate,
+      $lte: endDate
     }
-  }).populate('chats').sort({
-    createdAt: -1,
   });
-  ctx.body = requests;
+
+  const requests = await db.Request.find({
+    type: type === 'ALL' ? {
+      $ne: RequestType.AI,
+    } : {
+      $eq: type,
+    },
+    createdAt: {
+      $gte: startDate,
+      $lte: endDate
+    }
+  }).sort({
+    createdAt: -1,
+  }).skip(skip).limit(pageSizeNum);
+
+  ctx.body = {
+    requests,
+    totalRequests,
+    totalPages: Math.ceil(totalRequests / pageSizeNum),
+    currentPage: pageNum
+  };
 });
+
 
 // 의뢰 수 별 유저 수 분포
 router.get('/user-stats', async (ctx) => {
@@ -150,53 +174,45 @@ router.get('/request-stats', async (ctx) => {
   }
 });
 
-/*
-// 추후 규모 커지면 퍼포먼스 개선을 위해 필요한 api들
-
-// 의뢰창 미리보기 (채팅은 한개씩. 미리보기만)
-router.get("/preview", async (ctx) => {
-});
-*/
-
 router.get('/detail/:requestId', async (ctx) => {
   const {
     requestId,
   } = ctx.params;
-  const request = await db.Request.findById(requestId).populate('chats').populate('userId');
+  const request = await db.Request.findById(requestId).populate('userId');
   ctx.body = request;
 });
 
 // 채팅 입력
-router.post('/chat', async (ctx) => {
-  const {
-    body,
-  } = <any>ctx.request;
-  const request = await db.Request.findById(body.requestId);
-  const chat = await db.Chat.create({
-    ...(body as Object),
-    isMine: false,
-    userId: request.userId,
-  });
-  request.chats.push(chat._id);
-  request.unreadCount += 1;
-  await request.save();
-  const session = await db.Session.findOne({
-    userId: request.userId,
-  });
-  if (session) {
-    socket.emit(session.connectionId, 'message', {
-      chat, unreadCount: request.unreadCount,
-    });
-  }
-  const user = await db.User.findById(request.userId);
-  if (user && user.pushToken && user.push.service === 'on') {
-    sendPush({
-      to: user.pushToken,
-      body: chat.text,
-      data: { url: `/chat?requestId=${request._id}` },
-    });
-  }
-  ctx.body = chat;
-});
+// router.post('/chat', async (ctx) => {
+//   const {
+//     body,
+//   } = <any>ctx.request;
+//   const request = await db.Request.findById(body.requestId);
+//   const chat = await db.Chat.create({
+//     ...(body as Object),
+//     isMine: false,
+//     userId: request.userId,
+//   });
+//   request.chats.push(chat._id);
+//   request.unreadCount += 1;
+//   await request.save();
+//   const session = await db.Session.findOne({
+//     userId: request.userId,
+//   });
+//   if (session) {
+//     socket.emit(session.connectionId, 'message', {
+//       chat, unreadCount: request.unreadCount,
+//     });
+//   }
+//   const user = await db.User.findById(request.userId);
+//   if (user && user.pushToken && user.push.service === 'on') {
+//     sendPush({
+//       to: user.pushToken,
+//       body: chat.text,
+//       data: { url: `/chat?requestId=${request._id}` },
+//     });
+//   }
+//   ctx.body = chat;
+// });
 
 export default router;

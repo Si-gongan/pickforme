@@ -1,356 +1,393 @@
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAtomValue, useSetAtom } from 'jotai';
-import ExternalLink from '@/components/ExternalLink';
-import { useState } from 'react';
+import { useSetAtom, useAtomValue } from 'jotai';
+import { getRequestAtom, postAnswerAtom, requestsAtom } from '@/stores/request/atoms';
+import { Request, RequestStatus, RequestType, Product } from '@/stores/request/types';
 import styled from '@emotion/styled';
-import { numComma } from '@/utils/common';
-import { postAnswerAtom, requestsAtom, getRequestAtom } from '@/stores/request/atoms';
-import { PostAnswerParams, Product } from '@/stores/request/types';
 
-const ExternalLinkUnderline = styled(ExternalLink)`
-  text-decoration: underline;
-`;
+const RequestTypeName = {
+  [RequestType.RECOMMEND]: '픽포미 추천',
+  [RequestType.RESEARCH]: '픽포미 분석',
+  [RequestType.QUESTION]: '픽포미 질문'
+};
 
-const tabName = {
-  'RECOMMEND': '픽포미 추천',
-  'RESEARCH': '픽포미 분석',
-  'QUESTION': '픽포미 질문',
-  'BUY': '',
-}
-
-const ProductNew: React.FC<{ product: Product, removeProduct: () => void, setProduct: (product: Product) => void  }> = ({ product, setProduct, removeProduct }) => {
-  const handleChangeInput: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
-    let value: string | string[] | undefined = e.target.value;
-    if (e.target.name === 'tags') {
-      if (value.length) {
-        value = value.split('\n').map(v => v.trim());
-      } else {
-        value = undefined;
-      }
-    } else {
-      value = value.trim();
-    }
-    setProduct({
-      ...product,
-      [e.target.name]: value,
-    });
-  }
-  return (
-      <ProductCard>
-        <RemoveButton type='button' onClick={removeProduct}>삭제</RemoveButton>
-        상품명
-        <Row>
-          <ProductInput name='title' type='text' value={product.title} onChange={handleChangeInput} />
-        </Row>
-        가격
-        <Row>
-          <ProductInput name='price' type='number' value={product.price} onChange={handleChangeInput}/>
-        </Row>
-        태그
-        <Row>
-          <ProductTagArea name='tags' value={product.tags?.join('\r\n')} placeholder='줄바꿈으로 구분' onChange={handleChangeInput}/>
-        </Row>
-        설명
-        <Row>
-          <ProductTextArea name='desc' value={product.desc} onChange={handleChangeInput}/>
-        </Row>
-        구매링크
-        <Row>
-          <ProductInput name='url' type='text' value={product.url} onChange={handleChangeInput}/>
-        </Row>
-      </ProductCard>
-  );
-}
-
-const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  return (
-    <Root onClick={() => setIsOpen(true)}>
-      <ProductCard>
-        <Row>
-          <ProductTitle>
-            {product.title}
-          </ProductTitle>
-          <ProductPrice>
-            {numComma(product.price)}
-          </ProductPrice>
-        </Row>
-        <ProductTagWrap>
-          {product.tags.map((tag) => (
-            <ProductTag
-              key={`answer-product-${product.url}-${tag}}`}
-            >
-              {tag}
-            </ProductTag>
-          ))}
-        </ProductTagWrap>
-        {isOpen && (
-          <>
-          <ProductDesc>
-            {product.desc}
-          </ProductDesc>
-          <ButtonWrap>
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsOpen(false);
-              }}
-            >
-              접기
-            </Button>
-            <ExternalLink href={product.url}>
-              <Button>
-                구매링크 이동
-              </Button>
-            </ExternalLink>
-          </ButtonWrap>
-          </>
-        )}
-      </ProductCard>
-    </Root>
-  );
-}
-
-const initialProduct = {
-  title: '',
-  desc: '',
-  url: '',
-  price: 0,
-  tags: [''],
-}
-
-const initialAnswer = { text: '', products: [] };
 export default function RequestScreen() {
   const router = useRouter();
-  const requestId = router.query.requestId as string;
   const getRequest = useSetAtom(getRequestAtom);
   const postAnswer = useSetAtom(postAnswerAtom);
-  const request = useAtomValue(requestsAtom).find(({ _id }) => _id === `${requestId}`);
-  const [answer, setAnswer] = useState<PostAnswerParams['answer']>({ ...initialAnswer });
+  const requests = useAtomValue(requestsAtom);
+  const [tempAnswer, setTempAnswer] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isEditing, setIsEditing] = useState<boolean[]>([]);
+  const [isEditingAnswer, setIsEditingAnswer] = useState(false);
+  const [initialAnswer, setInitialAnswer] = useState('');
+  const [initialProducts, setInitialProducts] = useState<Product[]>([]);
+  const requestId = router.query.requestId as string;
+  const request = requests.find(req => req._id === requestId);
+
   useEffect(() => {
     if (requestId) {
       getRequest({ requestId });
     }
   }, [requestId, getRequest]);
 
-  const handleSubmitAnswer = () => {
+  useEffect(() => {
+    if (request?.answer?.products) {
+      setProducts(request.answer.products);
+      setInitialProducts(request.answer.products);
+      setIsEditing(new Array(request.answer.products.length).fill(false));
+    }
+    if (request?.answer?.text) {
+      setTempAnswer(request.answer.text);
+      setInitialAnswer(request.answer.text);
+    }
+  }, [request]);
+
+  if (!request) return <div>Loading...</div>;
+
+  const handleAnswerSubmit = () => {
     postAnswer({
-      answer,
-      requestId,
+      requestId: request._id,
+      answer: {
+        text: tempAnswer,
+        products
+      }
     });
-    setAnswer({ ...initialAnswer });
-  }
+    setIsEditingAnswer(false);
+    setInitialAnswer(tempAnswer);
+    setInitialProducts(products);
+    window.alert('답변 전송이 완료되었습니다!');
+  };
 
-  const handleChangeAnswerText: React.ChangeEventHandler<HTMLTextAreaElement> = (e) => {
-    setAnswer((prev) => ({ ...prev, text: e.target.value }));
-  }
+  const handleProductChange = (index: number, field: keyof Product, value: string | string[] | number) => {
+    const newProducts = [...products];
+    newProducts[index] = { ...newProducts[index], [field]: value };
+    setProducts(newProducts);
+  };
 
-  const handleClickAddProduct = () => {
-    setAnswer((prev) => ({ ...prev, products: [...prev.products, { ...initialProduct }] }));
-  }
+  const addProduct = () => {
+    setProducts([...products, { title: '', desc: '', url: '', price: 0, tags: [] }]);
+    setIsEditing([...isEditing, true]);
+  };
 
-  const handleClickRemoveProduct = (i: number) => {
-    setAnswer((prev) => ({
-      ...prev,
-      products: prev.products.filter((_, idx) => i !== idx),
-    }));
-  }
+  const removeProduct = (index: number) => {
+    const newProducts = products.filter((_, i) => i !== index);
+    setProducts(newProducts);
+    const newIsEditing = isEditing.filter((_, i) => i !== index);
+    setIsEditing(newIsEditing);
+  };
 
-  const handleChangeProduct = (i: number) => (product: Product) => {
-    setAnswer((prev) => ({
-      ...prev,
-      products: prev.products.map((prevProduct, idx) => i === idx ? product : prevProduct),
-    }));
-  }
+  const toggleEditing = (index: number) => {
+    const newIsEditing = [...isEditing];
+    newIsEditing[index] = !newIsEditing[index];
+    setIsEditing(newIsEditing);
+  };
 
-  if (!request) {
-    return null;
-  }
+  const toggleEditingAnswer = () => {
+    setIsEditingAnswer(!isEditingAnswer);
+  };
+
+  const isChanged = () => {
+    return (
+      tempAnswer !== initialAnswer ||
+      JSON.stringify(products) !== JSON.stringify(initialProducts)
+    );
+  };
 
   return (
     <Container>
-      <Title>
-        {tabName[request.type]}
-      </Title>
-      <Subtitle>
-        의뢰인 email
-      </Subtitle>
-      <Desc>
-        {request.userId?.email}
-      </Desc>
-      <Subtitle>
-        의뢰 내용
-      </Subtitle>
-      <Desc>
-        {request.type === 'RECOMMEND' ? request.price : request.text}
-      </Desc>
-      {request.type === 'RECOMMEND' && (
-      <>
-        <Subtitle>
-          상세 조건 
-        </Subtitle>
-        <Desc>
-          {request.text}
-        </Desc>
-      </>
+      <Title>{request.name}</Title>
+      <Status status={request.status}>{request.status}</Status>
+      <Type>{RequestTypeName[request.type]}</Type>
+      <UserData>{request.userId?.email}</UserData>
+      <CreatedAt>{new Date(request.createdAt).toLocaleString()}</CreatedAt>
+      <Seperator/>
+      <SectionTitle>의뢰 내용</SectionTitle>
+      <RequestText>{request.text}</RequestText>
+      {request.type === RequestType.QUESTION && (
+        <>
+          <SectionTitle>상품 정보</SectionTitle>
+          <div>상품명 | {request.product.name}</div>
+          <div>가격 | {request.product.price}원</div>
+          <div><a href={request.product.url} target="_blank" rel="noopener noreferrer">{request.product.url}</a></div>
+        </>
       )}
-      {request.type === 'RESEARCH' && (
-      <>
-        <Subtitle>
-          의뢰한 페이지 주소
-        </Subtitle>
-        <Desc>
-          <ExternalLinkUnderline href={request.link}>
-            {request.link}
-          </ExternalLinkUnderline>
-        </Desc>
-      </>
+      {request.type === RequestType.RECOMMEND && (
+        <>
+          <SectionTitle>희망 가격대</SectionTitle>
+          <div>{request.price}</div>
+        </>
+      )}
+      {request.type === RequestType.RESEARCH && (
+        <>
+          <SectionTitle>상품 링크</SectionTitle>
+          <div><a href={request.link} target="_blank" rel="noopener noreferrer">{request.link}</a></div>
+        </>
       )}
       {request.review && (
         <>
-          <Subtitle>리뷰 내용</Subtitle>
-          <Desc>
-            <div>평점: {request.review.rating}</div>
-            <div>후기: {request.review.text.trim() !== "" ? request.review.text : '없음'}</div>
-          </Desc>
+          <Seperator />
+          <SectionTitle>사용자 리뷰</SectionTitle>
+          <div>{request.review.text}</div>
+          <div>{request.review.rating}점</div>
         </>
       )}
-      <Subtitle>
-        추천 결과
-      </Subtitle>
-      {request.answer ? (
-        <>
-          <Desc>
-            {request.answer.text}
-          </Desc>
-          <ProductWrap>
-            {request.answer.products.map((product) => (
-              <ProductItem key={`answer-product-${product.url}}`} product={product} />
-            ))}
-          </ProductWrap>
-        </>
-      ) : (null)}
-
-        <>
-          <Desc>
-            답변을 작성해주세요
-          </Desc>
-          <AnswerTextarea onChange={handleChangeAnswerText} value={answer.text} />
-          {answer.products.map((product, i) => (
-            <ProductNew key={`answer-product-edit-${i}}`} product={product} setProduct={handleChangeProduct(i)} removeProduct={() => handleClickRemoveProduct(i)} />
-          ))}
-          <br />
-          <button onClick={() => handleClickAddProduct()}>상품 추가</button>
-          <br />
-          <br />
-          <button onClick={handleSubmitAnswer}>답변전송</button>
-        </>
+      <Seperator />
+      <AnswerForm onSubmit={e => { e.preventDefault(); handleAnswerSubmit(); }}>
+        <SectionTitle>답변 내용</SectionTitle>
+        {isEditingAnswer ? (
+          <>
+            <AnswerInput
+              value={tempAnswer}
+              onChange={e => setTempAnswer(e.target.value)}
+              placeholder="Write your answer here..."
+            />
+            <SaveButton type="button" onClick={toggleEditingAnswer}>Save</SaveButton>
+          </>
+        ) : (
+          <>
+            <AnswerText>{tempAnswer}</AnswerText>
+            <EditButton type="button" onClick={toggleEditingAnswer}>Edit</EditButton>
+          </>
+        )}
+        <SectionTitle>상품 정보 입력</SectionTitle>
+        {products.map((product, index) => (
+          <ProductForm key={index}>
+            {isEditing[index] ? (
+              <>
+                <Input
+                  value={product.title}
+                  onChange={e => handleProductChange(index, 'title', e.target.value)}
+                  placeholder="Product Title"
+                />
+                <Input
+                  value={product.desc}
+                  onChange={e => handleProductChange(index, 'desc', e.target.value)}
+                  placeholder="Product Description"
+                />
+                <Input
+                  value={product.url}
+                  onChange={e => handleProductChange(index, 'url', e.target.value)}
+                  placeholder="Product URL"
+                />
+                <Input
+                  type="number"
+                  value={product.price}
+                  onChange={e => handleProductChange(index, 'price', parseFloat(e.target.value))}
+                  placeholder="Product Price"
+                />
+                <Input
+                  value={product.tags.join(', ')}
+                  onChange={e => handleProductChange(index, 'tags', e.target.value.split(',').map(tag => tag.trim()))}
+                  placeholder="Product Tags (comma separated)"
+                />
+                <SaveButton type="button" onClick={() => toggleEditing(index)}>Save</SaveButton>
+                <RemoveButton type="button" onClick={() => removeProduct(index)}>Remove Product</RemoveButton>
+              </>
+            ) : (
+              <>
+                <ProductTitle>{product.title}</ProductTitle>
+                <ProductDesc>{product.desc}</ProductDesc>
+                <ProductPrice>{product.price}</ProductPrice>
+                <ProductTags>{product.tags.join(', ')}</ProductTags>
+                <a href={product.url} target="_blank" rel="noopener noreferrer">View Product</a>
+                <EditButton type="button" onClick={() => toggleEditing(index)}>Edit</EditButton>
+              </>
+            )}
+          </ProductForm>
+        ))}
+        <AddButton type="button" onClick={addProduct}>상품 추가</AddButton>
+        <ButtonGroup>
+          <SubmitButton type="submit" disabled={!isChanged()}>답변 전송</SubmitButton>
+        </ButtonGroup>
+      </AnswerForm>
     </Container>
   );
 }
 
-const Root = styled.button`
-  border: none;
-  background-color: transparent;
-`;
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
+  width: 100%;
   padding: 20px;
-  max-width : 900px;
-  justify-content: flex-start;
-  margin : auto;
+  background-color: #f9f9f9;
 `;
-const Title = styled.div`
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 24px;
-  margin-bottom: 30px;
+
+const Title = styled.h1`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
 `;
-const Subtitle = styled.div`
-  font-weight: 600;
+
+const Status = styled.span<{ status: RequestStatus }>`
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  background-color: ${({ status }) =>
+    status === RequestStatus.PENDING ? 'orange' :
+    status === RequestStatus.SUCCESS ? 'green' :
+    'red'};
+`;
+
+const Type = styled.div`
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 10px;
+`;
+
+const UserData = styled.div`
   font-size: 16px;
-  line-height: 19px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 `;
-const Desc = styled.div`
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-  margin-bottom: 26px;
+
+const CreatedAt = styled.div`
+  color: grey;
+  margin-bottom: 20px;
 `;
-const ProductWrap = styled.div`
+
+const Seperator = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: #ddd;
+  margin: 20px 0;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+`;
+
+const RequestText = styled.p`
+  font-size: 18px;
+  margin-bottom: 20px;
+`;
+
+const AnswerText = styled.p`
+  font-size: 16px;
+  margin-bottom: 10px;
+`;
+
+const AnswerForm = styled.form`
   display: flex;
-  margin-top: 9px;
   flex-direction: column;
-`;
-const ProductCard = styled.div`
-  border: 2px solid black;
-  border-radius: 13px;
-  padding: 16px 13px;
-`;
-const ProductTitle = styled.div`
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-  margin-bottom: 8px;
-`;
-const ProductPrice = styled.div`
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 15px;
-  margin-bottom: 8px;
-`;
-const AnswerTextarea = styled.textarea`
-  min-height: 150px;
-`;
-const Row = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin : 10px 0; 
-`;
-const RemoveButton = styled.button`
-  display: block;
-  margin-left: auto;
-`;
-const ProductTagWrap = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 9px;
-`;
-
-const ProductTag = styled.div`
-  padding: 0 12px;
-`;
-const ProductDesc = styled.div`
-  text-align: left;
-  margin-top: 10px;
-  margin-bottom: 12px;
-`;
-const ButtonWrap = styled.div`
-  display: flex;
-  flex-direction: row;
   gap: 10px;
-  justify-content: flex-end;
-`;
-const Button = styled.button`
-  padding: 0 12px;
+  margin-top: 20px;
 `;
 
-const ProductInput = styled.input`
-  flex: 1;
-  padding : 5px;
-`
+const AnswerInput = styled.textarea`
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+`;
 
-const ProductTagArea = styled.textarea`
-  flex: 1;
-  height: 80px;
-  padding : 5px;
-`
+const ProductForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+`;
 
-const ProductTextArea = styled.textarea`
-  flex: 1;
-  height: 120px;
-  padding : 5px;
-`
+const ProductTitle = styled.h3`
+  font-size: 18px;
+  margin-bottom: 5px;
+`;
+
+const ProductDesc = styled.p`
+  font-size: 14px;
+  margin-bottom: 5px;
+`;
+
+const ProductPrice = styled.p`
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+`;
+
+const ProductTags = styled.p`
+  font-size: 12px;
+  color: grey;
+  margin-bottom: 5px;
+`;
+
+const Input = styled.input`
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+`;
+
+const AddButton = styled.button`
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #555;
+  }
+`;
+
+const EditButton = styled.button`
+  padding: 10px;
+  background-color: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #1976d2;
+  }
+`;
+
+const SaveButton = styled.button`
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #218838;
+  }
+`;
+
+const RemoveButton = styled.button`
+  padding: 10px;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #c9302c;
+  }
+`;
+
+const SubmitButton = styled.button<{ disabled: boolean }>`
+  padding: 10px;
+  background-color: ${({ disabled }) => (disabled ? '#888' : '#333')};
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+
+  &:hover {
+    background-color: ${({ disabled }) => (disabled ? '#888' : '#555')};
+  }
+`;

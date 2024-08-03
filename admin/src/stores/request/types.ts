@@ -5,6 +5,13 @@ export enum RequestStatus {
   CLOSED = 'CLOSED',
 }
 
+export enum RequestType {
+  RECOMMEND = 'RECOMMEND',
+  RESEARCH = 'RESEARCH',
+  QUESTION = 'QUESTION',
+  AI = 'AI',
+}
+
 export interface Chat {
   _id: string,
   createdAt: string,
@@ -37,6 +44,17 @@ export interface Product {
   tags: string[],
 }
 
+export interface DiscoverProduct {
+  name: string,
+  price: number,
+  origin_price: number,
+  discount_rate: number,
+  ratings: number,
+  reviews: number,
+  thumbnail: string,
+  url: string,
+}
+
 interface RequestBase {
   _id: string,
   name: string,
@@ -44,7 +62,7 @@ interface RequestBase {
   createdAt: string,
   chats: Chat[],
   userId?: UserData,
-  text: string,                              
+  text: string,                    
   answer: {
     text: string,
     products: Product[]
@@ -59,21 +77,21 @@ export interface PostAnswerParams extends Pick<Request, 'answer'>, Pick<Chat, 'r
 };
 
 export interface RecommendRequestParams {
-  type: 'RECOMMEND',                         
+  type: RequestType.RECOMMEND,                         
   price: string,
   text: string,                              
 }
 
 export interface ResearchRequestParams {
   text: string,                              
-  type: 'RESEARCH',
+  type: RequestType.RESEARCH,
   link: string,
 }
 
 export interface QuestionRequestParams {
-  type: 'QUESTION',
+  type: RequestType.QUESTION,
   text: string,
-  link: string,
+  product: DiscoverProduct,
 }
 
 interface RecommendRequest extends RequestBase, RecommendRequestParams {
@@ -85,13 +103,19 @@ interface ResearchRequest extends RequestBase, ResearchRequestParams {
 interface QuestionRequest extends RequestBase, QuestionRequestParams {
 }
 
-interface BuyRequest extends RequestBase {
-  type: 'BUY',
-}
-
-export type Request = BuyRequest | RecommendRequest | ResearchRequest | QuestionRequest;
+export type Request = RecommendRequest | ResearchRequest | QuestionRequest;
 
 export interface GetRequestsParams {
+  page?: number,
+  pageSize?: number,
   start?: string,
-  end?: string
+  end?: string,
+  type?: string,
 };
+
+export interface GetRequestsResponse {
+  requests: Request[],
+  totalRequests: number,
+  totalPages: number,
+  currentPage: number,
+}

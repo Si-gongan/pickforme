@@ -9,11 +9,15 @@ export enum RequestStatus {
 export enum RequestType {
   RECOMMEND = 'RECOMMEND',
   RESEARCH = 'RESEARCH',
+  QUESTION = 'QUESTION',
   AI = 'AI',
-  QUESTION = 'QUESTION'
 }
 
 const RequestSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+  },
   status: {
     type: String,
     enum: Object.values(RequestStatus),
@@ -31,17 +35,8 @@ const RequestSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-  price: {
-    type: String,
-    default: '0',
-  },
-  link: {
-    type: String,
-  },
   product: {
-    id: Number,
     name: String,
-    option: String,
     price: Number,
     origin_price: Number,
     discount_rate: Number,
@@ -49,6 +44,10 @@ const RequestSchema = new mongoose.Schema({
     ratings: Number,
     url: String,
     thumbnail: String,
+  },
+  review: {
+    text: String,
+    rating: Number,
   },
   answer: {
     default: undefined,
@@ -78,27 +77,26 @@ const RequestSchema = new mongoose.Schema({
       }],
     },
   },
-  unreadCount: {
-    type: Number,
-    default: 0,
-  },
-  data: mongoose.Schema.Types.Mixed,
-  chats: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chats',
-  }],
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Users',
-  },
-  review: {
-    text: String,
-    rating: Number,
-  },
-  isPublic: {
-    type: Boolean,
-    default: false,
-  },
+  // price: {
+  //   type: String,
+  //   default: '0',
+  // },
+  // link: {
+  //   type: String,
+  // },
+  // unreadCount: {
+  //   type: Number,
+  //   default: 0,
+  // },
+  // data: mongoose.Schema.Types.Mixed,
+  // chats: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Chats',
+  // }],
+  // isPublic: {
+  //   type: Boolean,
+  //   default: false,
+  // },
 }, {
   timestamps: true,
 });

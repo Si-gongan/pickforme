@@ -42,7 +42,7 @@ export default function DashboardScreen() {
   const userSignupData = calculateUserSignups(users);
 
   useEffect(() => {
-    getRequests({});
+    getRequests({pageSize:1000});
     getUsers({});
     getLogs({});
     getUserStats();
@@ -57,7 +57,7 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     if (requestStartDate < requestEndDate){
-      getRequests({start: requestStartDate, end: requestEndDate})
+      getRequests({start: requestStartDate, end: requestEndDate, pageSize: 1000})
     }
   }, [requestStartDate, requestEndDate]);
 
