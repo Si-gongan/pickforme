@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { getRequestAtom, postAnswerAtom, requestsAtom } from '@/stores/request/atoms';
+import { getRequestAtom, postAnswerAtom, requestsAtom, deleteRequestAtom } from '@/stores/request/atoms';
 import { Request, RequestStatus, RequestType, Product } from '@/stores/request/types';
 import styled from '@emotion/styled';
 
@@ -15,6 +15,7 @@ export default function RequestScreen() {
   const router = useRouter();
   const getRequest = useSetAtom(getRequestAtom);
   const postAnswer = useSetAtom(postAnswerAtom);
+  const deleteRequest = useSetAtom(deleteRequestAtom);
   const requests = useAtomValue(requestsAtom);
   const [tempAnswer, setTempAnswer] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -46,6 +47,7 @@ export default function RequestScreen() {
   if (!request) return <div>Loading...</div>;
 
   const handleAnswerSubmit = () => {
+    if (!window.confirm('정말 답변을 전송하시겠습니까?')) return;
     postAnswer({
       requestId: request._id,
       answer: {
@@ -93,6 +95,13 @@ export default function RequestScreen() {
       JSON.stringify(products) !== JSON.stringify(initialProducts)
     );
   };
+
+  const deleteRequestHandler = async () => {
+    if (window.confirm('정말 삭제하시겠습니까?')) {
+      await deleteRequest(request._id);
+      router.push('/'); // 삭제 후 홈으로 이동
+    }
+  }
 
   return (
     <Container>
@@ -199,6 +208,7 @@ export default function RequestScreen() {
         <AddButton type="button" onClick={addProduct}>상품 추가</AddButton>
         <ButtonGroup>
           <SubmitButton type="submit" disabled={!isChanged()}>답변 전송</SubmitButton>
+          <RemoveButton type="button" onClick={deleteRequestHandler}>삭제</RemoveButton>
         </ButtonGroup>
       </AnswerForm>
     </Container>
@@ -206,8 +216,9 @@ export default function RequestScreen() {
 }
 
 const Container = styled.div`
-  width: 100%;
+  width: 1200px;
   padding: 20px;
+  margin: 0 auto;
   background-color: #f9f9f9;
 `;
 
@@ -286,10 +297,11 @@ const ProductForm = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  padding: 10px;
+  padding: 20px;
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 10px;
+  background-color: #fff;
 `;
 
 const ProductTitle = styled.h3`

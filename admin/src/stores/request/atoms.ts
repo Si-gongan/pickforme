@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import { GetPreviewParams, Request, GetRequestsParams, GetRequestParams, PostAnswerParams } from './types';
-import { GetRequestsAPI, GetRequestStatsAPI, GetUserStatsAPI, GetRequestAPI, PostAnswerAPI } from './apis';
+import { GetRequestsAPI, GetRequestStatsAPI, GetUserStatsAPI, GetRequestAPI, PostAnswerAPI, DeleteRequestAPI } from './apis';
 
 export const requestsAtom = atom<Request[]>([]);
 export const currentPageAtom = atom(1);
@@ -27,6 +27,11 @@ export const postAnswerAtom = atom(null, async (get, set, params: PostAnswerPara
   const requests = get(requestsAtom)           
   set(requestsAtom, requests.map((request) => request._id === params.requestId ? data : request));
 });  
+
+export const deleteRequestAtom = atom(null, async (get, set, requestId: string) => {
+  await DeleteRequestAPI(requestId);
+  set(requestsAtom, get(requestsAtom).filter((request) => request._id !== requestId));
+});
 
 export const userStatsAtom = atom<any[]>([]);
 export const requestStatsAtom = atom<any[]>([]);

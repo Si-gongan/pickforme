@@ -27,4 +27,5 @@ export const GetRequestsAPI = (params: GetRequestsParams) => {
 export const GetRequestAPI = (params: GetRequestParams) => client.get<Request>(`/admin/request/detail/${params.requestId}`);
 export const GetUserStatsAPI = () => client.get('/admin/request/user-stats');
 export const GetRequestStatsAPI = () => client.get('/admin/request/request-stats');
+export const DeleteRequestAPI = (requestId: string) => client.delete(`/admin/request/${requestId}`);
 export const PostAnswerAPI = (params: PostAnswerParams) => client.post<Request>(`/admin/request/answer`, params);

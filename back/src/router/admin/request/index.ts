@@ -17,7 +17,7 @@ router.post('/answer', async (ctx) => {
   } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId).populate('userId');
   if (!request.answer) {
-    const deeplink = `/discover-detail-main?productUrl=${encodeURIComponent(request.link)}`;
+    const deeplink = `/discover-detail-main?productUrl=${encodeURIComponent(request.product.url)}`;
     // const chat = await db.Chat.create({
     //   userId: request.userId,
     //   requestId: request._id,
@@ -94,6 +94,14 @@ router.get('/', async (ctx) => {
     totalPages: Math.ceil(totalRequests / pageSizeNum),
     currentPage: pageNum
   };
+});
+
+router.delete('/:requestId', async (ctx) => {
+  const {
+    requestId,
+  } = ctx.params;
+  await db.Request.findByIdAndDelete(requestId);
+  ctx.status = 204;
 });
 
 
