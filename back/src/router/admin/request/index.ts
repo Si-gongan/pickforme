@@ -17,7 +17,7 @@ router.post('/answer', async (ctx) => {
   } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId).populate('userId');
   if (!request.answer) {
-    const deeplink = `/discover-detail-main?productUrl=${encodeURIComponent(request.product.url)}`;
+    const deeplink = `/product-detail?productUrl=${encodeURIComponent(request.product.url)}`;
     // const chat = await db.Chat.create({
     //   userId: request.userId,
     //   requestId: request._id,
