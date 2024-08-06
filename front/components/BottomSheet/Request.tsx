@@ -1,18 +1,19 @@
-import { useRef,useState } from 'react';
-import { Platform, KeyboardAvoidingView, TextInput, StyleSheet } from 'react-native';
+import { useRef, useState, useEffect } from 'react';
+import { Platform, KeyboardAvoidingView, TextInput, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
 import BottomSheet from 'react-native-modal';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
-import { isShowLackModalAtom } from '../../stores/auth/atoms';
-import { scrapedProductDetailAtom } from '../../stores/discover/atoms';
+import { isShowNoMembershipModalAtom } from '../../stores/auth/atoms';
+import { scrapedProductDetailAtom } from '../../stores/product/atoms';
 import { sendLogAtom } from '../../stores/log/atoms';
 
-import { QuestionRequestParams } from '../../stores/request/types';
+import { QuestionRequestParams, RequestType } from '../../stores/request/types';
 import Colors from '../../constants/Colors';
 import { styles } from './Base';
+import useCheckMembership from '../../hooks/useCheckMembership';
 import useCheckPoint from '../../hooks/useCheckPoint';
 
 import Button from '../Button';
@@ -21,7 +22,7 @@ import { Text, View } from '../Themed';
 export default function ResearchBottomSheet() {
   const headerTitleRef = useRef(null);
 
-  const isShowLackModalVisible = useAtomValue(isShowLackModalAtom);
+  const isShowNoMembershipModalVisible = useAtomValue(isShowNoMembershipModalAtom);
 
   const addRequest = useSetAtom(addRequestAtom);
   const colorScheme = useColorScheme();
@@ -32,29 +33,43 @@ export default function ResearchBottomSheet() {
   const sendLog = useSetAtom(sendLogAtom);
 
   const [data, setData] = useState<Omit<QuestionRequestParams, 'product'>>({
-    type: 'QUESTION',
-    link: '',
+    type: RequestType.QUESTION,
     text: '',
   });
-  const checkPoint = useCheckPoint(1, (params: QuestionRequestParams) => {
+  // const checkMembership = useCheckMembership((params: QuestionRequestParams) => {
+  //   if (product) {
+  //     addRequest(params);
+  //   }
+  // });
+  const checkPoint = useCheckPoint((params: QuestionRequestParams) => {
     if (product) {
       addRequest(params);
-      
     }
   });
   const handleSubmit = () => {
-    const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews};
+    const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews} as QuestionRequestParams;
     onClose();
     checkPoint(params);
-    sendLog({ product: { id: product?.id, url: product?.url }, action: 'request', metaData: {}});
+    sendLog({ product: { url: product?.url }, action: 'request', metaData: {}});
   }
   const disabled = !data.text;
-  const [product,setProduct] = useAtom(requestBottomSheetAtom);
+  const [product, setProduct] = useAtom(requestBottomSheetAtom);
   const onClose = () => {
     setData({ ...data, text: '' });
     setProduct(undefined);
   }
-  if (isShowLackModalVisible) {
+
+  useEffect(() => {
+    const focusOnHeader = () => {
+      const node = findNodeHandle(headerTitleRef.current);
+      if (product && node) {
+        AccessibilityInfo.setAccessibilityFocus(node);
+      }
+    }
+    setTimeout(focusOnHeader, 500);
+  }, [product]);
+
+  if (isShowNoMembershipModalVisible) {
     return null;
   }
   return (
@@ -84,7 +99,7 @@ export default function ResearchBottomSheet() {
               onChangeText={(text) => setData({ ...data, text })}
             />
           </View>
-          <Button style={styles.button} title='1픽으로 매니저에게 물어보기' onPress={handleSubmit} disabled={disabled} />
+          <Button style={styles.button} title='매니저에게 물어보기' onPress={handleSubmit} disabled={disabled} />
         </View>
         </KeyboardAvoidingView>
     </BottomSheet>

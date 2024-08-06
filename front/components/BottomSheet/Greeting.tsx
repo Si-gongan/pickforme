@@ -1,3 +1,5 @@
+import { useRef, useEffect } from 'react';
+import { findNodeHandle, AccessibilityInfo } from 'react-native';
 import { useRouter } from "expo-router";
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
@@ -13,8 +15,9 @@ const localStyles = StyleSheet.create({
   },
 });
 
-const LoginBottomSheet: React.FC<Props> = () => {
+const GreetingBottomSheet: React.FC<Props> = () => {
   const router = useRouter();
+  const headerTitleRef = useRef(null);
 
   const [visible, setVisible] = useAtom(isShowGreetingModalAtom);
 
@@ -23,6 +26,16 @@ const LoginBottomSheet: React.FC<Props> = () => {
   const handleClickYes = () => {
     onClose();
   }
+  useEffect(() => {
+    const focusOnHeader = () => {
+      const node = findNodeHandle(headerTitleRef.current);
+      if (visible && node) {
+        AccessibilityInfo.setAccessibilityFocus(node);
+      }
+    }
+    setTimeout(focusOnHeader, 500);
+  }, [visible]);
+  
   return (
     <BottomSheet
       style={styles.base}
@@ -31,12 +44,14 @@ const LoginBottomSheet: React.FC<Props> = () => {
       onBackdropPress={onClose}
     >
       <View style={styles.bottomSheet}>
-        <Text style={[styles.title, localStyles.title]}>
-          회원가입 보상
+        <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
+          {/* 픽포미 3.0 업데이트 감사 이벤트! */}
+          픽포미 리뉴얼 감사 이벤트!
         </Text>
         <Text style={[styles.desc, localStyles.title]}>
-          감사의 의미로 무료 1픽을 드렸어요.
-          지금 바로 픽포미 서비스를 이용해보세요!
+          {/* 감사의 의미로 AI 질문하기 무료 이용권 10개를 지급해드렸어요.
+          3.0 업데이트로 더욱 편리해진 픽포미를 이용해보세요! */}
+          픽포미 리뉴얼 기념으로 2주 동안 AI 질문하기 무료 이용권을 지급해 드렸어요! 새로워진 픽포미와 함께 쇼핑하러 가볼까요?
         </Text>
         <View style={styles.buttonRow}>
           <View style={styles.buttonWrap}>
@@ -47,4 +62,4 @@ const LoginBottomSheet: React.FC<Props> = () => {
     </BottomSheet>
   );
 }
-export default LoginBottomSheet;
+export default GreetingBottomSheet;

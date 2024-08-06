@@ -1,5 +1,3 @@
-import { View, Text } from '../Themed';
-import Button from '../Button';
 import { StyleSheet } from 'react-native';
 
 export interface Props {
@@ -14,19 +12,22 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 24,
     fontWeight: '700',
-    marginBottom: 33,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
     lineHeight: 22,
     fontWeight: '500',
     marginBottom: 20,
+    textAlign: 'center',
   },
   desc: {
-    fontWeight: '500',
+    fontWeight: '400',
     fontSize: 16,
-    lineHeight: 19,
+    lineHeight: 20,
     marginBottom: 20,
+    textAlign: 'center',
   },
   buttonRow: {
     flexDirection: 'row',

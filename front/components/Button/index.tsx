@@ -13,6 +13,7 @@ interface ButtonProps extends  Omit<PressableProps, 'children'>, ButtonTextProps
   size?: 'large' | 'medium' | 'small',
   renderChildrenPosition?: 'front' | 'back';
   readOnly?: boolean;
+  selected?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -118,8 +119,9 @@ const Button = ({
   if (readOnly) {
     return <Content pressed={false} />;
   }
+  const accessibleState = props.selected ? { selected: true } : {};
   return (
-    <Pressable onPress={handlePress} accessibilityLabel={props.title} {...props} accessibilityRole='button'>
+    <Pressable onPress={handlePress} accessibilityLabel={props.accessibilityLabel} {...props} accessibilityRole='button' accessibilityState={{selected: props.selected}}>
       {(pressableProps) => <Content {...pressableProps} />}
     </Pressable>
   );
