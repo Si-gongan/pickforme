@@ -1,15 +1,48 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { userDataAtom, isShowLackModalAtom } from '../stores/auth/atoms';
+import { userDataAtom, isShowLackPointModalAtom, isShowLoginModalAtom } from '../stores/auth/atoms';
+import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+// import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
-const useCheckPoint = (point: number, callback: (e?: any) => any) => {
+const useCheckPoint = (callback: (e?: any) => any) => {
+  const setIsShowLackPointModal = useSetAtom(isShowLackPointModalAtom);
+  const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
+
   const userData = useAtomValue(userDataAtom);
-  const setIsShowLackModal = useSetAtom(isShowLackModalAtom);
-  const isLack = !userData || userData.point < point;
-  if (!isLack) {
-    return callback;
-  }
-  return () => {
-    setIsShowLackModal(true);
+  // const subscription = useAtomValue(subscriptionAtom);
+  // const getSubscription = useSetAtom(getSubscriptionAtom);
+
+  const router = useRouter();
+
+  return (params: any) => {
+    if (!userData) {
+      setIsShowLoginModal(true);
+      return;
+    }
+    if (userData.point > 0) {
+      callback(params);
+      return;
+    }
+    // setIsShowLackPointModal(true);
+    Alert.alert('이용권이 부족해요.', '이용권을 충전하시겠어요?', [
+      {
+        text: '취소',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: '확인',
+        onPress: () => {
+          router.push('/purchase');
+        },
+      },
+    ]);
+    // getSubscription();
+    // if (subscription) {
+    //   callback(params);
+    // } else {
+    //   setIsShowLackPointModal(true);
+    // }
   }
 }
 
