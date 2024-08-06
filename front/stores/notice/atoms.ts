@@ -2,6 +2,8 @@ import { atom } from 'jotai';
 import { Notice, GetNoticeParams, } from './types';
 import { GetNoticesAPI, GetNoticeAPI } from './apis';
 
+// 2.0 공지사항 기능을 위한 모듈이고, 3.0에선 사용되지 않음
+
 export const noticesAtom = atom<Notice[]>([]);
 
 export const getNoticesAtom = atom(null, async (get, set) => {

@@ -12,3 +12,5 @@ export const pushBottomSheetAtom = atom(null, (get, set, params: BottomSheetInfo
 export const closeBottomSheetAtom = atom(null, (get, set, params: number) => {
   set(bottomSheetsAtom, get(bottomSheetsAtom).map((info, i) => i === params ? ({ ...info, isVisible: false }) : info));
 });
+
+export const tabNavigationAtom = atom<string>('index');
