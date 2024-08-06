@@ -190,8 +190,9 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
       userId: ctx.state.user._id, isExpired: false, 'product.type': ProductType.SUBSCRIPTION,
     });
     if (!subscription) {
-      user.point -= 1;
-      await user.save();
+      // 추후 이벤트 기간 종료 시 포인트 소모 로직 추가
+      // user.point -= 1;
+      // await user.save();
     }
   }
 });
