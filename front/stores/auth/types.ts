@@ -2,15 +2,14 @@ export interface UserData {
   _id: string,
   token: string,
   point: number,
+  lastLoginAt: string,
   push: {
-    chat: PushChat;
     service: PushService;
   }
 }
 
 export interface Setting {
   name?: string,
-  fontSize?: 'small' | 'medium' | 'large',
   vision?: 'none' | 'low' | 'blind',
   theme?: 'light' | 'dark' | 'default',
   isReady: boolean,
@@ -29,15 +28,10 @@ export interface GoogleLoginParams {
 export interface LoginResponse {
   user: UserData;
   isRegister: boolean;
+  isNewLoginInEvent: boolean,
 }
 export interface SetPushTokenParams {
   token: string;
-}
-
-export enum PushChat {
-  off = 'off',
-  report = 'report',
-  all = 'all',
 }
 
 export enum PushService {

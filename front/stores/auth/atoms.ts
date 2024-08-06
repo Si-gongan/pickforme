@@ -13,6 +13,7 @@ import {
   SetPushSettingParams,
 } from './types';
 import { QuitAPI, GoogleLoginAPI, AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
+// import { requestsAtom } from '../request/atoms';
 
 export const isOnboardingFinishedAtom = atomWithStorage<'true' | 'false'>('isOnboardingFinished', 'false');
 export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
@@ -32,7 +33,14 @@ export const setPointAtom = atom(null, async (get, set, data: number) => {
 export const quitAtom = atom(null, async (get, set) => {
   await QuitAPI();
   set(userDataAtom, undefined);
+  // set(requestsAtom, []);
   Alert.alert('탈퇴가 완료되었습니다.');
+});
+
+export const logoutAtom = atom(null, async (get, set) => {
+  set(userDataAtom, undefined);
+  // set(requestsAtom, []);
+  Alert.alert('로그아웃 되었습니다.');
 });
 
 export const setClientTokenAtom = atom(null, async (get, set) => {
@@ -45,10 +53,10 @@ export const setClientTokenAtom = atom(null, async (get, set) => {
 
 export const handleLoginResultAtom = atom(null, async (get, set, data: LoginResponse) => {
   await set(userDataAtom, data.user);
-  if (data.isRegister) {
+  set(isShowLoginModalAtom, false);
+  if (data.isNewLoginInEvent){
     set(isShowGreetingModalAtom, true);
   }
-  set(isShowLoginModalAtom, false);
   set(setClientTokenAtom);
 });
 
@@ -81,5 +89,6 @@ export const setPushSettingAtom = atom(null, async (get, set, params: SetPushSet
 
 export const isShowLoginModalAtom = atom(false);
 export const isShowOnboardingModalAtom = atom(false);
-export const isShowLackModalAtom = atom(false);
+export const isShowNoMembershipModalAtom = atom(false);
+export const isShowLackPointModalAtom = atom(false);
 export const isShowGreetingModalAtom = atom(false);
