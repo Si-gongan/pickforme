@@ -1,4 +1,4 @@
-import { Product as DiscoverProduct } from '../discover/types';
+import { Product } from '../product/types';
 
 interface Review {
   text: string,
@@ -11,33 +11,14 @@ export enum RequestStatus {
   CLOSED = 'CLOSED',
 }
 
-export interface Chat {
-  _id: string,
-  createdAt: string,
-  isMine: boolean,
-  questions?: string[],
-  text: string,
-  requestId: string,
-  products?: DiscoverProduct[],
-  button?: {
-    text: string,
-    deeplink: string,
-  },
+export enum RequestType {
+  RECOMMEND = 'RECOMMEND', // 픽포미 추천 (2.0)
+  RESEARCH = 'RESEARCH', // 픽포미 분석 (2.0)
+  QUESTION = 'QUESTION', // 픽포미 질문 (3.0)
+  AI = 'AI', // AI 포미 (2.0)
 }
 
-export interface Preview {
-  link: string,
-  image: string,
-  title: string,
-  desc: string,
-}
-
-export interface GetPreviewParams extends Pick<Preview, 'link'> {};
-
-export interface SendChatParams extends Pick<Chat, 'text' | 'requestId'> {};
-export interface GetRequestParams extends Pick<Chat, 'requestId'> {};
-
-export interface Product {
+export interface AnswerProduct { // 2.0 매니저 답변에 포함되는 상품 정보 포맷
   title: string,
   desc: string,
   url: string,
@@ -47,46 +28,37 @@ export interface Product {
 
 interface RequestBase {
   _id: string,
-  name: string,
-  status: RequestStatus,
+  name: string, // 의뢰 제목
+  text: string, // 의뢰 내용
+  status: RequestStatus, // 의뢰 상태
+  product?: Product, // 의뢰 상품 (3.0)
+  link?: string, // 의뢰 상품 링크 (2.0)                   
+  answer?: { // 매니저 답변
+    text: string,
+    products: AnswerProduct[] // (2.0)
+  },
+  review?: Review, // 사용자 리뷰 (2.0)
   createdAt: string,
   updatedAt: string,
-  chats: Chat[],
-  text: string,                              
-  review: Review,
-  unreadCount: number,
-  product: DiscoverProduct,
-  answer?: {
-    text: string,
-    products: Product[]
-  },
 }
 
 export interface RecommendRequestParams {
-  type: 'RECOMMEND',                         
-  price: string,
+  type: RequestType.RECOMMEND,                         
+  price: string, // 희망 가격대
   text: string,
-  isPublic: boolean,
-  product: DiscoverProduct,
+  isPublic: boolean, // 공개 여부
 }
 
 export interface ResearchRequestParams {
+  type: RequestType.RESEARCH,
   text: string,                              
-  type: 'RESEARCH',
-  link: string,
-  product: DiscoverProduct
+  link?: string,
 }
 
 export interface QuestionRequestParams {
-  type: 'QUESTION',
+  type: RequestType.QUESTION,
   text: string,
-  link: string,
-  product: DiscoverProduct,
-}
-
-export interface AIRequestParams {
-  type: 'AI',
-  text: string,
+  product?: Product,
 }
 
 interface RecommendRequest extends RequestBase, RecommendRequestParams {
@@ -95,23 +67,10 @@ interface RecommendRequest extends RequestBase, RecommendRequestParams {
 interface ResearchRequest extends RequestBase, ResearchRequestParams {
 }
 
-interface AIRequest extends RequestBase, AIRequestParams {
+interface QuestionRequest extends RequestBase, QuestionRequestParams {
 }
 
-interface BuyRequest extends RequestBase {
-  type: 'BUY',
-}
-
-export type Request = BuyRequest | RecommendRequest | ResearchRequest | AIRequest;
-export type RequestParams = RecommendRequestParams | ResearchRequestParams | QuestionRequestParams | AIRequestParams;
-
-export interface PostRequestResponse {
-  request: Request,
-  point: number,
-}
+export type Request = RecommendRequest | ResearchRequest | QuestionRequest;
+export type RequestParams = RecommendRequestParams | ResearchRequestParams | QuestionRequestParams;
 
 export interface GetRequestsParams {};
-
-export interface ReadRequestResponse extends Pick<Request, '_id' | 'unreadCount'> {};
-
-export interface ReviewRequestParams extends Review, Pick<Request, '_id'> {};

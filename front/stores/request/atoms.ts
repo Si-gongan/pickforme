@@ -1,114 +1,71 @@
 import { atom } from 'jotai';
-import { GetPreviewParams, ReviewRequestParams, Request, RequestParams, SendChatParams, Preview, GetRequestParams, Chat } from './types';
-import { ReviewRequestAPI, ReadRequestAPI, PostRequestAPI, GetRequestsAPI, PostChatAPI, GetPreviewAPI, GetRequestAPI, GetBuyAPI, ToggleBuyAPI } from './apis';
+import { Product } from '../product/types';
+import { Request, RequestParams } from './types';
+import { PostRequestAPI, GetRequestsAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
-import { Product } from '../discover/types';
+import { Alert } from 'react-native';
 
-export const buyAtom = atom<boolean>(false);
-export const getBuyAtom = atom(null, async (get, set) => {
-  const { data } = await GetBuyAPI();
-  set(buyAtom, data);
-});
-export const toggleBuyAtom = atom(null, async (get, set) => {
-  const { data } = await ToggleBuyAPI();
-  set(buyAtom, data);
-});
 
 export const requestsAtom = atom<Request[]>([]);
 
-export const previewAtom = atom<Preview | void>(undefined);
-export const getPreviewAtom = atom(null, async (get, set, request: GetPreviewParams) => {
-  const { data } = await GetPreviewAPI(request);
-  set(previewAtom, data);
-});
-
 export const addRequestAtom = atom(null, async (get, set, request: RequestParams) => {
+  Alert.alert('매니저 질문이 등록되었습니다.');
   const userData = await get(userDataAtom);
-  if (!userData) {
+  if (!userData){
     return;
   }
   const { data } = await PostRequestAPI(request);
-  set(requestsAtom, get(requestsAtom).concat([data.request]))
-  set(userDataAtom, { ...userData, point: data.point });
-});
-
-export const readRequestAtom = atom(null, async (get, set, params: GetRequestParams) => {
-  const { data } = await ReadRequestAPI(params); // 추후 last chat_id 추가하여 성능 개선
-  const requests = await get(requestsAtom);
-  const has = requests.find(({ _id }) => data._id === _id);
-  if (has) {
-    set(requestsAtom, requests.map((request) => request === has ? {
-      ...request,
-      ...data,
-    }: request));
-  }
-});
-
-export const getRequestAtom = atom(null, async (get, set, params: GetRequestParams) => {
-  const { data } = await GetRequestAPI(params); // 추후 last chat_id 추가하여 성능 개선
-  const requests = await get(requestsAtom);
-  const has = requests.find(({ _id }) => data._id === _id);
-  if (has) {
-    set(requestsAtom, requests.map((request) => request === has ? data : request));
-  } else {
-    set(requestsAtom, [...requests, data]);
-  }
-});
-export const getRequestsAtom = atom(null, async (get, set) => {
-  const { data } = await GetRequestsAPI({}); // 추후 last chat_id 추가하여 성능 개선
-  set(requestsAtom, data);
-});
-
-export const sendChatParamsAtom = atom<SendChatParams>({
-  text: '',
-  requestId: '',
-});
-
-export const isSendChatLoadingAtom = atom(false);
-
-export const sendChatAtom = atom(null, async (get, set) => {
-  set(isSendChatLoadingAtom, true);
-  try {
-  const params = get(sendChatParamsAtom);
-  if (!params.text) {
+  if (!data) {
     return;
   }
-  if (!params.requestId) {
-    set(sendChatParamsAtom, { text: '', requestId: params.requestId });
-    await set(addRequestAtom, {
-      type: 'AI',
-      text: params.text,
-    });
-    const requests = await get(requestsAtom);
-    params.requestId = requests.slice(-1)[0]._id;
-  }
-  set(sendChatParamsAtom, { text: '', requestId: params.requestId });
-  const requests = await get(requestsAtom)
-  const { data } = await PostChatAPI(params);
-  set(receiveChatAtom, { chat: data, unreadCount: 0 });
-  set(isSendChatLoadingAtom, false);
-  } catch (e) {
-  set(isSendChatLoadingAtom, false);
-  }
+  set(requestsAtom, get(requestsAtom).concat([data]));
+  
+  set(userDataAtom, { ...userData, point: userData.point - 1 }); // 1픽 사용
 });
 
-export const receiveChatAtom = atom(null, async (get, set, params: { chat: Chat, unreadCount: number }) => {
-  const { chat, unreadCount } = params;
-  const requests = await get(requestsAtom);
-  set(requestsAtom, requests.map((request) => request._id === chat.requestId ? {
-    ...request,
-    unreadCount,
-    chats: [...request.chats, chat],
-  } : request));
+export const getRequestsAtom = atom(null, async (get, set) => {
+  const { data } = await GetRequestsAPI({});
+  let requests  = <Request[]>[];
+  // 2.0 request (recommend, research) -> 3.0 request (question) 포맷으로 통일
+  data.forEach((request) => {
+    if (request.type === 'RECOMMEND' || request.type === 'RESEARCH') {
+      const requests_ = request.answer?.products.map((product) => {
+        return {
+          ...request,
+          product: {
+            name: product.title,
+            url: product.url,
+            price: product.price,
+          } as Product,
+          answer: {
+            text: request.answer?.text + '\n' + product.desc,
+            products: [],
+          },
+        } as Request;
+      });
+      if (requests_) {
+        requests.push(...requests_);
+      } else {
+        if (!request.name || !request.link) {
+          return;
+        }
+        const request_ = {
+          ...request,
+          product: {
+            name: request.name,
+            url: request.link,
+          } as Product
+        } as Request;
+        requests.push(request_);
+      }
+    } else if (request.type === 'QUESTION') {
+      requests.push(request);
+    }
+  });
+  set(requestsAtom, requests);
 });
 
-export const reviewBottomSheetAtom = atom<string | void>(undefined);
 export const requestBottomSheetAtom = atom<Product | void>(undefined);
 
-export const reviewRequestAtom = atom(null, async (get,set,params: ReviewRequestParams) => {
-  await ReviewRequestAPI(params);
-  set(requestsAtom, get(requestsAtom).map((request) => request._id === params._id ? {
-    ...request,
-    ...params,
-  }: request));
-});
+
+
