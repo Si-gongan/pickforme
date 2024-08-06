@@ -1,20 +1,17 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { Image, TextInput, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet } from 'react-native';
-import { useRouter, Link } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
+import { FlatList, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 
 import useCheckLogin from '../../hooks/useCheckLogin';
-import { wishProductsAtom } from '../../stores/discover/atoms';
-import { Product } from '../../stores/discover/types';
+import { wishProductsAtom } from '../../stores/product/atoms';
 import Colors from '../../constants/Colors';
 import Button from '../../components/Button';
 import { Text, View } from '../../components/Themed';
-import { formatDate } from '../../utils/common';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
-import ProductCard from '../../components/DiscoverProduct';
+import ProductCard from '../../components/ProductCard';
 
 import DiscoverIcon from '../../assets/images/tabbar/requests.svg';
 
@@ -32,8 +29,7 @@ const tabName = {
   [TABS.REQUEST]: '매니저에게 문의한 상품',
 }
 
-
-export default function DiscoverScreen() {
+export default function WishListScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
@@ -52,15 +48,17 @@ export default function DiscoverScreen() {
   }, [getRequests, tab]);
 
   useFocusEffect(
-  React.useCallback(
-    () => {
-      if (headerTitleRef.current) {
-        const nodeHandle = findNodeHandle(headerTitleRef.current);
-        if (nodeHandle) {
-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+    useCallback(() => {
+      const f = () => {
+        if (headerTitleRef.current) {
+          const nodeHandle = findNodeHandle(headerTitleRef.current);
+          if (nodeHandle) {
+            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          }
         }
       }
-    }, []),
+      setTimeout(f, 500);
+    }, [])
   );
 
   const handleClickRequest = useCheckLogin(() => setTab(TABS.REQUEST));
@@ -72,7 +70,7 @@ export default function DiscoverScreen() {
         <Text style={styles.title} accessibilityRole='header' ref={headerTitleRef}>위시리스트</Text>
         </View>
       </View>
-             <View style={styles.tabWrap}>
+      <View style={styles.tabWrap}>
         {Object.values(TABS).map((TAB) => (
           <View style={styles.tab} key={`Wish-Tab-${TAB}`}>
             <Button
@@ -83,44 +81,45 @@ export default function DiscoverScreen() {
               size='medium'
               color={tab === TAB ? 'primary' : 'tertiary'}
               onPress={TAB === TABS.REQUEST ? handleClickRequest : () => setTab(TAB)}
-              accessibilityLabel={tabName[TAB]}
+              accessibilityLabel={`${tabName[TAB]} 탭`}
+              selected={tab === TAB}
             />
           </View>
         ))}
       </View>
       {tab === 'PRODUCT' && (
         <>
-      {!wishProducts.length ? (
-        <Text style={styles.loading}>찜한 상품이 없습니다.</Text>
-      ) : (
-        <FlatList
-          contentContainerStyle={styles.searchList}
-          data={wishProducts.slice().reverse()}
-          keyExtractor={(product) => `wishlist-wish-${product.id}`}
-          renderItem={({ item: product, index: i }) => (
-            <ProductCard product={product} type={'liked'} />
+          {!wishProducts.length ? (
+            <Text style={styles.loading}>찜한 상품이 없습니다.</Text>
+          ) : (
+            <FlatList
+              contentContainerStyle={styles.searchList}
+              data={wishProducts.slice().reverse()}
+              keyExtractor={(product) => `wishlist-wish-${product.url}`}
+              renderItem={({ item: product, index: i }) => (
+                <ProductCard product={product} type={'liked'} />
+              )}
+              ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
+            />
           )}
-          ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
-        />
-      )}
         </>
       )}
       {tab === 'REQUEST' && (
-      <>
+        <>
           {!requests.filter(request => request.product).length ? (
-        <Text style={styles.loading}>문의한 상품이 없습니다.</Text>
-      ) : (
-        <FlatList
-          contentContainerStyle={styles.searchList}
-          data={requests.filter(request => request.product).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
-          keyExtractor={(request) => `wishlist-request-${request._id}`}
-          renderItem={({ item: request, index: i }) => (
-            <ProductCard product={request.product} type={'request'} />
+            <Text style={styles.loading}>문의한 상품이 없습니다.</Text>
+          ) : (
+            <FlatList
+              contentContainerStyle={styles.searchList}
+              data={requests.filter(request => request.product).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
+              keyExtractor={(request) => `wishlist-request-${request.product!.url}`}
+              renderItem={({ item: request, index: i }) => (
+                <ProductCard product={request.product!} type={'request'} />
+              )}
+              ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
+            />
           )}
-          ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
-        />
-      )}
-      </>
+        </>
       )}
     </View>
   );
@@ -235,6 +234,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   searchItem: {
   },
   loading: {
+    paddingVertical: 20,
     paddingHorizontal: 20,
     textAlign: 'center',
     flex: 1,

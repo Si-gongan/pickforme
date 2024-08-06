@@ -2,10 +2,10 @@ import React from 'react';
 import { useRouter, Link, Tabs, Redirect } from 'expo-router';
 import { StyleSheet, Image, Pressable, Text } from 'react-native';
 
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
+import { tabNavigationAtom } from '../../stores/layout/atoms';
 
-import { View } from '../../components/Themed';
 import { hexToRgb } from '../../utils/common';
 import Colors from '../../constants/Colors';
 import HeaderLeft from '../../components/HeaderLeft';
@@ -19,6 +19,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const setting = useAtomValue(settingAtom);
+  const setTabNavigation = useSetAtom(tabNavigationAtom);
 
   if (!setting.isReady) {
     return <Redirect href="(onboarding)/nickname" />;
@@ -48,6 +49,14 @@ export default function TabLayout() {
         headerShadowVisible: false, // applied here
         headerLeft: () => <HeaderLeft canGoBack={false} />,
         headerTintColor: 'transparent',
+      }}
+      screenListeners={{
+        tabPress: (e) => {
+          const nav = e.target?.split('-')[0];
+          if (nav) {
+            setTabNavigation(nav);
+          }
+        }
       }}
     >
       <Tabs.Screen

@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, ScrollView, findNodeHandle, StyleSheet, Pressable, Alert, Image } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { settingAtom, userDataAtom, quitAtom } from '../../stores/auth/atoms';
+import { settingAtom, userDataAtom, quitAtom, logoutAtom } from '../../stores/auth/atoms';
 import { useFocusEffect } from '@react-navigation/core';
 
 import Colors from '../../constants/Colors';
@@ -22,20 +22,21 @@ export default function MyPageScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (headerTitleRef.current) {
-        const nodeHandle = findNodeHandle(headerTitleRef.current);
-        if (nodeHandle) {
-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      const f = () => {
+        if (headerTitleRef.current) {
+          const nodeHandle = findNodeHandle(headerTitleRef.current);
+          if (nodeHandle) {
+            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          }
         }
       }
+      setTimeout(f, 500);
     }, [])
   );
 
   const quit = useSetAtom(quitAtom);
+  const logout = useSetAtom(logoutAtom);
   const router = useRouter();
-  const logout = () => {
-    setUserData(undefined);
-  }
   const handleClickQuit = () => {
     Alert.alert(
       '정말 탈퇴하시겠습니까?',
@@ -70,10 +71,10 @@ export default function MyPageScreen() {
         </Text>
         <Link href='/(settings)/nickname' accessibilityRole='button'>
           <Text style={styles.menu}>
-            수정하기
+            내 정보 수정하기
           </Text>
         </Link>
-        {!userData && (
+        {!userData ? (
           <Button
             variant='text'
             color='tertiary'
@@ -82,26 +83,20 @@ export default function MyPageScreen() {
             style={styles.menu}
             textStyle={styles.buttonText}
             onPress={() => router.push('(auths)/login')}
-          />
-        )}
+          />) :
+          (<>
+            <Link href='/purchase' accessibilityRole='button'>
+              <Text style={styles.menu}>
+                이용권 충전하기
+              </Text>
+            </Link>
+            <Link href='/purchase-history' accessibilityRole='button'>
+              <Text style={styles.menu}>
+                이용권 구매내역
+              </Text>
+            </Link></>)
+          }
       </View>
-      {!!userData && (
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          잔여 {userData.point}픽
-        </Text>
-        <Link href='/point' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            충전하기
-          </Text>
-        </Link>
-        <Link href='/point-history' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            사용내역 보기
-          </Text>
-        </Link>
-      </View>
-      )}
       <View style={styles.card}>
         <Text style={styles.title}>
           앱 설정
@@ -111,15 +106,8 @@ export default function MyPageScreen() {
             화면 모드 변경하기
           </Text>
         </Link>
-        {/*
-        <Link href='(settings)/fontSize'>
-          <Text style={styles.menu}>
-            글자 크기 변경
-          </Text>
-        </Link>
-        */}
         {!!userData && (
-          <Link href='/notification' accessibilityRole='button'>
+          <Link href='/(settings)/notification' accessibilityRole='button'>
             <Text style={styles.menu}>
               알림 설정하기
             </Text>
@@ -144,11 +132,11 @@ export default function MyPageScreen() {
             사용 설명서
          </Text>
         </Link>
-        <Link href='/faq' accessibilityRole='button'>
+        {/* <Link href='/faq' accessibilityRole='button'>
           <Text style={styles.menu}>
             자주 묻는 질문
           </Text>
-        </Link>
+        </Link> */}
         <Button
           title='개인정보처리방침'
           variant='text'
@@ -218,8 +206,8 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   card: {
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: Colors[colorScheme].borderColor.primary,
-    borderRadius: 15,
+    borderColor: Colors[colorScheme].borderColor.secondary,
+    borderRadius: 10,
     paddingHorizontal: 14,
     gap: 14,
     paddingVertical: 15,
