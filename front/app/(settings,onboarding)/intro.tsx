@@ -17,20 +17,16 @@ export default function RegisterScreen() {
     }
     const defaultSetting: {
       [key in typeof setting.vision]: {
-        fontSize: typeof setting.fontSize,
         theme: typeof setting.theme,
       }
     } = {
       none: {
-        fontSize: 'medium',
         theme: 'default',
       },
       low: {
-        fontSize: 'large',
         theme: 'dark',
       },
       blind: {
-        fontSize: 'medium',
         theme: 'light',
       },
     };

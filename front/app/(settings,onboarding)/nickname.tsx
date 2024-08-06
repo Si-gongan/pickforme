@@ -63,7 +63,7 @@ export default function NicknameScreen() {
                   <RadioButton.Android
                     color={Colors[colorScheme].text.primary}
                     value={key}
-                    accessibilityLabel={`${label} 선택`}
+                    accessibilityLabel={(key === vision ? '선택됨,' : '') + label}
                     status={key === vision ? 'checked' : 'unchecked'}
                     onPress={() => setVision(key as typeof setting['vision'])}
                   />

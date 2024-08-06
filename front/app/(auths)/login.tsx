@@ -139,7 +139,7 @@ const LoginScreen: React.FC<Props> = (props) => {
       </View>
       <View style={styles.descWrap} accessible={true}>
         <Text style={styles.desc}>픽포미에 첫 회원가입하고</Text>
-        <Text style={styles.desc}>무료 1픽을 획득하세요!</Text>
+        <Text style={styles.desc}>AI 질문 이용권을 무료로 받아가세요!</Text>
       </View>
     </View>
   );
@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     marginBottom: 23,
+    borderRadius: 15,
   },
   buttonText: {
     fontWeight: '700',

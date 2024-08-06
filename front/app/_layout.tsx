@@ -22,11 +22,11 @@ import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../
 import HeaderLeft from '../components/HeaderLeft';
 import OnboardingBottomSheet from '../components/BottomSheet/How';
 import LoginBottomSheet from '../components/BottomSheet/Login';
-import LackBottomSheet from '../components/BottomSheet/Lack';
+import NoMembershipBottomSheet from '../components/BottomSheet/NoMembership';
+import LackPointBottomSheet from '../components/BottomSheet/LackPoint';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import RequestBottomSheet from '../components/BottomSheet/Request';
 import CommonBottomSheet from '../components/BottomSheet/Common';
-import ReviewBottomSheet from '../components/BottomSheet/Review';
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -43,10 +43,10 @@ export default function RootLayout() {
     return <SplashScreen />;
   }
   return (
-        <Suspense fallback={null}>
-    <JotaiProvider>
-      <RootLayoutNav />
-    </JotaiProvider>
+    <Suspense fallback={null}>
+      <JotaiProvider>
+        <RootLayoutNav />
+      </JotaiProvider>
     </Suspense>
   );
 }
@@ -98,21 +98,18 @@ function RootLayoutNav() {
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="how" options={{ headerShown: false }} />
-            {["notification", "discover-detail-main", "(auths)", "(settings)", "buy", "point", "point-history", "recommend", "research", "chat", "request", "faq", "recommend-sample", "research-sample"].map((name) => (
+            {["(auths)", "(settings)", "product-detail", "purchase", "purchase-history", "faq", "how"].map((name) => (
               <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
             ))}
-            <Stack.Screen name="notices" options={{ ...hideHeaderOption, headerTitle: undefined, title: '공지사항' }} />
-            <Stack.Screen name="notice" options={{ ...hideHeaderOption, headerTitle: undefined, title: '공지사항' }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
           </Stack>
           <LoginBottomSheet />
           <GreetingBottomSheet />
-          <ReviewBottomSheet />
           <RequestBottomSheet />
           <OnboardingBottomSheet />
-          <LackBottomSheet />
+          <LackPointBottomSheet />
+          <NoMembershipBottomSheet />
+          
           {bottomSheets.map((info, i) => (
             <CommonBottomSheet info={info} index={i} />
           ))}

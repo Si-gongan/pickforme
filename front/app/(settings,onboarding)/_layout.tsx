@@ -1,17 +1,12 @@
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useRouter, Link, Tabs, Redirect } from 'expo-router';
-import { Pressable, useColorScheme } from 'react-native';
+import { useRouter, Redirect } from 'expo-router';
+import { useColorScheme } from 'react-native';
 
 import { useAtomValue } from 'jotai';
 import { settingAtom } from '../../stores/auth/atoms';
 import { Stack } from 'expo-router';
 
-import { Text } from '../../components/Themed';
-
-import Colors from '../../constants/Colors';
-
-const SCREENS = ['nickname', 'intro', 'fontSize', 'theme', 'greeting'];
+const SCREENS = ['nickname', 'intro', 'theme', 'notification'];
 export default function TabLayout(params: any) {
   const colorScheme = useColorScheme();
   const router = useRouter();
