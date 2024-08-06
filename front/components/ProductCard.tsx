@@ -1,7 +1,7 @@
 import { StyleSheet, View as ViewBase, Pressable, Image } from 'react-native';
 import { Text, View } from './Themed';
 
-import { Product } from '../stores/discover/types';
+import { Product } from '../stores/product/types';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { useRouter } from 'expo-router';
 import { setProductGroupAtom } from '../stores/log/atoms';
@@ -21,11 +21,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product, type }, ref) => {
   const setProductGroup = useSetAtom(setProductGroupAtom);
   const handlePress = () => {
     setProductGroup(type);
-    if (product.id) {
-      router.push(`/discover-detail-main?productId=${product.id}`);
-    } else {
-      router.push(`/discover-detail-main?productUrl=${encodeURIComponent(product.url)}`);
-    }
+    router.push(`/product-detail?productUrl=${encodeURIComponent(product.url)}`);
   }
   if (type === 'liked') {
     return (
@@ -56,7 +52,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product, type }, ref) => {
         accessible
         ref={ref}
         accessibilityRole='button'
-        accessibilityLabel={`${product.name} ${numComma(product.price)}원`}
+        accessibilityLabel={`${product.name ?? ''} ${numComma(product.price ?? 0)}원`}
         style={styles.pressable}
       >
         <View style={styles.wrap}>
@@ -64,7 +60,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product, type }, ref) => {
             {product.name}
           </Text>
           <Text style={styles.price} accessible>
-            {numComma(product.price)}원
+            {numComma(product.price ?? 0)}원
           </Text>
         </View>
       </Pressable>
@@ -85,7 +81,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product, type }, ref) => {
             {product.name}
           </Text>
           <Text style={styles.price} accessible>
-            {numComma(product.price)}원
+            {numComma(product.price ?? 0)}원
           </Text>
         </View>
       </Pressable>
@@ -97,7 +93,7 @@ const ProductCard = forwardRef<ViewBase, Props>(({ product, type }, ref) => {
         accessible
         ref={ref}
         accessibilityRole='button'
-        accessibilityLabel={`${product.name} ${numComma(product.price)}원`}
+        accessibilityLabel={`${product.name} ${numComma(product.price)}원 ${(product.discount_rate ?? 0) !== 0  ? `할인률 ${product.discount_rate}%` : ''} 리뷰 ${product.reviews}개 평점 ${Math.floor(product.ratings / 20 * 10) / 10}점`}
         style={styles.pressable}
       >
         <View style={styles.wrap2}>
