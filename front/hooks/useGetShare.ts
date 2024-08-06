@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
+import { searchProductsAtom } from '../stores/product/atoms';
+import { useSetAtom } from 'jotai';
 
 import ReceiveSharingIntentModule from 'react-native-receive-sharing-intent';
 
@@ -10,6 +12,7 @@ type FileType = {
 
 const useGetShare = () => {
   const router = useRouter();
+  const searchProducts = useSetAtom(searchProductsAtom);
 
   useEffect(() => {
     ReceiveSharingIntentModule.getReceivedFiles(
@@ -20,7 +23,8 @@ const useGetShare = () => {
           if (!text && !weblink) return;
 
           const link = (weblink || text) as string;
-          router.replace({ pathname: '/research', params: { link: encodeURIComponent(link) } });
+          searchProducts({ query: link, page: 1, sort: '', onLink: router.push, onQuery: () => {}});
+          // router.replace({ pathname: '/research', params: { link: encodeURIComponent(link) } });
         } catch {}
       },
       (error: any) => {},
