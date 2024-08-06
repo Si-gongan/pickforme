@@ -1,61 +1,17 @@
-import React from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/core';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { Image, TextInput, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { Image, TextInput, Text as TextBase, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
+import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 
-import Colors from '../../constants/Colors';
-import { setClipboardProductAtom, clipboardProductAtom, isSearchingAtom, searchSorterAtom, searchMoreAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/discover/atoms';
-import { setProductGroupAtom } from '../../stores/log/atoms';
+import { setClipboardProductAtom, clipboardProductAtom, isSearchingAtom, searchSorterAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/product/atoms';
 
+import { CATEGORIES, categoryName } from '../../constants/Categories';
 import { Text, View } from '../../components/Themed';
+import Colors from '../../constants/Colors';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
-import ProductCard from '../../components/DiscoverProduct';
-
-import { useRef } from 'react';
-import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
-const categoryName = {
-    '1001': '여성패션',
-    '1002': '남성패션',
-    '1010': '뷰티',
-    '1011': '출산/육아',
-    '1012': '식품',
-    '1013': '주방용품',
-    '1014': '생활용품',
-    '1015': '홈인테리어',
-    '1016': '가전디지털',
-    '1017': '스포츠/레저',
-    '1018': '자동차용품',
-    '1019': '도서/음반/DVD',
-    '1020': '완구/취미',
-    '1021': '문구/오피스',
-    '1024': '헬스/건강식품',
-    '1025': '국내여행',
-    '1026': '해외여행',
-    '1029': '반려동물용품',
-    '1030': '유아동패션'
-};
-const CATEGORIES = [
-  '1001',
-  '1002',
-  '1010',
-  '1011',
-  '1012',
-  '1013',
-  '1014',
-  '1015',
-  '1016',
-  '1017',
-  '1018',
-  '1019',
-  '1020',
-  '1021',
-  '1024',
-  '1025',
-  '1026',
-  '1029',
-  '1030',
-];
+import ProductCard from '../../components/ProductCard';
 
 const SORTERS = [
   'scoreDesc',
@@ -85,22 +41,41 @@ const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 
 export default function DiscoverScreen() {
   const router = useRouter();
+  const colorScheme = useColorScheme();
+
+  const initialRef = useRef(null);
+
   const getMainProducts = useSetAtom(getMainProductsAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
-  const colorScheme = useColorScheme();
+  
   const searchProducts = useSetAtom(searchProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const searchSorter = useAtomValue(searchSorterAtom);
-  const handleSearchMore = useSetAtom(searchMoreAtom);
   const isSearching = useAtomValue(isSearchingAtom);
+
   const searchLoadingRef = useRef(null);
   const searchResultRef = useRef(null);
-  const [category, setCategory] = React.useState('');
-  const clipboardProduct = useAtomValue(clipboardProductAtom);
-  const setClipboardProduct = useSetAtom(setClipboardProductAtom);
-  const setProductGroup = useSetAtom(setProductGroupAtom);
 
-  React.useEffect(() => {
+  const [category, setCategory] = React.useState('');
+
+  // const clipboardProduct = useAtomValue(clipboardProductAtom);
+  // const setClipboardProduct = useSetAtom(setClipboardProductAtom);
+
+  useFocusEffect(
+    useCallback(() => {
+      const f = () => {
+        if (initialRef.current) {
+          const nodeHandle = findNodeHandle(initialRef.current);
+          if (nodeHandle) {
+            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          }
+        }
+      }
+      setTimeout(f, 500);
+    }, [])
+  );
+
+  useEffect(() => {
     let timer = setTimeout(() => {
       const ref = isSearching ? searchLoadingRef : searchResultRef;
       if (ref.current) {
@@ -115,34 +90,34 @@ export default function DiscoverScreen() {
     }
   }, [isSearching]);
 
-  React.useEffect(() => {
-    Clipboard.getStringAsync().then((text) => {
-      if (!text.length) {
-        return;
-      }
-      setClipboardProduct(text);
-    });
-  }, []);
+  // React.useEffect(() => {
+  //   Clipboard.getStringAsync().then((text) => {
+  //     if (!text.length) {
+  //       return;
+  //     }
+  //     setClipboardProduct(text);
+  //   });
+  // }, []);
 
-  React.useEffect(() => {
-    let timer = setTimeout(() => {
-      const ref = clipboardRef;
-      if (ref.current) {
-        const nodeHandle = findNodeHandle(ref.current);
-        if (nodeHandle) {
-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
-          timer = setTimeout(() => {
-            setClipboardProduct('');
-          }, 4500);
-        }
-      }
-    }, 500);
-    return () => {
-      clearTimeout(timer);
-    }
-  }, []);
+  // React.useEffect(() => {
+  //   let timer = setTimeout(() => {
+  //     const ref = clipboardRef;
+  //     if (ref.current) {
+  //       const nodeHandle = findNodeHandle(ref.current);
+  //       if (nodeHandle) {
+  //         AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+  //         timer = setTimeout(() => {
+  //           setClipboardProduct('');
+  //         }, 4500);
+  //       }
+  //     }
+  //   }, 500);
+  //   return () => {
+  //     clearTimeout(timer);
+  //   }
+  // }, []);
 
-  const clipboardRef = useRef(null);
+  // const clipboardRef = useRef(null);
   const focusRef1 = useRef<ViewBase>(null);
   const focusRef2 = useRef<ViewBase>(null);
 
@@ -150,8 +125,8 @@ export default function DiscoverScreen() {
   const [query, setQuery] = React.useState('');
 
   const [focus, setFocus] = React.useState({
-    special: 0,
-    random: 0,
+    special: '',
+    random: '',
   });
   const [length, setLength] = React.useState({
     special: 5,
@@ -176,7 +151,7 @@ export default function DiscoverScreen() {
     const nextFocus = Math.min(mainProducts[key].length, length[key] + 1);
     setFocus({
       ...focus,
-      [key]: mainProducts[key][nextFocus].id,
+      [key]: mainProducts[key][nextFocus-1].url,
     });
     setTimeout(() => {
       const ref = key === 'random' ? focusRef1 : focusRef2;
@@ -188,21 +163,26 @@ export default function DiscoverScreen() {
       }
     }, 500);
   }
-  React.useEffect(() => {
+  useEffect(() => {
     const id = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
     setCategory(categoryName[id as keyof typeof categoryName]);
     getMainProducts(id);
   }, [getMainProducts]);
+
   return (
     <View style={styles.container}>
+
+      {/* 검색창 */}
+
       <View style={[styles.horizontalPadder,styles.searchContainer]}>
         {!!query.length && (
-          <Pressable onPress={() => setQuery('')} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
+          <Pressable onPress={() => {setQuery(''); setText(''); }} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
             <Image style={styles.backButton} source={require('../../assets/images/icBack.png')} />
           </Pressable>
         )}
         <View style={styles.inputWrap}>
           <TextInput
+            ref={initialRef}
             style={[styles.textArea]}
             underlineColorAndroid="transparent"
             value={text}
@@ -214,14 +194,14 @@ export default function DiscoverScreen() {
             placeholder='찾고 싶은 상품 키워드 또는 링크를 입력해 보세요'
           />
           {!!text.length && (
-          <Pressable
-            onPress={handleClickReset}
-            accessible
-            accessibilityLabel="비우기"
-            accessibilityRole='button'
-          >
-            <Image style={styles.resetIcon} source={require('../../assets/images/discover/icReset.png')} />
-          </Pressable>
+            <Pressable
+              onPress={handleClickReset}
+              accessible
+              accessibilityLabel="삭제"
+              accessibilityRole='button'
+            >
+              <Image style={styles.resetIcon} source={require('../../assets/images/discover/icReset.png')} />
+            </Pressable>
           )}
           <Pressable
             onPress={() => handleClickSend(searchSorter)}
@@ -233,117 +213,136 @@ export default function DiscoverScreen() {
           </Pressable>
         </View>
       </View>
+
       {isSearching ? (
         <Text style={styles.loading} ref={searchLoadingRef}>검색하신 상품을 로딩중이에요.</Text>
       ) : (
       !!query.length ? (
-        <>
-          <View style={styles.sorterSelector}>
-            {SORTERS.map((sort, idx) => (
-              <Pressable
-                key={`sort-${sort}`}
-                onPress={() => searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) })}
-                accessible
-                accessibilityRole='button'
-                accessibilityLabel={SORTER_NAME[idx]}
-              >
-                <Text style={sort === searchSorter && styles.selectedSorter}>{SORTER_NAME[idx]}</Text>
-              </Pressable>
-            ))}
-          </View>
 
-          <View style={styles.productCountWraper}>
-            <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+        // 검색 결과 섹션
+
+        <>
+          <View style={styles.searchStatus}>
+            <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products.length}건 검색됨`}>
+              <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+            </View>
+            <View style={styles.sorterSelector}>
+              {SORTERS.map((sort, idx) => (
+                <Pressable
+                  key={`sort-${sort}`}
+                  onPress={() => searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) })}
+                  accessible
+                  accessibilityRole='button'
+                  accessibilityLabel={sort === searchSorter ? `선택됨 ${SORTER_NAME[idx]}` : SORTER_NAME[idx]}
+                >
+                  <Text style={sort === searchSorter ? styles.selectedSorter : styles.sorter}>{SORTER_NAME[idx]}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
           
-          <ScrollView style={styles.scrollView} ref={searchResultRef}>
+          <ScrollView style={styles.scrollView}>
             {!!searchResult?.products.length && (
               <FlatList
                 scrollEnabled={false}
                 contentContainerStyle={styles.searchList}
                 data={searchResult.products}
-                keyExtractor={(product) => `search-${product.id}`}
+                keyExtractor={(product) => `search-${product.url}`}
                 renderItem={({ item: product }) => <ProductCard product={product} type='search' />}
                 ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-                onEndReached={() => handleSearchMore(query)}
+                // onEndReached={() => handleSearchMore(query)}
               />
             )}
             {!searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
           </ScrollView>
         </>
       ) : (
+
+      // 메인 상품 섹션
+
       <ScrollView style={styles.scrollView}>
-      {mainProducts.local.filter(({ order }) => order < 0).sort((a,b) => a.order - b.order).map((section) => (
-        <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
-          <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-            {section.name}
-          </Text>
-          <FlatList
-                scrollEnabled={false}
-            contentContainerStyle={[styles.list, styles.horizontalPadder]}
-            data={section.products}
-            keyExtractor={(product) => `random-${product.id}`}
-            ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-            renderItem={({ item: product }) => <ProductCard product={product} type='local' />}
-          />
-        </View>
-      ))}
 
-      
-      {!!mainProducts.random.length && (
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-          {category}
-        </Text>
-      <FlatList
-        contentContainerStyle={[styles.list, styles.horizontalPadder]}
-                scrollEnabled={false}
-        data={mainProducts.random.slice(0,length.random)}
-        keyExtractor={(product) => `random-${product.id}`}
-        ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.id ? focusRef1 : undefined} product={product} type='bestcategories'/>}
-        ListFooterComponentStyle={styles.listFooter}
-        ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
-      />
-      </View>
-      )}
+        {/* order가 0 미만인 로컬(협업) 상품 섹션 */}
 
-      {!!mainProducts.special.length && (
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-          오늘의 특가
-        </Text>
-     <FlatList
-                scrollEnabled={false}
-        contentContainerStyle={[styles.list, styles.horizontalPadder]}
-        data={mainProducts.special.slice(0,length.special)}
-        keyExtractor={(product) => `special-${product.id}`}
-        ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-        renderItem={({ item: product }) => <ProductCard ref={focus.random === product.id ? focusRef2 : undefined} product={product} type='goldbox'/>}
-        ListFooterComponentStyle={styles.listFooter}
-        ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
-      />
-      </View>
-      )}  
+        {mainProducts.local.filter(({ order }) => order < 0).sort((a,b) => a.order - b.order).map((section) => (
+          <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
+            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+              {section.name}
+            </Text>
+            <FlatList
+              scrollEnabled={false}
+              contentContainerStyle={[styles.list, styles.horizontalPadder]}
+              data={section.products}
+              keyExtractor={(product) => `random-${product.url}`}
+              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+              renderItem={({ item: product }) => <ProductCard product={product} type='local' />}
+            />
+          </View>
+        ))}
 
-       {mainProducts.local.filter(({ order }) => order > 0).sort((a,b) => a.order - b.order).map((section) => (
-        <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
-          <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-            {section.name}
-          </Text>
-          <FlatList
-            contentContainerStyle={[styles.list, styles.horizontalPadder]}
-                scrollEnabled={false}
-            data={section.products}
-            keyExtractor={(product) => `random-${product.id}`}
-            ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-            renderItem={({ item: product }) => <ProductCard product={product} type='local'/>}
-          />
-        </View>
-      ))}
+        {/* random(카테고리별 베스트) 상품 섹션 */}
+        
+        {!!mainProducts.random.length && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+              {category}
+            </Text>
+            <FlatList
+              contentContainerStyle={[styles.list, styles.horizontalPadder]}
+              scrollEnabled={false}
+              data={mainProducts.random.slice(0,length.random)}
+              keyExtractor={(product) => `random-${product.url}`}
+              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+              renderItem={({ item: product }) => <ProductCard ref={focus.random === product.url ? focusRef1 : undefined} product={product} type='bestcategories'/>}
+              ListFooterComponentStyle={styles.listFooter}
+              ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
+            />
+          </View>
+        )}
+
+        {/* special(오늘의 특가) 상품 섹션 */}
+
+        {!!mainProducts.special.length && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+              오늘의 특가
+            </Text>
+            <FlatList
+              scrollEnabled={false}
+              contentContainerStyle={[styles.list, styles.horizontalPadder]}
+              data={mainProducts.special.slice(0,length.special)}
+              keyExtractor={(product) => `special-${product.url}`}
+              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+              renderItem={({ item: product }) => <ProductCard ref={focus.special === product.url ? focusRef2 : undefined} product={product} type='goldbox'/>}
+              ListFooterComponentStyle={styles.listFooter}
+              ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
+            />
+          </View>
+        )}  
+
+        {/* order가 0 이상인 로컬(협업) 상품 섹션 */}
+
+        {mainProducts.local.filter(({ order }) => order > 0).sort((a,b) => a.order - b.order).map((section) => (
+          <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
+            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+              {section.name}
+            </Text>
+            <FlatList
+              contentContainerStyle={[styles.list, styles.horizontalPadder]}
+              scrollEnabled={false}
+              data={section.products}
+              keyExtractor={(product) => `random-${product.url}`}
+              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+              renderItem={({ item: product }) => <ProductCard product={product} type='local'/>}
+            />
+          </View>
+        ))}
       </ScrollView>
       ))}
-        {!!clipboardProduct && (
+
+      {/* 클립보드 링크 분석 하단 floating 컴포넌트 -> 로직 보류 */}
+
+      {/* {!!clipboardProduct && (
         <Pressable onPress={() => {
             const url = clipboardProduct.url;
             setClipboardProduct('');
@@ -367,7 +366,7 @@ export default function DiscoverScreen() {
             </Pressable>
           </View>
         </Pressable>
-        )}
+        )} */}
     </View>
   );
 }
@@ -425,9 +424,10 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   inputWrap: {
     flex: 1,
-    marginBottom: 16,
+    marginHorizontal: 0,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    marginVertical: 10,
     borderRadius: 8,
     height: 47,
     alignItems: 'center',
@@ -468,13 +468,17 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     textDecorationLine: 'underline',
   },
   sorterSelector: {
-    marginHorizontal: 20,
+    marginHorizontal: 0,
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10
+    justifyContent: 'space-between',
+    gap: 8
+  },
+  sorter: {
+    fontSize: 13,
   },
   selectedSorter: {
     fontWeight: '700',
+    fontSize: 13,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -487,13 +491,13 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   },
   searchItem: {
   },
-  productCountWraper: {
+  searchStatus: {
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#d9d9d9',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
   },
   productCount: {
     fontWeight: '700'
