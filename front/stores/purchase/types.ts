@@ -2,8 +2,8 @@ import { Receipt } from 'in-app-purchase';
 import { Platform } from 'react-native';
 
 export enum ProductType {
-  PURCHASE = 0,
-  SUBSCRIPTION = 1,
+  PURCHASE = 0, // 일회성 구매 상품
+  SUBSCRIPTION = 1, // 정기 구독 상품
 }
 
 export interface Product {
@@ -43,14 +43,9 @@ export interface Purchase {
     kind: string,
     transactionId: string,
     quantity: number,
-    expirationDate: string
+    expirationDate: string,
+    isTrial: boolean,
   },
   isExpired: boolean;
-}
-
-export interface PickHistory {
-  createdAt: string,
-  usage: string;
-  point: number;
-  diff: number;
+  createdAt: string;
 }
