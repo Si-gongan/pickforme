@@ -3,21 +3,19 @@ import db from 'models';
 import socket from 'socket';
 import sendPush from 'utils/push';
 
-import {
-  RequestType, RequestStatus,
-} from 'models/request';
+import { RequestType, RequestStatus } from 'models/request';
 
 const router = new Router({
   prefix: '/request',
 });
 
 router.post('/answer', async (ctx) => {
-  const {
-    body,
-  } = <any>ctx.request;
+  const { body } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId).populate('userId');
   if (!request.answer) {
-    const deeplink = `/product-detail?productUrl=${encodeURIComponent(request.product.url)}`;
+    const deeplink = `/product-detail?productUrl=${encodeURIComponent(
+      request.product.url
+    )}`;
     // const chat = await db.Chat.create({
     //   userId: request.userId,
     //   requestId: request._id,
@@ -40,10 +38,16 @@ router.post('/answer', async (ctx) => {
     //   });
     // }
     const user = await db.User.findById(request.userId);
-    if (user && user.pushToken && (user.push.service === 'on')) {
+    if (user && user.pushToken && user.push.service === 'on') {
       sendPush({
         to: user.pushToken,
-        body: request.type === RequestType.QUESTION ? `'${request.product.name.slice(0,13)}...' 상품에 대한 매니저 답변이 도착했습니다.` : '매니저 답변이 도착했습니다.',
+        body:
+          request.type === RequestType.QUESTION
+            ? `'${request.product.name.slice(
+                0,
+                13
+              )}...' 상품에 대한 매니저 답변이 도착했습니다.`
+            : '매니저 답변이 도착했습니다.',
         data: { url: deeplink },
       });
     }
@@ -63,47 +67,53 @@ router.get('/', async (ctx) => {
   const skip = (pageNum - 1) * pageSizeNum;
 
   const totalRequests = await db.Request.countDocuments({
-    type: type === 'ALL' ? {
-      $ne: RequestType.AI,
-    } : {
-      $eq: type,
-    },
+    type:
+      type === 'ALL'
+        ? {
+            $ne: RequestType.AI,
+          }
+        : {
+            $eq: type,
+          },
     createdAt: {
       $gte: startDate,
-      $lte: endDate
-    }
+      $lte: endDate,
+    },
   });
 
   const requests = await db.Request.find({
-    type: type === 'ALL' ? {
-      $ne: RequestType.AI,
-    } : {
-      $eq: type,
-    },
+    type:
+      type === 'ALL'
+        ? {
+            $ne: RequestType.AI,
+          }
+        : {
+            $eq: type,
+          },
     createdAt: {
       $gte: startDate,
-      $lte: endDate
-    }
-  }).sort({
-    createdAt: -1,
-  }).skip(skip).limit(pageSizeNum);
+      $lte: endDate,
+    },
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .skip(skip)
+    .limit(pageSizeNum);
 
   ctx.body = {
     requests,
     totalRequests,
     totalPages: Math.ceil(totalRequests / pageSizeNum),
-    currentPage: pageNum
+    currentPage: pageNum,
   };
 });
 
 router.delete('/:requestId', async (ctx) => {
-  const {
-    requestId,
-  } = ctx.params;
+  const { requestId } = ctx.params;
   await db.Request.findByIdAndDelete(requestId);
   ctx.status = 204;
 });
-
 
 // 의뢰 수 별 유저 수 분포
 router.get('/user-stats', async (ctx) => {
@@ -113,29 +123,29 @@ router.get('/user-stats', async (ctx) => {
       {
         $group: {
           _id: {
-            userId: "$userId",
-            type: "$type"
+            userId: '$userId',
+            type: '$type',
           },
-          requestCount: { $sum: 1 }
-        }
+          requestCount: { $sum: 1 },
+        },
       },
       // 다음으로, 앞서 구한 요청 횟수와 타입별로 사용자를 그룹화하고, 각 그룹의 사용자 수를 계산합니다.
       {
         $group: {
           _id: {
-            requestCount: "$requestCount",
-            type: "$_id.type"
+            requestCount: '$requestCount',
+            type: '$_id.type',
           },
-          userCount: { $sum: 1 }
-        }
+          userCount: { $sum: 1 },
+        },
       },
       // 결과를 타입과 요청 횟수별로 정렬합니다.
       {
         $sort: {
-          "_id.type": 1,
-          "_id.requestCount": 1
-        }
-      }
+          '_id.type': 1,
+          '_id.requestCount': 1,
+        },
+      },
     ]);
 
     ctx.body = stats;
@@ -153,27 +163,29 @@ router.get('/request-stats', async (ctx) => {
           type: {
             $ne: RequestType.AI,
           },
-          "review.rating": { $exists: true },
-        }
+          'review.rating': { $exists: true },
+        },
       },
       {
         $group: {
-          _id: "$type", // 타입별로 그룹화
+          _id: '$type', // 타입별로 그룹화
           totalReviews: { $sum: 1 }, // 평가의 총 수
-          averageRating: { $avg: "$review.rating" }, // 평점 평균
-          reviewTexts: { $push: "$review.text" } // review.text의 값들을 배열로 수집
-        }
+          averageRating: { $avg: '$review.rating' }, // 평점 평균
+          reviewTexts: { $push: '$review.text' }, // review.text의 값들을 배열로 수집
+        },
       },
       {
-        $sort: { _id: 1 } // 타입별로 정렬
-      }
+        $sort: { _id: 1 }, // 타입별로 정렬
+      },
     ]);
 
-    ctx.body = stats.map(stat => ({
+    ctx.body = stats.map((stat) => ({
       type: stat._id,
       totalReviews: stat.totalReviews,
-      averageRating: stat.averageRating ? parseFloat(stat.averageRating.toFixed(2)) : 0, // 소수점 둘째 자리까지 반올림
-      reviewTexts: stat.reviewTexts // review.text의 문자열 리스트
+      averageRating: stat.averageRating
+        ? parseFloat(stat.averageRating.toFixed(2))
+        : 0, // 소수점 둘째 자리까지 반올림
+      reviewTexts: stat.reviewTexts, // review.text의 문자열 리스트
     }));
   } catch (error) {
     console.log(error);
@@ -183,9 +195,7 @@ router.get('/request-stats', async (ctx) => {
 });
 
 router.get('/detail/:requestId', async (ctx) => {
-  const {
-    requestId,
-  } = ctx.params;
+  const { requestId } = ctx.params;
   const request = await db.Request.findById(requestId).populate('userId');
   ctx.body = request;
 });

@@ -1,6 +1,4 @@
-import mongoose, {
-  Schema,
-} from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import jwt from 'utils/jwt';
 
 import {
@@ -12,52 +10,54 @@ import {
 
 const uniqueValidator = require('mongoose-unique-validator');
 
-const UserSchema: Schema<UserDocument> = new mongoose.Schema({
-  email: {
-    type: String,
-    unique: true,
-    required: [true, 'can\'t be blank'],
-    index: true,
-  },
-  point: {
-    type: Number,
-    default: 0,
-  },
-  level: {
-    type: Number,
-    default: 1,
-  },
-  lastLoginAt: {
-    type: Date,
-    default: Date.now,
-  },
-  pushToken: {
-    type: String,
-  },
-  push: {
-    service: {
+const UserSchema: Schema<UserDocument> = new mongoose.Schema(
+  {
+    email: {
       type: String,
-      enum: Object.values(PushService),
-      default: PushService.on,
+      unique: true,
+      required: [true, "can't be blank"],
+      index: true,
+    },
+    point: {
+      type: Number,
+      default: 0,
+    },
+    level: {
+      type: Number,
+      default: 1,
+    },
+    lastLoginAt: {
+      type: Date,
+      default: Date.now,
+    },
+    pushToken: {
+      type: String,
+    },
+    push: {
+      service: {
+        type: String,
+        enum: Object.values(PushService),
+        default: PushService.on,
+      },
+    },
+    originEmail: {
+      type: String,
     },
   },
-  originEmail: {
-    type: String,
-  },
-}, {
-  timestamps: true,
-});
+  {
+    timestamps: true,
+  }
+);
 
 UserSchema.plugin(uniqueValidator, {
   message: 'is already taken.',
 });
 
 UserSchema.methods.generateToken = async function generateToken() {
-  const {
-    _id, email,
-  } = this;
+  const { _id, email } = this;
   const payload = {
-    _id, email,
+    _id,
+    email,
   };
   const token = await jwt(payload);
   return token;
@@ -82,7 +82,8 @@ UserSchema.statics.localRegister = function localRegister({
   return user.save();
 };
 
-const model: UserModel = (mongoose.models.Users as UserModel)
-  || mongoose.model<UserDocument, UserModel>('Users', UserSchema);
+const model: UserModel =
+  (mongoose.models.Users as UserModel) ||
+  mongoose.model<UserDocument, UserModel>('Users', UserSchema);
 
 export default model;

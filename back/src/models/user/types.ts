@@ -1,6 +1,4 @@
-import {
-  Model, Document,
-} from 'mongoose';
+import { Model, Document } from 'mongoose';
 
 export interface LocalRegisterPayload {
   email: string;
@@ -12,7 +10,7 @@ export enum PushService {
 }
 
 export interface PushSetting {
-  service: PushService,
+  service: PushService;
 }
 
 export interface User extends LocalRegisterPayload {

@@ -34,7 +34,7 @@ const db = {
   Notice,
   Notification,
   Log,
-  Item
+  Item,
 };
 
 export default db;

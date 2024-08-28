@@ -1,30 +1,37 @@
 import mongoose from 'mongoose';
 
-const DiscoverSectionSchema = new mongoose.Schema({
-  name: String,
-  order: Number,
-  products: [{
+const DiscoverSectionSchema = new mongoose.Schema(
+  {
     name: String,
-    price: Number,
-    origin_price: Number,
-    discount_rate: Number,
-    reviews: Number,
-    ratings: Number,
-    url: String,
-    thumbnail: String,
-    caption: String,
-    report: String,
-    review: {
-      pros: [String],
-      cons: [String],
-      bests: [String]
-    },
-  }]
-}, {
-  timestamps: true,
-});
+    order: Number,
+    products: [
+      {
+        name: String,
+        price: Number,
+        origin_price: Number,
+        discount_rate: Number,
+        reviews: Number,
+        ratings: Number,
+        url: String,
+        thumbnail: String,
+        caption: String,
+        report: String,
+        review: {
+          pros: [String],
+          cons: [String],
+          bests: [String],
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const model = mongoose.models.DiscoverSections || mongoose.model('DiscoverSections', DiscoverSectionSchema);
+const model =
+  mongoose.models.DiscoverSections ||
+  mongoose.model('DiscoverSections', DiscoverSectionSchema);
 /*
 model.insertMany([
 {

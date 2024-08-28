@@ -6,9 +6,7 @@ import client from 'utils/axios';
 import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
-import {
-  RequestType,
-} from 'models/request';
+import { RequestType } from 'models/request';
 
 const router = new Router({
   prefix: '/request',
@@ -21,10 +19,7 @@ router.post('/', requireAuth, async (ctx) => {
     return;
   }
   const {
-    body: {
-      product,
-      ...body
-    },
+    body: { product, ...body },
   } = <any>ctx.request;
   const request = await db.Request.create({
     ...body,
@@ -54,23 +49,30 @@ router.post('/', requireAuth, async (ctx) => {
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
-    const slack_msg = 
-      `[픽포미 의뢰가 도착했습니다]\n
+    const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}\n
 어드민 링크: https://pickforme-admin.vercel.app/request?requestId=${request._id}`;
 
     slack.post('/chat.postMessage', {
-      text: slack_msg, channel: 'C05NTFL1Q4C',
+      text: slack_msg,
+      channel: 'C05NTFL1Q4C',
     });
   }
 
   // slack ai 응답 생성
   if (body.images !== undefined) {
-    const { data: { answer } } = await client.post('/test/ai-answer', { product, ...body, model: 'gpt' });
+    const {
+      data: { answer },
+    } = await client.post('/test/ai-answer', {
+      product,
+      ...body,
+      model: 'gpt',
+    });
     slack.post('/chat.postMessage', {
-      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`, channel: 'C05NTFL1Q4C',
+      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
+      channel: 'C05NTFL1Q4C',
     });
   }
 });

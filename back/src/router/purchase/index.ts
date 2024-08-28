@@ -1,12 +1,8 @@
 import Router from '@koa/router';
 import db from 'models';
-import {
-  ProductType,
-} from 'models/product';
+import { ProductType } from 'models/product';
 import requireAuth from 'middleware/jwt';
-import {
-  Receipt,
-} from 'in-app-purchase';
+import { Receipt } from 'in-app-purchase';
 import iapValidator from 'utils/iap';
 
 const router = new Router({
@@ -19,11 +15,11 @@ router.post('/', requireAuth, async (ctx) => {
   if (!user) {
     return;
   }
-  const {
-    receipt, _id: productId,
-  } = <{ _id: string, receipt: Receipt }>ctx.request.body;
+  const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>(
+    ctx.request.body
+  );
   const product = await db.Product.findById(productId);
-  if (!product) {
+  if (!product || product.type === ProductType.PURCHASE) {
     ctx.body = '존재하지 않는 상품입니다';
     ctx.status = 400;
     return;
@@ -31,12 +27,11 @@ router.post('/', requireAuth, async (ctx) => {
   try {
     const purchase = await iapValidator.validate(receipt, product.productId);
     if (purchase) {
-      
       const exist = await db.Purchase.findOne({
         userId: ctx.state.user._id,
         receipt,
       });
-      
+
       if (exist) {
         ctx.body = '이미 구매한 상품입니다.';
         ctx.status = 400;
@@ -57,18 +52,18 @@ router.post('/', requireAuth, async (ctx) => {
       return;
     }
   } catch (e) {
-    ctx.body = '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
+    ctx.body =
+      '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
     ctx.status = 400;
   }
 });
 
 // 상품목록
 router.get('/products/:platform', async (ctx) => {
-  const {
-    platform,
-  } = ctx.params;
+  const { platform } = ctx.params;
   const products = await db.Product.find({
     platform,
+    type: ProductType.SUBSCRIPTION,
   });
   ctx.body = products;
   ctx.status = 200;
@@ -85,7 +80,9 @@ router.get('/purchases', requireAuth, async (ctx) => {
 
 router.get('/subscription', requireAuth, async (ctx) => {
   const subscription = await db.Purchase.findOne({
-    userId: ctx.state.user._id, isExpired: false, 'product.type': ProductType.SUBSCRIPTION,
+    userId: ctx.state.user._id,
+    isExpired: false,
+    'product.type': ProductType.SUBSCRIPTION,
   });
   ctx.body = subscription;
   ctx.status = 200;
@@ -93,7 +90,8 @@ router.get('/subscription', requireAuth, async (ctx) => {
 
 router.get('/subscriptions', requireAuth, async (ctx) => {
   const subscriptions = await db.Purchase.find({
-    userId: ctx.state.user._id, 'product.type': ProductType.SUBSCRIPTION,
+    userId: ctx.state.user._id,
+    'product.type': ProductType.SUBSCRIPTION,
   });
   ctx.body = subscriptions;
   ctx.status = 200;
