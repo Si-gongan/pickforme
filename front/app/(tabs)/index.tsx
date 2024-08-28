@@ -16,7 +16,7 @@ import ProductCard from '../../components/ProductCard';
 // TODO
 import {
   isShowVersionUpdateAlarmModalAtom,
-  isShowMembershipIntroduceAlertAtom,
+  isShowNonSubscribedModalAtom,
   // isShowMembershipSubscription, 
   // isShowAiFunctionLimitationsAtom, 
   // isShowManagerFunctionRestrictionsAtom, 
@@ -201,7 +201,7 @@ export default function DiscoverScreen() {
   const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
   const applicationVersion = Application.nativeApplicationVersion;
   const APPLICATION_VERSION = "3.0.0";
-  const setIsShowMembershipIntroduceAlertModal = useSetAtom(isShowMembershipIntroduceAlertAtom);
+  const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
   // const setIsShowMembershipSubscriptionModal = useSetAtom(isShowMembershipSubscription);
   // const setIsAiFunctionLimitationsModal = useSetAtom(isShowAiFunctionLimitationsAtom);
   // const setIsManagerFunctionRestrictionsModal = useSetAtom(isShowManagerFunctionRestrictionsAtom);
@@ -215,7 +215,7 @@ export default function DiscoverScreen() {
 
     } else {
       // 멤버십 알림
-      setIsShowMembershipIntroduceAlertModal(true);
+      setIsShowNonSubscribedModal(true);
 
     }
   }, [applicationVersion]);
@@ -231,6 +231,7 @@ export default function DiscoverScreen() {
     // 결제 해지
     // setIsCancelMembershipPaymentModal(true);
     // setIsMembershipPaymentCancellationWeekModal(true);
+
 
   }, []);
 

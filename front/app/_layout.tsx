@@ -22,14 +22,14 @@ import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../
 import HeaderLeft from '../components/HeaderLeft';
 import OnboardingBottomSheet from '../components/BottomSheet/How';
 import LoginBottomSheet from '../components/BottomSheet/Login';
-import NoMembershipBottomSheet from '../components/BottomSheet/NoMembership';
+import NonSubscribedBottomSheet from '../components/BottomSheet/Membership/NonSubscribed';
 import LackPointBottomSheet from '../components/BottomSheet/LackPoint';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import RequestBottomSheet from '../components/BottomSheet/Request';
 import CommonBottomSheet from '../components/BottomSheet/Common';
 
 import VersionUpdateAlarmBottomSheet from '../components/BottomSheet/VersionUpdateAlarm';
-import MembershipIntroduceAlertBottomSheet from '../components/BottomSheet/Membership/MembershipIntroduceAlert';
+import IntroduceAlertBottomSheet from '../components/BottomSheet/Membership/IntroduceAlert';
 
 
 export default function RootLayout() {
@@ -112,9 +112,10 @@ function RootLayoutNav() {
         <RequestBottomSheet />
         <OnboardingBottomSheet />
         <LackPointBottomSheet />
-        <NoMembershipBottomSheet />
         <VersionUpdateAlarmBottomSheet />
-        <MembershipIntroduceAlertBottomSheet />
+        <IntroduceAlertBottomSheet />
+        <NonSubscribedBottomSheet />
+
 
         {bottomSheets.map((info, i) => (
           <CommonBottomSheet info={info} index={i} />

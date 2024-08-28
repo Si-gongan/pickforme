@@ -1,6 +1,6 @@
 import { Props, styles } from '../Base';
 import BottomSheet from 'react-native-modal';
-import { isShowMembershipIntroduceAlertAtom } from '../../../stores/auth/atoms';
+import { isShowIntroduceAlertAtom } from '../../../stores/auth/atoms';
 import { useAtom } from 'jotai';
 import Colors from '../../../constants/Colors';
 import { View, Text } from '../../Themed';
@@ -11,8 +11,9 @@ import { useRouter } from 'expo-router';
 import { settingAtom } from '../../../stores/auth/atoms';
 import React from "react";
 
-const MembershipIntroduceAlertBottomSheet: React.FC<Props> = () => {
-    const [visible, setVisible] = useAtom(isShowMembershipIntroduceAlertAtom);
+//Membership
+const IntroduceAlertBottomSheet: React.FC<Props> = () => {
+    const [visible, setVisible] = useAtom(isShowIntroduceAlertAtom);
     const onClose = () => setVisible(false);
     const colorScheme = useColorScheme();
     const router = useRouter();
@@ -92,4 +93,4 @@ const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     }
 });
 
-export default MembershipIntroduceAlertBottomSheet;
+export default IntroduceAlertBottomSheet;

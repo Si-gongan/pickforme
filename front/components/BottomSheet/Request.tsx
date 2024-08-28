@@ -6,7 +6,7 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
-import { isShowNoMembershipModalAtom } from '../../stores/auth/atoms';
+import { isShowNonSubscribedModalAtom } from '../../stores/auth/atoms';
 import { scrapedProductDetailAtom } from '../../stores/product/atoms';
 import { sendLogAtom } from '../../stores/log/atoms';
 
@@ -22,7 +22,7 @@ import { Text, View } from '../Themed';
 export default function ResearchBottomSheet() {
   const headerTitleRef = useRef(null);
 
-  const isShowNoMembershipModalVisible = useAtomValue(isShowNoMembershipModalAtom);
+  const isShowNonSubscribedModalVisible = useAtomValue(isShowNonSubscribedModalAtom);
 
   const addRequest = useSetAtom(addRequestAtom);
   const colorScheme = useColorScheme();
@@ -47,10 +47,10 @@ export default function ResearchBottomSheet() {
     }
   });
   const handleSubmit = () => {
-    const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews} as QuestionRequestParams;
+    const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews } as QuestionRequestParams;
     onClose();
     checkPoint(params);
-    sendLog({ product: { url: product?.url }, action: 'request', metaData: {}});
+    sendLog({ product: { url: product?.url }, action: 'request', metaData: {} });
   }
   const disabled = !data.text;
   const [product, setProduct] = useAtom(requestBottomSheetAtom);
@@ -69,7 +69,7 @@ export default function ResearchBottomSheet() {
     setTimeout(focusOnHeader, 500);
   }, [product]);
 
-  if (isShowNoMembershipModalVisible) {
+  if (isShowNonSubscribedModalVisible) {
     return null;
   }
   return (
@@ -79,11 +79,11 @@ export default function ResearchBottomSheet() {
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
     >
-       <KeyboardAvoidingView
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View
-        style={[styles.bottomSheet, localStyles.root]}>
+          style={[styles.bottomSheet, localStyles.root]}>
           <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
             상품에 대해 궁금한 점을 자유롭게 적어주세요.
           </Text>
@@ -101,7 +101,7 @@ export default function ResearchBottomSheet() {
           </View>
           <Button style={styles.button} title='매니저에게 물어보기' onPress={handleSubmit} disabled={disabled} />
         </View>
-        </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </BottomSheet>
   );
 }
