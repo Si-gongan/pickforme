@@ -4,20 +4,42 @@ export const hexToRgb = (hex: string) =>
 export const numComma = (num: number) => {
   if (num === (undefined || null)) return '0';
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-} 
+}
 
 export const formatDate = (date: string | Date) => {
   const today = new Date(date);
-  return `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+  return `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 }
 
 export const formatDateAfterOneMonth = (date: string | Date) => {
   const today = new Date(date);
   today.setMonth(today.getMonth() + 1);
-  return `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+  return `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 }
 
 export const formatTime = (date: string | Date) => {
   const today = new Date(date);
   return (today.getHours() % 12) + '시 ' + today.getMinutes() + '분';
+};
+
+export enum TABS {
+  CAPTION = 'caption',
+  REPORT = 'report',
+  REVIEW = 'review',
+  QUESTION = 'question',
+}
+
+export const tabName: Record<TABS, string> = {
+  [TABS.CAPTION]: '이미지 설명',
+  [TABS.REPORT]: '상세페이지 설명',
+  [TABS.REVIEW]: '리뷰 요약',
+  [TABS.QUESTION]: '질문 하기',
+};
+
+export const loadingMessages: Record<TABS | 'manager', string> = {
+  [TABS.CAPTION]: '상품의 이미지 설명을 생성중이에요.',
+  [TABS.REPORT]: '상품의 자세한 설명을 생성중이에요.',
+  [TABS.REVIEW]: '상품의 리뷰를 AI가 요약중이에요.',
+  [TABS.QUESTION]: 'AI 포미가 질문에 대한 답변을 생성중이에요.',
+  manager: '매니저가 질문에 대한 답변을 준비중이에요. 1시간 내로 답변이 도착할 거에요.',
 };

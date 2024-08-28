@@ -43,29 +43,9 @@ import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { useWebView } from '../components/webview-util';
 import TabContent from '../components/ProductDetailTabContent';
 
-export enum TABS {
-  CAPTION = 'caption',
-  REPORT = 'report',
-  REVIEW = 'review',
-  QUESTION = 'question',
-}
+import { TABS, loadingMessages, tabName } from '../utils/common';
 
-const tabName: Record<TABS, string> = {
-  [TABS.CAPTION]: '이미지 설명',
-  [TABS.REPORT]: '상세페이지 설명',
-  [TABS.REVIEW]: '리뷰 요약',
-  [TABS.QUESTION]: '질문 하기',
-};
-
-const loadingMessages: Record<TABS | 'manager', string> = {
-  [TABS.CAPTION]: '상품의 이미지 설명을 생성중이에요.',
-  [TABS.REPORT]: '상품의 자세한 설명을 생성중이에요.',
-  [TABS.REVIEW]: '상품의 리뷰를 AI가 요약중이에요.',
-  [TABS.QUESTION]: 'AI 포미가 질문에 대한 답변을 생성중이에요.',
-  manager: '매니저가 질문에 대한 답변을 준비중이에요. 1시간 내로 답변이 도착할 거에요.',
-};
-
-interface ProductDetailScreenProps {}
+interface ProductDetailScreenProps { }
 
 const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   const { productUrl: productUrlBase } = useLocalSearchParams();
@@ -124,7 +104,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     if (product) {
       sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
       getProductDetail(product);
-    } 
+    }
   }, [getProductDetail, productUrl]);
 
   useEffect(() => {
@@ -175,11 +155,11 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   const handleClickWish = async () => {
     if (already) {
       setWishlist(wishlist.filter((wishProduct) => wishProduct !== already));
-      setTimeout(() => {AccessibilityInfo.announceForAccessibility('위시리스트에서 제거되었습니다.');}, 300);
+      setTimeout(() => { AccessibilityInfo.announceForAccessibility('위시리스트에서 제거되었습니다.'); }, 300);
     } else {
       setWishlist([...wishlist, product]);
       sendLog({ product: { url: productUrl }, action: 'like', metaData: {} });
-      setTimeout(() => {AccessibilityInfo.announceForAccessibility('위시리스트에 추가되었습니다.');}, 300);
+      setTimeout(() => { AccessibilityInfo.announceForAccessibility('위시리스트에 추가되었습니다.'); }, 300);
     }
   };
 
@@ -373,12 +353,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
 
 interface ActionButtonsProps {
   styles: ReturnType<typeof useStyles>;
-  product: Product; 
+  product: Product;
   handleClickBuy: () => void;
   handleClickContact: () => void;
   handleClickRequest: (e: any) => void;
   handleClickWish: () => void;
-  isWish: boolean; 
+  isWish: boolean;
   isRequest: boolean;
 }
 
@@ -394,7 +374,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 }) => (
   <View style={styles.buttonWrap}>
     <View style={styles.buttonOuter}>
-      <Button title="구매하러 가기" onPress={handleClickBuy} style={styles.button} size="small" disabled={!product}/>
+      <Button title="구매하러 가기" onPress={handleClickBuy} style={styles.button} size="small" disabled={!product} />
     </View>
     {product?.platform === 'thezam' ? (
       <View style={styles.buttonOuter}>

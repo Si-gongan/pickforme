@@ -13,6 +13,18 @@ import Colors from '../../constants/Colors';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/ProductCard';
 
+// TODO
+import {
+  isShowVersionUpdateAlarmModalAtom,
+  isShowMembershipIntroduceAlertAtom,
+  // isShowMembershipSubscription, 
+  // isShowAiFunctionLimitationsAtom, 
+  // isShowManagerFunctionRestrictionsAtom, 
+  // isShowCancelMembershipPaymentAtom, 
+  // isShowMembershipPaymentCancellationWeekAtom 
+} from '../../stores/auth/atoms';
+import * as Application from 'expo-application';
+
 const SORTERS = [
   'scoreDesc',
   'salePriceAsc',
@@ -29,10 +41,25 @@ const SORTER_NAME = [
   '최신순'
 ];
 
+// 버전 비교 함수
+function isVersionLessThan(version: string, baseVersion: string) {
+  const versionParts = version.split('.').map(Number);      // e.g., [2, 5, 1]
+  const baseVersionParts = baseVersion.split('.').map(Number); // e.g., [3, 0, 0]
+
+  for (let i = 0; i < 3; i++) {
+    if (versionParts[i] < baseVersionParts[i]) {
+      return true;
+    } else if (versionParts[i] > baseVersionParts[i]) {
+      return false;
+    }
+  }
+  return false; // 동일한 버전일 경우
+}
+
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
-   return (
+  return (
     <Pressable onPress={onClick} accessibilityRole='button' accessibilityLabel='상품 더보기' accessible style={styles.more}>
       <Text style={styles.moreText}> 상품 더보기</Text>
     </Pressable>
@@ -47,7 +74,7 @@ export default function DiscoverScreen() {
 
   const getMainProducts = useSetAtom(getMainProductsAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
-  
+
   const searchProducts = useSetAtom(searchProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const searchSorter = useAtomValue(searchSorterAtom);
@@ -132,7 +159,7 @@ export default function DiscoverScreen() {
     special: 5,
     random: 5,
   });
-  const [text, setText ] =React.useState('');
+  const [text, setText] = React.useState('');
 
   const handleClickSend = (sort: string) => {
     searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
@@ -151,7 +178,7 @@ export default function DiscoverScreen() {
     const nextFocus = Math.min(mainProducts[key].length, length[key] + 1);
     setFocus({
       ...focus,
-      [key]: mainProducts[key][nextFocus-1].url,
+      [key]: mainProducts[key][nextFocus - 1].url,
     });
     setTimeout(() => {
       const ref = key === 'random' ? focusRef1 : focusRef2;
@@ -169,14 +196,53 @@ export default function DiscoverScreen() {
     getMainProducts(id);
   }, [getMainProducts]);
 
+
+  // 2024-08-26(월) TODO
+  const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
+  const applicationVersion = Application.nativeApplicationVersion;
+  const APPLICATION_VERSION = "3.0.0";
+  const setIsShowMembershipIntroduceAlertModal = useSetAtom(isShowMembershipIntroduceAlertAtom);
+  // const setIsShowMembershipSubscriptionModal = useSetAtom(isShowMembershipSubscription);
+  // const setIsAiFunctionLimitationsModal = useSetAtom(isShowAiFunctionLimitationsAtom);
+  // const setIsManagerFunctionRestrictionsModal = useSetAtom(isShowManagerFunctionRestrictionsAtom);
+  // const setIsCancelMembershipPaymentModal = useSetAtom(isShowCancelMembershipPaymentAtom);
+  // const setIsMembershipPaymentCancellationWeekModal = useSetAtom(isShowMembershipPaymentCancellationWeekAtom);
+
+  useEffect(() => { // 업데이트 관련
+    if (applicationVersion && isVersionLessThan(applicationVersion, APPLICATION_VERSION)) {
+      // 3.0.0 미만 버전일 경우 업데이트 알림
+      setIsShowVersionUpdateAlarmModal(true);
+
+    } else {
+      // 멤버십 알림
+      setIsShowMembershipIntroduceAlertModal(true);
+
+    }
+  }, [applicationVersion]);
+
+  useEffect(() => { // 확인용 바텀시트
+    // 구매 완료
+    // setIsShowMembershipSubscriptionModal(true);
+
+    // AI 기능제한 팝업
+    // setIsAiFunctionLimitationsModal(true);
+    // setIsManagerFunctionRestrictionsModal(true);
+
+    // 결제 해지
+    // setIsCancelMembershipPaymentModal(true);
+    // setIsMembershipPaymentCancellationWeekModal(true);
+
+  }, []);
+
+
   return (
     <View style={styles.container}>
 
       {/* 검색창 */}
 
-      <View style={[styles.horizontalPadder,styles.searchContainer]}>
+      <View style={[styles.horizontalPadder, styles.searchContainer]}>
         {!!query.length && (
-          <Pressable onPress={() => {setQuery(''); setText(''); }} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
+          <Pressable onPress={() => { setQuery(''); setText(''); }} accessibilityRole='button' accessibilityLabel='뒤로가기' accessible>
             <Image style={styles.backButton} source={require('../../assets/images/icBack.png')} />
           </Pressable>
         )}
@@ -217,128 +283,128 @@ export default function DiscoverScreen() {
       {isSearching ? (
         <Text style={styles.loading} ref={searchLoadingRef}>검색하신 상품을 로딩중이에요.</Text>
       ) : (
-      !!query.length ? (
+        !!query.length ? (
 
-        // 검색 결과 섹션
+          // 검색 결과 섹션
 
-        <>
-          <View style={styles.searchStatus}>
-            <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products.length}건 검색됨`}>
-              <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+          <>
+            <View style={styles.searchStatus}>
+              <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products.length}건 검색됨`}>
+                <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+              </View>
+              <View style={styles.sorterSelector}>
+                {SORTERS.map((sort, idx) => (
+                  <Pressable
+                    key={`sort-${sort}`}
+                    onPress={() => searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) })}
+                    accessible
+                    accessibilityRole='button'
+                    accessibilityLabel={sort === searchSorter ? `선택됨 ${SORTER_NAME[idx]}` : SORTER_NAME[idx]}
+                  >
+                    <Text style={sort === searchSorter ? styles.selectedSorter : styles.sorter}>{SORTER_NAME[idx]}</Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
-            <View style={styles.sorterSelector}>
-              {SORTERS.map((sort, idx) => (
-                <Pressable
-                  key={`sort-${sort}`}
-                  onPress={() => searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) })}
-                  accessible
-                  accessibilityRole='button'
-                  accessibilityLabel={sort === searchSorter ? `선택됨 ${SORTER_NAME[idx]}` : SORTER_NAME[idx]}
-                >
-                  <Text style={sort === searchSorter ? styles.selectedSorter : styles.sorter}>{SORTER_NAME[idx]}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-          
-          <ScrollView style={styles.scrollView}>
-            {!!searchResult?.products.length && (
-              <FlatList
-                scrollEnabled={false}
-                contentContainerStyle={styles.searchList}
-                data={searchResult.products}
-                keyExtractor={(product) => `search-${product.url}`}
-                renderItem={({ item: product }) => <ProductCard product={product} type='search' />}
-                ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+
+            <ScrollView style={styles.scrollView}>
+              {!!searchResult?.products.length && (
+                <FlatList
+                  scrollEnabled={false}
+                  contentContainerStyle={styles.searchList}
+                  data={searchResult.products}
+                  keyExtractor={(product) => `search-${product.url}`}
+                  renderItem={({ item: product }) => <ProductCard product={product} type='search' />}
+                  ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
                 // onEndReached={() => handleSearchMore(query)}
-              />
+                />
+              )}
+              {!searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
+            </ScrollView>
+          </>
+        ) : (
+
+          // 메인 상품 섹션
+
+          <ScrollView style={styles.scrollView}>
+
+            {/* order가 0 미만인 로컬(협업) 상품 섹션 */}
+
+            {mainProducts.local.filter(({ order }) => order < 0).sort((a, b) => a.order - b.order).map((section) => (
+              <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
+                <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+                  {section.name}
+                </Text>
+                <FlatList
+                  scrollEnabled={false}
+                  contentContainerStyle={[styles.list, styles.horizontalPadder]}
+                  data={section.products}
+                  keyExtractor={(product) => `random-${product.url}`}
+                  ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+                  renderItem={({ item: product }) => <ProductCard product={product} type='local' />}
+                />
+              </View>
+            ))}
+
+            {/* random(카테고리별 베스트) 상품 섹션 */}
+
+            {!!mainProducts.random.length && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+                  {category}
+                </Text>
+                <FlatList
+                  contentContainerStyle={[styles.list, styles.horizontalPadder]}
+                  scrollEnabled={false}
+                  data={mainProducts.random.slice(0, length.random)}
+                  keyExtractor={(product) => `random-${product.url}`}
+                  ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+                  renderItem={({ item: product }) => <ProductCard ref={focus.random === product.url ? focusRef1 : undefined} product={product} type='bestcategories' />}
+                  ListFooterComponentStyle={styles.listFooter}
+                  ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
+                />
+              </View>
             )}
-            {!searchResult?.products?.length && <Text style={styles.loading}>검색결과가 없습니다.</Text>}
+
+            {/* special(오늘의 특가) 상품 섹션 */}
+
+            {!!mainProducts.special.length && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+                  오늘의 특가
+                </Text>
+                <FlatList
+                  scrollEnabled={false}
+                  contentContainerStyle={[styles.list, styles.horizontalPadder]}
+                  data={mainProducts.special.slice(0, length.special)}
+                  keyExtractor={(product) => `special-${product.url}`}
+                  ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+                  renderItem={({ item: product }) => <ProductCard ref={focus.special === product.url ? focusRef2 : undefined} product={product} type='goldbox' />}
+                  ListFooterComponentStyle={styles.listFooter}
+                  ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
+                />
+              </View>
+            )}
+
+            {/* order가 0 이상인 로컬(협업) 상품 섹션 */}
+
+            {mainProducts.local.filter(({ order }) => order > 0).sort((a, b) => a.order - b.order).map((section) => (
+              <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
+                <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
+                  {section.name}
+                </Text>
+                <FlatList
+                  contentContainerStyle={[styles.list, styles.horizontalPadder]}
+                  scrollEnabled={false}
+                  data={section.products}
+                  keyExtractor={(product) => `random-${product.url}`}
+                  ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
+                  renderItem={({ item: product }) => <ProductCard product={product} type='local' />}
+                />
+              </View>
+            ))}
           </ScrollView>
-        </>
-      ) : (
-
-      // 메인 상품 섹션
-
-      <ScrollView style={styles.scrollView}>
-
-        {/* order가 0 미만인 로컬(협업) 상품 섹션 */}
-
-        {mainProducts.local.filter(({ order }) => order < 0).sort((a,b) => a.order - b.order).map((section) => (
-          <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
-            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-              {section.name}
-            </Text>
-            <FlatList
-              scrollEnabled={false}
-              contentContainerStyle={[styles.list, styles.horizontalPadder]}
-              data={section.products}
-              keyExtractor={(product) => `random-${product.url}`}
-              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-              renderItem={({ item: product }) => <ProductCard product={product} type='local' />}
-            />
-          </View>
         ))}
-
-        {/* random(카테고리별 베스트) 상품 섹션 */}
-        
-        {!!mainProducts.random.length && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-              {category}
-            </Text>
-            <FlatList
-              contentContainerStyle={[styles.list, styles.horizontalPadder]}
-              scrollEnabled={false}
-              data={mainProducts.random.slice(0,length.random)}
-              keyExtractor={(product) => `random-${product.url}`}
-              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-              renderItem={({ item: product }) => <ProductCard ref={focus.random === product.url ? focusRef1 : undefined} product={product} type='bestcategories'/>}
-              ListFooterComponentStyle={styles.listFooter}
-              ListFooterComponent={mainProducts.random.length > length.random ? () => (<MoreButton onClick={() => handleClickMore('random')} />) : undefined}
-            />
-          </View>
-        )}
-
-        {/* special(오늘의 특가) 상품 섹션 */}
-
-        {!!mainProducts.special.length && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-              오늘의 특가
-            </Text>
-            <FlatList
-              scrollEnabled={false}
-              contentContainerStyle={[styles.list, styles.horizontalPadder]}
-              data={mainProducts.special.slice(0,length.special)}
-              keyExtractor={(product) => `special-${product.url}`}
-              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-              renderItem={({ item: product }) => <ProductCard ref={focus.special === product.url ? focusRef2 : undefined} product={product} type='goldbox'/>}
-              ListFooterComponentStyle={styles.listFooter}
-              ListFooterComponent={mainProducts.special.length > length.special ? () => (<MoreButton onClick={() => handleClickMore('special')} />) : undefined}
-            />
-          </View>
-        )}  
-
-        {/* order가 0 이상인 로컬(협업) 상품 섹션 */}
-
-        {mainProducts.local.filter(({ order }) => order > 0).sort((a,b) => a.order - b.order).map((section) => (
-          <View style={styles.section} key={`discover-main-section-${section.name}-${section.order}`}>
-            <Text style={[styles.sectionTitle, styles.horizontalPadder]} accessible accessibilityRole='header'>
-              {section.name}
-            </Text>
-            <FlatList
-              contentContainerStyle={[styles.list, styles.horizontalPadder]}
-              scrollEnabled={false}
-              data={section.products}
-              keyExtractor={(product) => `random-${product.url}`}
-              ItemSeparatorComponent={() => <View style={styles.seperator} accessible={false} />}
-              renderItem={({ item: product }) => <ProductCard product={product} type='local'/>}
-            />
-          </View>
-        ))}
-      </ScrollView>
-      ))}
 
       {/* 클립보드 링크 분석 하단 floating 컴포넌트 -> 로직 보류 */}
 
@@ -507,7 +573,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     textAlign: 'center',
     flex: 1,
   },
- header: {
+  header: {
     flexDirection: 'row',
   },
   icon: {
