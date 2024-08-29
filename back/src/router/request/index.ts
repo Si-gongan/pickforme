@@ -49,7 +49,16 @@ router.post('/', requireAuth, async (ctx) => {
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
-    user.usePoint(1);
+    console.log(user.point);
+    try {
+      if (user.point <= 0) {
+        throw new Error('pick error');
+      }
+      user.usePoint(1);
+    } catch (e) {
+      ctx.status = 400;
+      return;
+    }
     const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n

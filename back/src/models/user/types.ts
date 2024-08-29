@@ -15,6 +15,7 @@ export interface PushSetting {
 
 export interface User extends LocalRegisterPayload {
   point: number;
+  aiPoint: number;
   level: number;
   push: PushSetting;
   lastLoginAt: Date;
