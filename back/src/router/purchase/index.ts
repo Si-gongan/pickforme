@@ -18,12 +18,14 @@ router.post('/', requireAuth, async (ctx) => {
   const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>(
     ctx.request.body
   );
+
   const product = await db.Product.findById(productId);
   if (!product || product.type === ProductType.PURCHASE) {
     ctx.body = '존재하지 않는 상품입니다';
     ctx.status = 400;
     return;
   }
+
   try {
     const purchase = await iapValidator.validate(receipt, product.productId);
     if (purchase) {
@@ -44,6 +46,7 @@ router.post('/', requireAuth, async (ctx) => {
         purchase,
         receipt,
       });
+
       ctx.body = _purchase;
       ctx.status = 200;
 

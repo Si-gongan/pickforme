@@ -18,7 +18,13 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema(
       required: [true, "can't be blank"],
       index: true,
     },
+    // 매니저 요청 횟수
     point: {
+      type: Number,
+      default: 0,
+    },
+    // AI 요청 횟수
+    aiPoint: {
       type: Number,
       default: 0,
     },
@@ -71,6 +77,12 @@ UserSchema.methods.usePoint = async function usePoint(payload: number) {
   await this.save();
   return this.point;
 };
+
+UserSchema.methods.processExpiredMembership =
+  async function processExpiredMembership() {
+    this.aiPoint = 0;
+    await this.save();
+  };
 
 UserSchema.statics.localRegister = function localRegister({
   email,

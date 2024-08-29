@@ -25,6 +25,7 @@ export interface User extends LocalRegisterPayload {
 export interface UserDocument extends User, Document {
   generateToken: () => Promise<string>;
   usePoint(payload: number): () => Promise<number>;
+  processExpiredMembership: () => Promise<void>;
 }
 
 export interface UserModel extends Model<UserDocument> {

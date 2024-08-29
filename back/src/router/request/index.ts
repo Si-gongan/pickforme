@@ -7,6 +7,7 @@ import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
 import { RequestType } from 'models/request';
+import { ProductType } from 'models/product';
 
 const router = new Router({
   prefix: '/request',
@@ -42,13 +43,13 @@ router.post('/', requireAuth, async (ctx) => {
   //   await request.save();
   // }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
-  user.usePoint(1);
   ctx.body = request;
   ctx.status = 200;
 
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
+    user.usePoint(1);
     const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
@@ -63,6 +64,23 @@ router.post('/', requireAuth, async (ctx) => {
 
   // slack ai 응답 생성
   if (body.images !== undefined) {
+    const purchase = await db.Purchase.findOne({ userId: user._id })
+      .sort('createdAt')
+      .exec();
+
+    if (purchase) {
+      const today = new Date();
+      const oneMonthLater = new Date(purchase.createdAt);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
+        await purchase.updateExpiration();
+        await user.processExpiredMembership();
+        return;
+      }
+    } else {
+      return;
+    }
+
     const {
       data: { answer },
     } = await client.post('/test/ai-answer', {
