@@ -22,6 +22,7 @@ router.post('/', requireAuth, async (ctx) => {
   const {
     body: { product, ...body },
   } = <any>ctx.request;
+
   const request = await db.Request.create({
     ...body,
     userId: user._id,
@@ -49,7 +50,6 @@ router.post('/', requireAuth, async (ctx) => {
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
-    console.log(user.point);
     try {
       if (user.point <= 0) {
         throw new Error('pick error');
@@ -57,6 +57,9 @@ router.post('/', requireAuth, async (ctx) => {
       user.usePoint(1);
     } catch (e) {
       ctx.status = 400;
+      ctx.body = {
+        errorMessage: '요청하실 포인트가 부족합니다.',
+      };
       return;
     }
     const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
@@ -69,13 +72,12 @@ router.post('/', requireAuth, async (ctx) => {
       text: slack_msg,
       channel: 'C05NTFL1Q4C',
     });
-  }
-
-  // slack ai 응답 생성
-  if (body.images !== undefined) {
-    const purchase = await db.Purchase.findOne({ userId: user._id })
-      .sort('createdAt')
-      .exec();
+  } else {
+    // slack ai 응답 생성
+    const purchase = await db.Purchase.findOne({ userId: user._id }).sort([
+      'createdAt',
+      -1,
+    ]);
 
     if (purchase) {
       const today = new Date();
@@ -84,11 +86,27 @@ router.post('/', requireAuth, async (ctx) => {
       if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
         await purchase.updateExpiration();
         await user.processExpiredMembership();
-        return;
       }
     } else {
+      // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
+      const today = new Date();
+      const lastRequest = await db.Request.find({ userId: user._id }).sort([
+        'createdAt',
+        -1,
+      ]);
+      if (lastRequest.createdAt.getMonth() !== today.getMonth()) {
+        await user.initMonthPoint();
+      }
+    }
+
+    if (user.aiPoint <= 0) {
+      ctx.status = 400;
+      ctx.body = {
+        errorMessage: '요청하실 포인트가 부족합니다.',
+      };
       return;
     }
+    user.useAiPoint(1);
 
     const {
       data: { answer },

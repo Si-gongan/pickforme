@@ -70,19 +70,28 @@ UserSchema.methods.generateToken = async function generateToken() {
 };
 
 UserSchema.methods.usePoint = async function usePoint(payload: number) {
-  if (payload > this.point) {
-    throw new Error('pick error');
-  }
   this.point -= payload;
   await this.save();
   return this.point;
 };
 
+UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
+  this.aiPoint -= payload;
+  await this.save();
+  return this.aiPoint;
+};
+
 UserSchema.methods.processExpiredMembership =
   async function processExpiredMembership() {
-    this.aiPoint = 0;
+    this.point = 0;
+    this.aiPoint = 15;
     await this.save();
   };
+
+UserSchema.methods.initMonthPoint = async function initMonthPoint() {
+  this.aiPoint = 15;
+  await this.save();
+};
 
 UserSchema.statics.localRegister = function localRegister({
   email,
