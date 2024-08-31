@@ -1,12 +1,12 @@
 export interface Product {
-	name: string,
-	price: number,
-	origin_price: number, // 할인 전 가격
-	discount_rate: number, // 할인율
-	reviews: number, // 리뷰 수
-	ratings: number, // 평점
-	url: string, // 상품 링크 주소
-	thumbnail: string, // 상품 썸네일 이미지 주소
+  name: string,
+  price: number,
+  origin_price: number, // 할인 전 가격
+  discount_rate: number, // 할인율
+  reviews: number, // 리뷰 수
+  ratings: number, // 평점
+  url: string, // 상품 링크 주소
+  thumbnail: string, // 상품 썸네일 이미지 주소
   platform: string,
 }
 
@@ -37,7 +37,13 @@ export interface GetProductDetailResponse {
 }
 
 export interface ProductDetailState extends GetProductDetailResponse {
-  url: string;
+  url: string,
+  question?: string; // TABS.QUESTION에 대응하는 속성
+  review?: { // TABS.REVIEW에 대응하는 속성
+    pros: string[];
+    cons: string[];
+    bests: string[];
+  };
 }
 
 interface LocalProductSection {
@@ -46,7 +52,7 @@ interface LocalProductSection {
   products: Product[], // 협업 상품 리스트
 }
 
-export interface GetMainProductsResponse { 
+export interface GetMainProductsResponse {
   // 홈 탭 상품 리스트
   special: Product[], // 오늘의 특가
   random: Product[], // 카테고리별 추천

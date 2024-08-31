@@ -1,6 +1,6 @@
 {
   "expo": {
-    "owner": "sigonggan",
+    "owner": "sigongan",
     "plugins": [
       [
         "@react-native-seoul/kakao-login",
@@ -14,7 +14,7 @@
     ],
     "name": "픽포미",
     "slug": "pickforme",
-    "version": "3.0.0",
+    "version": "3.0.10",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
     "scheme": "myapp",
@@ -46,7 +46,7 @@
           "backgroundColor": "#111525"
         }
       },
-      "buildNumber": "4"
+      "buildNumber": "1"
     },
     "android": {
       "splash": {
@@ -64,8 +64,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.sigonggan.pickforme",
-      "runtimeVersion": "1.0.1",
-      "versionCode": 51,
+      "versionCode": 67,
       "intentFilters": [
         {
           "action": "android.intent.action.SEND",
@@ -87,7 +86,9 @@
         "projectId": "e1838378-658e-46ee-b890-0e439a47e799"
       }
     },
-    "runtimeVersion": "1.0.1",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "updates": {
       "url": "https://u.expo.dev/e1838378-658e-46ee-b890-0e439a47e799"
     }

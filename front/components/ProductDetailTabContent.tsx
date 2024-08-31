@@ -170,41 +170,84 @@ interface ReviewTabProps {
   markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
 }
 
-const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles }) => (
-  <>
-    {!productDetail?.[tab]?.pros?.length && !productDetail?.[tab]?.cons?.length ? (
-      <View style={styles.detailWrap} ref={refs[tab]}>
-        <Text>리뷰정보를 찾을 수 없습니다.</Text>
-      </View>
-    ) : null}
-    {productDetail?.[tab]?.pros?.length !== 0 && (
-      <View style={styles.detailWrap} ref={refs[tab]}>
-        <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
-        <Markdown style={markdownStyles}>
-          {productDetail?.[tab]?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
-        </Markdown>
-      </View>
-    )}
-    {productDetail?.[tab]?.cons?.length !== 0 && (
-      <View style={styles.detailWrap}>
-        <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
-        <Markdown style={markdownStyles}>
-          {productDetail?.[tab]?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
-        </Markdown>
-      </View>
-    )}
-    {productDetail?.[tab]?.bests?.length !== 0 && (
-      <View style={styles.detailWrap}>
-        <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
-        {productDetail?.[tab]?.bests.map((row: string, i: number) => (
-          <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
-            {`**리뷰 ${i + 1}:** ${row}`}
+const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles }) => {
+  // TODO
+  // const review = productDetail?.[tab];
+  // review가 객체인지 확인합니다. 
+  // if (typeof review === 'object' && review !== null && 'pros' in review && 'cons' in review && 'bests' in review) {
+  return (
+    <>
+      {!productDetail?.[tab]?.pros?.length && !productDetail?.[tab]?.cons?.length ? (
+        <View style={styles.detailWrap} ref={refs[tab]}>
+          <Text>리뷰정보를 찾을 수 없습니다.</Text>
+        </View>
+      ) : null}
+      {productDetail?.[tab]?.pros?.length !== 0 && (
+        <View style={styles.detailWrap} ref={refs[tab]}>
+          <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
+          <Markdown style={markdownStyles}>
+            {productDetail?.[tab]?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
           </Markdown>
-        ))}
-      </View>
-    )}
-  </>
-);
+        </View>
+      )}
+      {productDetail?.[tab]?.cons?.length !== 0 && (
+        <View style={styles.detailWrap}>
+          <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
+          <Markdown style={markdownStyles}>
+            {productDetail?.[tab]?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+          </Markdown>
+        </View>
+      )}
+      {productDetail?.[tab]?.bests?.length !== 0 && (
+        <View style={styles.detailWrap}>
+          <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
+          {productDetail?.[tab]?.bests.map((row: string, i: number) => (
+            <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
+              {`**리뷰 ${i + 1}:** ${row}`}
+            </Markdown>
+          ))}
+        </View>
+      )}
+      {/* {!review.pros?.length && !review.cons?.length ? (
+          <View style={styles.detailWrap} ref={refs[tab]}>
+            <Text>리뷰정보를 찾을 수 없습니다.</Text>
+          </View>
+        ) : null}
+        {review.pros?.length !== 0 && (
+          <View style={styles.detailWrap} ref={refs[tab]}>
+            <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
+            <Markdown style={markdownStyles}>
+              {review.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+            </Markdown>
+          </View>
+        )}
+        {review.cons?.length !== 0 && (
+          <View style={styles.detailWrap}>
+            <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
+            <Markdown style={markdownStyles}>
+              {review.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+            </Markdown>
+          </View>
+        )}
+        {review.bests?.length !== 0 && (
+          <View style={styles.detailWrap}>
+            <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
+            {review.bests.map((row: string, i: number) => (
+              <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
+                {`**리뷰 ${i + 1}:** ${row}`}
+              </Markdown>
+            ))}
+          </View>
+        )} */}
+    </>
+  );
+}
+//   return (
+//     <View style={styles.detailWrap} ref={refs[tab]}>
+//       <Text>리뷰 정보를 찾을 수 없습니다.</Text>
+//     </View>
+//   );
+// };
 
 const useStyles = (colorScheme: ColorScheme) =>
   StyleSheet.create({

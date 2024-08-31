@@ -17,7 +17,6 @@ import ProductCard from '../../components/ProductCard';
 import {
   isShowVersionUpdateAlarmModalAtom,
   isShowIntroduceAlertAtom,
-  // isShowNonSubscribedModalAtom,
   // isShowMembershipSubscription, 
   // isShowAiFunctionLimitationsAtom, 
   // isShowManagerFunctionRestrictionsAtom, 
@@ -41,6 +40,21 @@ const SORTER_NAME = [
   '판매량순',
   '최신순'
 ];
+
+// 버전 비교 함수
+function isVersionLessThan(version: string, baseVersion: string) {
+  const versionParts = version.split('.').map(Number);      // e.g., [2, 5, 1]
+  const baseVersionParts = baseVersion.split('.').map(Number); // e.g., [3, 0, 0]
+
+  for (let i = 0; i < 3; i++) {
+    if (versionParts[i] < baseVersionParts[i]) {
+      return true;
+    } else if (versionParts[i] > baseVersionParts[i]) {
+      return false;
+    }
+  }
+  return false; // 동일한 버전일 경우
+}
 
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
@@ -183,11 +197,10 @@ export default function DiscoverScreen() {
   }, [getMainProducts]);
 
   // 2024-08-26(월) TODO
+  const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
   const applicationVersion = Application.nativeApplicationVersion;
   const APPLICATION_VERSION = "3.0.0";
-  const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
-  const setIsShowIntroduceAlertModal = useSetAtom(isShowIntroduceAlertAtom);
-  // const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
+  const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
   // const setIsShowMembershipSubscriptionModal = useSetAtom(isShowMembershipSubscription);
   // const setIsAiFunctionLimitationsModal = useSetAtom(isShowAiFunctionLimitationsAtom);
   // const setIsManagerFunctionRestrictionsModal = useSetAtom(isShowManagerFunctionRestrictionsAtom);

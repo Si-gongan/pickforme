@@ -22,7 +22,7 @@ import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../
 import HeaderLeft from '../components/HeaderLeft';
 import OnboardingBottomSheet from '../components/BottomSheet/How';
 import LoginBottomSheet from '../components/BottomSheet/Login';
-import NoMembershipBottomSheet from '../components/BottomSheet/NoMembership';
+import NonSubscribedBottomSheet from '../components/BottomSheet/Membership/NonSubscribed';
 import LackPointBottomSheet from '../components/BottomSheet/LackPoint';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import RequestBottomSheet from '../components/BottomSheet/Request';
@@ -117,6 +117,7 @@ function RootLayoutNav() {
         {/* 2024 */}
         <VersionUpdateAlarmBottomSheet />
         <IntroduceAlertBottomSheet />
+
 
         {bottomSheets.map((info, i) => (
           <CommonBottomSheet info={info} index={i} />

@@ -3,9 +3,7 @@ import axios from 'axios';
 import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
-import {
-  PushSetting,
-} from 'models/user/types';
+import { PushSetting } from 'models/user/types';
 
 const router = new Router({
   prefix: '/auth',
@@ -24,34 +22,47 @@ const handleLogin = async (email: string) => {
   let isRegister = false;
   let isNewLoginInEvent = false;
 
-  if (!user) { // 신규 회원
+  if (!user) {
+    // 신규 회원
     user = await db.User.create({
-      email, point: 0,
+      email,
+      point: 0,
     });
     const usedEmail = await db.User.findOne({
       originEmail: email,
     });
-    if (!usedEmail) { // 과거 회원 기록이 없는 경우
+    if (!usedEmail) {
+      // 과거 회원 기록이 없는 경우
       // 현재 이벤트 기간에 가입한 경우
       if (new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
         user.point += BONUS_POINTS;
         isNewLoginInEvent = true;
       }
-    } else { // 과거 회원 기록이 있는 경우
+    } else {
+      // 과거 회원 기록이 있는 경우
       // 과거 계정의 마지막 로그인 시점이 현재와 1초 이내일 경우 업데이트 후 신규 로그인으로 처리
       const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
       // 과거 회원일 때 이벤트 기간 로그인 기록이 없고, 현재 이벤트 기간에 가입한 경우
-      if ((isNewLoginAfterUpdate || usedEmail.lastLoginAt < EVENT_START_DATE) && new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
+      if (
+        (isNewLoginAfterUpdate || usedEmail.lastLoginAt < EVENT_START_DATE) &&
+        new Date() > EVENT_START_DATE &&
+        new Date() < EVENT_END_DATE
+      ) {
         user.point += BONUS_POINTS;
         isNewLoginInEvent = true;
       }
     }
     isRegister = true;
-  } else { // 기존 회원
+  } else {
+    // 기존 회원
     // 지금 로그인 시점이 lastLoginAt과 1초 이내일 경우 업데이트 후 신규 로그인으로 처리
     const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
     // 이벤트 기간 내 첫 로그인 일 경우
-    if ((isNewLoginAfterUpdate || (user.lastLoginAt < EVENT_START_DATE)) && new Date() > EVENT_START_DATE && new Date() < EVENT_END_DATE) {
+    if (
+      (isNewLoginAfterUpdate || user.lastLoginAt < EVENT_START_DATE) &&
+      new Date() > EVENT_START_DATE &&
+      new Date() < EVENT_END_DATE
+    ) {
       user.point += BONUS_POINTS;
       isNewLoginInEvent = true;
     }
@@ -67,27 +78,18 @@ const handleLogin = async (email: string) => {
       token,
     },
     isRegister,
-    isNewLoginInEvent
+    isNewLoginInEvent,
   };
 };
 
 router.post('/google', async (ctx) => {
-  const {
-    accessToken,
-  } = <{ accessToken: string }>ctx.request.body;
-  const {
-    data,
-  } = await axios.get<{ email: string, verified_email: boolean }>(
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
+  const { data } = await axios.get<{ email: string; verified_email: boolean }>(
     `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
-  `,
+  `
   );
-  const {
-    email, verified_email,
-  } = data;
-  if (
-    !verified_email
-    || !email
-  ) {
+  const { email, verified_email } = data;
+  if (!verified_email || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
     };
@@ -98,22 +100,15 @@ router.post('/google', async (ctx) => {
 });
 
 router.post('/kakao', async (ctx) => {
-  const {
-    accessToken,
-  } = <{ accessToken: string }>ctx.request.body;
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
   const data = await axios.get('https://kapi.kakao.com/v2/user/me', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  const {
-    is_email_verified, is_email_valid, email,
-  } = (data?.data?.kakao_account || {});
-  if (
-    !is_email_valid
-    || !is_email_verified
-    || !email
-  ) {
+  const { is_email_verified, is_email_valid, email } =
+    data?.data?.kakao_account || {};
+  if (!is_email_valid || !is_email_verified || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
     };
@@ -124,20 +119,13 @@ router.post('/kakao', async (ctx) => {
 });
 
 router.post('/apple', async (ctx) => {
-  const {
-    identityToken,
-  } = <{ identityToken: string }>ctx.request.body;
-  const {
-    email_verified, email,
-  } = await verifyAppleToken({
+  const { identityToken } = <{ identityToken: string }>ctx.request.body;
+  const { email_verified, email } = await verifyAppleToken({
     idToken: identityToken,
     clientId: 'com.sigonggan.pickforme',
   });
 
-  if (
-    !email_verified
-    || !email
-  ) {
+  if (!email_verified || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
     };
@@ -149,9 +137,7 @@ router.post('/apple', async (ctx) => {
 router.post('/pushtoken', requireAuth, async (ctx) => {
   const user = await db.User.findById(ctx.state.user._id);
   if (user) {
-    const {
-      token,
-    } = <{ token: string }>ctx.request.body;
+    const { token } = <{ token: string }>ctx.request.body;
     user.pushToken = token;
     await user.save();
     ctx.status = 200;

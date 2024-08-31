@@ -89,7 +89,6 @@ export const setPushSettingAtom = atom(null, async (get, set, params: SetPushSet
 
 export const isShowLoginModalAtom = atom(false);
 export const isShowOnboardingModalAtom = atom(false);
-export const isShowNoMembershipModalAtom = atom(false);
 export const isShowLackPointModalAtom = atom(false);
 export const isShowGreetingModalAtom = atom(false);
 

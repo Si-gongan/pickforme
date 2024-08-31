@@ -6,9 +6,8 @@ import client from 'utils/axios';
 import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
-import {
-  RequestType,
-} from 'models/request';
+import { RequestType } from 'models/request';
+import { ProductType } from 'models/product';
 
 const router = new Router({
   prefix: '/request',
@@ -21,11 +20,9 @@ router.post('/', requireAuth, async (ctx) => {
     return;
   }
   const {
-    body: {
-      product,
-      ...body
-    },
+    body: { product, ...body },
   } = <any>ctx.request;
+
   const request = await db.Request.create({
     ...body,
     userId: user._id,
@@ -47,30 +44,80 @@ router.post('/', requireAuth, async (ctx) => {
   //   await request.save();
   // }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
-  user.usePoint(1);
   ctx.body = request;
   ctx.status = 200;
 
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
-    const slack_msg = 
-      `[픽포미 의뢰가 도착했습니다]\n
+    try {
+      if (user.point <= 0) {
+        throw new Error('pick error');
+      }
+      user.usePoint(1);
+    } catch (e) {
+      ctx.status = 400;
+      ctx.body = {
+        errorMessage: '요청하실 포인트가 부족합니다.',
+      };
+      return;
+    }
+    const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}\n
 어드민 링크: https://pickforme-admin.vercel.app/request?requestId=${request._id}`;
 
     slack.post('/chat.postMessage', {
-      text: slack_msg, channel: 'C05NTFL1Q4C',
+      text: slack_msg,
+      channel: 'C05NTFL1Q4C',
     });
-  }
+  } else {
+    // slack ai 응답 생성
+    const purchase = await db.Purchase.findOne({ userId: user._id }).sort([
+      'createdAt',
+      -1,
+    ]);
 
-  // slack ai 응답 생성
-  if (body.images !== undefined) {
-    const { data: { answer } } = await client.post('/test/ai-answer', { product, ...body, model: 'gpt' });
+    if (purchase) {
+      const today = new Date();
+      const oneMonthLater = new Date(purchase.createdAt);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
+        await purchase.updateExpiration();
+        await user.processExpiredMembership();
+      }
+    } else {
+      // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
+      const today = new Date();
+      const lastRequest = await db.Request.find({ userId: user._id }).sort([
+        'createdAt',
+        -1,
+      ]);
+      if (lastRequest.createdAt.getMonth() !== today.getMonth()) {
+        await user.initMonthPoint();
+      }
+    }
+
+    if (user.aiPoint <= 0) {
+      ctx.status = 400;
+      ctx.body = {
+        errorMessage: '요청하실 포인트가 부족합니다.',
+      };
+      return;
+    }
+    user.useAiPoint(1);
+
+    const {
+      data: { answer },
+    } = await client.post('/test/ai-answer', {
+      product,
+      ...body,
+      model: 'gpt',
+    });
     slack.post('/chat.postMessage', {
-      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`, channel: 'C05NTFL1Q4C',
+      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
+      channel: 'C05NTFL1Q4C',
     });
   }
 });

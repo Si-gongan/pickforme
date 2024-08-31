@@ -46,8 +46,6 @@ import TabContent from '../components/ProductDetailTabContent';
 // 2024
 import { TABS, loadingMessages, tabName } from '../utils/common';
 
-
-
 interface ProductDetailScreenProps { }
 
 const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
@@ -145,14 +143,19 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     await WebBrowser.openBrowserAsync(product.url);
   };
 
+  // TODO
+  const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
   const handleClickSend = async () => {
     if (!question) {
       Alert.alert('질문을 입력해주세요.');
       return;
+    } else if (true) { // 멤버십 미구독자
+      setIsShowNonSubscribedModal(true);
+      return;
     }
-    getProductAIAnswer(product, question);
-    setQuestion('');
-    sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
+    // getProductAIAnswer(product, question);
+    // setQuestion('');
+    // sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
   }
 
   const handleClickWish = async () => {

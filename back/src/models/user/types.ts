@@ -1,6 +1,4 @@
-import {
-  Model, Document,
-} from 'mongoose';
+import { Model, Document } from 'mongoose';
 
 export interface LocalRegisterPayload {
   email: string;
@@ -12,11 +10,12 @@ export enum PushService {
 }
 
 export interface PushSetting {
-  service: PushService,
+  service: PushService;
 }
 
 export interface User extends LocalRegisterPayload {
   point: number;
+  aiPoint: number;
   level: number;
   push: PushSetting;
   lastLoginAt: Date;
@@ -27,6 +26,9 @@ export interface User extends LocalRegisterPayload {
 export interface UserDocument extends User, Document {
   generateToken: () => Promise<string>;
   usePoint(payload: number): () => Promise<number>;
+  useAiPoint(payload: number): () => Promise<number>;
+  processExpiredMembership: () => Promise<void>;
+  initMonthPoint: () => Promise<void>;
 }
 
 export interface UserModel extends Model<UserDocument> {
