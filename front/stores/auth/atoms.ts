@@ -96,3 +96,4 @@ export const isShowGreetingModalAtom = atom(false);
 // 2024
 export const isShowVersionUpdateAlarmModalAtom = atom(false);
 export const isShowIntroduceAlertAtom = atom(false);
+export const isShowNonSubscribedModalAtom = atom(false);
