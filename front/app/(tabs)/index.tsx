@@ -200,7 +200,7 @@ export default function DiscoverScreen() {
   const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
   const applicationVersion = Application.nativeApplicationVersion;
   const APPLICATION_VERSION = "3.0.0";
-  const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
+  const setIsShowIntroduceAlertModal = useSetAtom(isShowIntroduceAlertAtom);
   // const setIsShowMembershipSubscriptionModal = useSetAtom(isShowMembershipSubscription);
   // const setIsAiFunctionLimitationsModal = useSetAtom(isShowAiFunctionLimitationsAtom);
   // const setIsManagerFunctionRestrictionsModal = useSetAtom(isShowManagerFunctionRestrictionsAtom);

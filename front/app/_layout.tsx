@@ -112,7 +112,7 @@ function RootLayoutNav() {
         <RequestBottomSheet />
         <OnboardingBottomSheet />
         <LackPointBottomSheet />
-        <NoMembershipBottomSheet />
+        {/* <NoMembershipBottomSheet /> */}
 
         {/* 2024 */}
         <VersionUpdateAlarmBottomSheet />

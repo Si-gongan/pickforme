@@ -144,18 +144,19 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   };
 
   // TODO
-  const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
+  // const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
   const handleClickSend = async () => {
     if (!question) {
       Alert.alert('질문을 입력해주세요.');
       return;
-    } else if (true) { // 멤버십 미구독자
-      setIsShowNonSubscribedModal(true);
-      return;
     }
-    // getProductAIAnswer(product, question);
-    // setQuestion('');
-    // sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
+    // else if (true) { // 멤버십 미구독자
+    // setIsShowNonSubscribedModal(true);
+    //   return;
+    // }
+    getProductAIAnswer(product, question);
+    setQuestion('');
+    sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
   }
 
   const handleClickWish = async () => {
