@@ -28,6 +28,10 @@ import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import RequestBottomSheet from '../components/BottomSheet/Request';
 import CommonBottomSheet from '../components/BottomSheet/Common';
 
+// 2024
+import VersionUpdateAlarmBottomSheet from '../components/BottomSheet/VersionUpdateAlarm';
+import IntroduceAlertBottomSheet from '../components/BottomSheet/Membership/IntroduceAlert';
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -87,34 +91,38 @@ function RootLayoutNav() {
     return <SplashScreen />
   }
   return (
-      <Suspense fallback={null}>
-        <ThemeProvider value={DefaultTheme}>
-          <Stack
-            initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: Colors[colorScheme].background.primary,
-              },
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {["(auths)", "(settings)", "product-detail", "purchase", "purchase-history", "faq", "how"].map((name) => (
-              <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
-            ))}
-            <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
-          </Stack>
-          <LoginBottomSheet />
-          <GreetingBottomSheet />
-          <RequestBottomSheet />
-          <OnboardingBottomSheet />
-          <LackPointBottomSheet />
-          <NoMembershipBottomSheet />
-          
-          {bottomSheets.map((info, i) => (
-            <CommonBottomSheet info={info} index={i} />
+    <Suspense fallback={null}>
+      <ThemeProvider value={DefaultTheme}>
+        <Stack
+          initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: Colors[colorScheme].background.primary,
+            },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {["(auths)", "(settings)", "product-detail", "purchase", "purchase-history", "faq", "how"].map((name) => (
+            <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
           ))}
-        </ThemeProvider>
-      </Suspense>
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
+        </Stack>
+        <LoginBottomSheet />
+        <GreetingBottomSheet />
+        <RequestBottomSheet />
+        <OnboardingBottomSheet />
+        <LackPointBottomSheet />
+        <NoMembershipBottomSheet />
+
+        {/* 2024 */}
+        <VersionUpdateAlarmBottomSheet />
+        <IntroduceAlertBottomSheet />
+
+        {bottomSheets.map((info, i) => (
+          <CommonBottomSheet info={info} index={i} />
+        ))}
+      </ThemeProvider>
+    </Suspense>
   );
 }
 const styles = StyleSheet.create({

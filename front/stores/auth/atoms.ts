@@ -54,7 +54,7 @@ export const setClientTokenAtom = atom(null, async (get, set) => {
 export const handleLoginResultAtom = atom(null, async (get, set, data: LoginResponse) => {
   await set(userDataAtom, data.user);
   set(isShowLoginModalAtom, false);
-  if (data.isNewLoginInEvent){
+  if (data.isNewLoginInEvent) {
     set(isShowGreetingModalAtom, true);
   }
   set(setClientTokenAtom);
@@ -92,3 +92,7 @@ export const isShowOnboardingModalAtom = atom(false);
 export const isShowNoMembershipModalAtom = atom(false);
 export const isShowLackPointModalAtom = atom(false);
 export const isShowGreetingModalAtom = atom(false);
+
+// 2024
+export const isShowVersionUpdateAlarmModalAtom = atom(false);
+export const isShowIntroduceAlertAtom = atom(false);

@@ -40,11 +40,11 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   bottomSheet: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
+    borderTopLeftRadius: 4, // ASIS 20
+    borderTopRightRadius: 4, // ASIS 20
+    paddingTop: 42.99, // ASIS 20
     paddingBottom: 50,
-    paddingHorizontal: 27,
+    paddingHorizontal: 22, // ASIS 27
   },
   button: {
     flex: 1,

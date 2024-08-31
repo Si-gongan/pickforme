@@ -71,7 +71,7 @@ async function registerForPushNotifications() {
 
     token = (await Notifications.getExpoPushTokenAsync({ projectId: 'e1838378-658e-46ee-b890-0e439a47e799' })).data;
   } else {
-    alert("Must use physical device for Push Notifications");
+    // alert("Must use physical device for Push Notifications");
   }
 
   if (Platform.OS === "android") {

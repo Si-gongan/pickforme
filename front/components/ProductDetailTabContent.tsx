@@ -4,7 +4,7 @@ import Markdown from 'react-native-markdown-display';
 import { formatDate, formatTime } from '../utils/common';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import Colors from '../constants/Colors';
-import { TABS } from '../app/product-detail';
+import { TABS } from '../utils/common';
 import { Text, View } from '../components/Themed';
 import { Request } from '../stores/request/types';
 import { ProductDetailState } from '../stores/product/types';
@@ -17,7 +17,7 @@ interface TabContentProps {
   question: string;
   setQuestion: React.Dispatch<React.SetStateAction<string>>;
   handleClickSend: (params: any) => void;
-  request: Request | undefined; 
+  request: Request | undefined;
   loadingMessages: Record<TABS | 'manager', string>;
   loadingStatus: { [key in TABS]: LoadingStatus };
   handleRegenerate: () => void;
@@ -82,7 +82,7 @@ const TabContent: React.FC<TabContentProps> = ({
     );
   }
 };
-  
+
 interface QuestionTabProps {
   styles: ReturnType<typeof useStyles>;
   question: string;

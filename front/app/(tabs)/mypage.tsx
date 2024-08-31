@@ -59,126 +59,126 @@ export default function MyPageScreen() {
   }
   return (
     <View style={styles.container}>
-       <View style={styles.header}>
+      <View style={styles.header}>
         <MypageIcon style={styles.icon} />
         <Text style={styles.headerTitle} ref={headerTitleRef} accessibilityRole='header'>마이페이지</Text>
       </View>
       <ScrollView style={styles.scrollView}>
-      <View style={styles.scrollContainer}>
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          내 정보
-        </Text>
-        <Link href='/(settings)/nickname' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            내 정보 수정하기
-          </Text>
-        </Link>
-        {!userData ? (
-          <Button
-            variant='text'
-            color='tertiary'
-            title='로그인'
-            size='small'
-            style={styles.menu}
-            textStyle={styles.buttonText}
-            onPress={() => router.push('(auths)/login')}
-          />) :
-          (<>
-            <Link href='/purchase' accessibilityRole='button'>
+        <View style={styles.scrollContainer}>
+          <View style={styles.card}>
+            <Text style={styles.title}>
+              내 정보
+            </Text>
+            <Link href='/(settings)/nickname' accessibilityRole='button'>
               <Text style={styles.menu}>
-                이용권 충전하기
+                내 정보 수정하기
               </Text>
             </Link>
-            <Link href='/purchase-history' accessibilityRole='button'>
-              <Text style={styles.menu}>
-                이용권 구매내역
-              </Text>
-            </Link></>)
-          }
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          앱 설정
-        </Text>
-        <Link href='/(settings)/theme' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            화면 모드 변경하기
-          </Text>
-        </Link>
-        {!!userData && (
-          <Link href='/(settings)/notification' accessibilityRole='button'>
-            <Text style={styles.menu}>
-              알림 설정하기
+            {!userData ? (
+              <Button
+                variant='text'
+                color='tertiary'
+                title='로그인'
+                size='small'
+                style={styles.menu}
+                textStyle={styles.buttonText}
+                onPress={() => router.push('(auths)/login')}
+              />) :
+              (<>
+                <Link href='/purchase' accessibilityRole='button'>
+                  <Text style={styles.menu}>
+                    이용권 충전하기
+                  </Text>
+                </Link>
+                <Link href='/purchase-history' accessibilityRole='button'>
+                  <Text style={styles.menu}>
+                    이용권 구매내역
+                  </Text>
+                </Link></>)
+            }
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.title}>
+              앱 설정
             </Text>
-          </Link>
-        )}
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          고객 지원
-        </Text>
-        <Button
-          title='1:1 문의'
-          variant='text'
-          onPress={() => WebBrowser.openBrowserAsync('http://pf.kakao.com/_csbDxj')}
-          style={[styles.menu, styles.solo]}
-          textStyle={styles.buttonText}
-          color='tertiary'
-          size='small'
-        />
-        <Link href='/how' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            사용 설명서
-         </Text>
-        </Link>
-        {/* <Link href='/faq' accessibilityRole='button'>
-          <Text style={styles.menu}>
-            자주 묻는 질문
-          </Text>
-        </Link> */}
-        <Button
-          title='개인정보처리방침'
-          variant='text'
-          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/개인정보처리방침?authuser=0')}
-          style={[styles.menu, styles.solo]}
-          textStyle={styles.buttonText}
-          color='tertiary'
-          size='small'
-        />
-        <Button
-          title='서비스 이용약관'
-          variant='text'
-          onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈?authuser=0')}
-          style={[styles.menu, styles.solo]}
-          textStyle={styles.buttonText}
-          color='tertiary'
-          size='small'
-        />
-      </View>
-      {!!userData && (
-        <View style={[styles.card]}>
-          <Button
-            title='로그아웃'
-            variant='text'
-            onPress={logout}
-            style={[styles.menu, styles.solo]}
-            textStyle={styles.buttonText}
-            color='tertiary'
-            size='small'
-          />
-          <Button
-            title='회원탈퇴'
-            variant='text'
-            onPress={handleClickQuit}
-            style={[styles.menu, styles.solo]}
-            textStyle={[styles.buttonText, styles.red]}
-            color='tertiary'
-            size='small'
-          />
+            <Link href='/(settings)/theme' accessibilityRole='button'>
+              <Text style={styles.menu}>
+                화면 모드 변경하기
+              </Text>
+            </Link>
+            {!!userData && (
+              <Link href='/(settings)/notification' accessibilityRole='button'>
+                <Text style={styles.menu}>
+                  알림 설정하기
+                </Text>
+              </Link>
+            )}
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.title}>
+              고객 지원
+            </Text>
+            <Button
+              title='1:1 문의'
+              variant='text'
+              onPress={() => WebBrowser.openBrowserAsync('http://pf.kakao.com/_csbDxj')}
+              style={[styles.menu, styles.solo]}
+              textStyle={styles.buttonText}
+              color='tertiary'
+              size='small'
+            />
+            <Link href='/how' accessibilityRole='button'>
+              <Text style={styles.menu}>
+                사용 설명서
+              </Text>
+            </Link>
+            <Link href='/faq' accessibilityRole='button'>
+              <Text style={styles.menu}>
+                자주 묻는 질문
+              </Text>
+            </Link>
+            <Button
+              title='개인정보처리방침'
+              variant='text'
+              onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/개인정보처리방침?authuser=0')}
+              style={[styles.menu, styles.solo]}
+              textStyle={styles.buttonText}
+              color='tertiary'
+              size='small'
+            />
+            <Button
+              title='서비스 이용약관'
+              variant='text'
+              onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈?authuser=0')}
+              style={[styles.menu, styles.solo]}
+              textStyle={styles.buttonText}
+              color='tertiary'
+              size='small'
+            />
+          </View>
+          {!!userData && (
+            <View style={[styles.card]}>
+              <Button
+                title='로그아웃'
+                variant='text'
+                onPress={logout}
+                style={[styles.menu, styles.solo]}
+                textStyle={styles.buttonText}
+                color='tertiary'
+                size='small'
+              />
+              <Button
+                title='회원탈퇴'
+                variant='text'
+                onPress={handleClickQuit}
+                style={[styles.menu, styles.solo]}
+                textStyle={[styles.buttonText, styles.red]}
+                color='tertiary'
+                size='small'
+              />
+            </View>
+          )}
         </View>
-      )}
-      </View>
       </ScrollView>
     </View>
   );
@@ -239,8 +239,8 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   red: {
     color: '#EA4335',
   },
-     header: {
-       paddingHorizontal: 20,
+  header: {
+    paddingHorizontal: 20,
     flexDirection: 'row',
   },
   icon: {
@@ -248,7 +248,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginRight: 9,
   },
   headerTitle: {
-     fontWeight: '600',
+    fontWeight: '600',
     fontSize: 22,
     lineHeight: 27,
     marginBottom: 13,
