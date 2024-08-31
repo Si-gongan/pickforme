@@ -40,15 +40,14 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   bottomSheet: {
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    paddingTop: 42.99,
+    borderTopLeftRadius: 4, // ASIS 20
+    borderTopRightRadius: 4, // ASIS 20
+    paddingTop: 42.99, // ASIS 20
     paddingBottom: 50,
-    paddingHorizontal: 22,
+    paddingHorizontal: 22, // ASIS 27
   },
   button: {
     flex: 1,
-    fontSize: 14,
   },
 });
 

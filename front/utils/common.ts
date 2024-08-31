@@ -22,6 +22,7 @@ export const formatTime = (date: string | Date) => {
   return (today.getHours() % 12) + '시 ' + today.getMinutes() + '분';
 };
 
+// 2024
 export enum TABS {
   CAPTION = 'caption',
   REPORT = 'report',

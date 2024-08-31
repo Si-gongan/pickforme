@@ -46,7 +46,7 @@ export default {
     buttonBackground: {
       primary,
       secondary,
-      tertiary,
+      tertiary: '#FFFFFF',
     },
     disabledButtonBackground: {
       primary: secondary2,

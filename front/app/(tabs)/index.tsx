@@ -13,10 +13,10 @@ import Colors from '../../constants/Colors';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/ProductCard';
 
-// TODO
+// 2024
 import {
   isShowVersionUpdateAlarmModalAtom,
-  isShowNonSubscribedModalAtom,
+  isShowIntroduceAlertAtom,
   // isShowMembershipSubscription, 
   // isShowAiFunctionLimitationsAtom, 
   // isShowManagerFunctionRestrictionsAtom, 
@@ -196,7 +196,6 @@ export default function DiscoverScreen() {
     getMainProducts(id);
   }, [getMainProducts]);
 
-
   // 2024-08-26(월) TODO
   const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
   const applicationVersion = Application.nativeApplicationVersion;
@@ -208,6 +207,21 @@ export default function DiscoverScreen() {
   // const setIsCancelMembershipPaymentModal = useSetAtom(isShowCancelMembershipPaymentAtom);
   // const setIsMembershipPaymentCancellationWeekModal = useSetAtom(isShowMembershipPaymentCancellationWeekAtom);
 
+  // 버전 비교 함수
+  function isVersionLessThan(version: string, baseVersion: string) {
+    const versionParts = version.split('.').map(Number);      // e.g., [2, 5, 1]
+    const baseVersionParts = baseVersion.split('.').map(Number); // e.g., [3, 0, 0]
+
+    for (let i = 0; i < 3; i++) {
+      if (versionParts[i] < baseVersionParts[i]) {
+        return true;
+      } else if (versionParts[i] > baseVersionParts[i]) {
+        return false;
+      }
+    }
+    return false; // 동일한 버전일 경우
+  }
+
   useEffect(() => { // 업데이트 관련
     if (applicationVersion && isVersionLessThan(applicationVersion, APPLICATION_VERSION)) {
       // 3.0.0 미만 버전일 경우 업데이트 알림
@@ -215,8 +229,7 @@ export default function DiscoverScreen() {
 
     } else {
       // 멤버십 알림
-      setIsShowNonSubscribedModal(true);
-
+      setIsShowIntroduceAlertModal(true);
     }
   }, [applicationVersion]);
 
@@ -228,13 +241,15 @@ export default function DiscoverScreen() {
     // setIsAiFunctionLimitationsModal(true);
     // setIsManagerFunctionRestrictionsModal(true);
 
+    // 멤버십 없음
+    // setIsShowNonSubscribedModal(true);
+
     // 결제 해지
     // setIsCancelMembershipPaymentModal(true);
     // setIsMembershipPaymentCancellationWeekModal(true);
 
 
   }, []);
-
 
   return (
     <View style={styles.container}>

@@ -92,9 +92,6 @@ export const isShowOnboardingModalAtom = atom(false);
 export const isShowLackPointModalAtom = atom(false);
 export const isShowGreetingModalAtom = atom(false);
 
-// Update
+// 2024
 export const isShowVersionUpdateAlarmModalAtom = atom(false);
-
-// Membership
-export const isShowNonSubscribedModalAtom = atom(false);
 export const isShowIntroduceAlertAtom = atom(false);

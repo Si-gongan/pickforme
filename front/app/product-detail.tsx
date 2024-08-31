@@ -43,10 +43,8 @@ import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
 import { useWebView } from '../components/webview-util';
 import TabContent from '../components/ProductDetailTabContent';
 
+// 2024
 import { TABS, loadingMessages, tabName } from '../utils/common';
-
-// TODO
-import { isShowNonSubscribedModalAtom } from '../stores/auth/atoms';
 
 interface ProductDetailScreenProps { }
 

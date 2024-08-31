@@ -87,12 +87,12 @@ export default function MyPageScreen() {
               (<>
                 <Link href='/purchase' accessibilityRole='button'>
                   <Text style={styles.menu}>
-                    멤버십 이용하기
+                    이용권 충전하기
                   </Text>
                 </Link>
                 <Link href='/purchase-history' accessibilityRole='button'>
                   <Text style={styles.menu}>
-                    멤버십 구매내역
+                    이용권 구매내역
                   </Text>
                 </Link></>)
             }

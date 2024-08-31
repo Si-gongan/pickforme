@@ -28,9 +28,9 @@ import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import RequestBottomSheet from '../components/BottomSheet/Request';
 import CommonBottomSheet from '../components/BottomSheet/Common';
 
+// 2024
 import VersionUpdateAlarmBottomSheet from '../components/BottomSheet/VersionUpdateAlarm';
 import IntroduceAlertBottomSheet from '../components/BottomSheet/Membership/IntroduceAlert';
-
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -112,9 +112,11 @@ function RootLayoutNav() {
         <RequestBottomSheet />
         <OnboardingBottomSheet />
         <LackPointBottomSheet />
+        <NoMembershipBottomSheet />
+
+        {/* 2024 */}
         <VersionUpdateAlarmBottomSheet />
         <IntroduceAlertBottomSheet />
-        <NonSubscribedBottomSheet />
 
 
         {bottomSheets.map((info, i) => (
