@@ -51,6 +51,7 @@ router.post('/', requireAuth, async (ctx) => {
       ctx.status = 200;
 
       user.point += product.point;
+      user.point += product.aiPoint;
       await user.save();
       return;
     }
