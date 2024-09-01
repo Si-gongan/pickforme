@@ -90,11 +90,14 @@ router.post('/', requireAuth, async (ctx) => {
     } else {
       // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
       const today = new Date();
-      const lastRequest = await db.Request.find({ userId: user._id }).sort([
+      const lastRequest = await db.Request.findOne({ userId: user._id }).sort([
         'createdAt',
         -1,
       ]);
-      if (lastRequest.createdAt.getMonth() !== today.getMonth()) {
+      if (
+        lastRequest &&
+        lastRequest.createdAt.getMonth() !== today.getMonth()
+      ) {
         await user.initMonthPoint();
       }
     }
