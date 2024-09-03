@@ -83,7 +83,7 @@ export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginPara
     if (response && response.data) {
       set(handleLoginResultAtom, response.data);
     } else {
-      console.error('Kakao API로부터 데이터를 받지 못했습니다');
+      console.log('Kakao API로부터 데이터를 받지 못했습니다');
     }
   } catch (error) {
     if (error instanceof AxiosError) {
