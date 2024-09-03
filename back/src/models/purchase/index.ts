@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IPurchase } from './types';
+import { IPurchase, PurchaseModel } from './types';
 
 const PurchaseSchema = new mongoose.Schema(
   {
@@ -34,6 +34,9 @@ PurchaseSchema.methods.updateExpiration = async function updateExpiration() {
   await this.save();
 };
 
-const PurchaseModel = mongoose.model<IPurchase>('Purchases', PurchaseSchema);
+const Purchase = mongoose.model<IPurchase, PurchaseModel>(
+  'Purchases',
+  PurchaseSchema
+);
 
-export default PurchaseModel;
+export default Purchase;
