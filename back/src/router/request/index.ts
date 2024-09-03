@@ -116,6 +116,7 @@ router.post('/', requireAuth, async (ctx) => {
       ...body,
       model: 'gpt',
     });
+
     slack.post('/chat.postMessage', {
       text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
       channel: 'C05NTFL1Q4C',

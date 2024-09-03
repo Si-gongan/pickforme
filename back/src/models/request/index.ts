@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { IRequest } from './types';
 
 export enum RequestStatus {
   PENDING = 'PENDING',
@@ -107,8 +108,6 @@ const RequestSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+const RequestModel = mongoose.model<IRequest>('Requests', RequestSchema);
 
-const model =
-  mongoose.models.Requests || mongoose.model('Requests', RequestSchema);
-
-export default model;
+export default RequestModel;

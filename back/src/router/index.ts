@@ -35,7 +35,7 @@ router.get('/export', async (ctx) => {
     email: request.userId.email,
     name: request.name,
     text: request.text,
-    review: request.rating ?? '없음',
+    review: request.review.rating ?? '없음',
   }));
   const array = data;
 

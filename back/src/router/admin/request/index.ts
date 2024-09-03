@@ -12,9 +12,13 @@ const router = new Router({
 router.post('/answer', async (ctx) => {
   const { body } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId).populate('userId');
-  if (!request.answer) {
+  if (request) {
+    throw new Error('Request 존재하지 않음');
+  }
+
+  if (!request!.answer) {
     const deeplink = `/product-detail?productUrl=${encodeURIComponent(
-      request.product.url
+      request!.product.url
     )}`;
     // const chat = await db.Chat.create({
     //   userId: request.userId,
@@ -37,13 +41,13 @@ router.post('/answer', async (ctx) => {
     //     chat, unreadCount: request.unreadCount,
     //   });
     // }
-    const user = await db.User.findById(request.userId);
+    const user = await db.User.findById(request!.userId);
     if (user && user.pushToken && user.push.service === 'on') {
       sendPush({
         to: user.pushToken,
         body:
-          request.type === RequestType.QUESTION
-            ? `'${request.product.name.slice(
+          request!.type === RequestType.QUESTION
+            ? `'${request!.product.name.slice(
                 0,
                 13
               )}...' 상품에 대한 매니저 답변이 도착했습니다.`
@@ -52,9 +56,9 @@ router.post('/answer', async (ctx) => {
       });
     }
   }
-  request.answer = body.answer;
-  request.status = RequestStatus.SUCCESS;
-  await request.save();
+  request!.answer = body.answer;
+  request!.status = RequestStatus.SUCCESS;
+  await request!.save();
   ctx.body = request;
 });
 
