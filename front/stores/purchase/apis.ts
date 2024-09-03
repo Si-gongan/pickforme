@@ -7,8 +7,8 @@ import {
   PurchaseProductParams,
 } from './types';
 
-export const PurchaseProductAPI = (params: PurchaseProductParams) => client.post<Purchase | string>('/purchase', params);
-export const GetProductsAPI = (params: GetProductsParams) => client.get<Product[]>(`/purchase/products/${params.platform}`);
-export const GetSubscriptionAPI = () => client.get<Purchase>(`/purchase/subscription`);
-export const GetSubscriptionListAPI = () => client.get<Purchase[]>(`/purchase/subscriptions`);
+export const PurchaseProductAPI = (params: PurchaseProductParams) => client.post<Purchase | string>('/purchase', params).catch(error => { console.log(error) });
+export const GetProductsAPI = (params: GetProductsParams) => client.get<Product[]>(`/purchase/products/${params.platform}`).catch(error => { console.log(error) });
+export const GetSubscriptionAPI = () => client.get<Purchase>(`/purchase/subscription`).catch(error => { console.log(error) });
+export const GetSubscriptionListAPI = () => client.get<Purchase[]>(`/purchase/subscriptions`).catch(error => { console.log(error) });
 export const GetPurchaseListAPI = () => client.get<Purchase[]>(`/purchase/purchases`);

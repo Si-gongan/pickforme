@@ -11,58 +11,58 @@ import { purchaseListAtom, getPurchaseListAtom } from '../stores/purchase/atoms'
 import { formatDate } from '../utils/common';
 
 export default function PointHistoryScreen() {
-  const router = useRouter();
-  const colorScheme = useColorScheme();
-  const purchases = useAtomValue(purchaseListAtom);
-  const userData = useAtomValue(userDataAtom);
-  const styles = useStyles(colorScheme);
+    const router = useRouter();
+    const colorScheme = useColorScheme();
+    const purchases = useAtomValue(purchaseListAtom);
+    const userData = useAtomValue(userDataAtom);
+    const styles = useStyles(colorScheme);
 
-  const getPurchaseList = useSetAtom(getPurchaseListAtom);
+    const getPurchaseList = useSetAtom(getPurchaseListAtom);
 
-  useEffect(() => {
-   getPurchaseList();
-  }, [getPurchaseList]);
+    useEffect(() => {
+        getPurchaseList();
+    }, [getPurchaseList]);
 
-  return (
-    <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.content}>
-            <Text style={styles.title}>
-              { userData?.point === 0 ? '현재 보유한 이용권이 없습니다.' : `현재 보유한 이용권 ${userData?.point}개` }
-            </Text>        
-            <Button
-                style={styles.purchaseButton}
-                title="이용권 구매하기"
-                size='small'
-                onPress={() => router.replace('/purchase')}
-            />
-          <View style={styles.seperator}></View>
-          <Text style={styles.title}>
-            이용권 구매 내역
-          </Text>
-          {
-            purchases && purchases.length > 0 ?
-            purchases?.map((purchase, index) => (
-              <View key={index} style={styles.purchaseWrap}>
-                <Text style={styles.purchaseDate}>
-                  {formatDate(purchase.createdAt)} 결제
-                </Text>
-                <View style={styles.row}>
-                    <Text style={styles.purchaseTitle}>
-                        {purchase.product.displayName}
+    return (
+        <View style={styles.container}>
+            <ScrollView>
+                <View style={styles.content}>
+                    <Text style={styles.title}>
+                        {userData?.point === 0 ? '현재 보유한 이용권이 없습니다.' : `현재 보유한 이용권 ${userData?.point}개`}
                     </Text>
-                    <Text style={styles.purchasePrice}>
-                        {purchase.product.productId === 'pickforme_1pick' ? '550원' : '2,750원'}
+                    <Button
+                        style={styles.purchaseButton}
+                        title="이용권 구매하기"
+                        size='small'
+                        onPress={() => router.replace('/purchase')}
+                    />
+                    <View style={styles.seperator}></View>
+                    <Text style={styles.title}>
+                        이용권 구매 내역
                     </Text>
+                    {
+                        purchases && purchases.length > 0 ?
+                            purchases?.map((purchase, index) => (
+                                <View key={index} style={styles.purchaseWrap}>
+                                    <Text style={styles.purchaseDate}>
+                                        {formatDate(purchase.createdAt)} 결제
+                                    </Text>
+                                    <View style={styles.row}>
+                                        <Text style={styles.purchaseTitle}>
+                                            {purchase.product.displayName}
+                                        </Text>
+                                        <Text style={styles.purchasePrice}>
+                                            {purchase.product.productId === 'pickforme_1pick' ? '550원' : '2,750원'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )) : (
+                                <Text>구매 내역이 없습니다.</Text>
+                            )}
                 </View>
-              </View>
-            )) : (
-                <Text>구매 내역이 없습니다.</Text>
-            )}
+            </ScrollView>
         </View>
-      </ScrollView>
-    </View>
-  );
+    );
 }
 
 const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({

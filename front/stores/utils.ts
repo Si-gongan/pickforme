@@ -6,7 +6,8 @@ const customAsyncStorage = {
   getItem: async (key: string) => {
     const value = await AsyncStorage
       .getItem(key)
-      .then(response => response ? JSON.parse(response) : undefined);
+      .then(response => response ? JSON.parse(response) : undefined)
+      .catch(error => { console.log(error) });
     return value;
   },
   setItem: async (key: string, newValue: any) => {

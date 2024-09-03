@@ -13,7 +13,8 @@ import {
   GetProductReviewAPI,
   GetProductAIAnswerAPI,
   ParseProductUrlAPI,
-  SearchProductsAPI } from './apis';
+  SearchProductsAPI
+} from './apis';
 
 export const mainProductsAtom = atom<MainProductsState>({
   special: [],
@@ -80,16 +81,26 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
   set(isSearchingAtom, false);
 });
 
+// export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
+//   const { data } = await GetMainProductsAPI(categoryId);
+//   set(mainProductsAtom, data);
+// });
 export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
-  const { data } = await GetMainProductsAPI(categoryId);
-  set(mainProductsAtom, data );
+  const response = await GetMainProductsAPI(categoryId);
+
+  if (response && response.data) {
+    set(mainProductsAtom, response.data);
+  } else {
+    // response가 void이거나 data가 없을 때 처리
+    console.log('API로부터 데이터를 받지 못했습니다');
+  }
 });
 
 export const productDetailAtom = atom<ProductDetailState | void>(undefined);
 
 export const initProductDetailAtom = atom(null, async (get, set) => {
   set(productDetailAtom, { product: undefined } as ProductDetailState);
-  set(loadingStatusAtom, { caption: LoadingStatus.INIT, review: LoadingStatus.INIT, report: LoadingStatus.INIT, question: LoadingStatus.INIT});
+  set(loadingStatusAtom, { caption: LoadingStatus.INIT, review: LoadingStatus.INIT, report: LoadingStatus.INIT, question: LoadingStatus.INIT });
 });
 
 export const getProductDetailAtom = atom(null, async (get, set, product: Product) => {
@@ -109,7 +120,7 @@ export const getProductReviewAtom = atom(null, async (get, set, product: Product
   set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
   const reviews = get(scrapedProductDetailAtom).reviews!;
   if (reviews.length === 0) {
-    set(productDetailAtom, { ...get(productDetailAtom), review: { pros: [], cons: [], bests: [] }} as ProductDetailState);
+    set(productDetailAtom, { ...get(productDetailAtom), review: { pros: [], cons: [], bests: [] } } as ProductDetailState);
     set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
     return;
   }
@@ -173,7 +184,7 @@ export const wishProductsAtom = atomWithStorage<Product[]>('wishlist2', []);
 
 export const clipboardProductAtom = atom<Product | void>(undefined);
 
-export const setClipboardProductAtom = atom(null, async (get,set, text: string) => {
+export const setClipboardProductAtom = atom(null, async (get, set, text: string) => {
   if (!text) {
     set(clipboardProductAtom, undefined);
     return;
@@ -181,7 +192,7 @@ export const setClipboardProductAtom = atom(null, async (get,set, text: string) 
   const { data: { platform, url } } = await ParseProductUrlAPI({ url: text });
   if (!url) {
     return;
-  } 
+  }
   const { data: { product } } = await GetProductAPI(url);
   set(clipboardProductAtom, product);
   set(searchResultAtom, {

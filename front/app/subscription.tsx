@@ -58,21 +58,21 @@ const PurchaseWrapper = () => {
     getSubscription();
   }, [getSubscription]);
   useEffect(() => {
-    if( products.length) {
+    if (products.length) {
       let purchaseUpdateSubscription: any = null;
       let purchaseErrorSubscription: any = null;
       initConnection().then(async () => {
         const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) });
         const storeSItems = await IAPGetSubscriptions({ skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map((p) => p.productId) });
-  
+
         setPurchaseItems(storeItems)
         setSubscriptionItems(storeSItems);
-  
+
         const addListeners = () => {
           purchaseUpdateSubscription = purchaseUpdatedListener(
             async (purchase: SubscriptionPurchase | ProductPurchase) => {
               const receipt = purchase.transactionReceipt;
-  
+
               const product = products.find(({ productId }) => productId === purchase.productId);
               if (!product) {
                 return;
@@ -86,10 +86,10 @@ const PurchaseWrapper = () => {
               } else {
                 await purchaseProduct({ _id: product._id, receipt });
               }
-              await finishTransaction({purchase, isConsumable: !isSubscription });
+              await finishTransaction({ purchase, isConsumable: !isSubscription });
             },
           );
-  
+
           purchaseErrorSubscription = purchaseErrorListener(
             (error: PurchaseError) => {
               console.error('purchaseErrorListener', error);
@@ -99,17 +99,17 @@ const PurchaseWrapper = () => {
         // we make sure that "ghost" pending payment are removed
         // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
         if (Platform.OS === 'android') {
-          flushFailedPurchasesCachedAsPendingAndroid().then(addListeners).catch(() => {});
+          flushFailedPurchasesCachedAsPendingAndroid().then(addListeners).catch(() => { });
         } else {
           addListeners();
         }
-      });
+      }).catch(error => { console.log(error) });
       return () => {
         if (purchaseUpdateSubscription) {
           purchaseUpdateSubscription.remove();
           purchaseUpdateSubscription = null;
         }
-    
+
         if (purchaseErrorSubscription) {
           purchaseErrorSubscription.remove();
           purchaseErrorSubscription = null;
@@ -117,7 +117,7 @@ const PurchaseWrapper = () => {
       }
     }
   }, [products]);
-  return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems}/>;
+  return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
 }
 
 interface Props {
@@ -126,15 +126,15 @@ interface Props {
   subscriptionItems: IAPSubscription[];
 }
 const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
-    const router = useRouter();
-    const currentSubscription = useAtomValue(subscriptionAtom);
-    const userData = useAtomValue(userDataAtom);
-    const colorScheme = useColorScheme();
-    const styles = useStyles(colorScheme);
-    const {   connected,
+  const router = useRouter();
+  const currentSubscription = useAtomValue(subscriptionAtom);
+  const userData = useAtomValue(userDataAtom);
+  const colorScheme = useColorScheme();
+  const styles = useStyles(colorScheme);
+  const { connected,
     currentPurchase,
     currentPurchaseError, } = useIAP();
-    const markdownStyles = StyleSheet.create({text: { fontSize: 14, lineHeight: 20, color: Colors[colorScheme].text.primary}});
+  const markdownStyles = StyleSheet.create({ text: { fontSize: 14, lineHeight: 20, color: Colors[colorScheme].text.primary } });
 
   /*
   const subscriptionProducts = products.filter(({ type }) => type === 'SUBSCRIPTION');
@@ -144,16 +144,16 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
   const handleClickSub = async (sku: string, offerToken?: string) => {
     try {
       if (offerToken) {
-      const subscriptionRequest: RequestSubscriptionAndroid = {
-        subscriptionOffers: [
-          {
-            sku,
-            offerToken,
-          },
-        ],
-      };
+        const subscriptionRequest: RequestSubscriptionAndroid = {
+          subscriptionOffers: [
+            {
+              sku,
+              offerToken,
+            },
+          ],
+        };
 
-      await requestSubscription(subscriptionRequest);
+        await requestSubscription(subscriptionRequest);
       } else {
         await requestSubscription({ sku });
       }
@@ -162,7 +162,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
       console.warn(err.code, err.message);
     }
   }
-// for puchase product
+  // for puchase product
   const handleClick = async (sku: string) => {
     try {
       await requestPurchase(
@@ -208,36 +208,36 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
             const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
             if (product.platform === 'android') {
-                const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails.find(subscriptionOfferDetail => subscriptionOfferDetail.basePlanId.replace('-', '_') === product.productId);
-                if (!subscriptionOffer) {
-                    return null;
-                }
-                return (
-                    <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
-                        <Text style={styles.productPrice}>
-                            월 {subscriptionOffer.pricingPhases.pricingPhaseList[0].formattedPrice.replace(/₩(.*)/,'$1원')}
-                        </Text>
-                        <Button
-                        style={styles.productButton}
-                        title="멤버십 시작하기"
-                        size='small'
-                        onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
-                    />
-                    </View>
-                );
+              const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails.find(subscriptionOfferDetail => subscriptionOfferDetail.basePlanId.replace('-', '_') === product.productId);
+              if (!subscriptionOffer) {
+                return null;
+              }
+              return (
+                <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
+                  <Text style={styles.productPrice}>
+                    월 {subscriptionOffer.pricingPhases.pricingPhaseList[0].formattedPrice.replace(/₩(.*)/, '$1원')}
+                  </Text>
+                  <Button
+                    style={styles.productButton}
+                    title="멤버십 시작하기"
+                    size='small'
+                    onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                  />
+                </View>
+              );
             }
             return (
-                <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
-                    <Text style={styles.productPrice}>
-                        월 {(product as any).localizedPrice.replace(/₩(.*)/,'$1원')}
-                    </Text>
-                    <Button
-                        style={styles.productButton}
-                        title="멤버십 시작하기"
-                        size='small'
-                        onPress={() => handleClickSub(product.productId)}
-                    />
-                </View>
+              <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
+                <Text style={styles.productPrice}>
+                  월 {(product as any).localizedPrice.replace(/₩(.*)/, '$1원')}
+                </Text>
+                <Button
+                  style={styles.productButton}
+                  title="멤버십 시작하기"
+                  size='small'
+                  onPress={() => handleClickSub(product.productId)}
+                />
+              </View>
             );
           })}
           {
@@ -245,7 +245,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
               <Pressable key={`Point-Product-${product.productId}`} onPress={() => handleClick(product.productId)}>
                 <View style={styles.productWrap}>
                   <Text style={styles.productPrice}>
-                    {product.localizedPrice.replace(/₩(.*)/,'$1원')}
+                    {product.localizedPrice.replace(/₩(.*)/, '$1원')}
                   </Text>
                   <Button
                     style={styles.productButton}
@@ -261,20 +261,20 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
             멤버십 혜택 자세히
           </Text>
           <Markdown style={markdownStyles}>
-            {'**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 전 상품 최대 1회씩 이용 가능'}  
+            {'**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 전 상품 최대 1회씩 이용 가능'}
           </Markdown>
         </View>
         <View style={styles.content}>
-            <Button style={styles.termButton}
-                title='픽 이용약관'
-                variant='text'
-                onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈')}
-                color='tertiary'
-                size='small'
-            />
-            <Text style={styles.terms}>
-                {TERM}
-            </Text>
+          <Button style={styles.termButton}
+            title='픽 이용약관'
+            variant='text'
+            onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈')}
+            color='tertiary'
+            size='small'
+          />
+          <Text style={styles.terms}>
+            {TERM}
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -282,60 +282,60 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
 }
 
 const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    content: {
-        flex: 1,
-        padding: 31,
-    },
-    title: {
-        fontWeight: '600',
-        fontSize: 20,
-        lineHeight: 24,
-        marginBottom: 18
-    },
-    subtitle: {
-        fontWeight: '600',
-        fontSize: 14,
-        lineHeight: 17,
-        marginBottom: 14
-    },
-    productWrap: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        padding: 14,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: Colors[colorScheme].borderColor.secondary,
-        marginVertical: 24
-    },
-    productButton: {
-        width: 120,
-        padding: 10,
-        backgroundColor: Colors[colorScheme].buttonBackground.primary,
-    },
-    productPrice: {
-        fontWeight: '600',
-        fontSize: 18,
-        lineHeight: 22,
-    },
-    terms: {
-        marginTop: 12,
-        fontWeight: '400',
-        fontSize: 12,
-        lineHeight: 15,
-    },
-    buttonText: {
-        fontWeight: '600',
-        fontSize: 14,
-        lineHeight: 17,
-        color: 'white'
-    },
-    termButton: {
-        marginTop: 100,
-    },
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 31,
+  },
+  title: {
+    fontWeight: '600',
+    fontSize: 20,
+    lineHeight: 24,
+    marginBottom: 18
+  },
+  subtitle: {
+    fontWeight: '600',
+    fontSize: 14,
+    lineHeight: 17,
+    marginBottom: 14
+  },
+  productWrap: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors[colorScheme].borderColor.secondary,
+    marginVertical: 24
+  },
+  productButton: {
+    width: 120,
+    padding: 10,
+    backgroundColor: Colors[colorScheme].buttonBackground.primary,
+  },
+  productPrice: {
+    fontWeight: '600',
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  terms: {
+    marginTop: 12,
+    fontWeight: '400',
+    fontSize: 12,
+    lineHeight: 15,
+  },
+  buttonText: {
+    fontWeight: '600',
+    fontSize: 14,
+    lineHeight: 17,
+    color: 'white'
+  },
+  termButton: {
+    marginTop: 100,
+  },
 });
 export default withIAPContext(PurchaseWrapper);

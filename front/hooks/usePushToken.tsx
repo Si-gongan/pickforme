@@ -44,7 +44,7 @@ const usePushToken = () => {
         if (token) {
           setPushToken({ token });
         }
-      });
+      }).catch(error => { console.log(error) });
     }
   }, [userData?._id]);
 

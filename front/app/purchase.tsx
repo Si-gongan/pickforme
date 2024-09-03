@@ -30,12 +30,13 @@ import {
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
 
+
 const TERM = `
-- 이용방법: 픽은 ‘픽포미 추천’과 ‘픽포미 분석’에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
-- 이용기간: 픽은 결제일로부터 30일 동안 이용할 수 있습니다.
-- 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 구글 플레이 또는 앱스토어에 등록된 계정으로 요금이 부과됩니다.
-- 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 사용 중인 픽은 만료 시까지 이용 가능하며, 다음달 구독부터 결제 및 사용이 자동 해지됩니다.
+- 이용방법: 픽은 상품의 '매니저 질문하기' 기능에 대한 유료 이용권입니다. 1픽 당 1개의 질문을 의뢰할 수 있습니다.
+- 이용기간: 구매한 픽은 유효기간 제한 없이 이용 가능합니다.
+- 환불 및 해지: 서비스 환불 및 해지는 고객센터로 문의 부탁드립니다.
 `;
+
 
 const PurchaseWrapper: React.FC = () => {
   const purchaseProduct = useSetAtom(purchaseProductAtom);
@@ -169,11 +170,11 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.content}>
-          <Text style={styles.title}>픽포미 플러스</Text>
-          <Text style={styles.subtitle}>한 달 AI 질문 무제한, 매니저 질문 30회 이용권</Text>
-          <Text>{'픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.\n멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.'}</Text>
+          <Text style={styles.title}>픽포미 이용권 구매</Text>
+          <Text style={styles.subtitle}>매니저 질문하기 이용가능</Text>
+          <Text>픽포미 이용권인 '픽'을 구매하여 매니저 질문하기 기능을 이용하실 수 있어요.</Text>
           <View style={styles.productsWrap}>
-            {/* {filteredProducts.purchasableProducts.map(product => (
+            {filteredProducts.purchasableProducts.map(product => (
               <View style={styles.productWrap} key={`Point-Product-${product.productId}`}>
                 <Text style={styles.productPrice}>
                   {product.displayName} - {product.localizedPrice.replace(/₩(.*)/, '$1원')}
@@ -185,41 +186,10 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
                   onPress={() => handleClick(product.productId)}
                 />
               </View>
-            ))} */}
-
-          <View style={styles.productWrap}>
-          <Text style={styles.productPrice}>
-            월 4,900원
-          </Text>
-          <Button
-            style={styles.productButton}
-            title="멤버십 시작하기"
-            size="small"
-            // onPress={() => handleClick(product.productId)}
-          />
-
-        </View>
-        <Text style={styles.subtitle}>멤버십 혜택 자세히</Text>
-        <View style={styles.benefitRow}>
-        <Text style={styles.benefitTitle}>혜택 1: </Text>
-        <Text style={styles.benefitContent}>AI 질문하기 매월 무제한 이용 가능</Text>
-      </View>
-        <View style={styles.benefitRow}>
-         <Text style={styles.benefitTitle}>혜택 2: </Text>
-          <Text style={styles.benefitContent}>매니저 질문하기 매월 30회 이용 가능</Text>
-        </View>
-
-
+            ))}
           </View>
         </View>
-        
         <View style={styles.content}>
-        <Button
-            style={styles.startButton}
-            title="지금 시작하기"
-            size="large"
-            // onPress={() => handleClick(product.productId)}
-          />
           <Button
             style={styles.termButton}
             title="픽 이용약관"
@@ -249,24 +219,11 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     lineHeight: 24,
     marginBottom: 18,
   },
-  benefitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // marginBottom: 15,
-  },
   subtitle: {
     fontWeight: '600',
     fontSize: 14,
-    // lineHeight: 17,
+    lineHeight: 17,
     marginBottom: 14,
-  },
-  benefitTitle: {
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  benefitContent: {
-    fontWeight: '400',
-    fontSize: 14,
   },
   productsWrap: {
     marginTop: 20,
@@ -283,7 +240,7 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     marginVertical: 8,
   },
   productButton: {
-    width: 117,
+    width: 100,
     padding: 10,
     backgroundColor: Colors[colorScheme].buttonBackground.primary,
   },
@@ -305,12 +262,8 @@ const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     color: 'white',
   },
   termButton: {
-     marginTop: 13,
+    marginTop: 100,
   },
-  startButton: {
-    marginTop: 40,
-
-  }
 });
 export default withIAPContext(PurchaseWrapper);
 

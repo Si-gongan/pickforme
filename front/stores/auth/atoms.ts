@@ -15,6 +15,8 @@ import {
 import { QuitAPI, GoogleLoginAPI, AppleLoginAPI, KakaoLoginAPI, SetPushTokenAPI, SetPushSettingAPI } from './apis';
 // import { requestsAtom } from '../request/atoms';
 
+import { AxiosError } from 'axios';
+
 export const isOnboardingFinishedAtom = atomWithStorage<'true' | 'false'>('isOnboardingFinished', 'false');
 export const isLoadedAtom = atomWithStorage<'true' | 'false'>('isLoaded', 'false');
 
@@ -70,10 +72,29 @@ export const loginAppleAtom = atom(null, async (get, set, params: AppleLoginPara
   set(handleLoginResultAtom, data);
 });
 
+// export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginParams) => {
+//   const { data } = await KakaoLoginAPI(params);
+//   set(handleLoginResultAtom, data);
+// });
 export const loginKakaoAtom = atom(null, async (get, set, params: KakaoLoginParams) => {
-  const { data } = await KakaoLoginAPI(params);
-  set(handleLoginResultAtom, data);
+  try {
+    const response = await KakaoLoginAPI(params);
+
+    if (response && response.data) {
+      set(handleLoginResultAtom, response.data);
+    } else {
+      console.error('Kakao API로부터 데이터를 받지 못했습니다');
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Kakao 로그인 요청 실패: ${error.message}`);
+    } else {
+      console.error('예상치 못한 오류가 발생했습니다:', error);
+    }
+    // 추가적인 에러 처리 (예: 사용자에게 에러 메시지 표시)
+  }
 });
+
 
 export const setPushTokenAtom = atom(null, async (get, set, params: SetPushTokenParams) => {
   await SetPushTokenAPI(params);

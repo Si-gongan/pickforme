@@ -14,7 +14,7 @@
     ],
     "name": "픽포미",
     "slug": "pickforme",
-    "version": "3.0.10",
+    "version": "3.0.16",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
     "scheme": "myapp",
@@ -64,7 +64,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.sigonggan.pickforme",
-      "versionCode": 67,
+      "versionCode": 73,
       "intentFilters": [
         {
           "action": "android.intent.action.SEND",

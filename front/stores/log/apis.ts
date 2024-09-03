@@ -5,5 +5,5 @@ import {
 } from './types';
 
 export const PostLogAPI = (params: PostLogParams) => {
-  client.post('/log', params);
+  client.post('/log', params).catch(error => { console.log(error) });
 }

@@ -17,7 +17,7 @@
     },
     "production": {
       "ios": {
-        "cocoapods": "1.15.2", 
+        "cocoapods": "1.15.2",
         "image": "macos-ventura-13.6-xcode-15.2"
       },
       "channel": "production"

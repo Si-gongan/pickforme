@@ -13,91 +13,91 @@ import { formatTime, formatDate, formatDateAfterOneMonth } from '../utils/common
 import Autolink from "react-native-autolink";
 
 export default function PointHistoryScreen() {
-  const router = useRouter();
-  const colorScheme = useColorScheme();
-  const currentSubscription = useAtomValue(subscriptionAtom);
-  const subscriptions = useAtomValue(subscriptionListAtom);
-  const purchases = useAtomValue(purchaseListAtom);
-  const userData = useAtomValue(userDataAtom);
-  const styles = useStyles(colorScheme);
+    const router = useRouter();
+    const colorScheme = useColorScheme();
+    const currentSubscription = useAtomValue(subscriptionAtom);
+    const subscriptions = useAtomValue(subscriptionListAtom);
+    const purchases = useAtomValue(purchaseListAtom);
+    const userData = useAtomValue(userDataAtom);
+    const styles = useStyles(colorScheme);
 
-  const getCurrentSubscription = useSetAtom(getSubscriptionAtom);
-  const getSubscriptionList = useSetAtom(getSubscriptionListAtom);
+    const getCurrentSubscription = useSetAtom(getSubscriptionAtom);
+    const getSubscriptionList = useSetAtom(getSubscriptionListAtom);
 
-  const getPurchaseList = useSetAtom(getPurchaseListAtom);
+    const getPurchaseList = useSetAtom(getPurchaseListAtom);
 
-  useEffect(() => {
-    getCurrentSubscription();
-    getSubscriptionList();
-  }, [getCurrentSubscription, getSubscriptionList]);
+    useEffect(() => {
+        getCurrentSubscription();
+        getSubscriptionList();
+    }, [getCurrentSubscription, getSubscriptionList]);
 
-  return (
-    <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.content}>
-            {currentSubscription ? (
-                <>
+    return (
+        <View style={styles.container}>
+            <ScrollView>
+                <View style={styles.content}>
+                    {currentSubscription ? (
+                        <>
+                            <Text style={styles.title}>
+                                픽포미 플러스 정기 구독 중
+                            </Text>
+                            <View style={styles.purchaseStatus}>
+                                <View style={styles.row}>
+                                    <Text>구독 기간</Text>
+                                    <Text>{formatDate(currentSubscription.createdAt)} ~ {formatDateAfterOneMonth(currentSubscription.createdAt)}</Text>
+                                </View>
+                                <View style={styles.row}>
+                                    <Text>다음 결제일</Text>
+                                    <Text>{formatDateAfterOneMonth(currentSubscription.createdAt)}</Text>
+                                </View>
+                            </View>
+
+                            <Button
+                                style={styles.purchaseButton}
+                                title="멤버십 해지하기"
+                                size='small'
+                                onPress={() => router.replace('/')}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Text style={styles.title}>
+                                구독 중인 멤버십 없음
+                            </Text>
+                            <Button
+                                style={styles.purchaseButton}
+                                title="멤버십 구매하기"
+                                size='small'
+                                onPress={() => router.replace('/membership')}
+                            />
+                        </>
+                    )}
+                    <View style={styles.seperator}></View>
                     <Text style={styles.title}>
-                        픽포미 플러스 정기 구독 중
+                        멤버십 구매 내역
                     </Text>
-                    <View style={styles.purchaseStatus}>
-                        <View style={styles.row}>
-                            <Text>구독 기간</Text>
-                            <Text>{formatDate(currentSubscription.createdAt)} ~ {formatDateAfterOneMonth(currentSubscription.createdAt)}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text>다음 결제일</Text>
-                            <Text>{formatDateAfterOneMonth(currentSubscription.createdAt)}</Text>
-                        </View>
-                    </View>
-                    
-                    <Button
-                        style={styles.purchaseButton}
-                        title="멤버십 해지하기"
-                        size='small'
-                        onPress={() => router.replace('/')}
-                    />
-                </>
-            ) : (
-                <>
-                    <Text style={styles.title}>
-                        구독 중인 멤버십 없음
-                    </Text>
-                    <Button
-                        style={styles.purchaseButton}
-                        title="멤버십 구매하기"
-                        size='small'
-                        onPress={() => router.replace('/membership')}
-                    />
-                </>
-            )}
-          <View style={styles.seperator}></View>
-          <Text style={styles.title}>
-            멤버십 구매 내역
-          </Text>
-          {
-            subscriptions && subscriptions.length > 0 ?
-            subscriptions?.map((subscription, index) => (
-              <View key={index} style={styles.purchaseWrap}>
-                <Text style={styles.purchaseDate}>
-                  {formatDate(subscription.createdAt)} 결제
-                </Text>
-                <View style={styles.row}>
-                    <Text style={styles.purchaseTitle}>
-                        {subscription.product.displayName} 월간 이용권
-                    </Text>
-                    <Text style={styles.purchasePrice}>
-                        {subscription.purchase.isTrial ? '무료' : '4,900원'}
-                    </Text>
+                    {
+                        subscriptions && subscriptions.length > 0 ?
+                            subscriptions?.map((subscription, index) => (
+                                <View key={index} style={styles.purchaseWrap}>
+                                    <Text style={styles.purchaseDate}>
+                                        {formatDate(subscription.createdAt)} 결제
+                                    </Text>
+                                    <View style={styles.row}>
+                                        <Text style={styles.purchaseTitle}>
+                                            {subscription.product.displayName} 월간 이용권
+                                        </Text>
+                                        <Text style={styles.purchasePrice}>
+                                            {subscription.purchase.isTrial ? '무료' : '4,900원'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )) : (
+                                <Text>구매 내역이 없습니다.</Text>
+                            )}
                 </View>
-              </View>
-            )) : (
-                <Text>구매 내역이 없습니다.</Text>
-            )}
+            </ScrollView>
         </View>
-      </ScrollView>
-    </View>
-  );
+    );
 }
 
 const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
