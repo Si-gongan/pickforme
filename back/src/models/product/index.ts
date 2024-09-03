@@ -32,6 +32,10 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       required: [true, "can't be blank"],
     },
+    aiPoint: {
+      type: Number,
+      required: [true, "can't be blank"],
+    },
   },
   {
     timestamps: true,
@@ -51,6 +55,7 @@ model.find({}).then((products) => {
       productId: 'pickforme_basic',
       displayName: '픽포미 베이직',
       point: 10,
+      aiPoint: 100,
       type: ProductType.SUBSCRIPTION,
     },
     // {
