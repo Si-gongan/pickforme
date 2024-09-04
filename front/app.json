@@ -64,7 +64,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.sigonggan.pickforme",
-      "versionCode": 73,
+      "versionCode": 74,
       "intentFilters": [
         {
           "action": "android.intent.action.SEND",
