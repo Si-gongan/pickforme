@@ -41,7 +41,7 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
                     {setting.name}님! 중요한 소식이 있어요.
                 </Text>
                 <Text style={[styles.desc, localStyles.desc]}>
-                    {'9월 3일부터 픽포미 한 달 무제한 질문권이 도입되어요.\n3일 전에 결제한 픽은 단일 질문권으로 사용가능해요.\n자세한 내용은 ‘자주 받는 질문’ 페이지를 참고해 주세요.'}
+                    {'9월 14일부터 픽포미 한 달 무제한 질문권이 도입되어요.\n14일 전에 결제한 픽은 단일 질문권으로 사용가능해요.\n자세한 내용은 ‘자주 받는 질문’ 페이지를 참고해 주세요.'}
                 </Text>
                 <View style={[styles.buttonRow, localStyles.buttonWrap]}>
                     <View style={[styles.buttonWrap, localStyles.buttonOuter]}>

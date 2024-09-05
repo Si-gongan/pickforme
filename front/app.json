@@ -46,7 +46,7 @@
           "backgroundColor": "#111525"
         }
       },
-      "buildNumber": "1"
+      "buildNumber": "4"
     },
     "android": {
       "splash": {
@@ -64,7 +64,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.sigonggan.pickforme",
-      "versionCode": 74,
+      "versionCode": 76,
       "intentFilters": [
         {
           "action": "android.intent.action.SEND",
