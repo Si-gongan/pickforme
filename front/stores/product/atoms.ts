@@ -69,7 +69,6 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
     }
     const { data } = await SearchProductsAPI(params);
 
-    console.log('data::', data);
     const searchResult = get(searchResultAtom);
     if (searchResult) {
       set(searchResultAtom, {

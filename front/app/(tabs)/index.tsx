@@ -108,7 +108,7 @@ export default function DiscoverScreen() {
       if (ref.current) {
         const nodeHandle = findNodeHandle(ref.current);
         if (nodeHandle) {
-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
     }, 500);
@@ -161,9 +161,18 @@ export default function DiscoverScreen() {
   });
   const [text, setText] = React.useState('');
 
+  // const handleClickSend = (sort: string) => {
+  //   searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
+  // }
   const handleClickSend = (sort: string) => {
-    searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
-  }
+    searchProducts({ 
+      query: text, 
+      page: 1, 
+      sort, 
+      onLink: router.push, 
+      onQuery: () => setQuery(text) 
+    });
+  };
 
   const handleClickReset = () => {
     setText('');
@@ -251,7 +260,6 @@ export default function DiscoverScreen() {
 
 
   }, []);
-  console.log('searchResult::', searchResult);
 
 
   return (
