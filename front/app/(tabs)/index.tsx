@@ -223,11 +223,12 @@ export default function DiscoverScreen() {
   }
 
   useEffect(() => { // 업데이트 관련
+    console.log('version:', applicationVersion);
     if (applicationVersion && isVersionLessThan(applicationVersion, APPLICATION_VERSION)) {
       // 3.0.0 미만 버전일 경우 업데이트 알림
-      setIsShowVersionUpdateAlarmModal(true);
+      //   setIsShowVersionUpdateAlarmModal(true);
 
-    } else {
+      // } else {
       // 멤버십 알림
       setIsShowIntroduceAlertModal(true);
     }
@@ -250,6 +251,8 @@ export default function DiscoverScreen() {
 
 
   }, []);
+  console.log('searchResult::', searchResult);
+
 
   return (
     <View style={styles.container}>
@@ -305,8 +308,8 @@ export default function DiscoverScreen() {
 
           <>
             <View style={styles.searchStatus}>
-              <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products.length}건 검색됨`}>
-                <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+              <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products?.length}건 검색됨`}>
+                <Text style={styles.productCount}>총 {searchResult?.products?.length}건</Text>
               </View>
               <View style={styles.sorterSelector}>
                 {SORTERS.map((sort, idx) => (

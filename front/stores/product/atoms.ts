@@ -44,41 +44,49 @@ export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
 export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink, ...params }: SearchProductsRequest) => {
   set(isSearchingAtom, true);
 
-  // query에 상품 url이 포함되었는지 판별
-  const { data: { platform, url } } = await ParseProductUrlAPI({ url: params.query });
+  try {
+    // query에 상품 url이 포함되었는지 판별
+    const { data: { platform, url } } = await ParseProductUrlAPI({ url: params.query });
 
-  if (url && onLink) { // query에 유효한 상품 url이 포함된 경우 바로 해당 상품 상세페이지로 이동
-    const { data: { product } } = await GetProductAPI(url);
-    set(productGroupAtom, 'link');
-    set(searchResultAtom, {
-      count: 1,
-      page: 1,
-      products: [product],
-    });
-    onLink(`/product-detail?productUrl=${encodeURIComponent(product.url)}`);
+    if (url && onLink) { // query에 유효한 상품 url이 포함된 경우 바로 해당 상품 상세페이지로 이동
+      const { data: { product } } = await GetProductAPI(url);
+      set(productGroupAtom, 'link');
+      set(searchResultAtom, {
+        count: 1,
+        page: 1,
+        products: [product],
+      });
+      onLink(`/product-detail?productUrl=${encodeURIComponent(product.url)}`);
+      set(isSearchingAtom, false);
+      return;
+    }
+
+    // 일반 키워드 검색 결과 노출
+    set(searchSorterAtom, params.sort);
+
+    if (params.page === 1) {
+      set(searchResultAtom, undefined);
+    }
+    const { data } = await SearchProductsAPI(params);
+
+    console.log('data::', data);
+    const searchResult = get(searchResultAtom);
+    if (searchResult) {
+      set(searchResultAtom, {
+        ...data,
+        products: searchResult.products.concat(data.products),
+      });
+    } else {
+      set(searchResultAtom, data);
+    }
+    onQuery?.();
+  } catch (error) {
+    console.error("Failed to fetch search results:", error);
+    // 검색이 실패하면 빈 배열로 초기화
+    set(searchResultAtom, { count: 0, page: 1, products: [] });
+  } finally {
     set(isSearchingAtom, false);
-    return;
   }
-
-  // 일반 키워드 검색 결과 노출
-  set(searchSorterAtom, params.sort);
-
-  if (params.page === 1) {
-    set(searchResultAtom, undefined);
-  }
-  const { data } = await SearchProductsAPI(params);
-
-  const searchResult = get(searchResultAtom);
-  if (searchResult) {
-    set(searchResultAtom, {
-      ...data,
-      products: searchResult.products.concat(data.products),
-    });
-  } else {
-    set(searchResultAtom, data);
-  }
-  onQuery?.();
-  set(isSearchingAtom, false);
 });
 
 // export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
