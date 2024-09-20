@@ -6,7 +6,7 @@ const router = new Router({
   prefix: '/user',
 });
 
-router.post('/', requireAuth, async (ctx) => {
+router.post('/my', requireAuth, async (ctx) => {
   const user = await db.User.findById(ctx.state.user._id)
     .select('point aiPoint')
     .lean();
