@@ -73,6 +73,29 @@ router.get('/products/:platform', async (ctx) => {
   ctx.status = 200;
 });
 
+// 구독 여부 체크
+router.get('/check/subscription', requireAuth, async (ctx) => {
+  const subscription = await db.Purchase.findOne({
+    userId: ctx.state.user._id,
+    isExpired: false,
+    'product.type': ProductType.SUBSCRIPTION,
+  });
+  const user = await db.User.findById(ctx.state.user._id);
+  if (subscription === null || user === null) {
+    ctx.status = 400;
+    return;
+  }
+  const oneMonthLater = new Date(subscription.createdAt);
+  oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+  if (oneMonthLater < new Date(new Date().setHours(0, 0, 0, 0))) {
+    await subscription.updateExpiration();
+    await user.processExpiredMembership();
+    ctx.status = 400;
+  } else {
+    ctx.status = 200;
+  }
+});
+
 router.get('/purchases', requireAuth, async (ctx) => {
   const purchases = await db.Purchase.find({
     userId: ctx.state.user._id,

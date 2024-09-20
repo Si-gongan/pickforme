@@ -6,11 +6,13 @@ import purchaseRouter from './purchase';
 import adminRouter from './admin';
 import noticeRouter from './notice';
 import discoverRouter from './discover';
+import userRouter from './user';
 import logRouter from './log';
 
 const router = new Router();
 
 [
+  userRouter,
   adminRouter,
   noticeRouter,
   authRouter,

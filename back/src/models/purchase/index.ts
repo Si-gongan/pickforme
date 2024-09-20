@@ -28,8 +28,6 @@ const PurchaseSchema = new mongoose.Schema(
 
 // 도메인 메서드 정의
 PurchaseSchema.methods.updateExpiration = async function updateExpiration() {
-  // 날짜 비교: createdAt이 오늘 이전인지 확인
-  // 오늘 날짜가 지났으면 isExpired를 true로 업데이트
   this.isExpired = true;
   await this.save();
 };

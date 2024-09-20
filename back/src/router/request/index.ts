@@ -103,7 +103,7 @@ router.post('/', requireAuth, async (ctx) => {
     if (user.aiPoint <= 0) {
       ctx.status = 400;
       ctx.body = {
-        errorMessage: '요청하실 포인트가 부족합니다.',
+        errorMessage: '요청에 필요한 포인트가 부족합니다.',
       };
       return;
     }
