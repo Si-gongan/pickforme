@@ -38,9 +38,10 @@ type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
 
 const TERM = `
-- 이용방법: 픽포미 멤버십은 매니저 질문하기 & AI 질문하기 무제한 이용권으로, 매달 자동 결제됩니다. 멤버십 종료 일주일 전에 알려 드릴테니 편하게 시작해 보세요.
-- 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 스토어에 등록된 계정으로 요금이 부과됩니다.
-- 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 현재 이용중인 멤버십은 그 달의 이용권이 만료될 때까지 유지됩니다.
+- 이용방법: 픽은 ‘픽포미 추천’과 ‘픽포미 분석’에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
+- 이용기간: 픽은 결제일로부터 30일 동안 이용할 수 있습니다.
+- 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 구글 플레이 또는 앱스토어에 등록된 계정으로 요금이 부과됩니다.
+- 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 사용 중인 픽은 만료 시까지 이용 가능하며, 다음달 구독부터 결제 및 사용이 자동 해지됩니다.
 `;
 
 const PurchaseWrapper = () => {
@@ -61,11 +62,17 @@ const PurchaseWrapper = () => {
     if (products.length) {
       let purchaseUpdateSubscription: any = null;
       let purchaseErrorSubscription: any = null;
-      initConnection().then(async () => {
-        const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) });
+
+      const initializeIAP = async () => {
+        await initConnection();
+
+        // initConnection().then(async () => {
+        // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
+
         const storeSItems = await IAPGetSubscriptions({ skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map((p) => p.productId) });
 
-        setPurchaseItems(storeItems)
+
+        // setPurchaseItems(storeItems)
         setSubscriptionItems(storeSItems);
 
         const addListeners = () => {
@@ -103,7 +110,9 @@ const PurchaseWrapper = () => {
         } else {
           addListeners();
         }
-      }).catch(error => { console.log(error) });
+      }
+
+      initializeIAP();
       return () => {
         if (purchaseUpdateSubscription) {
           purchaseUpdateSubscription.remove();
@@ -115,6 +124,7 @@ const PurchaseWrapper = () => {
           purchaseErrorSubscription = null;
         }
       }
+
     }
   }, [products]);
   return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
@@ -125,7 +135,7 @@ interface Props {
   purchaseItems: IAPProduct[];
   subscriptionItems: IAPSubscription[];
 }
-const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
+export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
   const router = useRouter();
   const currentSubscription = useAtomValue(subscriptionAtom);
   const userData = useAtomValue(userDataAtom);
@@ -152,10 +162,10 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
             },
           ],
         };
-
         await requestSubscription(subscriptionRequest);
       } else {
         await requestSubscription({ sku });
+
       }
     } catch (err: any) {
       console.log('error!');
@@ -168,18 +178,21 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
       await requestPurchase(
         Platform.OS === 'ios' ? { sku } : { skus: [sku] },
       );
+
     } catch (err: any) {
       console.error(err);
     }
   };
 
+
   const filteredProducts = products.reduce((obj, product) => {
-    if (product.type === ProductType.PURCHASE) {
+    if (product.type === ProductType.PURCHASE) { // 단건 로직
       const item = purchaseItems.find(({ productId }) => product.productId === productId);
       if (item) {
         obj.purchasableProducts.push({ ...item, ...product });
       }
     } else {
+
       const item = subscriptionItems.find(({ productId }) => product.productId === productId);
       if (item) {
         obj.subscriptionProducts.push({ ...item, ...product });
@@ -202,8 +215,10 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
             매니저 질문하기 & AI 질문하기 무제한 이용권
           </Text>
           <Text>
-            지금 시작하면 한 달간 무료에요! 무료 기간동안 언제든 해지 가능하니 편하게 시작해 보세요.
+            매월 편하게 자동 충전할 수 있어요.
           </Text>
+
+
           {filteredProducts.subscriptionProducts.map(product => {
             const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
@@ -241,21 +256,21 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
             );
           })}
           {
-            filteredProducts.purchasableProducts.map(product => (
-              <Pressable key={`Point-Product-${product.productId}`} onPress={() => handleClick(product.productId)}>
-                <View style={styles.productWrap}>
-                  <Text style={styles.productPrice}>
-                    {product.localizedPrice.replace(/₩(.*)/, '$1원')}
-                  </Text>
-                  <Button
-                    style={styles.productButton}
-                    title="멤버십 시작하기"
-                    size='small'
-                    onPress={() => handleClick(product.productId)}
-                  />
-                </View>
-              </Pressable>
-            ))
+            // filteredProducts.purchasableProducts.map(product => (
+            //   <Pressable key={`Point-Product-${product.productId}`} onPress={() => handleClick(product.productId)}>
+            //     <View style={styles.productWrap}>
+            //       <Text style={styles.productPrice}>
+            //         {product.localizedPrice.replace(/₩(.*)/, '$1원')}
+            //       </Text>
+            //       <Button
+            //         style={styles.productButton}
+            //         title="멤버십 시작하기"
+            //         size='small'
+            //         onPress={() => handleClick(product.productId)}
+            //       />
+            //     </View>
+            //   </Pressable>
+            // ))
           }
           <Text style={styles.subtitle}>
             멤버십 혜택 자세히

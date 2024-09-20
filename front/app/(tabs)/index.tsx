@@ -108,7 +108,7 @@ export default function DiscoverScreen() {
       if (ref.current) {
         const nodeHandle = findNodeHandle(ref.current);
         if (nodeHandle) {
-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+-          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
     }, 500);
@@ -161,9 +161,18 @@ export default function DiscoverScreen() {
   });
   const [text, setText] = React.useState('');
 
+  // const handleClickSend = (sort: string) => {
+  //   searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
+  // }
   const handleClickSend = (sort: string) => {
-    searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
-  }
+    searchProducts({ 
+      query: text, 
+      page: 1, 
+      sort, 
+      onLink: router.push, 
+      onQuery: () => setQuery(text) 
+    });
+  };
 
   const handleClickReset = () => {
     setText('');
@@ -223,11 +232,12 @@ export default function DiscoverScreen() {
   }
 
   useEffect(() => { // 업데이트 관련
+    console.log('version:', applicationVersion);
     if (applicationVersion && isVersionLessThan(applicationVersion, APPLICATION_VERSION)) {
       // 3.0.0 미만 버전일 경우 업데이트 알림
-      setIsShowVersionUpdateAlarmModal(true);
+      //   setIsShowVersionUpdateAlarmModal(true);
 
-    } else {
+      // } else {
       // 멤버십 알림
       setIsShowIntroduceAlertModal(true);
     }
@@ -250,6 +260,7 @@ export default function DiscoverScreen() {
 
 
   }, []);
+
 
   return (
     <View style={styles.container}>
@@ -305,8 +316,8 @@ export default function DiscoverScreen() {
 
           <>
             <View style={styles.searchStatus}>
-              <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products.length}건 검색됨`}>
-                <Text style={styles.productCount}>총 {searchResult?.products.length}건</Text>
+              <View ref={searchResultRef} accessible accessibilityLabel={`총 ${searchResult?.products?.length}건 검색됨`}>
+                <Text style={styles.productCount}>총 {searchResult?.products?.length}건</Text>
               </View>
               <View style={styles.sorterSelector}>
                 {SORTERS.map((sort, idx) => (

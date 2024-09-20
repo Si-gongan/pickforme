@@ -57,10 +57,8 @@ const PurchaseWrapper: React.FC = () => {
         const isSubscription = product.type === ProductType.SUBSCRIPTION;
         if (Platform.OS === 'android') {
           const purchaseReceipt = { subscription: isSubscription, ...JSON.parse(receipt) };
-          console.log('purchaseProduct', { _id: product._id });
           await purchaseProduct({ _id: product._id, receipt: purchaseReceipt });
         } else {
-          console.log('purchaseProduct', { _id: product._id });
           await purchaseProduct({ _id: product._id, receipt });
         }
         await finishTransaction({ purchase, isConsumable: !isSubscription });

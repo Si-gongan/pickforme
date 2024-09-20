@@ -10,6 +10,7 @@ export interface Product {
   _id: string,
   productId: string,
   point: number,
+  aiPoint: number,
   platform: typeof Platform.OS,
   displayName: string,
   type: ProductType,
@@ -19,7 +20,7 @@ export interface PurchaseProductParams extends Pick<Product, '_id'> {
   receipt: Receipt,
 }
 
-export interface GetProductsParams extends Pick<Product, 'platform'> {};
+export interface GetProductsParams extends Pick<Product, 'platform'> { };
 
 export interface Purchase {
   product: Product,

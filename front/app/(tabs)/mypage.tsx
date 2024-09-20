@@ -74,6 +74,7 @@ export default function MyPageScreen() {
                 내 정보 수정하기
               </Text>
             </Link>
+
             {!userData ? (
               <Button
                 variant='text'
@@ -85,7 +86,7 @@ export default function MyPageScreen() {
                 onPress={() => router.push('(auths)/login')}
               />) :
               (<>
-                <Link href='/purchase' accessibilityRole='button'>
+                {/* <Link href='/purchase' accessibilityRole='button'>
                   <Text style={styles.menu}>
                     이용권 충전하기
                   </Text>
@@ -94,7 +95,18 @@ export default function MyPageScreen() {
                   <Text style={styles.menu}>
                     이용권 구매내역
                   </Text>
-                </Link></>)
+                </Link> */}
+                <Link href='/subscription' accessibilityRole='button'>
+                  <Text style={styles.menu}>
+                    멤버십 이용하기
+                  </Text>
+                </Link>
+                <Link href='/subscription-history' accessibilityRole='button'>
+                  <Text style={styles.menu}>
+                    멤버십 구매내역
+                  </Text>
+                </Link>
+              </>)
             }
           </View>
           <View style={styles.card}>
