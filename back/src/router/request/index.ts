@@ -107,20 +107,27 @@ router.post('/', requireAuth, async (ctx) => {
       };
       return;
     }
-    user.useAiPoint(1);
+    try {
+      user.useAiPoint(1);
 
-    const {
-      data: { answer },
-    } = await client.post('/test/ai-answer', {
-      product,
-      ...body,
-      model: 'gpt',
-    });
-
-    slack.post('/chat.postMessage', {
-      text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
-      channel: 'C05NTFL1Q4C',
-    });
+      const {
+        data: { answer },
+      } = await client.post('/test/ai-answer', {
+        product,
+        ...body,
+        model: 'gpt',
+      });
+      slack.post('/chat.postMessage', {
+        text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
+        channel: 'C05NTFL1Q4C',
+      });
+    } catch (e) {
+      user.useAiPoint(-1);
+      ctx.status = 404;
+      ctx.body = {
+        message: 'AI 요청 중에 에러가 발생했습니다.',
+      };
+    }
   }
 });
 
