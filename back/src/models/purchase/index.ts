@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { IPurchase, PurchaseModel } from './types';
+import { Platform } from 'models/product';
 
 const PurchaseSchema = new mongoose.Schema(
   {
@@ -7,7 +8,29 @@ const PurchaseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
     },
     product: {
-      type: mongoose.Schema.Types.Mixed,
+      type: {
+        type: Number,
+        required: [true, "can't be blank"],
+      },
+      displayName: {
+        type: String,
+        required: [true, "can't be blank"],
+      },
+      productId: {
+        type: String,
+        required: [true, "can't be blank"],
+      },
+      platform: {
+        type: String,
+        enum: Object.values(Platform),
+      },
+      point: {
+        type: Number,
+        required: [true, "can't be blank"],
+      },
+      aiPoint: {
+        type: Number,
+      },
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,

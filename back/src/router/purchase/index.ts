@@ -72,27 +72,40 @@ router.get('/products/:platform', async (ctx) => {
   ctx.body = products;
   ctx.status = 200;
 });
-
 // 구독 여부 체크
-router.get('/check/subscription', requireAuth, async (ctx) => {
+router.get('/check', requireAuth, async (ctx) => {
   const subscription = await db.Purchase.findOne({
     userId: ctx.state.user._id,
     isExpired: false,
     'product.type': ProductType.SUBSCRIPTION,
-  });
+  }).sort({ createdAt: -1 });
+
   const user = await db.User.findById(ctx.state.user._id);
   if (subscription === null || user === null) {
     ctx.status = 400;
+    ctx.body = { error: 'Subscription or user not found' };
     return;
   }
+
   const oneMonthLater = new Date(subscription.createdAt);
   oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-  if (oneMonthLater < new Date(new Date().setHours(0, 0, 0, 0))) {
+  const now = new Date();
+
+  if (oneMonthLater < now) {
     await subscription.updateExpiration();
     await user.processExpiredMembership();
     ctx.status = 400;
+    ctx.body = { error: 'Subscription expired' };
   } else {
+    const timeLeft = oneMonthLater.getTime() - now.getTime();
+    const daysLeft = timeLeft / (1000 * 60 * 60 * 24);
+
     ctx.status = 200;
+    ctx.body = {
+      status: 'active',
+      daysLeft: daysLeft.toFixed(2) + '일',
+      expiresAt: oneMonthLater.toISOString(),
+    };
   }
 });
 
@@ -100,7 +113,7 @@ router.get('/purchases', requireAuth, async (ctx) => {
   const purchases = await db.Purchase.find({
     userId: ctx.state.user._id,
     'product.type': ProductType.PURCHASE,
-  });
+  }).sort({ createdAt: -1 });
   ctx.body = purchases;
   ctx.status = 200;
 });
@@ -110,7 +123,7 @@ router.get('/subscription', requireAuth, async (ctx) => {
     userId: ctx.state.user._id,
     isExpired: false,
     'product.type': ProductType.SUBSCRIPTION,
-  });
+  }).sort({ createdAt: -1 });
   ctx.body = subscription;
   ctx.status = 200;
 });
@@ -119,7 +132,7 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
   const subscriptions = await db.Purchase.find({
     userId: ctx.state.user._id,
     'product.type': ProductType.SUBSCRIPTION,
-  });
+  }).sort({ createdAt: -1 });
   ctx.body = subscriptions;
   ctx.status = 200;
 });
