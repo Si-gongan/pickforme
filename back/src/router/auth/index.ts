@@ -27,6 +27,7 @@ const handleLogin = async (email: string) => {
     user = await db.User.create({
       email,
       point: 0,
+      aiPoint: 15,
     });
     const usedEmail = await db.User.findOne({
       originEmail: email,
