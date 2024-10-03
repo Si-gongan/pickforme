@@ -47,6 +47,33 @@ router.post('/', requireAuth, async (ctx) => {
   ctx.body = request;
   ctx.status = 200;
 
+  const purchase = await db.Purchase.findOne({
+    userId: user._id,
+    isExpired: false,
+    'product.type': ProductType.SUBSCRIPTION,
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  if (purchase) {
+    const today = new Date();
+    const oneMonthLater = new Date(purchase.createdAt);
+    oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+    if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
+      await purchase.updateExpiration();
+      await user.processExpiredMembership();
+    }
+  } else {
+    // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
+    const today = new Date();
+    const lastRequest = await db.Request.findOne({ userId: user._id })
+      .sort({ createdAt: -1 })
+      .lean();
+    if (lastRequest && lastRequest.createdAt.getMonth() !== today.getMonth()) {
+      await user.initMonthPoint();
+    }
+  }
+
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
@@ -74,31 +101,6 @@ router.post('/', requireAuth, async (ctx) => {
     });
   } else {
     // slack ai 응답 생성
-    const purchase = await db.Purchase.findOne({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    if (purchase) {
-      const today = new Date();
-      const oneMonthLater = new Date(purchase.createdAt);
-      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-      if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
-        await purchase.updateExpiration();
-        await user.processExpiredMembership();
-      }
-    } else {
-      // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
-      const today = new Date();
-      const lastRequest = await db.Request.findOne({ userId: user._id })
-        .sort({ createdAt: -1 })
-        .lean();
-      if (
-        lastRequest &&
-        lastRequest.createdAt.getMonth() !== today.getMonth()
-      ) {
-        await user.initMonthPoint();
-      }
-    }
 
     if (user.aiPoint <= 0) {
       ctx.status = 400;

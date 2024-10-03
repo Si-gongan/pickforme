@@ -50,8 +50,8 @@ router.post('/', requireAuth, async (ctx) => {
       ctx.body = _purchase;
       ctx.status = 200;
 
-      user.point += product.point;
-      user.point += product.aiPoint;
+      user.point = 30;
+      user.aiPoint = 1000000; // 무한, 부족하면 늘리기
       await user.save();
       return;
     }
