@@ -9,6 +9,7 @@ import noticeRouter from './notice';
 import discoverRouter from './discover';
 import userRouter from './user';
 import logRouter from './log';
+import productRouter from './product';
 
 import db from '../models';
 
@@ -23,6 +24,7 @@ const router = new Router();
   purchaseRouter,
   discoverRouter,
   logRouter,
+  productRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
 });

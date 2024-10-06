@@ -5,7 +5,7 @@ const router = new Router({
   prefix: '/product',
 });
 
-router.get('/detail/:noticeId', async (ctx) => {
+router.get('/detail/:productId', async (ctx) => {
   const {
     productsId,
   } = ctx.params;
