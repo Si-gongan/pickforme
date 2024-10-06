@@ -39,11 +39,10 @@ const ProductSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const model =
-  mongoose.models.Products || mongoose.model('Products', ProductSchema);
+const model = mongoose.models.Products || mongoose.model('Products', ProductSchema);
 
 model.find({}).then((products) => {
   if (products.length) {
@@ -52,8 +51,8 @@ model.find({}).then((products) => {
   model.insertMany([
     {
       platform: Platform.IOS,
-      productId: 'pickforme_basic',
-      displayName: '픽포미 베이직',
+      productId: 'pickforme_plus',
+      displayName: '픽포미 플러스',
       point: 10,
       aiPoint: 100,
       type: ProductType.SUBSCRIPTION,
@@ -70,13 +69,15 @@ model.find({}).then((products) => {
     //   productId: 'pickforme_5pick',
     //   type: ProductType.PURCHASE,
     //   point: 5,
-    // }, {
-    //   platform: Platform.ANDROID,
-    //   displayName: '픽포미 베이직',
-    //   productId: 'pickforme_basic',
-    //   point: 10,
-    //   type: ProductType.SUBSCRIPTION,
-    // }, {
+    // },
+    {
+      platform: Platform.ANDROID,
+      productId: 'pickforme_plus',
+      displayName: '픽포미 플러스',
+      point: 10,
+      type: ProductType.SUBSCRIPTION,
+    },
+    // {
     //   platform: Platform.ANDROID,
     //   displayName: '픽포미 1픽',
     //   productId: 'pickforme_1pick',

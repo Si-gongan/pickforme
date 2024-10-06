@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 
+import * as fs from 'fs';
 import authRouter from './auth';
 import requestRouter from './request';
 import purchaseRouter from './purchase';
@@ -8,6 +9,8 @@ import noticeRouter from './notice';
 import discoverRouter from './discover';
 import userRouter from './user';
 import logRouter from './log';
+
+import db from '../models';
 
 const router = new Router();
 
@@ -24,13 +27,11 @@ const router = new Router();
   router.use(subrouter.routes());
 });
 
-import db from '../models';
-import * as fs from 'fs';
-
 router.get('/export', async (ctx) => {
   const requests = await db.Request.find({}).populate('userId').sort({
     createdAt: -1,
   });
+
   const data = requests.map((request) => ({
     id: request._id.toString(),
     type: request.type,
@@ -42,12 +43,12 @@ router.get('/export', async (ctx) => {
   const array = data;
 
   const convertToCSV = (arr: Array<{ [key: string]: any }>) => {
-    const header = Object.keys(arr[0]).join(',') + '\n';
+    const header = `${Object.keys(arr[0]).join(',')}\n`;
     const content = arr.map((row) => Object.values(row).join(',')).join('\n');
-    return header + content + '\n';
+    return `${header + content}\n`;
   };
-  const saveToCSV = (data: string, fileName: string) => {
-    fs.writeFileSync(fileName, data);
+  const saveToCSV = (inData: string, fileName: string) => {
+    fs.writeFileSync(fileName, inData);
   };
 
   const csvData = convertToCSV(array);

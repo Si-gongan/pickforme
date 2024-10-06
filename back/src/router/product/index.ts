@@ -2,22 +2,22 @@ import Router from '@koa/router';
 import db from 'models';
 
 const router = new Router({
-  prefix: '/notice',
+  prefix: '/product',
 });
 
 router.get('/detail/:noticeId', async (ctx) => {
   const {
-    noticeId,
+    productsId,
   } = ctx.params;
-  const notice = await db.Notice.findById(noticeId);
-  ctx.body = notice;
+  const product = await db.Product.findById(productsId);
+  ctx.body = product;
 });
 
 router.get('/', async (ctx) => {
-  const notices = await db.Notice.find({}).sort({
+  const products = await db.Product.find({}).sort({
     createdAt: -1,
   });
-  ctx.body = notices;
+  ctx.body = products;
 });
 
 export default router;

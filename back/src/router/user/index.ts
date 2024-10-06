@@ -13,7 +13,9 @@ router.get('/my', requireAuth, async (ctx) => {
 
   if (!user) {
     ctx.status = 404;
-    ctx.body = { error: 'User not found' };
+    ctx.body = {
+      error: 'User not found',
+    };
     return;
   }
 
