@@ -1,5 +1,11 @@
 import Router from '@koa/router';
 import db from 'models';
+import {
+  productConverter,
+} from 'utils/enumConverter';
+import {
+  ProductType,
+} from 'models/product';
 
 const router = new Router({
   prefix: '/product',
@@ -18,6 +24,19 @@ router.get('/', async (ctx) => {
     createdAt: -1,
   });
   ctx.body = products;
+});
+
+// 상품목록
+router.get('/:platform', async (ctx) => {
+  const {
+    platform,
+  } = ctx.params;
+  const products = await db.Product.find({
+    platform,
+    type: productConverter(ProductType.SUBSCRIPTION),
+  });
+  ctx.body = products;
+  ctx.status = 200;
 });
 
 export default router;

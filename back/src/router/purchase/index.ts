@@ -1,8 +1,12 @@
 import Router from '@koa/router';
 import db from 'models';
-import { ProductType } from 'models/product';
+import {
+  ProductType,
+} from 'models/product';
 import requireAuth from 'middleware/jwt';
-import { Receipt } from 'in-app-purchase';
+import {
+  Receipt,
+} from 'in-app-purchase';
 import iapValidator from 'utils/iap';
 
 const router = new Router({
@@ -15,7 +19,9 @@ router.post('/', requireAuth, async (ctx) => {
   if (!user) {
     return;
   }
-  const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>(
+  const {
+    receipt, _id: productId,
+  } = <{ _id: string; receipt: Receipt }>(
     ctx.request.body
   );
 
@@ -40,14 +46,14 @@ router.post('/', requireAuth, async (ctx) => {
         return;
       }
 
-      const _purchase = await db.Purchase.create({
+      const purchaseData = await db.Purchase.create({
         userId: ctx.state.user._id,
         product,
         purchase,
         receipt,
       });
 
-      ctx.body = _purchase;
+      ctx.body = purchaseData;
       ctx.status = 200;
 
       user.point = 30;
@@ -56,15 +62,16 @@ router.post('/', requireAuth, async (ctx) => {
       return;
     }
   } catch (e) {
-    ctx.body =
-      '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
+    ctx.body = '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
     ctx.status = 400;
   }
 });
 
 // 상품목록
 router.get('/products/:platform', async (ctx) => {
-  const { platform } = ctx.params;
+  const {
+    platform,
+  } = ctx.params;
   const products = await db.Product.find({
     platform,
     type: ProductType.SUBSCRIPTION,
@@ -78,12 +85,16 @@ router.get('/check', requireAuth, async (ctx) => {
     userId: ctx.state.user._id,
     isExpired: false,
     'product.type': ProductType.SUBSCRIPTION,
-  }).sort({ createdAt: -1 });
+  }).sort({
+    createdAt: -1,
+  });
 
   const user = await db.User.findById(ctx.state.user._id);
   if (subscription === null || user === null) {
     ctx.status = 400;
-    ctx.body = { error: 'Subscription or user not found' };
+    ctx.body = {
+      error: 'Subscription or user not found',
+    };
     return;
   }
 
@@ -95,7 +106,9 @@ router.get('/check', requireAuth, async (ctx) => {
     await subscription.updateExpiration();
     await user.processExpiredMembership();
     ctx.status = 400;
-    ctx.body = { error: 'Subscription expired' };
+    ctx.body = {
+      error: 'Subscription expired',
+    };
   } else {
     const timeLeft = oneMonthLater.getTime() - now.getTime();
     const daysLeft = timeLeft / (1000 * 60 * 60 * 24);
@@ -103,7 +116,7 @@ router.get('/check', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = {
       status: 'active',
-      daysLeft: daysLeft.toFixed(2) + '일',
+      daysLeft: `${daysLeft.toFixed(2)}일`,
       expiresAt: oneMonthLater.toISOString(),
     };
   }
@@ -113,7 +126,9 @@ router.get('/purchases', requireAuth, async (ctx) => {
   const purchases = await db.Purchase.find({
     userId: ctx.state.user._id,
     'product.type': ProductType.PURCHASE,
-  }).sort({ createdAt: -1 });
+  }).sort({
+    createdAt: -1,
+  });
   ctx.body = purchases;
   ctx.status = 200;
 });
@@ -123,7 +138,9 @@ router.get('/subscription', requireAuth, async (ctx) => {
     userId: ctx.state.user._id,
     isExpired: false,
     'product.type': ProductType.SUBSCRIPTION,
-  }).sort({ createdAt: -1 });
+  }).sort({
+    createdAt: -1,
+  });
   ctx.body = subscription;
   ctx.status = 200;
 });
@@ -132,7 +149,9 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
   const subscriptions = await db.Purchase.find({
     userId: ctx.state.user._id,
     'product.type': ProductType.SUBSCRIPTION,
-  }).sort({ createdAt: -1 });
+  }).sort({
+    createdAt: -1,
+  });
   ctx.body = subscriptions;
   ctx.status = 200;
 });
