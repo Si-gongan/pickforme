@@ -2,20 +2,28 @@ import Router from '@koa/router';
 import db from 'models';
 import client from 'utils/axios';
 import requireAuth from 'middleware/jwt';
-import { ProductType } from 'models/product';
+import {
+  ProductType,
+} from 'models/product';
 
 const router = new Router({
   prefix: '/discover',
 });
 
 router.get('/products/:category_id', async (ctx) => {
-  const { category_id } = ctx.params;
+  const {
+    category_id,
+  } = ctx.params;
   const [
     {
-      data: { products: random },
+      data: {
+        products: random,
+      },
     },
     {
-      data: { products: special },
+      data: {
+        products: special,
+      },
     },
     local,
   ] = await Promise.all([
@@ -32,35 +40,55 @@ router.get('/products/:category_id', async (ctx) => {
 
 router.post('/product', async (ctx) => {
   const {
-    body: { url },
+    body: {
+      url,
+    },
   } = <any>ctx.request;
   if (url) {
-    const section = await db.DiscoverSection.findOne({ 'products.url': url });
+    const section = await db.DiscoverSection.findOne({
+      'products.url': url,
+    });
     if (section) {
       const product = section.products.find(
-        (product: any) => product.url === url
+        (product: any) => product.url === url,
       );
-      ctx.body = { product };
+      ctx.body = {
+        product,
+      };
       return;
     }
-    const item = await db.Item.findOne({ url });
+    const item = await db.Item.findOne({
+      url,
+    });
     if (
-      item &&
-      item.updatedAt > new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
+      item
+      && item.updatedAt > new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
     ) {
-      ctx.body = { product: item };
+      ctx.body = {
+        product: item,
+      };
       return;
     }
 
-    const { data } = await client
-      .post('/product-detail', { url })
-      .catch(() => ({ data: {} }));
+    const {
+      data,
+    } = await client
+      .post('/product-detail', {
+        url,
+      })
+      .catch(() => ({
+        data: {},
+      }));
     ctx.body = data;
 
     // update or create item
     if (item) {
       // update item
-      await db.Item.updateOne({ url }, { $set: data.product });
+      await db.Item.updateOne({
+        url,
+      }, {
+        $set: data.product,
+      });
     } else {
       // create item
       await db.Item.create(data.product);
@@ -71,10 +99,14 @@ router.post('/product', async (ctx) => {
 router.post('/product/detail/caption', async (ctx) => {
   const {
     body: {
-      product: { url },
+      product: {
+        url,
+      },
     },
   } = <any>ctx.request;
-  const section = await db.DiscoverSection.findOne({ 'products.url': url });
+  const section = await db.DiscoverSection.findOne({
+    'products.url': url,
+  });
   if (section) {
     ctx.body = {
       caption: section.products.find((product: any) => product.url === url)
@@ -82,32 +114,52 @@ router.post('/product/detail/caption', async (ctx) => {
     };
     return;
   }
-  const item = await db.Item.findOne({ url });
+  const item = await db.Item.findOne({
+    url,
+  });
   if (item && item.caption) {
     ctx.body = {
       caption: item.caption,
     };
     return;
   }
-  const { data } = await client
-    .post('/product-caption', { url })
-    .catch(() => ({ data: {} }));
-  ctx.body = { caption: data.caption };
+  const {
+    data,
+  } = await client
+    .post('/product-caption', {
+      url,
+    })
+    .catch(() => ({
+      data: {},
+    }));
+  ctx.body = {
+    caption: data.caption,
+  };
 
   // update item
   if (item) {
-    await db.Item.updateOne({ url }, { $set: { caption: data.caption } });
+    await db.Item.updateOne({
+      url,
+    }, {
+      $set: {
+        caption: data.caption,
+      },
+    });
   }
 });
 
 router.post('/product/detail/report', async (ctx) => {
   const {
     body: {
-      product: { url, name },
+      product: {
+        url, name,
+      },
       images,
     },
   } = <any>ctx.request;
-  const section = await db.DiscoverSection.findOne({ 'products.url': url });
+  const section = await db.DiscoverSection.findOne({
+    'products.url': url,
+  });
   if (section) {
     ctx.body = {
       report: section.products.find((product: any) => product.url === url)
@@ -115,7 +167,9 @@ router.post('/product/detail/report', async (ctx) => {
     };
     return;
   }
-  const item = await db.Item.findOne({ url });
+  const item = await db.Item.findOne({
+    url,
+  });
   if (item && item.report) {
     ctx.body = {
       report: item.report,
@@ -123,27 +177,43 @@ router.post('/product/detail/report', async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/ai-report', { url, name, images })
-    .catch(() => ({ data: {} }));
+  const {
+    data,
+  } = await client
+    .post('/test/ai-report', {
+      url, name, images,
+    })
+    .catch(() => ({
+      data: {},
+    }));
   ctx.body = {
     report: data.report,
   };
 
   // update item
   if (item) {
-    await db.Item.updateOne({ url }, { $set: { report: data.report } });
+    await db.Item.updateOne({
+      url,
+    }, {
+      $set: {
+        report: data.report,
+      },
+    });
   }
 });
 
 router.post('/product/detail/review', async (ctx) => {
   const {
     body: {
-      product: { url, name },
+      product: {
+        url, name,
+      },
       reviews,
     },
   } = <any>ctx.request;
-  const section = await db.DiscoverSection.findOne({ 'products.url': url });
+  const section = await db.DiscoverSection.findOne({
+    'products.url': url,
+  });
   if (section) {
     ctx.body = {
       review: section.products.find((product: any) => product.url === url)
@@ -151,7 +221,9 @@ router.post('/product/detail/review', async (ctx) => {
     };
     return;
   }
-  const item = await db.Item.findOne({ url });
+  const item = await db.Item.findOne({
+    url,
+  });
   if (item && item.review.pros.length > 0) {
     ctx.body = {
       review: item.review,
@@ -159,27 +231,47 @@ router.post('/product/detail/review', async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/review-summary', { url, name, reviews })
-    .catch(() => ({ data: {} }));
+  const {
+    data,
+  } = await client
+    .post('/test/review-summary', {
+      url, name, reviews,
+    })
+    .catch(() => ({
+      data: {},
+    }));
   ctx.body = {
     review: data.summary,
   };
 
   // update item
   if (item) {
-    await db.Item.updateOne({ url }, { $set: { review: data.summary } });
+    await db.Item.updateOne({
+      url,
+    }, {
+      $set: {
+        review: data.summary,
+      },
+    });
   }
 });
 
 router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
   const {
-    body: { product, images, reviews, question },
+    body: {
+      product, images, reviews, question,
+    },
   } = <any>ctx.request;
 
-  const { data } = await client
-    .post('/test/ai-answer', { product, images, reviews, text: question })
-    .catch(() => ({ data: {} }));
+  const {
+    data,
+  } = await client
+    .post('/test/ai-answer', {
+      product, images, reviews, text: question,
+    })
+    .catch(() => ({
+      data: {},
+    }));
   ctx.body = data;
 
   const user = await db.User.findById(ctx.state.user._id);
@@ -190,32 +282,46 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
       'product.type': ProductType.SUBSCRIPTION,
     });
     if (!subscription) {
-      // 추후 이벤트 기간 종료 시 포인트 소모 로직 추가
-      // user.point -= 1;
-      // await user.save();
+      // 추후 이벤트 시 아래 주석처리
+      user.aiPoint -= 1;
+      await user.save();
     }
   }
 });
 
 router.post('/search', async (ctx) => {
   const {
-    body: { query, page = 1, sort = 'sortDesc' },
+    body: {
+      query, page = 1, sort = 'sortDesc',
+    },
   } = <any>ctx.request;
-  const { data } = await client
+  const {
+    data,
+  } = await client
     .get(
-      `/coupang?keyword=${encodeURIComponent(query)}&page=${page}&sort=${sort}`
+      `/coupang?keyword=${encodeURIComponent(query)}&page=${page}&sort=${sort}`,
     )
-    .catch(() => ({ data: {} }));
+    .catch(() => ({
+      data: {},
+    }));
   ctx.body = data;
 });
 
 router.post('/platform', async (ctx) => {
   const {
-    body: { url },
+    body: {
+      url,
+    },
   } = <any>ctx.request;
-  const { data } = await client
-    .post('/platform', { url })
-    .catch(() => ({ data: {} }));
+  const {
+    data,
+  } = await client
+    .post('/platform', {
+      url,
+    })
+    .catch(() => ({
+      data: {},
+    }));
   ctx.body = data;
 });
 
