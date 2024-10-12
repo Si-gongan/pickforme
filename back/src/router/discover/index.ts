@@ -276,6 +276,9 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
 
   const user = await db.User.findById(ctx.state.user._id);
   if (user) {
+    user.aiPoint -= 1;
+    await user.save();
+    /*
     const subscription = await db.Purchase.findOne({
       userId: ctx.state.user._id,
       isExpired: false,
@@ -286,6 +289,7 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
       user.aiPoint -= 1;
       await user.save();
     }
+    */
   }
 });
 

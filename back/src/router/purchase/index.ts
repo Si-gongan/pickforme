@@ -164,4 +164,68 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
 //   ctx.status = 200;
 // });
 
+// NOTE: 환불
+router.get('/refund', requireAuth, async (ctx) => {
+  const user = await db.User.findById(ctx.state.user._id);
+  if (user) {
+    const subscription = await db.Purchase.findOne({
+      userId: ctx.state.user._id,
+      isExpired: false,
+      'product.type': ProductType.SUBSCRIPTION,
+    });
+
+    if (!subscription) {
+      // NOTE: 활성화된 구독정보가 없을경우
+      ctx.body = {
+        msg: '해당 유저의 구독 정보가 없습니다.',
+        refundRst: false,
+      };
+      ctx.status = 400;
+    } else {
+      // NOTE: 활성화된 구독정보가 있을경우
+      const aiPointRefundLimit = 1000000 - 15;
+      if (user.point < 30 || user.aiPoint < aiPointRefundLimit) {
+        // NOTE: 환불정책 위배된 경우(환불정책 참고)
+        ctx.body = {
+          msg: '구독 후 서비스 이용 고객으로 구독 환불 불가 대상입니다.',
+          refundRst: false,
+        };
+        ctx.status = 200;
+        return;
+      }
+
+      // NOTE: 구독정보 수정
+      await db.Purchase.findOneAndUpdate(
+        {
+          _id: subscription._id,
+        },
+        {
+          isExpired: true,
+        },
+      );
+
+      // NOTE: 유저정보 수정
+      await db.User.findOneAndUpdate({
+        _id: ctx.state.user._id,
+      }, {
+        point: 0, aiPoint: 0,
+      });
+
+      ctx.body = {
+        msg: '구독 환불을 완료하였습니다.',
+        refundRst: true,
+      };
+      ctx.status = 200;
+    }
+  } else {
+    // NOTE: 유저정보가 없을경우
+    ctx.body = {
+      msg:
+        '존재하지 않는 유저입니다.',
+      refundRst: false,
+    };
+    ctx.status = 400;
+  }
+});
+
 export default router;
