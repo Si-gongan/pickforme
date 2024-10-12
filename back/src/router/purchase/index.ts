@@ -179,8 +179,12 @@ router.get('/subCheck', requireAuth, async (ctx) => {
     console.log(error);
 
     ctx.body = {
-      msg: '[SERVER ERROR] : FSC01',
-      refundRst: false,
+      sub: null,
+      // NOTE: 활성화 여부
+      activate: false,
+      // NOTE: 남은 구독일
+      leftDays: 0,
+      msg: '[SERVER ERROR] : FS01',
     };
     ctx.status = 500;
     return;
@@ -223,8 +227,8 @@ router.get('/refund', requireAuth, async (ctx) => {
     console.log(error);
 
     ctx.body = {
-      msg: '[SERVER ERROR] : FSC01',
-      refundRst: false,
+      sub: null,
+      msg: '[SERVER ERROR] : FS02',
     };
     ctx.status = 500;
     return;
