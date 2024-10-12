@@ -166,13 +166,36 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
 
 // NOTE: 환불
 router.get('/refund', requireAuth, async (ctx) => {
-  const user = await db.User.findById(ctx.state.user._id);
+  let user;
+  try {
+    user = await db.User.findById(ctx.state.user._id);
+  } catch (error) {
+    console.log(error);
+
+    ctx.body = {
+      msg: '[SERVER ERROR] : FU01',
+      refundRst: false,
+    };
+    ctx.status = 500;
+    return;
+  }
   if (user) {
-    const subscription = await db.Purchase.findOne({
-      userId: ctx.state.user._id,
-      isExpired: false,
-      'product.type': ProductType.SUBSCRIPTION,
-    });
+    let subscription;
+    try {
+      subscription = await db.Purchase.findOne({
+        userId: ctx.state.user._id,
+        isExpired: false,
+        'product.type': ProductType.SUBSCRIPTION,
+      });
+    } catch (error) {
+      console.log(error);
+      ctx.body = {
+        msg: '[SERVER ERROR] : FS01',
+        refundRst: false,
+      };
+      ctx.status = 500;
+      return;
+    }
 
     if (!subscription) {
       // NOTE: 활성화된 구독정보가 없을경우
@@ -180,7 +203,7 @@ router.get('/refund', requireAuth, async (ctx) => {
         msg: '해당 유저의 구독 정보가 없습니다.',
         refundRst: false,
       };
-      ctx.status = 400;
+      ctx.status = 200;
     } else {
       // NOTE: 활성화된 구독정보가 있을경우
       const aiPointRefundLimit = 1000000 - 15;
@@ -194,22 +217,42 @@ router.get('/refund', requireAuth, async (ctx) => {
         return;
       }
 
-      // NOTE: 구독정보 수정
-      await db.Purchase.findOneAndUpdate(
-        {
-          _id: subscription._id,
-        },
-        {
-          isExpired: true,
-        },
-      );
+      try {
+        // NOTE: 구독정보 수정
+        await db.Purchase.findOneAndUpdate(
+          {
+            _id: subscription._id,
+          },
+          {
+            isExpired: true,
+          },
+        );
+      } catch (error) {
+        console.log(error);
+        ctx.body = {
+          msg: '[SERVER ERROR] : US01',
+          refundRst: false,
+        };
+        ctx.status = 500;
+        return;
+      }
 
-      // NOTE: 유저정보 수정
-      await db.User.findOneAndUpdate({
-        _id: ctx.state.user._id,
-      }, {
-        point: 0, aiPoint: 0,
-      });
+      try {
+        // NOTE: 유저정보 수정
+        await db.User.findOneAndUpdate({
+          _id: ctx.state.user._id,
+        }, {
+          point: 0, aiPoint: 0,
+        });
+      } catch (error) {
+        console.log(error);
+        ctx.body = {
+          msg: '[SERVER ERROR] : UU01',
+          refundRst: false,
+        };
+        ctx.status = 500;
+        return;
+      }
 
       ctx.body = {
         msg: '구독 환불을 완료하였습니다.',
