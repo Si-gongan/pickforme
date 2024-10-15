@@ -1,4 +1,6 @@
-import iap, { Receipt } from 'in-app-purchase';
+import iap, {
+  Receipt,
+} from 'in-app-purchase';
 import db from 'models';
 import sendPush from 'utils/push';
 import schedule from 'node-schedule';
@@ -72,7 +74,7 @@ const checkSubs = async () => {
   purchases.forEach(async (purchase) => {
     const purchaseData = await iapValidator.validate(
       purchase.receipt,
-      purchase.product.productId
+      purchase.product.productId,
     );
     if (purchaseData) {
       if (purchaseData.transactionId !== purchase.purchase.transactionId) {
@@ -104,9 +106,26 @@ const checkSubs = async () => {
         }
       }
     } else {
-      // eslint-disable-next-line no-param-reassign
-      purchase.isExpired = true;
-      await purchase.save();
+      const createdDate = new Date(purchase.createdAt);
+      createdDate.setMonth(createdDate.getMonth() + 1);
+      createdDate.setHours(0, 0, 0, 0);
+      const limitTime = createdDate.getTime();
+      const todayTime = today.getTime();
+      if (limitTime <= todayTime) {
+        try {
+          // eslint-disable-next-line no-param-reassign
+          purchase.isExpired = true;
+          await purchase.save();
+          // NOTE: 유저정보 수정
+          await db.User.findOneAndUpdate({
+            _id: purchase.userId,
+          }, {
+            point: 0, aiPoint: 0,
+          });
+        } catch (error) {
+          console.log('[Schedule ERROR] : ', error);
+        }
+      }
     }
   });
 };
