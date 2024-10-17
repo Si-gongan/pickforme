@@ -21,9 +21,7 @@ router.post('/', requireAuth, async (ctx) => {
   }
   const {
     receipt, _id: productId,
-  } = <{ _id: string; receipt: Receipt }>(
-    ctx.request.body
-  );
+  } = <{ _id: string; receipt: Receipt }>ctx.request.body;
 
   const product = await db.Product.findById(productId);
   if (!product || product.type === ProductType.PURCHASE) {
@@ -252,8 +250,7 @@ router.get('/refund', requireAuth, async (ctx) => {
   ctx.status = 200;
 });
 
-// TODO: 환불 어떻게 될지에 따라 다시 작성
-// NOTE: 환불
+// NOTE: 환불(미사용 / 최종결정 애플 구글로 인한 보류)
 router.post('/refund', requireAuth, async (ctx) => {
   const {
     body: {
@@ -309,11 +306,15 @@ router.post('/refund', requireAuth, async (ctx) => {
 
     try {
       // NOTE: 유저정보 수정
-      await db.User.findOneAndUpdate({
-        _id: ctx.state.user._id,
-      }, {
-        point: 0, aiPoint: 0,
-      });
+      await db.User.findOneAndUpdate(
+        {
+          _id: ctx.state.user._id,
+        },
+        {
+          point: 0,
+          aiPoint: 0,
+        },
+      );
     } catch (error) {
       console.log(error);
       ctx.body = {
