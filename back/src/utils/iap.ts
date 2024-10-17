@@ -83,48 +83,44 @@ const checkSubs = async () => {
         await purchase.save();
         const user = await db.User.findById(purchase.userId);
         if (user) {
-          // user.point += purchase.product.point;
-          // await db.PickHistory.create({
-          //   usage: `멤버십 충전 - ${purchase.product.displayName}`,
-          //   point: user.point,
-          //   diff: purchase.product.point,
-          //   userId: user._id,
-          // });
-          // await user.save();
-          // const session = await db.Session.findOne({
-          //   userId: user._id,
-          // });
-          // if (session) {
-          //   socket.emit(session.connectionId, 'point', user.point);
-          // }
-          // if (user.pushToken) {
-          //   sendPush({
-          //     to: user.pushToken,
-          //     body: '멤버십 픽이 충전되었습니다',
-          //   });
-          // }
+          user.point = 30;
+          user.aiPoint = 1000000;
+          await user.save();
+          /*
+          await db.PickHistory.create({
+            usage: `멤버십 충전 - ${purchase.product.displayName}`,
+            point: user.point,
+            diff: purchase.product.point,
+            userId: user._id,
+          });
+          */
+          const session = await db.Session.findOne({
+            userId: user._id,
+          });
+          if (session) {
+            socket.emit(session.connectionId, 'point', user.point);
+          }
+          if (user.pushToken) {
+            sendPush({
+              to: user.pushToken,
+              body: '멤버십 픽이 충전되었습니다',
+            });
+          }
         }
       }
     } else {
-      const createdDate = new Date(purchase.createdAt);
-      createdDate.setMonth(createdDate.getMonth() + 1);
-      createdDate.setHours(0, 0, 0, 0);
-      const limitTime = createdDate.getTime();
-      const todayTime = today.getTime();
-      if (limitTime <= todayTime) {
-        try {
-          // eslint-disable-next-line no-param-reassign
-          purchase.isExpired = true;
-          await purchase.save();
-          // NOTE: 유저정보 수정
-          await db.User.findOneAndUpdate({
-            _id: purchase.userId,
-          }, {
-            point: 0, aiPoint: 0,
-          });
-        } catch (error) {
-          console.log('[Schedule ERROR] : ', error);
-        }
+      // eslint-disable-next-line no-param-reassign
+      purchase.isExpired = true;
+      await purchase.save();
+      try {
+        // NOTE: 유저정보 수정
+        await db.User.findOneAndUpdate({
+          _id: purchase.userId,
+        }, {
+          point: 0, aiPoint: 0,
+        });
+      } catch (error) {
+        console.log('[Schedule ERROR] : ', error);
       }
     }
   });

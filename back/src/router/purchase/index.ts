@@ -40,18 +40,29 @@ router.post('/', requireAuth, async (ctx) => {
         receipt,
       });
 
-      if (exist) {
-        ctx.body = '이미 구매한 상품입니다.';
-        ctx.status = 400;
-        return;
-      }
+      let purchaseData;
 
-      const purchaseData = await db.Purchase.create({
-        userId: ctx.state.user._id,
-        product,
-        purchase,
-        receipt,
-      });
+      if (exist) {
+        if (!exist.isExpired) {
+          ctx.body = '이미 구매한 상품입니다.';
+          ctx.status = 400;
+          return;
+        }
+        exist.purchase = purchase;
+        exist.product = product;
+        exist.receipt = receipt;
+        exist.userId = ctx.state.user._id;
+        exist.isExpired = false;
+        purchaseData = await exist.save();
+      } else {
+        purchaseData = await db.Purchase.create({
+          userId: ctx.state.user._id,
+          product,
+          purchase,
+          receipt,
+          isExpired: false,
+        });
+      }
 
       ctx.body = purchaseData;
       ctx.status = 200;
@@ -194,7 +205,7 @@ router.get('/subCheck', requireAuth, async (ctx) => {
   if (subscription) {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(subscription.createdAt);
+    const endDate = new Date(subscription.updatedAt);
     endDate.setMonth(endDate.getMonth() + 1);
     endDate.setHours(0, 0, 0, 0);
     const timeDifference = endDate.getTime() - currentDate.getTime();
@@ -241,6 +252,7 @@ router.get('/refund', requireAuth, async (ctx) => {
   ctx.status = 200;
 });
 
+// TODO: 환불 어떻게 될지에 따라 다시 작성
 // NOTE: 환불
 router.post('/refund', requireAuth, async (ctx) => {
   const {

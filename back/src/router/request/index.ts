@@ -6,8 +6,12 @@ import client from 'utils/axios';
 import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
-import { RequestType } from 'models/request';
-import { ProductType } from 'models/product';
+import {
+  RequestType,
+} from 'models/request';
+import {
+  ProductType,
+} from 'models/product';
 
 const router = new Router({
   prefix: '/request',
@@ -20,7 +24,9 @@ router.post('/', requireAuth, async (ctx) => {
     return;
   }
   const {
-    body: { product, ...body },
+    body: {
+      product, ...body
+    },
   } = <any>ctx.request;
 
   const request = await db.Request.create({
@@ -47,12 +53,15 @@ router.post('/', requireAuth, async (ctx) => {
   ctx.body = request;
   ctx.status = 200;
 
+  /*
   const purchase = await db.Purchase.findOne({
     userId: user._id,
     isExpired: false,
     'product.type': ProductType.SUBSCRIPTION,
   })
-    .sort({ createdAt: -1 })
+    .sort({
+      createdAt: -1,
+    })
     .lean();
 
   if (purchase) {
@@ -66,13 +75,18 @@ router.post('/', requireAuth, async (ctx) => {
   } else {
     // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
     const today = new Date();
-    const lastRequest = await db.Request.findOne({ userId: user._id })
-      .sort({ createdAt: -1 })
+    const lastRequest = await db.Request.findOne({
+      userId: user._id,
+    })
+      .sort({
+        createdAt: -1,
+      })
       .lean();
     if (lastRequest && lastRequest.createdAt.getMonth() !== today.getMonth()) {
       await user.initMonthPoint();
     }
   }
+  */
 
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
@@ -113,7 +127,9 @@ router.post('/', requireAuth, async (ctx) => {
       user.useAiPoint(1);
 
       const {
-        data: { answer },
+        data: {
+          answer,
+        },
       } = await client.post('/test/ai-answer', {
         product,
         ...body,
