@@ -40,7 +40,7 @@ router.get('/:platform', async (ctx) => {
 
   ctx.body = products;
   */
-  ctx.body = undefined;
+  ctx.body = [];
   ctx.status = 200;
 });
 

@@ -89,7 +89,7 @@ router.get('/products/:platform', async (ctx) => {
   });
   ctx.body = products;
   */
-  ctx.body = undefined;
+  ctx.body = [];
   ctx.status = 200;
 });
 // 구독 여부 체크
