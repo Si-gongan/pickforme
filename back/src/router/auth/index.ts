@@ -31,14 +31,16 @@ const subscriptionCheck = async (userId: string): Promise<boolean> => {
   });
 
   if (subscriptions) {
-    const purchaseData = await iapValidator.validate(
-      subscriptions.purchase.receipt,
-      subscriptions.purchase.product.productId,
-    );
-    if (!purchaseData) {
-      subscriptions.isExpired = true;
-      await subscriptions.save();
-      return true;
+    if (!subscriptions.isExpired) {
+      const purchaseData = await iapValidator.validate(
+        subscriptions.purchase.receipt,
+        subscriptions.purchase.product.productId,
+      );
+      if (!purchaseData) {
+        subscriptions.isExpired = true;
+        await subscriptions.save();
+        return true;
+      }
     }
   }
 
