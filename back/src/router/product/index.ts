@@ -36,7 +36,14 @@ router.get('/:platform', async (ctx) => {
     type: productConverter(ProductType.SUBSCRIPTION),
   });
 
-  ctx.body = products;
+  // NOTE: IOS 는 아직 업데이트안됨으로 요청 제한
+  if (platform === 'ios') {
+    ctx.body = [];
+  } else {
+    ctx.body = products;
+  }
+
+  // ctx.body = products;
   ctx.status = 200;
 });
 
