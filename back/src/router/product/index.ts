@@ -28,8 +28,6 @@ router.get('/', async (ctx) => {
 
 // 상품목록
 router.get('/:platform', async (ctx) => {
-  // NOTE: 금요일에 수정할것
-  /*
   const {
     platform,
   } = ctx.params;
@@ -39,8 +37,6 @@ router.get('/:platform', async (ctx) => {
   });
 
   ctx.body = products;
-  */
-  ctx.body = [];
   ctx.status = 200;
 });
 
