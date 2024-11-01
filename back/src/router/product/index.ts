@@ -28,6 +28,8 @@ router.get('/', async (ctx) => {
 
 // 상품목록
 router.get('/:platform', async (ctx) => {
+  // NOTE: 상품 노출 막음 추후 활성화 예정
+  /*
   const {
     platform,
   } = ctx.params;
@@ -35,15 +37,9 @@ router.get('/:platform', async (ctx) => {
     platform,
     type: productConverter(ProductType.SUBSCRIPTION),
   });
-
-  // NOTE: IOS 는 아직 업데이트안됨으로 요청 제한
-  if (platform === 'ios') {
-    ctx.body = [];
-  } else {
-    ctx.body = products;
-  }
-
-  // ctx.body = products;
+  ctx.body = products;
+  */
+  ctx.body = [];
   ctx.status = 200;
 });
 
