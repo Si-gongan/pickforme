@@ -15,22 +15,27 @@ const router = new Router({
 
 // 포인트충전
 router.post('/', requireAuth, async (ctx) => {
+  console.log('구매시작');
   const user = await db.User.findById(ctx.state.user._id);
   if (!user) {
+    console.log('유저정보 없음');
     return;
   }
+
   const {
     receipt, _id: productId,
   } = <{ _id: string; receipt: Receipt }>ctx.request.body;
 
   const product = await db.Product.findById(productId);
   if (!product || product.type === ProductType.PURCHASE) {
+    console.log('상품없음', productId);
     ctx.body = '존재하지 않는 상품입니다';
     ctx.status = 400;
     return;
   }
 
   try {
+    console.log('point');
     const purchase = await iapValidator.validate(receipt, product.productId);
     if (purchase) {
       const exist = await db.Purchase.findOne({
@@ -42,6 +47,7 @@ router.post('/', requireAuth, async (ctx) => {
 
       if (exist) {
         if (!exist.isExpired) {
+          console.log('이미구매한상품');
           ctx.body = '이미 구매한 상품입니다.';
           ctx.status = 400;
           return;
@@ -71,6 +77,7 @@ router.post('/', requireAuth, async (ctx) => {
       return;
     }
   } catch (e) {
+    console.log('결제에러', e);
     ctx.body = '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
     ctx.status = 400;
   }
