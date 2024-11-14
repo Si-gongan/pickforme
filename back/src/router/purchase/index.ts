@@ -35,8 +35,9 @@ router.post('/', requireAuth, async (ctx) => {
   }
 
   try {
-    console.log('point');
+    console.log('point', receipt, product.productId);
     const purchase = await iapValidator.validate(receipt, product.productId);
+    console.log('purchase : ', purchase);
     if (purchase) {
       const exist = await db.Purchase.findOne({
         userId: ctx.state.user._id,
@@ -76,6 +77,7 @@ router.post('/', requireAuth, async (ctx) => {
       await user.save();
       return;
     }
+    console.log('구매검증 실패');
   } catch (e) {
     console.log('결제에러', e);
     ctx.body = '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
