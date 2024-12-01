@@ -45,6 +45,10 @@ import TabContent from '../components/ProductDetailTabContent';
 
 // 2024
 import { TABS, loadingMessages, tabName } from '../utils/common';
+import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
+import { isShowNonSubscriberManagerModalAtom } from '../stores/auth/atoms';
+
+
 
 interface ProductDetailScreenProps { }
 
@@ -170,12 +174,40 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }
   };
 
-  const handleClickContact = async () => {
-    await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj');
+
+  // 멤버십 2024
+  const subscription = useAtomValue(subscriptionAtom);
+  const getSubscription = useSetAtom(getSubscriptionAtom);
+  const setIsShowNonSubscriberManageModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
+
+  const handleClickContact = async () => { 
+    getSubscription();
+
+    // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
+    if (!subscription || subscription.isExpired) {
+
+      // 모달 표시
+
+      setIsShowNonSubscriberManageModal(true);
+    } else {
+
+    // await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj'); // asis 시공간 카톡으로 이동 
+    setRequestBottomSheet(product); // tobe 매니저 질문하기
+  }
   };
 
   const handleClickRequest = useCheckLogin(() => {
+    getSubscription();
+    // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
+    if (!subscription || subscription.isExpired) {
+
+      // 모달 표시
+      setIsShowNonSubscriberManageModal(true);
+    } else {
+      console.log('111subscription.purchase.status:',subscription?.isExpired);
+
     setRequestBottomSheet(product);
+  }
   });
 
   const handlePressAIQuestionTab = useCheckLogin(() => {

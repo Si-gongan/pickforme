@@ -3,7 +3,7 @@ import { findNodeHandle, AccessibilityInfo } from 'react-native';
 import { useRouter } from "expo-router";
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
-import { isShowNonSubscribedModalAtom } from '../../../stores/auth/atoms';
+import { isShowExpireModalAtom } from '../../../stores/auth/atoms';
 import { View, Text } from '../../Themed';
 import Button from '../../Button';
 import { Props, styles } from '../Base';
@@ -15,11 +15,11 @@ import React from "react";
 
 
 // Membership
-const NonSubscribedBottomSheet: React.FC<Props> = () => {
+const ExpireBottomSheet: React.FC<Props> = () => {
   const router = useRouter();
   const headerTitleRef = useRef(null);
 
-  const [visible, setVisible] = useAtom(isShowNonSubscribedModalAtom);
+  const [visible, setVisible] = useAtom(isShowExpireModalAtom);
   const [setting,] = useAtom(settingAtom);
 
   const colorScheme = useColorScheme();
@@ -28,7 +28,7 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
   const onClose = () => setVisible(false);
 
   const handleClickYes = () => {
-    router.push('/membership');
+    router.push('/subscription');
     onClose();
   }
   const handleClickNo = () => {
@@ -54,20 +54,20 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
     >
       <View style={[styles.bottomSheet, localStyles.root]}>
         <Text style={[styles.title, localStyles.title]} ref={headerTitleRef} >
-          픽포미플러스 멤버십 기능이에요.
+          오늘은 픽포미 멤버십 이용 종료일이에요.
         </Text>
         <Text style={[styles.desc, localStyles.desc]}>
-          {'픽포미플러스 멤버십을 구독하면,\n매니저에게 한 달 간 30회까지 질문이 가능해요.\n지금 멤버십을 시작하시겠어요?'}
+          {'멤버십을 연장하지 않으면 앞으로 모든\n질문하기 기능이 제한되어요.\n멤버십을 연장하고 픽포미의 모든 기능을 이용해보세요.'}
         </Text>
         <View style={[styles.buttonRow, localStyles.buttonWrap]}>
           <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
             <Button
-              title='지금 시작하기' onPress={handleClickYes} style={[localStyles.button1]} size="small" />
+              title='멤버십 유지하기' onPress={handleClickYes} style={[localStyles.button1]} size="small" />
           </View>
           <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
             <Button
               color='tertiary'
-              title='나중에 할래요' onPress={handleClickNo} style={[localStyles.button2]} size="small" />
+              title='확인' onPress={handleClickNo} style={[localStyles.button2]} size="small" />
           </View>
         </View>
       </View>
@@ -108,4 +108,4 @@ const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
   }
 });
 
-export default NonSubscribedBottomSheet;
+export default ExpireBottomSheet;

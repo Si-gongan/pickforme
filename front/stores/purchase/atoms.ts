@@ -1,7 +1,8 @@
 import { atom } from 'jotai';
-import { GetProductsParams, PurchaseProductParams, Product, Purchase } from './types';
-import { PurchaseProductAPI, GetProductsAPI, GetSubscriptionAPI, GetSubscriptionListAPI, GetPurchaseListAPI } from './apis';
+import { GetProductsParams, PurchaseProductParams, Product, Purchase, PurchaseSubCheck } from './types';
+import { PurchaseProductAPI, GetProductsAPI, GetSubscriptionAPI, GetSubscriptionListAPI, GetPurchaseListAPI, GetPurchaseCheckAPI, GetPurchaseSubCheckAPI } from './apis';
 import { userDataAtom } from '../auth/atoms';
+import { atomWithStorage } from '../utils';
 import { Alert } from 'react-native';
 
 export const productsAtom = atom<Product[]>([]);
@@ -25,6 +26,7 @@ export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseP
   }
   set(userDataAtom, { ...userData, point: userData.point + data.product.point });
 });
+
 export const subscriptionAtom = atom<Purchase | null>(null);
 export const getSubscriptionAtom = atom(null, async (get, set) => {
   const { data } = await GetSubscriptionAPI();
@@ -43,4 +45,23 @@ export const getPurchaseListAtom = atom(null, async (get, set) => {
   set(purchaseListAtom, data);
 });
 
+export const purchasSubCheckAtom = atomWithStorage<PurchaseSubCheck | void>('purchaseSubCheck', undefined);
+
+export const purchasSubCheckAtom2 = atom<PurchaseSubCheck[] | null>(null);
+
+// export const purchasSubCheckAtom2 = atomWithStorage<PurchaseSubCheck | null>("subCheck",null);
+export const getPurchasSubCheckAtom = atom(null, async (get, set) => {
+  // const purchasSubCheck = await get(purchasSubCheckAtom);
+  // if (!purchasSubCheck) {
+  //   return;
+  // }
+  // set(purchasSubCheckAtom, { ...purchasSubCheck });
+
+  try {
+    const { data } = await GetPurchaseSubCheckAPI();
+    set(purchasSubCheckAtom, data);
+  } catch (error) {
+    console.error('구독 확인 API 호출 중 오류 발생:', error);
+  }
+});
 

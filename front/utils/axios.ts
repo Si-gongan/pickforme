@@ -2,6 +2,8 @@ import axios from 'axios';
 import { API_HOST } from '@env';
 
 console.log(API_HOST);
+
+
 const client = axios.create({
   baseURL: API_HOST,
   headers: {
@@ -9,7 +11,6 @@ const client = axios.create({
   },
 });
 client.defaults.timeout = 40000;
-
 
 export const setClientToken = (token?: string) => {
   if (token) {

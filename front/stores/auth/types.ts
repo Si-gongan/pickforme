@@ -2,6 +2,7 @@ export interface UserData {
   _id: string,
   token: string,
   point: number,
+  aiPoint: number,
   lastLoginAt: string,
   push: {
     service: PushService;

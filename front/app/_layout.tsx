@@ -22,7 +22,6 @@ import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../
 import HeaderLeft from '../components/HeaderLeft';
 import OnboardingBottomSheet from '../components/BottomSheet/How';
 import LoginBottomSheet from '../components/BottomSheet/Login';
-import NonSubscribedBottomSheet from '../components/BottomSheet/Membership/NonSubscribed';
 import LackPointBottomSheet from '../components/BottomSheet/LackPoint';
 import GreetingBottomSheet from '../components/BottomSheet/Greeting';
 import RequestBottomSheet from '../components/BottomSheet/Request';
@@ -31,6 +30,11 @@ import CommonBottomSheet from '../components/BottomSheet/Common';
 // 2024
 import VersionUpdateAlarmBottomSheet from '../components/BottomSheet/VersionUpdateAlarm';
 import IntroduceAlertBottomSheet from '../components/BottomSheet/Membership/IntroduceAlert';
+import SubscriptionBottomSheet from '../components/BottomSheet/Membership/Subscription';
+import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
+import ExpireBottomSheet from '../components/BottomSheet/Membership/Expire';
+import UnsubscribeBottomSheet from '../components/BottomSheet/Membership/Unsubscribe';
+import UpdateAlartBottomSheet from '../components/BottomSheet/UpdateAlart';
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -117,6 +121,12 @@ function RootLayoutNav() {
         {/* 2024 */}
         <VersionUpdateAlarmBottomSheet />
         <IntroduceAlertBottomSheet />
+        <SubscriptionBottomSheet />
+        <NonSubscriberManagerBottomSheet />
+        <ExpireBottomSheet />
+        <UnsubscribeBottomSheet />
+        <UpdateAlartBottomSheet />
+
 
 
         {bottomSheets.map((info, i) => (

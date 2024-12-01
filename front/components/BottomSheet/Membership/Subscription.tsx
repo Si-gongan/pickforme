@@ -1,0 +1,72 @@
+import { Props, styles } from '../Base';
+import BottomSheet from 'react-native-modal';
+import { useAtom } from 'jotai';
+import { isShowSubscriptionModalAtom } from '../../../stores/auth/atoms';
+import { View, Text } from '../../Themed';
+import Button from '../../Button';
+import Colors from '../../../constants/Colors';
+import useColorScheme, { ColorScheme } from '../../../hooks/useColorScheme';
+import { StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+
+
+const SubscriptionBottomSheet: React.FC<Props> = () => {
+    const [visible, setVisible] = useAtom(isShowSubscriptionModalAtom);
+    const router = useRouter();
+
+    const onClose = () => setVisible(false);
+
+    const colorScheme = useColorScheme();
+    const localStyles = useLocalStyles(colorScheme);
+
+    const handlePress = () => {
+        router.push("/");
+        onClose();
+    }
+
+    return (
+        <BottomSheet
+            style={styles.base}
+            isVisible={visible}
+            onBackButtonPress={onClose}
+            onBackdropPress={onClose}
+        >
+            <View style={[styles.bottomSheet, localStyles.root]}>
+                <Text style={[styles.title, localStyles.title]} >
+                    픽포미 멤버십 구독이 완료됐어요!
+                </Text>
+                <Text style={[styles.desc, localStyles.desc1]}>
+                    {'픽포미 멤버가 되신 것을 환영해요.\n이제부터 한 달 무제한 질문 혜택을 누려보세요.\n지금 바로 픽포미와 쇼핑하러 갈까요?'}
+                </Text>
+                <Button style={[styles.button, localStyles.button]} title='쇼핑하러 가기' onPress={handlePress} size="small" />
+            </View>
+
+        </BottomSheet>
+    );
+}
+
+const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
+    root: {
+        paddingBottom: 72,
+    },
+    title: {
+        fontSize: 18,
+        lineHeight: 20,
+        fontWeight: '600',
+        marginBottom: 27,
+        color: '#1e1e1e',
+    },
+    desc1: {
+        fontSize: 14,
+        lineHeight: 20,
+        marginBottom: 38.99,
+    },
+    buttonText: {
+        color: Colors[colorScheme].text.primary,
+    },
+    button: {
+        minHeight: 50,
+    },
+});
+
+export default SubscriptionBottomSheet;

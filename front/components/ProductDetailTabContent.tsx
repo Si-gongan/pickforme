@@ -110,6 +110,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
   markdownStyles,
   productDetail
 }) => (
+  
   <View style={styles.detailWrap}>
     <View style={styles.inputWrap}>
       <TextInput
@@ -123,6 +124,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
         onChangeText={(text) => setQuestion(text)}
         placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요"
       />
+      
       <Pressable onPress={handleClickSend} accessible accessibilityLabel="질문하기" accessibilityRole="button">
         <Image style={styles.sendIcon} source={require('../assets/images/discover/downSquareArrow.png')} />
       </Pressable>

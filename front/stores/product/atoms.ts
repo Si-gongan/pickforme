@@ -15,6 +15,7 @@ import {
   ParseProductUrlAPI,
   SearchProductsAPI
 } from './apis';
+import { Alert } from 'react-native';
 
 export const mainProductsAtom = atom<MainProductsState>({
   special: [],
@@ -168,8 +169,15 @@ export const getProductAIAnswerAtom = atom(null, async (get, set, product: Produ
   const { data: productDetail } = await GetProductAIAnswerAPI({ product, images, reviews, question });
 
   // 추후 멤버십 로직 도입시 point 차감 로직 추가 (이벤트 기간 동안에는 무료)
-  // const userData = await get(userDataAtom);
-  // set(userDataAtom, { ...userData!, point: userData!.point - 1});
+  const userData = await get(userDataAtom);
+
+  if(userData!.aiPoint < 1) {
+    Alert.alert('AI 질문 횟수가 모두 차감되었어요!');
+    // set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.FINISH }); // 초기화
+    return;
+
+  }
+  // set(userDataAtom, { ...userData!, aiPoint: userData!.aiPoint - 1});
 
   if (get(productDetailAtom)?.url === product.url) {
     set(productDetailAtom, { url: product.url, ...get(productDetailAtom), ...productDetail });

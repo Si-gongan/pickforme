@@ -10,7 +10,7 @@ import { userDataAtom } from '../stores/auth/atoms';
 import { purchaseListAtom, getPurchaseListAtom } from '../stores/purchase/atoms';
 import { formatDate } from '../utils/common';
 
-export default function PointHistoryScreen() {
+export default function PointHistoryScreen1() {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const purchases = useAtomValue(purchaseListAtom);

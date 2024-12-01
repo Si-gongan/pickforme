@@ -6,7 +6,7 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
-import { isShowNonSubscribedModalAtom } from '../../stores/auth/atoms';
+import { isShowSubscriptionModalAtom } from '../../stores/auth/atoms';
 import { scrapedProductDetailAtom } from '../../stores/product/atoms';
 import { sendLogAtom } from '../../stores/log/atoms';
 
@@ -22,7 +22,7 @@ import { Text, View } from '../Themed';
 export default function ResearchBottomSheet() {
   const headerTitleRef = useRef(null);
 
-  const isShowNonSubscribedModalVisible = useAtomValue(isShowNonSubscribedModalAtom);
+  const isShowNonSubscribedModalVisible = useAtomValue(isShowSubscriptionModalAtom);
 
   const addRequest = useSetAtom(addRequestAtom);
   const colorScheme = useColorScheme();
@@ -36,11 +36,11 @@ export default function ResearchBottomSheet() {
     type: RequestType.QUESTION,
     text: '',
   });
-  // const checkMembership = useCheckMembership((params: QuestionRequestParams) => {
-  //   if (product) {
-  //     addRequest(params);
-  //   }
-  // });
+  const checkMembership = useCheckMembership((params: QuestionRequestParams) => {
+    if (product) {
+      addRequest(params);
+    }
+  });
   const checkPoint = useCheckPoint((params: QuestionRequestParams) => {
     if (product) {
       addRequest(params);
@@ -70,6 +70,7 @@ export default function ResearchBottomSheet() {
   }, [product]);
 
   if (isShowNonSubscribedModalVisible) {
+    console.log("미구독자");
     return null;
   }
   return (

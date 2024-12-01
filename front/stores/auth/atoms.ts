@@ -108,6 +108,8 @@ export const setPushSettingAtom = atom(null, async (get, set, params: SetPushSet
   }
 });
 
+
+
 export const isShowLoginModalAtom = atom(false);
 export const isShowOnboardingModalAtom = atom(false);
 export const isShowLackPointModalAtom = atom(false);
@@ -115,5 +117,9 @@ export const isShowGreetingModalAtom = atom(false);
 
 // 2024
 export const isShowVersionUpdateAlarmModalAtom = atom(false);
-export const isShowIntroduceAlertAtom = atom(false);
-export const isShowNonSubscribedModalAtom = atom(false);
+export const isShowIntroduceAlertModalAtom = atom(false);
+export const isShowSubscriptionModalAtom = atom(false);
+export const isShowNonSubscriberManagerModalAtom = atom(false);
+export const isShowExpireModalAtom = atom(false);
+export const isShowUnsubscribeModalAtom = atom(false);
+export const isShowUpdateAlartModalAtom = atom(false);

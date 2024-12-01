@@ -34,7 +34,7 @@ export const tabName: Record<TABS, string> = {
   [TABS.CAPTION]: '이미지 설명',
   [TABS.REPORT]: '상세페이지 설명',
   [TABS.REVIEW]: '리뷰 요약',
-  [TABS.QUESTION]: '질문 하기',
+  [TABS.QUESTION]: 'AI 질문',
 };
 
 export const loadingMessages: Record<TABS | 'manager', string> = {

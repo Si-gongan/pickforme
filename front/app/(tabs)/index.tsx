@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/core';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { Image, TextInput, Text as TextBase, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
+import { Image, TextInput, Text as TextBase, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet, AccessibilityInfo, findNodeHandle, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 
 import { setClipboardProductAtom, clipboardProductAtom, isSearchingAtom, searchSorterAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/product/atoms';
-
+import { getPurchasSubCheckAtom, purchasSubCheckAtom } from '../../stores/purchase/atoms';
 import { CATEGORIES, categoryName } from '../../constants/Categories';
 import { Text, View } from '../../components/Themed';
 import Colors from '../../constants/Colors';
@@ -16,12 +16,15 @@ import ProductCard from '../../components/ProductCard';
 // 2024
 import {
   isShowVersionUpdateAlarmModalAtom,
-  isShowIntroduceAlertAtom,
+  isShowIntroduceAlertModalAtom,
+  userDataAtom,
+  isShowExpireModalAtom,
   // isShowMembershipSubscription, 
   // isShowAiFunctionLimitationsAtom, 
   // isShowManagerFunctionRestrictionsAtom, 
   // isShowCancelMembershipPaymentAtom, 
-  // isShowMembershipPaymentCancellationWeekAtom 
+  // isShowMembershipPaymentCancellationWeekAtom,
+  isShowUpdateAlartModalAtom,
 } from '../../stores/auth/atoms';
 import * as Application from 'expo-application';
 
@@ -73,6 +76,11 @@ export default function DiscoverScreen() {
   const initialRef = useRef(null);
 
   const getMainProducts = useSetAtom(getMainProductsAtom);
+
+  const getPurchaseSubCheck = useSetAtom(getPurchasSubCheckAtom);
+  const purchaseSubCheck = useAtomValue(purchasSubCheckAtom);
+  const isLogin = !!useAtomValue(userDataAtom);
+
   const mainProducts = useAtomValue(mainProductsAtom);
 
   const searchProducts = useSetAtom(searchProductsAtom);
@@ -108,7 +116,7 @@ export default function DiscoverScreen() {
       if (ref.current) {
         const nodeHandle = findNodeHandle(ref.current);
         if (nodeHandle) {
--          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          -          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
     }, 500);
@@ -165,12 +173,12 @@ export default function DiscoverScreen() {
   //   searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
   // }
   const handleClickSend = (sort: string) => {
-    searchProducts({ 
-      query: text, 
-      page: 1, 
-      sort, 
-      onLink: router.push, 
-      onQuery: () => setQuery(text) 
+    searchProducts({
+      query: text,
+      page: 1,
+      sort,
+      onLink: router.push,
+      onQuery: () => setQuery(text)
     });
   };
 
@@ -209,12 +217,14 @@ export default function DiscoverScreen() {
   const setIsShowVersionUpdateAlarmModal = useSetAtom(isShowVersionUpdateAlarmModalAtom);
   const applicationVersion = Application.nativeApplicationVersion;
   const APPLICATION_VERSION = "3.0.0";
-  const setIsShowIntroduceAlertModal = useSetAtom(isShowIntroduceAlertAtom);
+  const setIsShowIntroduceAlertModal = useSetAtom(isShowIntroduceAlertModalAtom);
   // const setIsShowMembershipSubscriptionModal = useSetAtom(isShowMembershipSubscription);
   // const setIsAiFunctionLimitationsModal = useSetAtom(isShowAiFunctionLimitationsAtom);
   // const setIsManagerFunctionRestrictionsModal = useSetAtom(isShowManagerFunctionRestrictionsAtom);
   // const setIsCancelMembershipPaymentModal = useSetAtom(isShowCancelMembershipPaymentAtom);
   // const setIsMembershipPaymentCancellationWeekModal = useSetAtom(isShowMembershipPaymentCancellationWeekAtom);
+  const setIsShowExpireModal = useSetAtom(isShowExpireModalAtom);
+  const setIsShowUpdateAlartModal = useSetAtom(isShowUpdateAlartModalAtom);
 
   // 버전 비교 함수
   function isVersionLessThan(version: string, baseVersion: string) {
@@ -235,32 +245,31 @@ export default function DiscoverScreen() {
     console.log('version:', applicationVersion);
     if (applicationVersion && isVersionLessThan(applicationVersion, APPLICATION_VERSION)) {
       // 3.0.0 미만 버전일 경우 업데이트 알림
-      //   setIsShowVersionUpdateAlarmModal(true);
+      setIsShowVersionUpdateAlarmModal(true);
 
-      // } else {
+    } else {
       // 멤버십 알림
       setIsShowIntroduceAlertModal(true);
     }
   }, [applicationVersion]);
 
-  useEffect(() => { // 확인용 바텀시트
-    // 구매 완료
-    // setIsShowMembershipSubscriptionModal(true);
-
-    // AI 기능제한 팝업
-    // setIsAiFunctionLimitationsModal(true);
-    // setIsManagerFunctionRestrictionsModal(true);
-
-    // 멤버십 없음
-    // setIsShowNonSubscribedModal(true);
-
-    // 결제 해지
-    // setIsCancelMembershipPaymentModal(true);
-    // setIsMembershipPaymentCancellationWeekModal(true);
-
-
+  useEffect(() => { // 업데이트 공지
+    // setIsShowUpdateAlartModal(true);
   }, []);
 
+
+  useEffect(() => {
+    // 멤버십 구독 관련
+    //   if (isLogin) {
+    //     getPurchaseSubCheck();
+    //     console.log('purchaseSubCheck:',purchaseSubCheck);
+    //     if (purchaseSubCheck?.activate) { // 구독 중
+    //       if (purchaseSubCheck.leftDays === 31) { // 구독 만료 1일전
+    //         setIsShowExpireModal(true);
+    //       }
+    //     }
+    // }
+  }, []);
 
   return (
     <View style={styles.container}>

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, ScrollView, findNodeHandle, StyleSheet, Pressable, Alert, Image } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -65,6 +65,27 @@ export default function MyPageScreen() {
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.scrollContainer}>
+          {userData ? (
+            <View style={styles.card}>
+              <Text style={styles.title}>
+                잔여 이용권
+              </Text>
+              <Text style={styles.menu}>
+                매니저 질문권 {userData?.point ?? '00'}회
+              </Text>
+              {userData.aiPoint >= 1000 ? (
+                <Text style={styles.menu}>
+                  AI 질문권 무제한
+                </Text>
+              ) :
+                <Text style={styles.menu}>
+                  AI 질문권 {userData?.aiPoint ?? '00'}회
+                </Text>
+              }
+            </View>
+          ) :
+            <></>
+          }
           <View style={styles.card}>
             <Text style={styles.title}>
               내 정보

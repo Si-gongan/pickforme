@@ -1,19 +1,18 @@
-import { Props, styles } from '../Base';
+import { Props, styles } from './Base';
 import BottomSheet from 'react-native-modal';
-import { isShowIntroduceAlertModalAtom } from '../../../stores/auth/atoms';
+import { isShowUpdateAlartModalAtom } from '../../stores/auth/atoms';
 import { useAtom } from 'jotai';
-import Colors from '../../../constants/Colors';
-import { View, Text } from '../../Themed';
-import useColorScheme, { ColorScheme } from '../../../hooks/useColorScheme';
-import Button from '../../Button';
+import Colors from '../../constants/Colors';
+import { View, Text } from '../Themed';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+import Button from '../Button';
 import { StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { settingAtom } from '../../../stores/auth/atoms';
+import { settingAtom } from '../../stores/auth/atoms';
 import React from "react";
 
-//Membership
-const IntroduceAlertBottomSheet: React.FC<Props> = () => {
-    const [visible, setVisible] = useAtom(isShowIntroduceAlertModalAtom);
+const UpdateAlartBottomSheet: React.FC<Props> = () => {
+    const [visible, setVisible] = useAtom(isShowUpdateAlartModalAtom);
     const onClose = () => setVisible(false);
     const colorScheme = useColorScheme();
     const router = useRouter();
@@ -22,7 +21,7 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
     const localStyles = useLocalStyles(colorScheme);
 
     const handleClickYes = () => {
-        router.push('/faq');
+        router.push('/');
         onClose();
     }
     const handleClickNo = () => {
@@ -38,20 +37,20 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
         >
             <View style={[styles.bottomSheet, localStyles.root]}>
                 <Text style={[styles.title, localStyles.title]} >
-                    {setting.name}님! 중요한 소식이 있어요.
+                    {'11월 1일(금) 22시 이후\n서비스 점검이 진행됩니다.'}
                 </Text>
                 <Text style={[styles.desc, localStyles.desc]}>
-                    {'9월 23일부터 픽포미 한 달 무제한 질문권이 도입되어요.\n23일 전에 결제한 픽은 단일 질문권으로 사용가능해요.\n자세한 내용은 ‘자주 받는 질문’ 페이지를 참고해 주세요.'}
+                    {'보다 나은 픽포미를 위해 11월 1일 금요일\n22시부터 서비스 점검이 진행됩니다.\n이 시간동안은 픽포미 이용이 불가하니 유의 부탁드려요.'}
                 </Text>
                 <View style={[styles.buttonRow, localStyles.buttonWrap]}>
                     <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
                         <Button
-                            title='자세히 보러 가기' onPress={handleClickYes} style={[localStyles.button1]} size="small" />
+                            title='지금 시작하기' onPress={handleClickYes} style={[localStyles.button1]} size="small" />
                     </View>
                     <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
                         <Button
                             color='tertiary'
-                            title='나중에 확인하기' onPress={handleClickNo} style={[localStyles.button2]} size="small" />
+                            title='나중에 할래요' onPress={handleClickNo} style={[localStyles.button2]} size="small" />
                     </View>
                 </View>
             </View>
@@ -93,4 +92,4 @@ const useLocalStyles = (colorScheme: ColorScheme) => StyleSheet.create({
     }
 });
 
-export default IntroduceAlertBottomSheet;
+export default UpdateAlartBottomSheet;

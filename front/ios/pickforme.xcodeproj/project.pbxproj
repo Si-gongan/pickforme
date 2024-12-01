@@ -206,7 +206,7 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
 				2D5E45152B92A34700AF4374 /* Embed Foundation Extensions */,
-				BC6310357F98C4E4D0890CA5 /* [CP] Embed Pods Frameworks */,
+				B8DEAFC95B4AEACD539CFF06 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -367,7 +367,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-pickforme/Pods-pickforme-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BC6310357F98C4E4D0890CA5 /* [CP] Embed Pods Frameworks */ = {
+		B8DEAFC95B4AEACD539CFF06 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

@@ -9,11 +9,19 @@ import { Alert } from 'react-native';
 export const requestsAtom = atom<Request[]>([]);
 
 export const addRequestAtom = atom(null, async (get, set, request: RequestParams) => {
-  Alert.alert('매니저 질문이 등록되었습니다.');
+ 
   const userData = await get(userDataAtom);
   if (!userData){
     return;
   }
+  console.log('userData.point::',userData.point);
+
+  if (userData.point < 1) { // 구독
+    Alert.alert('매니저 질문 갯수를 모두 소모하였어요.');
+    return;
+  }
+  Alert.alert('매니저 질문이 등록되었습니다.');
+
   const { data } = await PostRequestAPI(request);
   if (!data) {
     return;

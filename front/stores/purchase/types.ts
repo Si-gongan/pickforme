@@ -50,3 +50,10 @@ export interface Purchase {
   isExpired: boolean;
   createdAt: string;
 }
+
+export interface PurchaseSubCheck {
+  sub? : Purchase, // (조회된 DB의 purchase);
+  activate : boolean, // (활성화된 구독여부 - true 있음 / false 없음)
+  leftDays: number, // (남은구독일 / 활성화된게 없을때도 0 출력)
+  msg: string, // (결과 메세지 or 에러코드)
+}

@@ -7,7 +7,7 @@ import Colors from '../constants/Colors';
 import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { userDataAtom } from '../stores/auth/atoms';
+import { isShowUnsubscribeModalAtom, userDataAtom } from '../stores/auth/atoms';
 import { subscriptionAtom, getSubscriptionAtom, subscriptionListAtom, getSubscriptionListAtom, purchaseListAtom, getPurchaseListAtom, productsAtom } from '../stores/purchase/atoms';
 import { formatTime, formatDate, formatDateAfterOneMonth } from '../utils/common';
 import Autolink from "react-native-autolink";
@@ -16,7 +16,7 @@ import { PointScreen } from "./subscription";
 
 
 
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import { getProductsAtom, purchaseProductAtom } from '../stores/purchase/atoms';
 import * as WebBrowser from 'expo-web-browser';
 import Markdown from 'react-native-markdown-display';
@@ -39,13 +39,17 @@ import {
     useIAP,
     withIAPContext,
     RequestSubscriptionAndroid,
-
+    deepLinkToSubscriptions,
 } from 'react-native-iap'
 import { Product, ProductType } from '../stores/purchase/types';
 
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
+
+
+const ANDROID_UPDATE_URL = 'https://play.google.com/store/apps/details?id=com.sigonggan.pickforme';
+const IOS_UPDATE_URL = 'https://apps.apple.com/kr/app/%ED%94%BD%ED%8F%AC%EB%AF%B8/id6450741514';
 
 const PurchaseHistoryWrapper = () => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
@@ -139,16 +143,14 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
     const colorScheme = useColorScheme();
     const currentSubscription = useAtomValue(subscriptionAtom);
     const subscriptions = useAtomValue(subscriptionListAtom);
-    const purchases = useAtomValue(purchaseListAtom);
     const userData = useAtomValue(userDataAtom);
     const styles = useStyles(colorScheme);
 
     const getCurrentSubscription = useSetAtom(getSubscriptionAtom);
     const getSubscriptionList = useSetAtom(getSubscriptionListAtom);
 
+  const setIsShowNonSubscribedModal = useSetAtom(isShowUnsubscribeModalAtom);
 
-
-    const getPurchaseList = useSetAtom(getPurchaseListAtom);
 
 
     const filteredProducts = products.reduce((obj, product) => {
@@ -249,17 +251,17 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                     {
                         subscriptions && subscriptions.length > 0 ? (
                             // subscriptions?.map((subscription, index) => ( // 전체 출력
-                            subscriptions.some(subscription => subscription.purchase.autoRenewing) ? (
+                            subscriptions.some(subscription => !subscription.isExpired) ? ( // 구독 중인 항목 필터링
                                 subscriptions
-                                    .filter(subscription => subscription.purchase.autoRenewing) // Check if subscription is active
-                                    .slice(0, 1) // Ensure only one subscription is displayed
-                                    .map((subscription, index) => (
-                                        <>
+                                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // 가장 최근 날짜로 정렬
+                                .slice(0, 1) // 하나의 구독만 표시
+                                .map((subscription, index) => (
+                                    <React.Fragment key={`subscription-${index}`}>
                                             <Text style={styles.subtitle}>
                                                 전체
                                             </Text>
-                                            <View key={index} style={styles.purchaseWrap}>
-                                                <Text style={styles.purchaseDate}>
+                                            <View key={`subscription-${index}`} style={styles.purchaseWrap}>
+                                            <Text style={styles.purchaseDate}>
                                                     {formatDate(subscription.createdAt)} 결제
                                                 </Text>
                                                 <View style={styles.row}>
@@ -275,9 +277,24 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 style={styles.purchaseButton}
                                                 title="멤버십 해지하기"
                                                 size='small'
-                                                onPress={() => router.replace('/')}
+                                                // onPress={() => router.replace('/'+ANDROID_UPDATE_URL)}
+                                                onPress={() => {setIsShowNonSubscribedModal(true)}
+                                                    // async () => {
+                                                    // try {
+                                                    //   // SKU 값과 필요한 옵션을 추가
+                                                    //   await deepLinkToSubscriptions({ 
+                                                    //     sku: "pickforme_basic",  // 실제 구독 상품 SKU
+                                                    //     isAmazonDevice: false  // Amazon 장치가 아닌 경우 false로 설정
+                                                    //   });
+                                                    // } catch (err) {
+                                                    //   console.error("구독 관리 페이지로 이동하는 중 오류 발생:", err);
+                                                    // }
+                                                    // const url = Platform.OS === 'android' ? ANDROID_UPDATE_URL : IOS_UPDATE_URL;
+                                                    // Linking.openURL(url); // 플랫폼에 맞는 스토어 URL을 엽니다.
+                                                // }
+                                            }
                                             />
-                                        </>
+            </React.Fragment>
                                     ))
 
                             ) : (
@@ -301,7 +318,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                         style={styles.productButton}
                                                         title="멤버십 시작하기"
                                                         size='small'
-                                                        onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                                        // onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                                        onPress={() => router.replace('/subscription')}
                                                     />
                                                 </View>
                                             );
@@ -315,7 +333,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                     style={styles.productButton}
                                                     title="멤버십 시작하기"
                                                     size='small'
-                                                    onPress={() => handleClickSub(product.productId)}
+                                                    // onPress={() => handleClickSub(product.productId)}
+                                                    onPress={() => router.replace('/subscription')}
                                                 />
                                             </View>
                                         );
@@ -342,7 +361,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                     style={styles.productButton}
                                                     title="멤버십 시작하기"
                                                     size='small'
-                                                    onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                                    // onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                                    onPress={() => router.replace('/subscription')}
                                                 />
                                             </View>
                                         );
@@ -356,7 +376,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 style={styles.productButton}
                                                 title="멤버십 시작하기"
                                                 size='small'
-                                                onPress={() => handleClickSub(product.productId)}
+                                                // onPress={() => handleClickSub(product.productId)}
+                                                onPress={() => router.replace('/subscription')}
                                             />
                                         </View>
                                     );
