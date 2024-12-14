@@ -28,6 +28,7 @@ router.get('/', async (ctx) => {
 
 // 상품목록
 router.get('/:platform', async (ctx) => {
+  // NOTE: 상품 노출 시 활성화
   /*
   const {
     platform,
