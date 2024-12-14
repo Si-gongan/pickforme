@@ -28,6 +28,7 @@ router.get('/', async (ctx) => {
 
 // 상품목록
 router.get('/:platform', async (ctx) => {
+  /*
   const {
     platform,
   } = ctx.params;
@@ -36,6 +37,8 @@ router.get('/:platform', async (ctx) => {
     type: productConverter(ProductType.SUBSCRIPTION),
   });
   ctx.body = products;
+  */
+  ctx.body = [];
   ctx.status = 200;
 });
 
