@@ -51,7 +51,7 @@ const PurchaseWrapper: React.FC = () => {
     try {
       const receipt = purchase.transactionReceipt;
       const product = products.find(({ productId }) => productId === purchase.productId);
-      
+
       if (product && receipt && !processedTransactions.current.has(purchase.transactionId!)) {
         processedTransactions.current.add(purchase.transactionId!);
         const isSubscription = product.type === ProductType.SUBSCRIPTION;
@@ -86,7 +86,7 @@ const PurchaseWrapper: React.FC = () => {
       if (products.length === 0) {
         return;
       }
-      
+
       await initConnection();
 
       if (Platform.OS === 'android') {
@@ -334,15 +334,15 @@ export default withIAPContext(PurchaseWrapper);
 //       initConnection().then(async () => {
 //         const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) });
 //         const storeSItems = await IAPGetSubscriptions({ skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map((p) => p.productId) });
-  
+
 //         setPurchaseItems(storeItems)
 //         setSubscriptionItems(storeSItems);
-  
+
 //         const addListeners = () => {
 //           purchaseUpdateSubscription = purchaseUpdatedListener(
 //             async (purchase: SubscriptionPurchase | ProductPurchase) => {
 //               const receipt = purchase.transactionReceipt;
-  
+
 //               const product = products.find(({ productId }) => productId === purchase.productId);
 //               if (!product) {
 //                 return;
@@ -360,7 +360,7 @@ export default withIAPContext(PurchaseWrapper);
 //               await finishTransaction({purchase, isConsumable: !isSubscription });
 //             },
 //           );
-  
+
 //           purchaseErrorSubscription = purchaseErrorListener(
 //             (error: PurchaseError) => {
 //               console.error('purchaseErrorListener', error);
@@ -381,7 +381,7 @@ export default withIAPContext(PurchaseWrapper);
 //           purchaseUpdateSubscription.remove();
 //           purchaseUpdateSubscription = null;
 //         }
-    
+
 //         if (purchaseErrorSubscription) {
 //           purchaseErrorSubscription.remove();
 //           purchaseErrorSubscription = null;

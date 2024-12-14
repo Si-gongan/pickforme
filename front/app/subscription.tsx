@@ -41,6 +41,7 @@ import {
 
 // 2024
 import { isShowSubscriptionModalAtom } from '../stores/auth/atoms';
+import { GetPurchaseSubCheckAPI } from '../stores/purchase/apis';
 
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
@@ -76,6 +77,7 @@ const PurchaseWrapper = () => {
   const getProducts = useSetAtom(getProductsAtom);
   const getSubscription = useSetAtom(getSubscriptionAtom);
   const products = useAtomValue(productsAtom);
+  const [fixData, setFixData] = useState<{ products: Product[], changeCheck: boolean }>({ products: [], changeCheck: false });
 
   useEffect(() => {
     getProducts({ platform: Platform.OS });
@@ -83,10 +85,17 @@ const PurchaseWrapper = () => {
 
   useEffect(() => {
     getSubscription();
-
   }, [getSubscription]);
+
+  // NOTE : products 의 참조값 변경으로 인한 재렌더링 방지용(기존에는 하단 2번째 useEffect 매개변수로 products 가 들어가 있었으나 값이 같아도 참조값변경으로 인한 재렌더링 발생)
   useEffect(() => {
-    if (products.length) {
+    if (products !== fixData.products) {
+      setFixData({ products: products, changeCheck: !fixData.changeCheck });
+    }
+  }, [products]);
+
+  useEffect(() => {
+    if (fixData.products.length) {
 
       let purchaseUpdateSubscription: any = null;
       let purchaseErrorSubscription: any = null;
@@ -95,13 +104,11 @@ const PurchaseWrapper = () => {
       const initializeIAP = async () => {
         await initConnection();
 
-
         // initConnection().then(async () => {
         // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
 
         // const storeSItems = await IAPGetSubscriptions({ skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map((p) => p.productId) });
-        const storeSItems = await IAPGetSubscriptions({ skus: products.map((p) => p.productId) });
-
+        const storeSItems = await IAPGetSubscriptions({ skus: fixData.products.map((p) => p.productId) });
         // setPurchaseItems(storeItems)
         setSubscriptionItems(storeSItems);
 
@@ -110,7 +117,7 @@ const PurchaseWrapper = () => {
             async (purchase: SubscriptionPurchase | ProductPurchase) => {
               const receipt = purchase.transactionReceipt;
 
-              const product = products.find(({ productId }) => productId === purchase.productId);
+              const product = fixData.products.find(({ productId }) => productId === purchase.productId);
               if (!product) {
                 console.warn('Product not found:', purchase.productId);
                 return;
@@ -165,7 +172,8 @@ const PurchaseWrapper = () => {
       }
 
     }
-  }, [products]);
+  }, [fixData.changeCheck]);
+
   return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
 }
 
@@ -189,7 +197,6 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
   const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
 
   useEffect(() => {
-
     if (isSubscription) {
       setIsShowSubscriptionModalAtomModal(true);
     }
@@ -203,6 +210,12 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
 
   const handleClickSub = async (sku: string, offerToken?: string | null) => {
     try {
+      const subCheck = await GetPurchaseSubCheckAPI();
+      if (subCheck.data.activate) {
+        Alert.alert('이미 구독중입니다.');
+        return;
+      }
+
       checkSubscriptionStatus
       if (offerToken) {
         const subscriptionRequest: RequestSubscriptionAndroid = {
@@ -229,7 +242,6 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
           // Alert.alert('구독 실패', '구독에 실패하였습니다.');
         }
         setIsSubcription(true); // 구독 완료 바텀시트
-
       }
 
     } catch (err: any) {
@@ -250,8 +262,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     }
   };
 
-
-  const filteredProducts = products.reduce((obj, product) => {
+  const filteredProducts = (products.reduce((obj, product) => {
     if (product.type === ProductType.PURCHASE) { // 단건 로직
       const item = purchaseItems.find(({ productId }) => product.productId === productId);
       if (item) {
@@ -267,8 +278,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
   }, {
     subscriptionProducts: [] as (IAPSubscription & Product)[],
     purchasableProducts: [] as (IAPProduct & Product)[],
-  });
-
+  }));
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -282,16 +292,19 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
           <Text>
             매월 편하게 자동 충전할 수 있어요.
           </Text>
-
-
           {filteredProducts.subscriptionProducts.map(product => {
+            console.log('product : ', product);
             const color: 'primary' | 'tertiary' = 'tertiary';
             const buttonTextProps = { color };
             if (product.platform === 'android') {
-              const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails.find(subscriptionOfferDetail => subscriptionOfferDetail.basePlanId.replace('-', '_') === product.productId);
+              // NOTE: 아래 주석된 부분이 기존코드임. 무엇을 위한 필터링인지는 모르겠으나 없어도 무방해보임.
+              // const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails.find(subscriptionOfferDetail => subscriptionOfferDetail.basePlanId.replace('-', '_') === product.productId);
+              const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails[0];
+              /* 
               if (!subscriptionOffer) {
                 return null;
               }
+              */
               return (
                 <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
                   <Text style={styles.productPrice}>

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import client from '../utils/axios';
-import { useSetAtom } from 'jotai';
-import { isShowLoginModalAtom, userDataAtom } from '../stores/auth/atoms';
+import { useEffect } from "react";
+import client from "../utils/axios";
+import { useSetAtom } from "jotai";
+import { isShowLoginModalAtom, userDataAtom } from "../stores/auth/atoms";
 
 const useInterceptor = () => {
   const setUserData = useSetAtom(userDataAtom);
@@ -27,10 +27,11 @@ const useInterceptor = () => {
             console.log(error.response.data);
           }
         } else {
+          console.log("error", error);
           console.error("응답이 없습니다. 네트워크 오류일 수 있습니다.");
         }
         return Promise.reject(error);
-      },
+      }
     );
     return () => {
       client.interceptors.response.eject(clientInterceptor);
@@ -55,3 +56,4 @@ if (Token?.refreshToken) {
 };
 
 export default useInterceptor;
+

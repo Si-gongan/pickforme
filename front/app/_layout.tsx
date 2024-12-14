@@ -47,9 +47,12 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  if (!loaded) {
-    return <SplashScreen />;
-  }
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hide();
+    }
+  }, [loaded]);
+
   return (
     <Suspense fallback={null}>
       <JotaiProvider>
@@ -91,9 +94,12 @@ function RootLayoutNav() {
     }
   }, [setClientToken, isLoaded, userData]);
 
-  if (isLoaded === 'false') {
-    return <SplashScreen />
-  }
+  useEffect(() => {
+    if (isLoaded) {
+      SplashScreen.hide();
+    }
+  }, [isLoaded]);
+
   return (
     <Suspense fallback={null}>
       <ThemeProvider value={DefaultTheme}>

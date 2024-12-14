@@ -89,4 +89,45 @@ To build the project for production, use the following commands:
   }
   ```
 - 수정 후 꼭 `npx expo prebuild`를 진행해주어야 반영됨
-        
+
+### 2024.12.14 Update
+- 안드로이드 플레이스토어 규정으로 인한 안드로이드 targetSdkVersion 34 이상이어야 함으로 종속성 버전 업데이트 진행
+- 빌드는 expo 안드로이드 빌드 후 소스파일을 아래와 같이 수정
+- 이에 따른 네이티브 코드 수정 소요 발생
+  ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+  ./android/app/src/main/AndroidManifest.xml
+  에서
+  manifest 태그에
+  xmlns:tools="http://schemas.android.com/tools" 추가하고
+  application 태그에
+  android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+  tools:replace="android:appComponentFactory"
+  추가해야함
+  ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+  ./android/gradle.properties
+  하단에
+  android.enableJetifier=true
+  추가해야함
+  ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+- eas 빌드
+
+- ios dev 빌드시 back dev server url http 임으로
+  app.json ios 부분에
+  "infoPlist": {
+    "NSAppTransportSecurity": {
+      "NSAllowsArbitraryLoads": true
+    }
+  },
+  삽입해야함
+
+### 진행도
+- 실결제 테스트 진행(결제 에러 컨트롤 필요)
+
+### NOTICE
+- 기본적으로 xCode, 안드로이드 스튜디오 설치 후 작업하시는걸 추천드리고
+  expo 에서 pod 설치시 gem 을 이용하니 루비 및 기타 툴들 설치해서 사용하시면됩니다.
+  종속성 최적화는 빌드 가능 및 기본 기능 구현은 확인완료했으며 결제 부분만 테스트하여 수정하면됩니다.
+
+- React-native, expo, kotlin(그래들관리), xCode 등에 대한 지식이 필요합니다.(종속성 최적화 부분)
+
+

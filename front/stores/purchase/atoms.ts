@@ -4,6 +4,7 @@ import { PurchaseProductAPI, GetProductsAPI, GetSubscriptionAPI, GetSubscription
 import { userDataAtom } from '../auth/atoms';
 import { atomWithStorage } from '../utils';
 import { Alert } from 'react-native';
+import { UserPointAPI } from '../user/apis';
 
 export const productsAtom = atom<Product[]>([]);
 
@@ -24,7 +25,8 @@ export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseP
   if (status !== 200) {
     return;
   }
-  set(userDataAtom, { ...userData, point: userData.point + data.product.point });
+  const { pointData } = await UserPointAPI({});
+  set(userDataAtom, { ...userData, point: pointData.point, aiPoint: pointData.aiPoint });
 });
 
 export const subscriptionAtom = atom<Purchase | null>(null);
