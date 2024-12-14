@@ -130,4 +130,4 @@ To build the project for production, use the following commands:
 
 - React-native, expo, kotlin(그래들관리), xCode 등에 대한 지식이 필요합니다.(종속성 최적화 부분)
 
-
+- 반드시 빌드 후 위 사항 수정하시고 eas 빌드하시기 바랍니다.
