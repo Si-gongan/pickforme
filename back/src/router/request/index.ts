@@ -23,18 +23,41 @@ router.post('/', requireAuth, async (ctx) => {
   if (!user) {
     return;
   }
+
   const {
     body: {
       product, ...body
     },
   } = <any>ctx.request;
 
-  const request = await db.Request.create({
-    ...body,
-    userId: user._id,
-    name: product.name,
-    product,
-  });
+  let request;
+
+  try {
+    if (user.point <= 0) {
+      throw new Error('pick error');
+    }
+    user.usePoint(1);
+
+    request = await db.Request.create({
+      ...body,
+      userId: user._id,
+      name: product.name,
+      product,
+    });
+
+    ctx.body = request;
+    ctx.status = 200;
+
+  } catch (e) {
+    ctx.status = 400;
+    ctx.body = {
+      errorMessage: '요청하실 포인트가 부족합니다.',
+    };
+    return;
+  }
+
+  
+
   // if (body.type !== RequestType.AI) {
   //   const chat = await db.Chat.create({
   //     text: `${requestName} 의뢰가 성공적으로 접수되었습니다. 답변은 1~2시간 이내에 작성되며, 추가적인 문의사항이 있으실 경우 메세지를 남겨주세요.`,
@@ -50,8 +73,6 @@ router.post('/', requireAuth, async (ctx) => {
   //   await request.save();
   // }
   // 추후 admin들 broadcast socket 통신 or 어드민별 assign시스템 구축
-  ctx.body = request;
-  ctx.status = 200;
 
   /*
   const purchase = await db.Purchase.findOne({
@@ -91,18 +112,6 @@ router.post('/', requireAuth, async (ctx) => {
   // slack 의뢰 도착 알림
   if (body.type !== RequestType.AI) {
     // slack
-    try {
-      if (user.point <= 0) {
-        throw new Error('pick error');
-      }
-      user.usePoint(1);
-    } catch (e) {
-      ctx.status = 400;
-      ctx.body = {
-        errorMessage: '요청하실 포인트가 부족합니다.',
-      };
-      return;
-    }
     const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
@@ -113,39 +122,20 @@ router.post('/', requireAuth, async (ctx) => {
       text: slack_msg,
       channel: 'C05NTFL1Q4C',
     });
-  } else {
-    // slack ai 응답 생성
 
-    if (user.aiPoint <= 0) {
-      ctx.status = 400;
-      ctx.body = {
-        errorMessage: '요청에 필요한 포인트가 부족합니다.',
-      };
-      return;
-    }
-    try {
-      user.useAiPoint(1);
-
-      const {
-        data: {
-          answer,
-        },
-      } = await client.post('/test/ai-answer', {
-        product,
-        ...body,
-        model: 'gpt',
-      });
-      slack.post('/chat.postMessage', {
-        text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
-        channel: 'C05NTFL1Q4C',
-      });
-    } catch (e) {
-      user.useAiPoint(-1);
-      ctx.status = 404;
-      ctx.body = {
-        message: 'AI 요청 중에 에러가 발생했습니다.',
-      };
-    }
+    // const {
+    //   data: {
+    //     answer,
+    //   },
+    // } = await client.post('/test/ai-answer', {
+    //   product,
+    //   ...body,
+    //   model: 'gpt',
+    // });
+    // slack.post('/chat.postMessage', {
+    //   text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
+    //   channel: 'C05NTFL1Q4C',
+    // });
   }
 });
 

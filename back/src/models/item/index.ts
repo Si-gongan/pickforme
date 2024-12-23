@@ -36,18 +36,12 @@ const ItemSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    detail_images: {
+      type: [String],
+    },
     platform: {
       type: String,
-      required: true,
     },
-
-    // detail_images: {
-    //     type: [String],
-    // },
-    // reviews: {
-    //     type: [String],
-    // },
-
     // image_description
     caption: {
       type: String,
