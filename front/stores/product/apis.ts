@@ -13,6 +13,7 @@ import {
 
 export const GetMainProductsAPI = (id: string) => client.get<GetMainProductsResponse>(`/discover/products/${id}`).catch(error => { console.log(error) });
 export const GetProductAPI = (url: string) => client.post<GetProductResponse>(`/discover/product`, { url }).catch(error => { console.log(error) });
+export const UpdateProductAPI = (params: GetProductDetailRequest) => client.put<GetProductResponse>('/discover/product', params).catch(error => { console.log(error) });
 export const GetProductReviewAPI = (params: GetProductDetailRequest) => client.post<GetProductDetailResponse>(`/discover/product/detail/review`, params).catch(error => { console.log(error) });
 export const GetProductReportAPI = (params: GetProductDetailRequest) => client.post<GetProductDetailResponse>(`/discover/product/detail/report`, params).catch(error => { console.log(error) });
 export const GetProductCaptionAPI = (params: GetProductDetailRequest) => client.post<GetProductDetailResponse>(`/discover/product/detail/caption`, params).catch(error => { console.log(error) });

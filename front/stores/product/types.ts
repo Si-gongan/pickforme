@@ -8,20 +8,21 @@ export interface Product {
   url: string, // 상품 링크 주소
   thumbnail: string, // 상품 썸네일 이미지 주소
   platform: string,
+  detail_images?: string[], // 상품 상세 이미지 주소 리스트
 }
 
 export interface GetProductResponse {
   product: Product;
 }
 
-export interface ScrapedProductDetail {
-  images?: string[]; // 웹뷰에서 스크래핑한 상품 상세이미지 주소 리스트
-  reviews?: string[]; // 웹뷰에서 스크래핑한 상품 리뷰 리스트
+export interface ProductReview {
+  reviews: string[]; // 웹뷰에서 스크래핑한 상품 리뷰 리스트
 }
 
-export interface GetProductDetailRequest extends ScrapedProductDetail {
+export interface GetProductDetailRequest {
   product: Product;
-  question?: string;
+  reviews?: string[]; // 웹뷰에서 스크래핑한 상품 리뷰 리스트
+  question?: string; // AI 포미 질문
 }
 
 export interface GetProductDetailResponse {
@@ -37,13 +38,7 @@ export interface GetProductDetailResponse {
 }
 
 export interface ProductDetailState extends GetProductDetailResponse {
-  url: string,
   question?: string; // TABS.QUESTION에 대응하는 속성
-  review?: { // TABS.REVIEW에 대응하는 속성
-    pros: string[];
-    cons: string[];
-    bests: string[];
-  };
 }
 
 interface LocalProductSection {

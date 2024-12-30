@@ -65,6 +65,20 @@ export default function MyPageScreen() {
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.scrollContainer}>
+          {!!userData && (
+            <View style={styles.card}>
+              <Text style={styles.title}>
+                잔여 이용권
+              </Text>
+              <Text style={styles.menu}>
+                매니저 질문권 {userData.point}회
+              </Text>
+              <Text style={styles.menu}>
+                AI 질문권 {userData.aiPoint}회
+              </Text>
+            </View>
+          )}
+
           <View style={styles.card}>
             <Text style={styles.title}>
               내 정보

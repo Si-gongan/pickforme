@@ -212,10 +212,11 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
             픽포미 플러스
           </Text>
           <Text style={styles.subtitle}>
-            매니저 질문하기 & AI 질문하기 무제한 이용권
+            한 달 AI 질문 무제한, 매니저 질문 30회 이용권
           </Text>
           <Text>
-            매월 편하게 자동 충전할 수 있어요.
+            픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.
+            멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.
           </Text>
 
 
@@ -276,7 +277,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
             멤버십 혜택 자세히
           </Text>
           <Markdown style={markdownStyles}>
-            {'**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 전 상품 최대 1회씩 이용 가능'}
+            {'**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 매월 30회 이용 가능'}
           </Markdown>
         </View>
         <View style={styles.content}>

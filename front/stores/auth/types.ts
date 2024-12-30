@@ -1,8 +1,11 @@
 export interface UserData {
   _id: string,
-  token: string,
+  email: string,
   point: number,
+  aiPoint: number,
+  level: number,
   lastLoginAt: string,
+  token: string,
   push: {
     service: PushService;
   }

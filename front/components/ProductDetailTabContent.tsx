@@ -7,12 +7,12 @@ import Colors from '../constants/Colors';
 import { TABS } from '../utils/common';
 import { Text, View } from '../components/Themed';
 import { Request } from '../stores/request/types';
-import { ProductDetailState } from '../stores/product/types';
+import { GetProductDetailResponse} from '../stores/product/types';
 import { LoadingStatus } from '../stores/product/atoms';
 
 interface TabContentProps {
   tab: TABS;
-  productDetail: ProductDetailState | void;
+  productDetail: GetProductDetailResponse | void;
   refs: Record<string, React.RefObject<RNView>>;
   question: string;
   setQuestion: React.Dispatch<React.SetStateAction<string>>;
@@ -69,7 +69,7 @@ const TabContent: React.FC<TabContentProps> = ({
         <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
       </View>
     ) : (
-      <ReviewTab styles={styles} productDetail={productDetail} tab={tab} refs={refs} markdownStyles={markdownStyles} />
+      <ReviewTab styles={styles} productDetail={productDetail} refs={refs} markdownStyles={markdownStyles} />
     );
   } else {
     return (
@@ -94,7 +94,7 @@ interface QuestionTabProps {
   loadingStatus: { [key in TABS]: LoadingStatus };
   tab: TABS;
   markdownStyles: any;
-  productDetail: ProductDetailState | void;
+  productDetail: GetProductDetailResponse | void;
 }
 
 const QuestionTab: React.FC<QuestionTabProps> = ({
@@ -164,7 +164,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
 
 interface ReviewTabProps {
   styles: ReturnType<typeof useStyles>;
-  productDetail: ProductDetailState;
+  productDetail: GetProductDetailResponse | void;
   tab: TABS;
   refs: Record<string, React.RefObject<RNView>>;
   markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
@@ -177,31 +177,31 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
   // if (typeof review === 'object' && review !== null && 'pros' in review && 'cons' in review && 'bests' in review) {
   return (
     <>
-      {!productDetail?.[tab]?.pros?.length && !productDetail?.[tab]?.cons?.length ? (
+      {!productDetail?.review?.pros?.length && !productDetail?.review?.cons?.length ? (
         <View style={styles.detailWrap} ref={refs[tab]}>
           <Text>리뷰정보를 찾을 수 없습니다.</Text>
         </View>
       ) : null}
-      {productDetail?.[tab]?.pros?.length !== 0 && (
+      {productDetail?.review?.pros?.length !== 0 && (
         <View style={styles.detailWrap} ref={refs[tab]}>
           <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
           <Markdown style={markdownStyles}>
-            {productDetail?.[tab]?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+            {productDetail?.review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
           </Markdown>
         </View>
       )}
-      {productDetail?.[tab]?.cons?.length !== 0 && (
+      {productDetail?.review?.cons?.length !== 0 && (
         <View style={styles.detailWrap}>
           <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
           <Markdown style={markdownStyles}>
-            {productDetail?.[tab]?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+            {productDetail?.review?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
           </Markdown>
         </View>
       )}
-      {productDetail?.[tab]?.bests?.length !== 0 && (
+      {productDetail?.review?.bests?.length !== 0 && (
         <View style={styles.detailWrap}>
           <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
-          {productDetail?.[tab]?.bests.map((row: string, i: number) => (
+          {productDetail?.review?.bests.map((row: string, i: number) => (
             <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
               {`**리뷰 ${i + 1}:** ${row}`}
             </Markdown>

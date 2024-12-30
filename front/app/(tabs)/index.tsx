@@ -3,15 +3,16 @@ import { useFocusEffect } from '@react-navigation/core';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { Image, TextInput, Text as TextBase, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
+// import * as Clipboard from 'expo-clipboard';
 
-import { setClipboardProductAtom, clipboardProductAtom, isSearchingAtom, searchSorterAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/product/atoms';
+import { setScrapedProductsAtom, isSearchingAtom, searchSorterAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/product/atoms';
 
 import { CATEGORIES, categoryName } from '../../constants/Categories';
 import { Text, View } from '../../components/Themed';
 import Colors from '../../constants/Colors';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import ProductCard from '../../components/ProductCard';
+import { WebViewSearch } from '../../components/webview-search';
 
 // 2024
 import {
@@ -27,10 +28,10 @@ import * as Application from 'expo-application';
 
 const SORTERS = [
   'scoreDesc',
-  'salePriceAsc',
-  'salePriceDesc',
-  'saleCountDesc',
-  'latestAsc'
+  // 'salePriceAsc',
+  // 'salePriceDesc',
+  // 'saleCountDesc',
+  // 'latestAsc'
 ];
 
 const SORTER_NAME = [
@@ -75,6 +76,7 @@ export default function DiscoverScreen() {
   const getMainProducts = useSetAtom(getMainProductsAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
 
+  const setScrapedProducts = useSetAtom(setScrapedProductsAtom);
   const searchProducts = useSetAtom(searchProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const searchSorter = useAtomValue(searchSorterAtom);
@@ -164,6 +166,7 @@ export default function DiscoverScreen() {
   // const handleClickSend = (sort: string) => {
   //   searchProducts({ query: text, page: 1, sort, onLink: router.push, onQuery: () => setQuery(text) });
   // }
+
   const handleClickSend = (sort: string) => {
     searchProducts({ 
       query: text, 
@@ -305,6 +308,17 @@ export default function DiscoverScreen() {
             <Image style={styles.sendIcon} source={require('../../assets/images/discover/icSearch.png')} />
           </Pressable>
         </View>
+      </View>
+
+      {/* <View>
+        {searchWebView}
+      </View> */}
+
+      <View accessible={false}>
+        <WebViewSearch 
+          keyword={text} 
+          onMessage={(data) => setScrapedProducts(data)} 
+        />
       </View>
 
       {isSearching ? (

@@ -7,7 +7,7 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
 import { isShowNonSubscribedModalAtom } from '../../stores/auth/atoms';
-import { scrapedProductDetailAtom } from '../../stores/product/atoms';
+//import { scrapedProductDetailAtom } from '../../stores/product/atoms';
 import { sendLogAtom } from '../../stores/log/atoms';
 
 import { QuestionRequestParams, RequestType } from '../../stores/request/types';
@@ -28,7 +28,7 @@ export default function ResearchBottomSheet() {
   const colorScheme = useColorScheme();
   const localStyles = useLocalStyles(colorScheme);
 
-  const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
+  // const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
 
   const sendLog = useSetAtom(sendLogAtom);
 
@@ -47,7 +47,7 @@ export default function ResearchBottomSheet() {
     }
   });
   const handleSubmit = () => {
-    const params = { ...data, product, images: scrapedProductDetail?.images, reviews: scrapedProductDetail?.reviews } as QuestionRequestParams;
+    const params = { ...data, product } as QuestionRequestParams;
     onClose();
     checkPoint(params);
     sendLog({ product: { url: product?.url }, action: 'request', metaData: {} });

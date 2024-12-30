@@ -22,15 +22,16 @@ import {
   wishProductsAtom,
   mainProductsAtom,
   productDetailAtom,
+  productReviewAtom,
   initProductDetailAtom,
+  setProductAtom,
+  setProductReviewAtom,
   getProductCaptionAtom,
   getProductReviewAtom,
   getProductReportAtom,
   getProductAIAnswerAtom,
   getProductDetailAtom,
   loadingStatusAtom,
-  setScrapedProductDetailAtom,
-  scrapedProductDetailAtom,
 } from '../stores/product/atoms';
 import { Product } from '../stores/product/types';
 import { sendLogAtom } from '../stores/log/atoms';
@@ -40,7 +41,8 @@ import Button from '../components/Button';
 import { Text, View } from '../components/Themed';
 import { numComma } from '../utils/common';
 import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
-import { useWebView } from '../components/webview-util';
+import { useWebViewReviews } from '../components/webview-reviews';
+import { useWebViewDetail } from '../components/webview-detail';
 import TabContent from '../components/ProductDetailTabContent';
 
 // 2024
@@ -55,13 +57,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
 
-  const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
-  const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
-  const ImageWebView = useWebView({ productUrl, type: 'images', onMessage: (data) => setScrapedProductDetail({ images: data }) });
-  const ReviewWebView = useWebView({ productUrl, type: 'reviews', onMessage: (data) => setScrapedProductDetail({ reviews: data }) });
-
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const initProductDetail = useSetAtom(initProductDetailAtom);
+  const setProduct = useSetAtom(setProductAtom);
+  const setProductReview = useSetAtom(setProductReviewAtom);
   const getProductCaption = useSetAtom(getProductCaptionAtom);
   const getProductReport = useSetAtom(getProductReportAtom);
   const getProductReview = useSetAtom(getProductReviewAtom);
@@ -70,6 +69,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   const sendLog = useSetAtom(sendLogAtom);
 
   const productDetail = useAtomValue(productDetailAtom);
+  const productReview = useAtomValue(productReviewAtom);
   const mainProducts = useAtomValue(mainProductsAtom);
   const searchResult = useAtomValue(searchResultAtom);
   const [wishlist, setWishlist] = useAtom(wishProductsAtom);
@@ -96,6 +96,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   const reviewRef = useRef<RNView>(null);
   const questionRef = useRef<RNView>(null);
   const refs = useState({ caption: captionRef, report: reportRef, review: reviewRef, question: questionRef, manager: managerResponseRef })[0];
+
+  const ReviewWebView = useWebViewReviews({ productUrl, onMessage: (data) => setProductReview(data)});
+  const DetailWebView = useWebViewDetail({ productUrl, onMessage: (data) => setProduct(data)});
 
   useEffect(() => {
     initProductDetail();
@@ -154,7 +157,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // setIsShowNonSubscribedModal(true);
     //   return;
     // }
-    getProductAIAnswer(product, question);
+    getProductAIAnswer(question);
     setQuestion('');
     sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
   }
@@ -199,37 +202,37 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }
     if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab]) {
       if (nextTab === TABS.REPORT) {
-        if (!isLocal && scrapedProductDetail.images?.length === 0) {
+        if (!isLocal && productDetail?.product?.detail_images?.length === 0) {
           let count = 0;
           const interval = setInterval(() => {
-            if (count >= 5 || scrapedProductDetail.images!.length > 0) {
+            if (count >= 5 || productDetail?.product?.detail_images?.length! > 0) {
               clearInterval(interval);
               sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
-              getProductReport(product);
+              getProductReport();
               return;
             }
             count++;
           }, 1000);
         } else {
           sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
-          getProductReport(product);
+          getProductReport();
         }
       }
       if (nextTab === TABS.REVIEW) {
-        if (!isLocal && scrapedProductDetail.reviews?.length === 0) {
+        if (!isLocal && productReview.reviews?.length === 0) {
           let count = 0;
           const interval = setInterval(() => {
-            if (count >= 5 || scrapedProductDetail.reviews!.length > 0) {
+            if (count >= 5 || productReview.reviews!.length > 0) {
               clearInterval(interval);
               sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
-              getProductReview(product);
+              getProductReview();
               return;
             }
             count++;
           }, 1000);
         } else {
           sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
-          getProductReview(product);
+          getProductReview();
         }
       }
     }
@@ -238,16 +241,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   };
 
   const handleRegenerate = () => {
-    if (tab === TABS.REPORT) getProductReport(product);
-    if (tab === TABS.REVIEW) getProductReview(product);
-    if (tab === TABS.CAPTION) getProductCaption(product);
+    if (tab === TABS.REPORT) getProductReport();
+    if (tab === TABS.REVIEW) getProductReview();
+    if (tab === TABS.CAPTION) getProductCaption();
   };
 
   return (
     <View style={styles.container}>
       <View accessible={false}>
-        {!isLocal && ImageWebView}
         {!isLocal && ReviewWebView}
+        {!isLocal && DetailWebView}
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -257,7 +260,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
               <Text style={styles.name}>{product.name ?? productDetail?.product?.name ?? ''}</Text>
 
               <View style={styles.priceWrap} accessible accessibilityRole="text">
-                {productDetail?.product ? (
+                {productDetail?.product?.name ? (
                   <>
                     {(productDetail?.product?.discount_rate ?? 0) !== 0 && (
                       <Text style={styles.discount_rate} accessibilityLabel={`할인률 ${productDetail?.product?.discount_rate ?? 0}%`}>
