@@ -5,7 +5,7 @@ console.log(API_HOST);
 
 const client = axios.create({
   // baseURL: API_HOST,
-  baseURL: "http://3.34.255.158:3000",
+  baseURL: "https://api.sigongan-ai.shop",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
