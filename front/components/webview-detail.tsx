@@ -109,7 +109,7 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
           const url = window.location.href;
           const thumbnail = document.querySelector('meta[property="og:image"]')?.content || '';
           const name = document.querySelector('meta[property="og:title"]')?.content || '';
-          const price = parseInt((document.querySelector('meta[property="product:price:amount"]')?.content || '').replace(/[^0-9]/g, ''));
+          const price = parseInt((document.querySelector('meta[property="product:price:amount"]')?.content || '').replace(/[^0-9]/g, '')) || 0;
           
           const origin_price = parseInt((document.querySelector('meta[property="product:original_price:amount"]')?.content || '').replace(/[^0-9]/g, ''));
           
@@ -157,9 +157,10 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
   const handleMessage = (event: WebViewMessageEvent) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
+      // console.log('WebView message:', data);
 
       if (data.error) {
-        console.error('WebView error:', data.error);
+        // console.error('WebView error:', data.error);
         if (retryCount < maxRetries) {
           setRetryCount(retryCount + 1);
           setTimeout(() => runJavaScript(url ? getProductDetailInjectionCode() : currentUrlInjectionCode), 1000);
@@ -177,12 +178,12 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
         setTimeout(() => runJavaScript(getProductDetailInjectionCode()), 1000);
       }
     } catch (error) {
-      console.error('Failed to parse WebView message:', error);
+      // console.error('Failed to parse WebView message:', error);
     }
   };
 
   const handleError = (event: any) => {
-    console.warn('WebView error:', event.nativeEvent);
+    // console.warn('WebView error:', event.nativeEvent);
   };
 
   useEffect(() => {

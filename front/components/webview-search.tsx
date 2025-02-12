@@ -78,7 +78,7 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
         return;
       }
       if (data.error) {
-        console.error('WebView error:', data.error);
+        // console.error('WebView error:', data.error);
         if (retryCount < maxRetries) {
           setRetryCount(retryCount + 1);
           try {
@@ -87,7 +87,7 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
             }, 1000);
           }
           catch (error) {
-            console.error('Failed to run JavaScript:', error);
+            // console.error('Failed to run JavaScript:', error);
           }
         }
         return;
@@ -95,12 +95,12 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
       // console.log('data:', data.content);
       onMessage(data.content);
     } catch (error) {
-      console.error('Failed to parse WebView message:', error);
+      // console.error('Failed to parse WebView message:', error);
     }
   };
 
   const handleError = (event: any) => {
-    console.warn('WebView error:', event.nativeEvent);
+    // console.warn('WebView error:', event.nativeEvent);
   };
 
   useEffect(() => {

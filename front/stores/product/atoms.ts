@@ -15,8 +15,6 @@ import {
   GetProductReportAPI,
   GetProductReviewAPI,
   GetProductAIAnswerAPI,
-  ParseProductUrlAPI,
-  SearchProductsAPI
 } from './apis';
 
 export const mainProductsAtom = atom<MainProductsState>({
@@ -43,8 +41,11 @@ export const isSearchingAtom = atom(false);
 export const searchSorterAtom = atom('scoreDesc');
 
 export const scrapedProductsAtom = atom<Product[]>([]);
-export const setScrapedProductsAtom = atom(null, async (get, set, products: Product[]) => {
+export const scrapedProductsQueryAtom = atom<string>('');
+
+export const setScrapedProductsAtom = atom(null, async (get, set, products: Product[], query: string) => {
   set(scrapedProductsAtom, products);
+  set(scrapedProductsQueryAtom, query);
 });
 
 export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
@@ -53,25 +54,56 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
   set(isSearchingAtom, true);
 
   try {
-    // TODO: 상품 Url 입력 로직 구현
+    // query에 상품 url이 포함되었는지 판별
+    const productUrl = params.query;
 
-    // // query에 상품 url이 포함되었는지 판별
-    // const { data: { platform, url } } = await ParseProductUrlAPI({ url: params.query });
+    // query에 유효한 상품 url이 포함된 경우 바로 해당 상품 상세페이지로 이동
+    if (productUrl.includes('http') && onLink) { 
+      
+      // coupang 외 link는 일단 제외
+      if (!productUrl.includes('coupang')) {
+        // console.log('Not coupang link:', productUrl);
+        set(searchResultAtom, { count: 0, page: 1, products: [] });
+        onQuery?.();
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        set(isSearchingAtom, false);
+        return;
+      }
 
-    // if (url && onLink) { // query에 유효한 상품 url이 포함된 경우 바로 해당 상품 상세페이지로 이동
-    //   const { data: { product } } = await GetProductAPI(url);
-    //   set(productGroupAtom, 'link');
-    //   set(searchResultAtom, {
-    //     count: 1,
-    //     page: 1,
-    //     products: [product],
-    //   });
-    //   onLink(`/product-detail?productUrl=${encodeURIComponent(product.url)}`);
-    //   set(isSearchingAtom, false);
-    //   return;
-    // }
+      set(productGroupAtom, 'link');
+      onLink(`/product-detail?productUrl=${encodeURIComponent(productUrl)}`);
 
-    // 일반 키워드 검색 결과 노출
+      const maxTries = 5;
+      let tries = 0;
+      let productDetail: GetProductDetailResponse | void = undefined;
+      let successFlag = false;
+
+      while (tries < maxTries) {
+        productDetail = get(productDetailAtom);
+        if (productDetail?.product?.url === productUrl) {
+          successFlag = true;
+          break;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          tries++;
+        }
+      }
+      
+      if (successFlag) {
+        set(searchResultAtom, {
+          count: 1,
+          page: 1,
+          products: [productDetail?.product!],
+        });
+      } else {
+        set(searchResultAtom, { count: 0, page: 1, products: [] });
+      }
+      
+      set(isSearchingAtom, false);
+      return;
+    }
+
+    // query에 상품 url 포함 안 된 경우 일반 키워드 검색 결과 노출
     set(searchSorterAtom, params.sort);
 
     if (params.page === 1) {
@@ -81,19 +113,19 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
     const maxTries = 5;
     let tries = 0;
     let products: Product[] = [];
+    let query = '';
 
     while (tries < maxTries) {
       products = get(scrapedProductsAtom);
-      if (products.length > 0) {
+      query = get(scrapedProductsQueryAtom);
+      if (products.length > 0 && query === params.query) {
         break;
       } else {
         await new Promise(resolve => setTimeout(resolve, 1000));
         tries++;
       }
     }
-
     // TODO: deeplink 변환 로직 추가
-
     set(searchResultAtom, {
       count: products.length,
       page: 1,
@@ -132,6 +164,7 @@ export const productDetailAtom = atom<GetProductDetailResponse | void>(undefined
 
 export const setProductAtom = atom(null, async (get, set, product: Product) => {
   const productDetail = get(productDetailAtom);
+  
   if (productDetail?.product?.url === product.url) {
     // product가 다르면 업데이트 && 백엔드 db 업데이트 요청 (product 내 속성값이 모두 같은지 체크)
     if (!deepEqual(productDetail.product, product) && product.name && product.price) {

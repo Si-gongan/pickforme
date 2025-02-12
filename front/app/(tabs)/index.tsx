@@ -317,7 +317,7 @@ export default function DiscoverScreen() {
       <View accessible={false}>
         <WebViewSearch 
           keyword={text} 
-          onMessage={(data) => setScrapedProducts(data)} 
+          onMessage={(data) => setScrapedProducts(data, text)} 
         />
       </View>
 
