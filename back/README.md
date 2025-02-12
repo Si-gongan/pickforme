@@ -1,17 +1,23 @@
-## lostark discord bot
+## Backend
+### Installation
+```bash
+cd back
+npm install
+```
 
-### commands
+### Run server
+- Dev
+```bash
+npm run dev
+```
+- Prod
+```bash
+npm start
+```
 
-.캐릭 캐릭터명
-
-.골라 선택지1, 선택지2, [선택지3], [...]
-
-.카드팩 카드팩종류 카드팩갯수
-
-.주사위
-
-.품질 현재품질 [횟수]
-
-### NOTICE
-- 현재 서버에서 상품노출을 막아두었으니 결제 테스트 시 주석된 부분 활성화 하시면됩니다.
-
+- PM2
+```bash
+npm run pm2
+or
+pm2 run pm2.json
+```
