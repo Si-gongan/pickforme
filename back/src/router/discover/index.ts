@@ -11,6 +11,7 @@ router.get('/products/:category_id', async (ctx) => {
   const {
     category_id,
   } = ctx.params;
+
   const [
     {
       data: {
@@ -26,7 +27,7 @@ router.get('/products/:category_id', async (ctx) => {
   ] = await Promise.all([
     client.get(`/coupang/bestcategories/${category_id}`),
     client.get('/coupang/goldbox'),
-    db.DiscoverSection.find({}),
+    db.DiscoverSection.find({ name: "local" }).catch(() => []),
   ]);
   ctx.body = {
     special,
