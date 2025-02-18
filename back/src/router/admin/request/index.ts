@@ -12,11 +12,11 @@ const router = new Router({
 router.post('/answer', async (ctx) => {
   const { body } = <any>ctx.request;
   const request = await db.Request.findById(body.requestId).populate('userId');
-  if (request) {
+  if (!request) {
     throw new Error('Request 존재하지 않음');
   }
 
-  if (!request!.answer) {
+  if (request!.answer) {
     const deeplink = `/product-detail?productUrl=${encodeURIComponent(
       request!.product.url
     )}`;
