@@ -49,6 +49,12 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema(
     originEmail: {
       type: String,
     },
+    MembershipAt: {
+      type: Date
+    },
+    phone:{
+      type: String
+    }
   },
   {
     timestamps: true,

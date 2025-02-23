@@ -21,6 +21,8 @@ export interface User extends LocalRegisterPayload {
   lastLoginAt: Date;
   pushToken?: string;
   originEmail?: string;
+  MembershipAt: Date;
+  phone:string;
 }
 
 export interface UserDocument extends User, Document {
