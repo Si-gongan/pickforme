@@ -87,7 +87,7 @@ router.post('/membership', requireAuth, async (ctx) => {
   
 });
 
-router.post('/phone',  async (ctx) => {
+router.post('/phone', requireAuth, async (ctx) => {
   const { id, phone } = ctx.request.body as { id: string; phone: string };
 
   console.log(phone); // 전달받은 id 출력
