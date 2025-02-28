@@ -98,8 +98,8 @@ function RootLayoutNav() {
     }
   }, [setClientToken, isLoaded, userData]);
 
-  if (isLoaded === 'false') {
-    return <SplashScreen />
+  if (isLoaded === "false") {
+    return <SplashScreen />;
   }
   return (
     <Suspense fallback={null}>

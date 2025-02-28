@@ -6,8 +6,7 @@
         "@react-native-seoul/kakao-login",
         {
           "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
-          "overrideKakaoSDKVersion": "2.11.1",
-          "kotlinVersion": "1.5.10"
+          "kotlinVersion": "1.9.0"
         }
       ],
       [
@@ -15,7 +14,7 @@
       ],
       "expo-apple-authentication",
       "expo-font",
-      "expo-router"
+      ["expo-router", {"origin": false}]
     ],
     "name": "픽포미",
     "slug": "pickforme",
@@ -51,6 +50,7 @@
           "backgroundColor": "#111525"
         }
       },
+      "minimumVersion": "15.6",
       "buildNumber": "1"
     },
     "android": {

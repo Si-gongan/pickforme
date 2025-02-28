@@ -1,35 +1,52 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/core';
-import { useSetAtom, useAtomValue } from 'jotai';
-import { Image, TextInput, Text as TextBase, Pressable, FlatList, ScrollView, View as ViewBase, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
-import { useRouter } from 'expo-router';
-// import * as Clipboard from 'expo-clipboard';
+import React, { useEffect, useRef, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/core";
+import { useSetAtom, useAtomValue } from "jotai";
+import {
+  Image,
+  TextInput,
+  Pressable,
+  FlatList,
+  ScrollView,
+  View as ViewBase,
+  StyleSheet,
+  AccessibilityInfo,
+  findNodeHandle,
+} from "react-native";
+import { useRouter } from "expo-router";
 
-import { setScrapedProductsAtom, isSearchingAtom, searchSorterAtom, searchResultAtom, searchProductsAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/product/atoms';
+import {
+  setScrapedProductsAtom,
+  isSearchingAtom,
+  searchSorterAtom,
+  searchResultAtom,
+  searchProductsAtom,
+  getMainProductsAtom,
+  mainProductsAtom,
+} from "../../stores/product/atoms";
 
-import { CATEGORIES, categoryName } from '../../constants/Categories';
-import { Text, View } from '../../components/Themed';
-import Colors from '../../constants/Colors';
-import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
-import ProductCard from '../../components/ProductCard';
-import { WebViewSearch } from '../../components/webview-search';
+import { Text, View } from "@components";
+import { useColorScheme } from "@hooks";
+import { CATEGORIES, categoryName } from "../../constants/Categories";
+import Colors from "../../constants/Colors";
+import ProductCard from "../../components/ProductCard";
+import { WebViewSearch } from "../../components/webview-search";
 
 // 2024
 import {
   isShowVersionUpdateAlarmModalAtom,
-  isShowIntroduceAlertAtom,
-  // isShowMembershipSubscription, 
-  // isShowAiFunctionLimitationsAtom, 
-  // isShowManagerFunctionRestrictionsAtom, 
-  // isShowCancelMembershipPaymentAtom, 
-  // isShowMembershipPaymentCancellationWeekAtom 
-} from '../../stores/auth/atoms';
-import * as Application from 'expo-application';
+  // isShowIntroduceAlertAtom,
+  // isShowMembershipSubscription,
+  // isShowAiFunctionLimitationsAtom,
+  // isShowManagerFunctionRestrictionsAtom,
+  // isShowCancelMembershipPaymentAtom,
+  // isShowMembershipPaymentCancellationWeekAtom
+} from "../../stores/auth/atoms";
+import * as Application from "expo-application";
 
 import type { ColorScheme } from "@hooks";
 
 const SORTERS = [
-  'scoreDesc',
+  "scoreDesc",
   // 'salePriceAsc',
   // 'salePriceDesc',
   // 'saleCountDesc',
@@ -100,7 +117,7 @@ export default function DiscoverScreen() {
       if (ref.current) {
         const nodeHandle = findNodeHandle(ref.current);
         if (nodeHandle) {
--          AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+          -AccessibilityInfo.setAccessibilityFocus(nodeHandle);
         }
       }
     }, 500);
@@ -130,12 +147,12 @@ export default function DiscoverScreen() {
   // }
 
   const handleClickSend = (sort: string) => {
-    searchProducts({ 
-      query: text, 
-      page: 1, 
-      sort, 
-      onLink: router.push, 
-      onQuery: () => setQuery(text) 
+    searchProducts({
+      query: text,
+      page: 1,
+      sort,
+      onLink: router.push,
+      onQuery: () => setQuery(text),
     });
   };
 
@@ -176,7 +193,7 @@ export default function DiscoverScreen() {
   );
   const applicationVersion = Application.nativeApplicationVersion;
   const APPLICATION_VERSION = "3.0.0";
-  const setIsShowIntroduceAlertModal = useSetAtom(isShowIntroduceAlertAtom);
+  // const setIsShowIntroduceAlertModal = useSetAtom(isShowIntroduceAlertAtom);
   // const setIsShowMembershipSubscriptionModal = useSetAtom(isShowMembershipSubscription);
   // const setIsAiFunctionLimitationsModal = useSetAtom(isShowAiFunctionLimitationsAtom);
   // const setIsManagerFunctionRestrictionsModal = useSetAtom(isShowManagerFunctionRestrictionsAtom);
@@ -207,31 +224,25 @@ export default function DiscoverScreen() {
     ) {
       // 3.0.0 미만 버전일 경우 업데이트 알림
       //   setIsShowVersionUpdateAlarmModal(true);
-
       // } else {
       // 멤버십 알림
-      setIsShowIntroduceAlertModal(true);
+      // setIsShowIntroduceAlertModal(true);
     }
   }, [applicationVersion]);
 
-  useEffect(() => { // 확인용 바텀시트
+  useEffect(() => {
+    // 확인용 바텀시트
     // 구매 완료
     // setIsShowMembershipSubscriptionModal(true);
-
     // AI 기능제한 팝업
     // setIsAiFunctionLimitationsModal(true);
     // setIsManagerFunctionRestrictionsModal(true);
-
     // 멤버십 없음
     // setIsShowNonSubscribedModal(true);
-
     // 결제 해지
     // setIsCancelMembershipPaymentModal(true);
     // setIsMembershipPaymentCancellationWeekModal(true);
-
-
   }, []);
-
 
   return (
     <View style={styles.container}>
@@ -299,9 +310,9 @@ export default function DiscoverScreen() {
       </View> */}
 
       <View accessible={false}>
-        <WebViewSearch 
-          keyword={text} 
-          onMessage={(data) => setScrapedProducts(data, text)} 
+        <WebViewSearch
+          keyword={text}
+          onMessage={(data) => setScrapedProducts(data, text)}
         />
       </View>
 

@@ -136,8 +136,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     manager: managerResponseRef,
   })[0];
 
-  const ReviewWebView = useWebViewReviews({ productUrl, onMessage: (data) => setProductReview(data)});
-  const DetailWebView = useWebViewDetail({ productUrl, onMessage: (data) => setProduct(data)});
+  // const ReviewWebView = useWebViewReviews({
+  //   productUrl,
+  //   onMessage: (data) => setProductReview(data),
+  // });
+  // const DetailWebView = useWebViewDetail({
+  //   productUrl,
+  //   onMessage: (data) => setProduct(data),
+  // });
 
   useEffect(() => {
     initProductDetail();
@@ -282,7 +288,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (!isLocal && productDetail?.product?.detail_images?.length === 0) {
           let count = 0;
           const interval = setInterval(() => {
-            if (count >= 5 || productDetail?.product?.detail_images?.length! > 0) {
+            if (
+              count >= 5 ||
+              productDetail?.product?.detail_images?.length! > 0
+            ) {
               clearInterval(interval);
               sendLog({
                 product: { url: productUrl },

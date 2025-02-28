@@ -1,14 +1,11 @@
 import React from "react";
-import { useRouter, Redirect, Stack } from "expo-router";
-import { useColorScheme } from "react-native";
+import { Redirect, Stack } from "expo-router";
 import { useAtomValue } from "jotai";
 
 import { settingAtom } from "@stores";
 
 const SCREENS = ["nickname", "intro", "theme", "notification"];
 export default function TabLayout(params: any) {
-  const colorScheme = useColorScheme();
-  const router = useRouter();
   const setting = useAtomValue(settingAtom);
 
   const { segment } = params;

@@ -93,8 +93,6 @@ export default function MyPageScreen() {
                 </Text>
               )}
             </View>
-          ) : (
-            <></>
           )}
           <View style={styles.card}>
             <Text style={styles.title}>내 정보</Text>
