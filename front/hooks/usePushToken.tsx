@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
-import { setPushTokenAtom, userDataAtom } from "../stores/auth/atoms";
+import { setPushTokenAtom, userDataAtom } from "@stores";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

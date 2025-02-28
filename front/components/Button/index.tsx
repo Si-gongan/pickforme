@@ -1,7 +1,9 @@
 import { StyleSheet, TextProps, Pressable, PressableProps } from "react-native";
 
-import { useThemeColor, ThemeProps } from "../../hooks/useThemeColor";
+import { useThemeColor } from "@hooks";
 import { View, Text } from "@components";
+
+import type { ThemeProps } from "@hooks";
 
 interface ButtonTextProps
   extends ThemeProps,

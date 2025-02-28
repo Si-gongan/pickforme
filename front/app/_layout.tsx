@@ -16,14 +16,15 @@ import useGetShare from "../hooks/useGetShare";
 import { useColorScheme } from "@hooks";
 import { Text } from "@components";
 import { Colors } from "@constants";
-
-import { bottomSheetsAtom } from "../stores/layout/atoms";
 import {
   userDataAtom,
   settingAtom,
   isLoadedAtom,
   setClientTokenAtom,
-} from "../stores/auth/atoms";
+} from "@stores";
+
+import { bottomSheetsAtom } from "../stores/layout/atoms";
+
 import HeaderLeft from "../components/HeaderLeft";
 import OnboardingBottomSheet from "../components/BottomSheet/How";
 import LoginBottomSheet from "../components/BottomSheet/Login";

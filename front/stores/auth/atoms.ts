@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import { Alert } from "react-native";
+
 import { atomWithStorage } from "../utils";
 import { setClientToken } from "../../utils/axios";
 import {
@@ -20,7 +21,6 @@ import {
   SetPushTokenAPI,
   SetPushSettingAPI,
 } from "./apis";
-// import { requestsAtom } from '../request/atoms';
 
 import { AxiosError } from "axios";
 

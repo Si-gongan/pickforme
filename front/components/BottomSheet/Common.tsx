@@ -1,10 +1,10 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import BottomSheet from "react-native-modal";
 import { useAtomValue, useSetAtom } from "jotai";
-import { View, Text } from "@components";
-import Button from "../Button";
-import { StyleSheet } from "react-native";
+
+import { View, Text, Button } from "@components";
 import { Props as BaseProps, styles } from "./Base";
 import {
   bottomSheetsAtom,

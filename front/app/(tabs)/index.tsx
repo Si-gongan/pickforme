@@ -26,6 +26,8 @@ import {
 } from '../../stores/auth/atoms';
 import * as Application from 'expo-application';
 
+import type { ColorScheme } from "@hooks";
+
 const SORTERS = [
   'scoreDesc',
   // 'salePriceAsc',

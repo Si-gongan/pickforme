@@ -39,9 +39,9 @@ import { Product } from "../stores/product/types";
 import { sendLogAtom } from "../stores/log/atoms";
 import { requestBottomSheetAtom, requestsAtom } from "../stores/request/atoms";
 
-import { Text, View } from "@components";
+import { Text, View, Button } from "@components";
 import { useColorScheme } from "@hooks";
-import Button from "../components/Button";
+import { isShowNonSubscriberManagerModalAtom } from "@stores";
 import { numComma } from "../utils/common";
 import { useWebView } from "../components/webview-util";
 import TabContent from "../components/ProductDetailTabContent";
@@ -52,7 +52,6 @@ import {
   subscriptionAtom,
   getSubscriptionAtom,
 } from "../stores/purchase/atoms";
-import { isShowNonSubscriberManagerModalAtom } from "../stores/auth/atoms";
 
 import type { ColorScheme } from "@hooks";
 

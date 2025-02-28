@@ -8,8 +8,7 @@ import { getRequestsAtom, requestsAtom } from "../../stores/request/atoms";
 import useCheckLogin from "../../hooks/useCheckLogin";
 import { wishProductsAtom } from "../../stores/product/atoms";
 import { Colors } from "@constants";
-import Button from "../../components/Button";
-import { Text, View } from "@components";
+import { Text, View, Button } from "@components";
 import { useColorScheme } from "@hooks";
 import ProductCard from "../../components/ProductCard";
 

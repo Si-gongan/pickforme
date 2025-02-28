@@ -6,12 +6,10 @@ import { useAtom } from "jotai";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Props, styles } from "../Base";
-import { isShowIntroduceAlertModalAtom } from "../../../stores/auth/atoms";
+import { isShowIntroduceAlertModalAtom, settingAtom } from "@stores";
 import { Colors } from "@constants";
-import { View, Text } from "@components";
+import { View, Text, Button } from "@components";
 import { useColorScheme } from "@hooks";
-import Button from "../../Button";
-import { settingAtom } from "../../../stores/auth/atoms";
 
 import type { ColorScheme } from "@hooks";
 

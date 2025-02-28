@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { isShowNonSubscriberManagerModalAtom } from "../stores/auth/atoms";
+
+import { isShowNonSubscriberManagerModalAtom } from "@stores";
 import {
   subscriptionAtom,
   getSubscriptionAtom,

@@ -3,21 +3,7 @@ import { ScrollView, StyleSheet, Platform, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { userDataAtom } from "../stores/auth/atoms";
-import {
-  subscriptionAtom,
-  getProductsAtom,
-  purchaseProductAtom,
-  productsAtom,
-  getSubscriptionAtom,
-} from "../stores/purchase/atoms";
-import { Product, ProductType } from "../stores/purchase/types";
-import { Colors } from "@constants";
-import { useColorScheme } from "@hooks";
 import Markdown from "react-native-markdown-display";
-
-import Button from "../components/Button";
-import { Text, View } from "@components";
 import {
   initConnection,
   purchaseErrorListener,
@@ -42,8 +28,20 @@ import {
   clearTransactionIOS,
 } from "react-native-iap";
 
+import {
+  subscriptionAtom,
+  getProductsAtom,
+  purchaseProductAtom,
+  productsAtom,
+  getSubscriptionAtom,
+} from "../stores/purchase/atoms";
+import { Product, ProductType } from "../stores/purchase/types";
+import { userDataAtom, isShowSubscriptionModalAtom } from "@stores";
+import { Colors } from "@constants";
+import { useColorScheme } from "@hooks";
+import { Text, View, Button } from "@components";
+
 // 2024
-import { isShowSubscriptionModalAtom } from "../stores/auth/atoms";
 import { GetPurchaseSubCheckAPI } from "../stores/purchase/apis";
 
 import type { ColorScheme } from "@hooks";

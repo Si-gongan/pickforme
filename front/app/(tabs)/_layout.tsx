@@ -1,12 +1,12 @@
 import React from "react";
 import { useRouter, Tabs, Redirect } from "expo-router";
 import { StyleSheet, Text } from "react-native";
-
 import { useAtomValue, useSetAtom } from "jotai";
-import { settingAtom } from "../../stores/auth/atoms";
+
 import { tabNavigationAtom } from "../../stores/layout/atoms";
 
 import { hexToRgb } from "../../utils/common";
+import { settingAtom } from "@stores";
 import { Colors } from "@constants";
 import { useColorScheme } from "@hooks";
 import HeaderLeft from "../../components/HeaderLeft";

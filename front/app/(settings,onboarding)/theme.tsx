@@ -4,11 +4,10 @@ import { StyleSheet } from "react-native";
 import { useAtom } from "jotai";
 import { RadioButton } from "react-native-paper";
 
-import Button from "../../components/Button";
-import { settingAtom } from "../../stores/auth/atoms";
+import { settingAtom } from "@stores";
 import { Colors } from "@constants";
 import { useColorScheme } from "@hooks";
-import { Text, View } from "@components";
+import { Text, View, Button } from "@components";
 
 const translationMap = {
   default: "휴대폰 설정과 동일하게",

@@ -4,14 +4,13 @@ import { StyleSheet, ScrollView } from "react-native";
 import { useAtomValue, useSetAtom } from "jotai";
 import { RadioButton } from "react-native-paper";
 
-import Button from "../../components/Button";
 import { Colors } from "@constants";
-import { Text, View } from "@components";
-import { PushService, SetPushSettingParams } from "../../stores/auth/types";
+import { Text, View, Button } from "@components";
 import { useColorScheme } from "@hooks";
-import { setPushSettingAtom, userDataAtom } from "../../stores/auth/atoms";
+import { setPushSettingAtom, userDataAtom, PushService } from "@stores";
 
 import type { ColorScheme } from "@hooks";
+import type { SetPushSettingParams } from "@stores";
 
 const translationMap: {
   service: {

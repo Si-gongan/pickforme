@@ -3,11 +3,10 @@ import { useRouter } from "expo-router";
 import { StyleSheet, ScrollView } from "react-native";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import Colors from "../constants/Colors";
-import Button from "../components/Button";
+import { Colors } from "@constants";
 import { useColorScheme } from "@hooks";
-import { Text, View } from "@components";
-import { userDataAtom } from "../stores/auth/atoms";
+import { Text, View, Button } from "@components";
+import { userDataAtom } from "@stores";
 import {
   purchaseListAtom,
   getPurchaseListAtom,

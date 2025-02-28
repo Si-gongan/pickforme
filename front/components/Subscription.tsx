@@ -30,8 +30,7 @@ import {
   getSubscriptionAtom,
 } from "../stores/purchase/atoms";
 import { Product, ProductType } from "../stores/purchase/types";
-import { Text, View } from "@components";
-import Button from "../components/Button";
+import { Text, View, Button } from "@components";
 import { Colors } from "@constants";
 import { useColorScheme } from "@hooks";
 

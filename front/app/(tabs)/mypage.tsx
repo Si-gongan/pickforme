@@ -9,19 +9,13 @@ import {
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  settingAtom,
-  userDataAtom,
-  quitAtom,
-  logoutAtom,
-} from "../../stores/auth/atoms";
 import { useFocusEffect } from "@react-navigation/core";
-
-import { Colors } from "@constants";
-import { Text, View } from "@components";
-import { useColorScheme } from "@hooks";
-import Button from "../../components/Button";
 import * as WebBrowser from "expo-web-browser";
+
+import { settingAtom, userDataAtom, quitAtom, logoutAtom } from "@stores";
+import { Colors } from "@constants";
+import { Text, View, Button } from "@components";
+import { useColorScheme } from "@hooks";
 
 import MypageIcon from "../../assets/images/tabbar/mypage.svg";
 

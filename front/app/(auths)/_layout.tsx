@@ -1,10 +1,9 @@
 import React from "react";
 import { useColorScheme } from "react-native";
-
 import { Stack } from "expo-router";
-
 import { useAtomValue } from "jotai";
-import { userDataAtom } from "../../stores/auth/atoms";
+
+import { userDataAtom } from "@stores";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();

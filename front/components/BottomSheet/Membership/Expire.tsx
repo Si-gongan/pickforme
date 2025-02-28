@@ -1,28 +1,25 @@
-/**
- * 멤버십 결제 해지 모달 컴포넌트
- */
-import React from "react";
-import { useRef, useEffect } from "react";
-import { findNodeHandle, AccessibilityInfo, StyleSheet } from "react-native";
+import React, { useRef, useEffect } from "react";
+import { StyleSheet, findNodeHandle, AccessibilityInfo } from "react-native";
 import { useRouter } from "expo-router";
 import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
-import { deepLinkToSubscriptions } from "react-native-iap";
 
-import { isShowUnsubscribeModalAtom, settingAtom } from "@stores";
-import { View, Text, Button } from "@components";
-import { useColorScheme } from "@hooks";
-import { Colors } from "@constants";
+import { isShowExpireModalAtom } from "../../../stores/auth/atoms";
+import { View, Text } from "@components";
+import Button from "../../Button";
 import { Props, styles } from "../Base";
+import { Colors } from "@constants";
+import { useColorScheme } from "@hooks";
+import { settingAtom } from "../../../stores/auth/atoms";
 
 import type { ColorScheme } from "@hooks";
 
 // Membership
-const NonSubscribedBottomSheet: React.FC<Props> = () => {
+const ExpireBottomSheet: React.FC<Props> = () => {
   const router = useRouter();
   const headerTitleRef = useRef(null);
 
-  const [visible, setVisible] = useAtom(isShowUnsubscribeModalAtom);
+  const [visible, setVisible] = useAtom(isShowExpireModalAtom);
   const [setting] = useAtom(settingAtom);
 
   const colorScheme = useColorScheme();
@@ -31,19 +28,11 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
   const onClose = () => setVisible(false);
 
   const handleClickYes = () => {
+    router.push("/subscription");
     onClose();
   };
   const handleClickNo = () => {
     onClose();
-    try {
-      // SKU 값과 필요한 옵션을 추가
-      deepLinkToSubscriptions({
-        sku: "pickforme_basic", // 실제 구독 상품 SKU
-        isAmazonDevice: false, // Amazon 장치가 아닌 경우 false로 설정
-      });
-    } catch (err) {
-      console.error("구독 관리 페이지로 이동하는 중 오류 발생:", err);
-    }
   };
 
   useEffect(() => {
@@ -65,11 +54,11 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
     >
       <View style={[styles.bottomSheet, localStyles.root]}>
         <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
-          {setting.name}님 잠시만요!
+          오늘은 픽포미 멤버십 이용 종료일이에요.
         </Text>
         <Text style={[styles.desc, localStyles.desc]}>
           {
-            "픽포미 멤버십을 해지하면,\n앞으로 AI 질문과 매니저에게 질문하기 기능이 제한됩니다.\n그래도 멤버십을 해지하시겠어요?"
+            "멤버십을 연장하지 않으면 앞으로 모든\n질문하기 기능이 제한되어요.\n멤버십을 연장하고 픽포미의 모든 기능을 이용해보세요."
           }
         </Text>
         <View style={[styles.buttonRow, localStyles.buttonWrap]}>
@@ -84,7 +73,7 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
           <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
             <Button
               color="tertiary"
-              title="해지하기"
+              title="확인"
               onPress={handleClickNo}
               style={[localStyles.button2]}
               size="small"
@@ -128,4 +117,4 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
     },
   });
 
-export default UnsubscribeBottomSheet;
+export default ExpireBottomSheet;

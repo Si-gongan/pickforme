@@ -29,8 +29,7 @@ import {
 import { Product, ProductType } from "../stores/purchase/types";
 import { useColorScheme } from "@hooks";
 import { Colors } from "@constants";
-import { Text, View } from "@components";
-import Button from "../components/Button";
+import { Text, View, Button } from "@components";
 
 import type { ColorScheme } from "@hooks";
 

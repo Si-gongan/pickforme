@@ -1,60 +1,33 @@
-/**
- * 멤버십 결제 해지 모달 컴포넌트
- */
 import React from "react";
-import { useRef, useEffect } from "react";
-import { findNodeHandle, AccessibilityInfo, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet } from "react-native";
 import BottomSheet from "react-native-modal";
+import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
-import { deepLinkToSubscriptions } from "react-native-iap";
 
-import { isShowUnsubscribeModalAtom, settingAtom } from "@stores";
 import { View, Text, Button } from "@components";
-import { useColorScheme } from "@hooks";
+import { Props, styles } from "./Base";
+import { isShowUpdateAlartModalAtom, settingAtom } from "@stores";
 import { Colors } from "@constants";
-import { Props, styles } from "../Base";
+import { useColorScheme } from "@hooks";
 
 import type { ColorScheme } from "@hooks";
 
-// Membership
-const NonSubscribedBottomSheet: React.FC<Props> = () => {
+const UpdateAlartBottomSheet: React.FC<Props> = () => {
+  const [visible, setVisible] = useAtom(isShowUpdateAlartModalAtom);
+  const onClose = () => setVisible(false);
+  const colorScheme = useColorScheme();
   const router = useRouter();
-  const headerTitleRef = useRef(null);
-
-  const [visible, setVisible] = useAtom(isShowUnsubscribeModalAtom);
   const [setting] = useAtom(settingAtom);
 
-  const colorScheme = useColorScheme();
   const localStyles = useLocalStyles(colorScheme);
 
-  const onClose = () => setVisible(false);
-
   const handleClickYes = () => {
+    router.push("/");
     onClose();
   };
   const handleClickNo = () => {
     onClose();
-    try {
-      // SKU 값과 필요한 옵션을 추가
-      deepLinkToSubscriptions({
-        sku: "pickforme_basic", // 실제 구독 상품 SKU
-        isAmazonDevice: false, // Amazon 장치가 아닌 경우 false로 설정
-      });
-    } catch (err) {
-      console.error("구독 관리 페이지로 이동하는 중 오류 발생:", err);
-    }
   };
-
-  useEffect(() => {
-    const focusOnHeader = () => {
-      const node = findNodeHandle(headerTitleRef.current);
-      if (visible && node) {
-        AccessibilityInfo.setAccessibilityFocus(node);
-      }
-    };
-    setTimeout(focusOnHeader, 500);
-  }, [visible]);
 
   return (
     <BottomSheet
@@ -64,18 +37,18 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
       onBackdropPress={onClose}
     >
       <View style={[styles.bottomSheet, localStyles.root]}>
-        <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
-          {setting.name}님 잠시만요!
+        <Text style={[styles.title, localStyles.title]}>
+          {"11월 1일(금) 22시 이후\n서비스 점검이 진행됩니다."}
         </Text>
         <Text style={[styles.desc, localStyles.desc]}>
           {
-            "픽포미 멤버십을 해지하면,\n앞으로 AI 질문과 매니저에게 질문하기 기능이 제한됩니다.\n그래도 멤버십을 해지하시겠어요?"
+            "보다 나은 픽포미를 위해 11월 1일 금요일\n22시부터 서비스 점검이 진행됩니다.\n이 시간동안은 픽포미 이용이 불가하니 유의 부탁드려요."
           }
         </Text>
         <View style={[styles.buttonRow, localStyles.buttonWrap]}>
           <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
             <Button
-              title="멤버십 유지하기"
+              title="지금 시작하기"
               onPress={handleClickYes}
               style={[localStyles.button1]}
               size="small"
@@ -84,7 +57,7 @@ const NonSubscribedBottomSheet: React.FC<Props> = () => {
           <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
             <Button
               color="tertiary"
-              title="해지하기"
+              title="나중에 할래요"
               onPress={handleClickNo}
               style={[localStyles.button2]}
               size="small"
@@ -128,4 +101,4 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
     },
   });
 
-export default UnsubscribeBottomSheet;
+export default UpdateAlartBottomSheet;

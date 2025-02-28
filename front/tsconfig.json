@@ -6,7 +6,8 @@
     "paths": {
       "@constants": ["constants/index"],
       "@components": ["components/index"],
-      "@hooks": ["hooks/index"]
+      "@hooks": ["hooks/index"],
+      "@stores": ["stores/index"]
     }
   }
 }

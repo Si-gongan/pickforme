@@ -5,11 +5,10 @@ import { useAtom } from "jotai";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RadioButton } from "react-native-paper";
 
-import Button from "../../components/Button";
 import { useColorScheme } from "@hooks";
 import { Colors } from "@constants";
-import { Text, View } from "@components";
-import { settingAtom } from "../../stores/auth/atoms";
+import { Text, View, Button } from "@components";
+import { settingAtom } from "@stores";
 
 import type { ColorScheme } from "@hooks";
 

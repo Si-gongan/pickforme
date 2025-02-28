@@ -1,10 +1,11 @@
+import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import BottomSheet from 'react-native-modal';
-import { useAtom } from 'jotai';
-import { isShowLoginModalAtom } from '../../stores/auth/atoms';
-import { StyleSheet } from 'react-native';
-import { Props, styles } from './Base';
-import Login from '../../app/(auths)/login';
+import BottomSheet from "react-native-modal";
+import { useAtom } from "jotai";
+
+import { isShowLoginModalAtom } from "@stores";
+import { Props, styles } from "./Base";
+import Login from "../../app/(auths)/login";
 
 const localStyles = StyleSheet.create({
   title: {
@@ -32,8 +33,8 @@ const LoginBottomSheet: React.FC<Props> = () => {
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
     >
-      <Login style={[styles.bottomSheet, localStyles.bottomSheet]}/>
+      <Login style={[styles.bottomSheet, localStyles.bottomSheet]} />
     </BottomSheet>
   );
-}
+};
 export default LoginBottomSheet;

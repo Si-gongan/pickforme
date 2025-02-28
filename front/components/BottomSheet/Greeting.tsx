@@ -1,12 +1,11 @@
 import { useRef, useEffect } from "react";
-import { findNodeHandle, AccessibilityInfo } from "react-native";
+import { findNodeHandle, AccessibilityInfo, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
-import { isShowGreetingModalAtom } from "../../stores/auth/atoms";
-import { View, Text } from "@components";
-import Button from "../Button";
-import { StyleSheet } from "react-native";
+
+import { isShowGreetingModalAtom } from "@stores";
+import { View, Text, Button } from "@components";
 import { Props, styles } from "./Base";
 
 const localStyles = StyleSheet.create({

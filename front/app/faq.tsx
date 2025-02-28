@@ -2,9 +2,8 @@ import React from "react";
 import { useRouter } from "expo-router";
 import { StyleSheet, ScrollView } from "react-native";
 
-import { Text, View } from "@components";
+import { Text, View, Button } from "@components";
 import { useColorScheme } from "@hooks";
-import Button from "../components/Button";
 
 import type { ColorScheme } from "@hooks";
 

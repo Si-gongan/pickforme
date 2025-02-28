@@ -2,14 +2,12 @@ import { usePathname, useRouter } from "expo-router";
 import React from "react";
 import { ViewProps, Platform, Image, StyleSheet } from "react-native";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-
 import * as Google from "expo-auth-session/providers/google";
 import * as KakaoLogins from "@react-native-seoul/kakao-login";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as WebBrowser from "expo-web-browser";
 
-import Button from "../../components/Button";
-import { Text, View } from "@components";
+import { Text, View, Button } from "@components";
 import {
   isOnboardingFinishedAtom,
   isShowOnboardingModalAtom,
@@ -17,7 +15,7 @@ import {
   loginAppleAtom,
   loginGoogleAtom,
   userDataAtom,
-} from "../../stores/auth/atoms";
+} from "@stores";
 import { useColorScheme } from "@hooks";
 
 WebBrowser.maybeCompleteAuthSession();

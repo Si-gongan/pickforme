@@ -3,10 +3,10 @@ import { findNodeHandle, AccessibilityInfo } from "react-native";
 import { useRouter } from "expo-router";
 import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
-import { isShowLackPointModalAtom } from "../../stores/auth/atoms";
-import { View, Text } from "@components";
+
+import { isShowLackPointModalAtom } from "@stores";
+import { View, Text, Button } from "@components";
 import { Props, styles } from "./Base";
-import Button from "../Button";
 
 const LackPointBottomSheet: React.FC<Props> = () => {
   const router = useRouter();

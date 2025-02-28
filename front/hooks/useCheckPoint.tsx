@@ -1,11 +1,12 @@
 import { useAtomValue, useSetAtom } from "jotai";
+import { Alert } from "react-native";
+import { useRouter } from "expo-router";
+
 import {
   userDataAtom,
   isShowLackPointModalAtom,
   isShowLoginModalAtom,
-} from "../stores/auth/atoms";
-import { Alert } from "react-native";
-import { useRouter } from "expo-router";
+} from "@stores";
 // import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
 const useCheckPoint = (callback: (e?: any) => any) => {

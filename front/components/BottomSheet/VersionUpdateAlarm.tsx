@@ -4,9 +4,8 @@ import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
 
 import { Props, styles } from "./Base";
-import { isShowVersionUpdateAlarmModalAtom } from "../../stores/auth/atoms";
-import { View, Text } from "@components";
-import Button from "../Button";
+import { isShowVersionUpdateAlarmModalAtom } from "@stores";
+import { View, Text, Button } from "@components";
 import { Colors } from "@constants";
 import { useColorScheme } from "@hooks";
 

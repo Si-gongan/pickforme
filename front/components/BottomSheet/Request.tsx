@@ -16,18 +16,16 @@ import {
   requestBottomSheetAtom,
   addRequestAtom,
 } from "../../stores/request/atoms";
-import { isShowSubscriptionModalAtom } from "../../stores/auth/atoms";
+import { isShowSubscriptionModalAtom } from "@stores";
 import { scrapedProductDetailAtom } from "../../stores/product/atoms";
 import { sendLogAtom } from "../../stores/log/atoms";
 
 import { QuestionRequestParams, RequestType } from "../../stores/request/types";
 import { Colors } from "@constants";
+import { Text, View, Button } from "@components";
 import { styles } from "./Base";
 import useCheckMembership from "../../hooks/useCheckMembership";
 import useCheckPoint from "../../hooks/useCheckPoint";
-
-import Button from "../Button";
-import { Text, View } from "@components";
 
 import type { ColorScheme } from "@hooks";
 

@@ -5,9 +5,8 @@ import { useAtomValue, useSetAtom } from "jotai";
 
 import { useColorScheme } from "@hooks";
 import { Colors } from "@constants";
-import { Text, View } from "@components";
-import Button from "../components/Button";
-import { isShowUnsubscribeModalAtom, userDataAtom } from "../stores/auth/atoms";
+import { Text, View, Button } from "@components";
+import { isShowUnsubscribeModalAtom, userDataAtom } from "@stores";
 import {
   subscriptionAtom,
   getSubscriptionAtom,
