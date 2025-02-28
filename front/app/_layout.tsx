@@ -14,7 +14,7 @@ import useSocket from "../hooks/useSocket";
 import usePushToken from "../hooks/usePushToken";
 import useGetShare from "../hooks/useGetShare";
 
-import { Text } from "../components/Themed";
+import { Text } from "@components";
 import Colors from "../constants/Colors";
 
 import { bottomSheetsAtom } from "../stores/layout/atoms";

@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
-import { StyleSheet, Pressable, ScrollView } from "react-native";
-import { useAtom } from "jotai";
+import { StyleSheet, ScrollView } from "react-native";
+import { useAtomValue, useSetAtom } from "jotai";
+
 import Colors from "../constants/Colors";
 import Button from "../components/Button";
-import { Text, View } from "../components/Themed";
-import { useAtomValue, useSetAtom } from "jotai";
+import { Text, View } from "@components";
 import { isShowUnsubscribeModalAtom, userDataAtom } from "../stores/auth/atoms";
 import {
   subscriptionAtom,

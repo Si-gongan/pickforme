@@ -9,7 +9,7 @@ import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
 
 import { isShowUnsubscribeModalAtom } from "../../../stores/auth/atoms";
-import { View, Text } from "../../Themed";
+import { View, Text } from "@components";
 import Button from "../../Button";
 import { Props, styles } from "../Base";
 import Colors from "../../../constants/Colors";

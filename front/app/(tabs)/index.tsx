@@ -42,21 +42,6 @@ const SORTER_NAME = [
   "최신순",
 ];
 
-// 버전 비교 함수
-function isVersionLessThan(version: string, baseVersion: string) {
-  const versionParts = version.split(".").map(Number); // e.g., [2, 5, 1]
-  const baseVersionParts = baseVersion.split(".").map(Number); // e.g., [3, 0, 0]
-
-  for (let i = 0; i < 3; i++) {
-    if (versionParts[i] < baseVersionParts[i]) {
-      return true;
-    } else if (versionParts[i] > baseVersionParts[i]) {
-      return false;
-    }
-  }
-  return false; // 동일한 버전일 경우
-}
-
 const MoreButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
@@ -122,7 +107,6 @@ export default function DiscoverScreen() {
     };
   }, [isSearching]);
 
-  // const clipboardRef = useRef(null);
   const focusRef1 = useRef<ViewBase>(null);
   const focusRef2 = useRef<ViewBase>(null);
 
@@ -540,34 +524,6 @@ export default function DiscoverScreen() {
             ))}
         </ScrollView>
       )}
-
-      {/* 클립보드 링크 분석 하단 floating 컴포넌트 -> 로직 보류 */}
-
-      {/* {!!clipboardProduct && (
-        <Pressable onPress={() => {
-            const url = clipboardProduct.url;
-            setClipboardProduct('');
-            setProductGroup('link');
-            router.push(`/discover-detail-main?productUrl=${encodeURIComponent(url)}`);
-          }}
-            ref={clipboardRef}>
-          <View style={styles.clipboardWrap}
-            accessibilityRole='button' accessibilityLabel='상품 링크가 복사되었어요. 복사한 링크 상품 상세페이지 설명 보기' accessible
-          >
-          <View style={styles.clipboardText}>
-            <Text style={styles.clipboardTitle} accessible={false}>
-              상품 링크가 복사되었어요
-            </Text>
-            <Text style={styles.clipboardDesc} accessible={false}>
-              복사한 링크 상품 상세페이지 설명 보기 &gt;
-            </Text>
-          </View>
-             <Pressable onPress={() => setClipboardProduct('')} accessibilityRole='button' accessibilityLabel='닫기' accessible>
-              <Image style={styles.closeButtonImage} source={require('../../assets/images/icClose.png')} />
-            </Pressable>
-          </View>
-        </Pressable>
-        )} */}
     </View>
   );
 }

@@ -1,39 +1,39 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { StyleSheet } from 'react-native';
-import { useAtom } from 'jotai';
-import Button from '../../components/Button';
-import { RadioButton } from 'react-native-paper';
-import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+import { StyleSheet } from "react-native";
+import { useAtom } from "jotai";
+import Button from "../../components/Button";
+import { RadioButton } from "react-native-paper";
+import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
 
-import Colors from '../../constants/Colors';
-import { Text, View } from '../../components/Themed';
-import { settingAtom } from '../../stores/auth/atoms';
+import Colors from "../../constants/Colors";
+import { Text, View } from "@components";
+import { settingAtom } from "../../stores/auth/atoms";
 
 const translationMap = {
-  default: '휴대폰 설정과 동일하게',
-  light: '밝은 모드',
-  dark: '어두운 모드',
-}
+  default: "휴대폰 설정과 동일하게",
+  light: "밝은 모드",
+  dark: "어두운 모드",
+};
 
 export default function ThemeScreen() {
-  const { segment = '' } = useLocalSearchParams();
+  const { segment = "" } = useLocalSearchParams();
   const [setting, setSetting] = useAtom(settingAtom);
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const isSetting = segment.includes('settings');
-  const [theme, setTheme] = React.useState<string>(setting.theme ?? 'default');
+  const isSetting = segment.includes("settings");
+  const [theme, setTheme] = React.useState<string>(setting.theme ?? "default");
   const handleSubmit = () => {
     setSetting({
       ...setting,
-      theme: theme as typeof setting['theme'],
+      theme: theme as (typeof setting)["theme"],
     });
     if (isSetting) {
       router.back();
     } else {
-      router.push('(onboarding)/greeting');
+      router.push("(onboarding)/greeting");
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -42,20 +42,22 @@ export default function ThemeScreen() {
         {Object.entries(translationMap).map(([key, label]) => {
           return (
             <View style={styles.row} key={`Onboard-theme-${key}`}>
-              <Text style={styles.label} accessible={false}>{label}</Text>
+              <Text style={styles.label} accessible={false}>
+                {label}
+              </Text>
               <RadioButton.Android
                 color={Colors[colorScheme].text.primary}
                 value={key}
-                accessibilityLabel={(key === theme ? '선택됨,' : '') + label}
-                status={key === theme ? 'checked' : 'unchecked'}
+                accessibilityLabel={(key === theme ? "선택됨," : "") + label}
+                status={key === theme ? "checked" : "unchecked"}
                 onPress={() => setTheme(key)}
               />
             </View>
-          )
+          );
         })}
       </View>
       <View style={styles.buttonWrap}>
-        <Button title='확인' onPress={handleSubmit} />
+        <Button title="확인" onPress={handleSubmit} />
       </View>
     </View>
   );
@@ -64,34 +66,34 @@ export default function ThemeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 22,
     lineHeight: 27,
     marginBottom: 30,
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonWrap: {
-    width: '100%',
+    width: "100%",
     padding: 20,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingLeft: 70,
     paddingRight: 67,
     paddingTop: 62,
   },
   label: {
     flex: 1,
-    fontWeight: '700',
+    fontWeight: "700",
     fontSize: 18,
     lineHeight: 22,
   },

@@ -9,7 +9,7 @@ import { RadioButton } from "react-native-paper";
 import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
 
 import Colors from "../../constants/Colors";
-import { Text, View } from "../../components/Themed";
+import { Text, View } from "@components";
 import { settingAtom } from "../../stores/auth/atoms";
 
 const translationMap = {

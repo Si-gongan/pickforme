@@ -1,15 +1,10 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useRouter, Link, Tabs } from 'expo-router';
-import { Pressable, useColorScheme } from 'react-native';
+import React from "react";
+import { useColorScheme } from "react-native";
 
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
-import { useAtomValue } from 'jotai';
-import { Text } from '../../components/Themed';
-import { userDataAtom } from '../../stores/auth/atoms';
-
-import Colors from '../../constants/Colors';
+import { useAtomValue } from "jotai";
+import { userDataAtom } from "../../stores/auth/atoms";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();

@@ -1,11 +1,10 @@
-import { useRouter } from "expo-router";
 import React from "react";
+import { useRouter } from "expo-router";
+import { StyleSheet, ScrollView } from "react-native";
+
+import { Text, View } from "@components";
 import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
-import { StyleSheet, Pressable, ScrollView } from "react-native";
-import { useAtom } from "jotai";
-import Colors from "../constants/Colors";
 import Button from "../components/Button";
-import { Text, View } from "../components/Themed";
 
 const FAQS: {
   [key: string]: {

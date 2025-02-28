@@ -1,17 +1,18 @@
-import React from 'react';
+import React from "react";
 import { useRouter } from "expo-router";
-import BottomSheet from 'react-native-modal';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { View, Text } from '../Themed';
-import Button from '../Button';
-import { StyleSheet } from 'react-native';
-import { Props as BaseProps, styles } from './Base';
-import { bottomSheetsAtom, closeBottomSheetAtom } from '../../stores/layout/atoms';
-import { BottomSheetInfo } from '../../stores/layout/types';
+import BottomSheet from "react-native-modal";
+import { useAtomValue, useSetAtom } from "jotai";
+import { View, Text } from "@components";
+import Button from "../Button";
+import { StyleSheet } from "react-native";
+import { Props as BaseProps, styles } from "./Base";
+import {
+  bottomSheetsAtom,
+  closeBottomSheetAtom,
+} from "../../stores/layout/atoms";
+import { BottomSheetInfo } from "../../stores/layout/types";
 
-const localStyles = StyleSheet.create({
-
-});
+const localStyles = StyleSheet.create({});
 
 interface Props extends BaseProps {
   info: BottomSheetInfo;
@@ -20,18 +21,19 @@ interface Props extends BaseProps {
 
 const CommongBottomSheet: React.FC<Props> = ({ info, index }) => {
   const bottomSheets = useAtomValue(bottomSheetsAtom);
-  const isFirst = bottomSheets.findIndex(({ isVisible }) => !!isVisible) === index;
+  const isFirst =
+    bottomSheets.findIndex(({ isVisible }) => !!isVisible) === index;
   const [isVisible, setIsVisible] = React.useState(info.isVisible);
   const router = useRouter();
   const closeBottomSheet = useSetAtom(closeBottomSheetAtom);
 
   const onClose = () => {
     setIsVisible(false);
-  }
+  };
 
   const onHide = () => {
     closeBottomSheet(index);
-  }
+  };
   return (
     <BottomSheet
       style={styles.base}
@@ -41,19 +43,27 @@ const CommongBottomSheet: React.FC<Props> = ({ info, index }) => {
       onModalHide={onHide}
     >
       <View style={styles.bottomSheet}>
-        {info.nodes.map(node => (
+        {info.nodes.map((node) => (
           // @ts-ignore
-          <Text style={styles[node.type as keyof typeof styles]} lineBreakStrategyIOS='hangul-word'>
+          <Text
+            style={styles[node.type as keyof typeof styles]}
+            lineBreakStrategyIOS="hangul-word"
+          >
             {node.text}
           </Text>
         ))}
         <View style={styles.buttonRow}>
           <View style={styles.buttonWrap}>
-            <Button color='secondary' title='확인' onPress={onClose} style={styles.button} />
+            <Button
+              color="secondary"
+              title="확인"
+              onPress={onClose}
+              style={styles.button}
+            />
           </View>
         </View>
       </View>
     </BottomSheet>
   );
-}
+};
 export default CommongBottomSheet;

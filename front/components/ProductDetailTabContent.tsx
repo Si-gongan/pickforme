@@ -1,14 +1,21 @@
-import React from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, TextInput, View as RNView } from 'react-native';
-import Markdown from 'react-native-markdown-display';
-import { formatDate, formatTime } from '../utils/common';
-import useColorScheme, { ColorScheme } from '../hooks/useColorScheme';
-import Colors from '../constants/Colors';
-import { TABS } from '../utils/common';
-import { Text, View } from '../components/Themed';
-import { Request } from '../stores/request/types';
-import { GetProductDetailResponse} from '../stores/product/types';
-import { LoadingStatus } from '../stores/product/atoms';
+import React from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View as RNView,
+} from "react-native";
+import Markdown from "react-native-markdown-display";
+import { formatDate, formatTime } from "../utils/common";
+import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
+import Colors from "../constants/Colors";
+import { TABS } from "../utils/common";
+import { Text, View } from "@components";
+import { Request } from "../stores/request/types";
+import { ProductDetailState } from "../stores/product/types";
+import { LoadingStatus } from "../stores/product/atoms";
 
 interface TabContentProps {
   tab: TABS;
@@ -18,7 +25,7 @@ interface TabContentProps {
   setQuestion: React.Dispatch<React.SetStateAction<string>>;
   handleClickSend: (params: any) => void;
   request: Request | undefined;
-  loadingMessages: Record<TABS | 'manager', string>;
+  loadingMessages: Record<TABS | "manager", string>;
   loadingStatus: { [key in TABS]: LoadingStatus };
   handleRegenerate: () => void;
 }
@@ -37,7 +44,13 @@ const TabContent: React.FC<TabContentProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const styles = useStyles(colorScheme);
-  const markdownStyles = StyleSheet.create({ text: { fontSize: 14, lineHeight: 20, color: Colors[colorScheme].text.primary } });
+  const markdownStyles = StyleSheet.create({
+    text: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: Colors[colorScheme].text.primary,
+    },
+  });
   if (tab === TABS.QUESTION) {
     return (
       <QuestionTab
@@ -57,25 +70,40 @@ const TabContent: React.FC<TabContentProps> = ({
   } else if (loadingStatus[tab] <= 1) {
     return (
       <View style={styles.detailWrap}>
-        <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+        <View
+          style={styles.indicatorWrap}
+          accessible
+          accessibilityLabel={loadingMessages[tab]}
+        >
           <ActivityIndicator />
           <Text>{loadingMessages[tab]}</Text>
         </View>
       </View>
     );
   } else if (!!productDetail?.[tab]) {
-    return tab !== 'review' ? (
+    return tab !== "review" ? (
       <View style={styles.detailWrap} ref={refs[tab]}>
         <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
       </View>
     ) : (
-      <ReviewTab styles={styles} productDetail={productDetail} refs={refs} markdownStyles={markdownStyles} />
+      <ReviewTab
+        styles={styles}
+        productDetail={productDetail}
+        tab={tab}
+        refs={refs}
+        markdownStyles={markdownStyles}
+      />
     );
   } else {
     return (
       <View style={styles.detailWrap}>
         <Text>정보를 불러오는데 실패했습니다.</Text>
-        <Pressable onPress={handleRegenerate} accessible accessibilityRole="button" accessibilityLabel="다시 생성하기">
+        <Pressable
+          onPress={handleRegenerate}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="다시 생성하기"
+        >
           <Text>다시 생성하기</Text>
         </Pressable>
       </View>
@@ -90,7 +118,7 @@ interface QuestionTabProps {
   handleClickSend: (parmas: any) => void;
   request: Request | undefined;
   refs: Record<string, React.RefObject<RNView>>;
-  loadingMessages: Record<TABS | 'manager', string>;
+  loadingMessages: Record<TABS | "manager", string>;
   loadingStatus: { [key in TABS]: LoadingStatus };
   tab: TABS;
   markdownStyles: any;
@@ -108,7 +136,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
   loadingStatus,
   tab,
   markdownStyles,
-  productDetail
+  productDetail,
 }) => (
   <View style={styles.detailWrap}>
     <View style={styles.inputWrap}>
@@ -123,19 +151,34 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
         onChangeText={(text) => setQuestion(text)}
         placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요"
       />
-      <Pressable onPress={handleClickSend} accessible accessibilityLabel="질문하기" accessibilityRole="button">
-        <Image style={styles.sendIcon} source={require('../assets/images/discover/downSquareArrow.png')} />
+
+      <Pressable
+        onPress={handleClickSend}
+        accessible
+        accessibilityLabel="질문하기"
+        accessibilityRole="button"
+      >
+        <Image
+          style={styles.sendIcon}
+          source={require("../assets/images/discover/downSquareArrow.png")}
+        />
       </Pressable>
     </View>
 
     {loadingStatus[tab] === 1 ? (
-      <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+      <View
+        style={styles.indicatorWrap}
+        accessible
+        accessibilityLabel={loadingMessages[tab]}
+      >
         <ActivityIndicator />
         <Text>{loadingMessages[tab]}</Text>
       </View>
     ) : loadingStatus[tab] === 2 ? (
       <View ref={refs[tab]}>
-        <Markdown style={markdownStyles}>{`**AI 포미:** ${productDetail?.answer}`}</Markdown>
+        <Markdown
+          style={markdownStyles}
+        >{`**AI 포미:** ${productDetail?.answer}`}</Markdown>
       </View>
     ) : null}
 
@@ -146,10 +189,10 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
           <Text style={styles.boldText} ref={refs.manager}>
             다음은 질문에 대한 매니저의 답변이에요.
           </Text>
-          <Markdown>
-            {`**나의 질문:** ${request?.text}`}
-          </Markdown>
-          <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${request?.answer?.text}`}</Markdown>
+          <Markdown>{`**나의 질문:** ${request?.text}`}</Markdown>
+          <Markdown
+            style={markdownStyles}
+          >{`**픽포미 매니저:** ${request?.answer?.text}`}</Markdown>
           <Text>{`${formatDate(request?.updatedAt)} ${formatTime(request?.updatedAt)}`}</Text>
         </>
       ) : (
@@ -170,14 +213,21 @@ interface ReviewTabProps {
   markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
 }
 
-const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles }) => {
+const ReviewTab: React.FC<ReviewTabProps> = ({
+  styles,
+  productDetail,
+  tab,
+  refs,
+  markdownStyles,
+}) => {
   // TODO
   // const review = productDetail?.[tab];
-  // review가 객체인지 확인합니다. 
+  // review가 객체인지 확인합니다.
   // if (typeof review === 'object' && review !== null && 'pros' in review && 'cons' in review && 'bests' in review) {
   return (
     <>
-      {!productDetail?.review?.pros?.length && !productDetail?.review?.cons?.length ? (
+      {!productDetail?.[tab]?.pros?.length &&
+      !productDetail?.[tab]?.cons?.length ? (
         <View style={styles.detailWrap} ref={refs[tab]}>
           <Text>리뷰정보를 찾을 수 없습니다.</Text>
         </View>
@@ -186,7 +236,9 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
         <View style={styles.detailWrap} ref={refs[tab]}>
           <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
           <Markdown style={markdownStyles}>
-            {productDetail?.review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+            {productDetail?.[tab]?.pros
+              .map((row: string, i: number) => `${i + 1}. ${row}`)
+              .join("\n")}
           </Markdown>
         </View>
       )}
@@ -194,15 +246,20 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
         <View style={styles.detailWrap}>
           <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
           <Markdown style={markdownStyles}>
-            {productDetail?.review?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+            {productDetail?.[tab]?.cons
+              .map((row: string, i: number) => `${i + 1}. ${row}`)
+              .join("\n")}
           </Markdown>
         </View>
       )}
       {productDetail?.review?.bests?.length !== 0 && (
         <View style={styles.detailWrap}>
           <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
-          {productDetail?.review?.bests.map((row: string, i: number) => (
-            <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
+          {productDetail?.[tab]?.bests.map((row: string, i: number) => (
+            <Markdown
+              style={markdownStyles}
+              key={`product-detail-${tab}-bests-row-${i}`}
+            >
               {`**리뷰 ${i + 1}:** ${row}`}
             </Markdown>
           ))}
@@ -241,7 +298,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
         )} */}
     </>
   );
-}
+};
 //   return (
 //     <View style={styles.detailWrap} ref={refs[tab]}>
 //       <Text>리뷰 정보를 찾을 수 없습니다.</Text>
@@ -252,7 +309,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
 const useStyles = (colorScheme: ColorScheme) =>
   StyleSheet.create({
     seperator: {
-      width: '100%',
+      width: "100%",
       backgroundColor: Colors[colorScheme].borderColor.primary,
       height: 1,
       marginVertical: 25,
@@ -262,20 +319,20 @@ const useStyles = (colorScheme: ColorScheme) =>
     },
     reviewListTitle: {
       fontSize: 14,
-      fontWeight: '700',
+      fontWeight: "700",
       marginBottom: 13,
     },
     reviewListRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
     },
     reviewListRowText: {
       lineHeight: 24,
       fontSize: 14,
     },
     indicatorWrap: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: 10,
-      alignItems: 'center',
+      alignItems: "center",
     },
     inputWrap: {
       flex: 1,
@@ -285,30 +342,29 @@ const useStyles = (colorScheme: ColorScheme) =>
       paddingVertical: 8,
       borderRadius: 8,
       height: 40,
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      backgroundColor: 'white',
-      borderColor: '#5F5F5F',
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: "white",
+      borderColor: "#5F5F5F",
       borderWidth: 1,
-      flexDirection: 'row',
+      flexDirection: "row",
     },
     textArea: {
       fontSize: 14,
       flex: 1,
-      width: '100%',
+      width: "100%",
     },
     sendIcon: {
       flexShrink: 0,
       marginLeft: 3,
       width: 26,
       height: 26,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     boldText: {
-      fontWeight: '700',
+      fontWeight: "700",
     },
   });
 
 export default TabContent;
-

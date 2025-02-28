@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Button from "../../components/Button";
-import { Text, View } from "../../components/Themed";
+import { Text, View } from "@components";
 import { settingAtom } from "../../stores/auth/atoms";
 
 export default function RegisterScreen() {

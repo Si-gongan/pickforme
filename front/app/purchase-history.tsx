@@ -4,7 +4,7 @@ import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
 import { StyleSheet, ScrollView } from "react-native";
 import Colors from "../constants/Colors";
 import Button from "../components/Button";
-import { Text, View } from "../components/Themed";
+import { Text, View } from "@components";
 import { useAtomValue, useSetAtom } from "jotai";
 import { userDataAtom } from "../stores/auth/atoms";
 import {

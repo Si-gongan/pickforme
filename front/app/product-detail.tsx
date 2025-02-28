@@ -39,8 +39,8 @@ import { Product } from "../stores/product/types";
 import { sendLogAtom } from "../stores/log/atoms";
 import { requestBottomSheetAtom, requestsAtom } from "../stores/request/atoms";
 
+import { Text, View } from "@components";
 import Button from "../components/Button";
-import { Text, View } from "../components/Themed";
 import { numComma } from "../utils/common";
 import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
 import { useWebView } from "../components/webview-util";

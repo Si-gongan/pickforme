@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
 import { isShowLackPointModalAtom } from "../../stores/auth/atoms";
-import { View, Text } from "../Themed";
+import { View, Text } from "@components";
 import { Props, styles } from "./Base";
 import Button from "../Button";
 

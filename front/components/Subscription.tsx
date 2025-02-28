@@ -28,7 +28,7 @@ import {
   withIAPContext,
   RequestSubscriptionAndroid,
 } from "react-native-iap";
-import { Text, View } from "../components/Themed";
+import { Text, View } from "@components";
 import Button from "../components/Button";
 import Colors from "../constants/Colors";
 import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";

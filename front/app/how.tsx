@@ -1,15 +1,15 @@
+import React, { useRef, useCallback } from "react";
 import { useRouter, Link } from "expo-router";
-import React from "react";
-import { StyleSheet, ScrollView } from "react-native";
-import { Text, View } from "../components/Themed";
-
-import { useFocusEffect } from "@react-navigation/core";
-import { useRef, useCallback } from "react";
 import {
+  StyleSheet,
+  ScrollView,
   Text as TextBase,
   AccessibilityInfo,
   findNodeHandle,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/core";
+
+import { Text, View } from "@components";
 
 export default function HowScreen() {
   const router = useRouter();

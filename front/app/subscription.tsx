@@ -24,7 +24,7 @@ import * as WebBrowser from "expo-web-browser";
 import Markdown from "react-native-markdown-display";
 
 import Button from "../components/Button";
-import { Text, View } from "../components/Themed";
+import { Text, View } from "@components";
 import {
   initConnection,
   purchaseErrorListener,

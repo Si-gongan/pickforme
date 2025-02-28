@@ -4,7 +4,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@constants": ["constants/index"]
+      "@constants": ["constants/index"],
+      "@components": ["components/index"]
     }
   }
 }

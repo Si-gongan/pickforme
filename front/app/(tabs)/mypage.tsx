@@ -18,7 +18,7 @@ import {
 import { useFocusEffect } from "@react-navigation/core";
 
 import Colors from "../../constants/Colors";
-import { Text, View } from "../../components/Themed";
+import { Text, View } from "@components";
 import Button from "../../components/Button";
 import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
 import * as WebBrowser from "expo-web-browser";

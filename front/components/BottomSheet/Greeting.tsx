@@ -1,13 +1,13 @@
-import { useRef, useEffect } from 'react';
-import { findNodeHandle, AccessibilityInfo } from 'react-native';
+import { useRef, useEffect } from "react";
+import { findNodeHandle, AccessibilityInfo } from "react-native";
 import { useRouter } from "expo-router";
-import BottomSheet from 'react-native-modal';
-import { useAtom } from 'jotai';
-import { isShowGreetingModalAtom } from '../../stores/auth/atoms';
-import { View, Text } from '../Themed';
-import Button from '../Button';
-import { StyleSheet } from 'react-native';
-import { Props, styles } from './Base';
+import BottomSheet from "react-native-modal";
+import { useAtom } from "jotai";
+import { isShowGreetingModalAtom } from "../../stores/auth/atoms";
+import { View, Text } from "@components";
+import Button from "../Button";
+import { StyleSheet } from "react-native";
+import { Props, styles } from "./Base";
 
 const localStyles = StyleSheet.create({
   title: {
@@ -25,17 +25,17 @@ const GreetingBottomSheet: React.FC<Props> = () => {
 
   const handleClickYes = () => {
     onClose();
-  }
+  };
   useEffect(() => {
     const focusOnHeader = () => {
       const node = findNodeHandle(headerTitleRef.current);
       if (visible && node) {
         AccessibilityInfo.setAccessibilityFocus(node);
       }
-    }
+    };
     setTimeout(focusOnHeader, 500);
   }, [visible]);
-  
+
   return (
     <BottomSheet
       style={styles.base}
@@ -51,15 +51,21 @@ const GreetingBottomSheet: React.FC<Props> = () => {
         <Text style={[styles.desc, localStyles.title]}>
           {/* 감사의 의미로 AI 질문하기 무료 이용권 10개를 지급해드렸어요.
           3.0 업데이트로 더욱 편리해진 픽포미를 이용해보세요! */}
-          픽포미 리뉴얼 기념으로 2주 동안 AI 질문하기 무료 이용권을 지급해 드렸어요! 새로워진 픽포미와 함께 쇼핑하러 가볼까요?
+          픽포미 리뉴얼 기념으로 2주 동안 AI 질문하기 무료 이용권을 지급해
+          드렸어요! 새로워진 픽포미와 함께 쇼핑하러 가볼까요?
         </Text>
         <View style={styles.buttonRow}>
           <View style={styles.buttonWrap}>
-            <Button color='secondary' title='확인' onPress={handleClickYes} style={styles.button} />
+            <Button
+              color="secondary"
+              title="확인"
+              onPress={handleClickYes}
+              style={styles.button}
+            />
           </View>
         </View>
       </View>
     </BottomSheet>
   );
-}
+};
 export default GreetingBottomSheet;
