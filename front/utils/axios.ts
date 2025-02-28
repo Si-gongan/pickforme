@@ -1,11 +1,14 @@
-import axios from 'axios';
-import { API_HOST } from '@env';
+import axios from "axios";
+import { API_HOST } from "@env";
 
 console.log(API_HOST);
+
 const client = axios.create({
-  baseURL: API_HOST,
+  // baseURL: API_HOST,
+  baseURL: "http://3.34.255.158:3000",
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 client.defaults.timeout = 40000;
@@ -20,6 +23,6 @@ export const setClientToken = (token?: string) => {
   } else {
     delete client.defaults.headers.common.authorization;
   }
-}
+};
 
 export default client;

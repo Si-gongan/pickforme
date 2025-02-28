@@ -1,13 +1,15 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet } from 'react-native';
-import { useAtom } from 'jotai';
-import Button from '../../components/Button';
+import { StyleSheet } from "react-native";
+import { useAtom } from "jotai";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Text, View } from '../../components/Themed';
-import { settingAtom } from '../../stores/auth/atoms';
+import Button from "../../components/Button";
+import { Text, View } from "../../components/Themed";
+import { settingAtom } from "../../stores/auth/atoms";
 
 export default function RegisterScreen() {
+  const insets = useSafeAreaInsets();
   const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
 
@@ -17,34 +19,42 @@ export default function RegisterScreen() {
     }
     const defaultSetting: {
       [key in typeof setting.vision]: {
-        theme: typeof setting.theme,
-      }
+        theme: typeof setting.theme;
+      };
     } = {
       none: {
-        theme: 'default',
+        theme: "default",
       },
       low: {
-        theme: 'dark',
+        theme: "dark",
       },
       blind: {
-        theme: 'light',
+        theme: "light",
       },
     };
-    setSetting({ ...setting, ...defaultSetting[setting.vision], isReady: true })
-    router.push('/(tabs)');
-  }
+    setSetting({
+      ...setting,
+      ...defaultSetting[setting.vision],
+      isReady: true,
+    });
+    router.push("/(tabs)");
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>{setting?.name}님, 안녕하세요.</Text>
-        <Text style={[styles.title, styles.title2]}>{`시각장애인을 위한\n쇼핑 서비스`}</Text>
+        <Text
+          style={[styles.title, styles.title2]}
+        >{`시각장애인을 위한\n쇼핑 서비스`}</Text>
         <View style={styles.textWrap}>
-          <Text style={[styles.highlight, styles.desc]}>{`픽포미\n에 오신 것을 환영합니다!`}</Text>
+          <Text
+            style={[styles.highlight, styles.desc]}
+          >{`픽포미\n에 오신 것을 환영합니다!`}</Text>
         </View>
       </View>
-      <View style={styles.buttonWrap}>
-        <Button title='확인' onPress={handleSubmit} />
+      <View style={[styles.buttonWrap, { paddingBottom: insets.bottom + 16 }]}>
+        <Button title="확인" onPress={handleSubmit} />
       </View>
     </View>
   );
@@ -53,11 +63,11 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 22,
     lineHeight: 27,
   },
@@ -69,22 +79,22 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingLeft: 55,
     paddingRight: 55,
-    alignItems: 'flex-start',
-    width: '100%',
-    justifyContent: 'center',
+    alignItems: "flex-start",
+    width: "100%",
+    justifyContent: "center",
   },
   buttonWrap: {
-    width: '100%',
+    width: "100%",
     padding: 31,
   },
   highlight: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
   desc: {
     fontSize: 18,
     lineHeight: 22,
   },
   textWrap: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
 });

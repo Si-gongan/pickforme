@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
-import client from '../utils/axios';
-import { useSetAtom } from 'jotai';
-import { isShowLoginModalAtom, userDataAtom } from '../stores/auth/atoms';
+import { useEffect } from "react";
+import { useSetAtom } from "jotai";
+
+import client from "../utils/axios";
+import { isShowLoginModalAtom, userDataAtom } from "../stores/auth/atoms";
 
 const useInterceptor = () => {
   const setUserData = useSetAtom(userDataAtom);
@@ -10,7 +11,12 @@ const useInterceptor = () => {
     const clientInterceptor = client.interceptors.response.use(
       async (response) => response,
       async (error) => {
-        // if (error.response && error.response.status === 401 && !error.config.isRetryRequest) {
+        console.log(
+          "Request baseURL:",
+          error.config.baseURL,
+          error.config.url,
+          error.config.method
+        );
         if (error.response) {
           if (error.response.status === 401) {
             console.log(error.response.message);
@@ -27,6 +33,13 @@ const useInterceptor = () => {
             console.log(error.response.data);
           }
         } else {
+          console.error("Error Details:", {
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            config: error.config,
+            code: error.code,
+          });
           console.error("응답이 없습니다. 네트워크 오류일 수 있습니다.");
         }
         return Promise.reject(error);

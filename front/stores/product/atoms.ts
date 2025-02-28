@@ -38,7 +38,7 @@ export const loadingStatusAtom = atom({
 
 export const isSearchingAtom = atom(false);
 
-export const searchSorterAtom = atom('scoreDesc');
+export const searchSorterAtom = atom("scoreDesc");
 
 export const scrapedProductsAtom = atom<Product[]>([]);
 export const scrapedProductsQueryAtom = atom<string>('');
@@ -50,8 +50,10 @@ export const setScrapedProductsAtom = atom(null, async (get, set, products: Prod
 
 export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
 
-export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink, ...params }: SearchProductsRequest) => {
-  set(isSearchingAtom, true);
+export const searchProductsAtom = atom(
+  null,
+  async (get, set, { onQuery, onLink, ...params }: SearchProductsRequest) => {
+    set(isSearchingAtom, true);
 
   try {
     // query에 상품 url이 포함되었는지 판별
@@ -140,7 +142,7 @@ export const searchProductsAtom = atom(null, async (get, set, { onQuery, onLink,
   } finally {
     set(isSearchingAtom, false);
   }
-});
+);
 
 // 카테고리별 베스트 (random) + 오늘의 특가 상품 (special)
 export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
@@ -152,7 +154,7 @@ export const getMainProductsAtom = atom(null, async (get, set, categoryId: strin
     // response가 void이거나 data가 없을 때 처리
     console.log('API로부터 데이터를 받지 못했습니다');
   }
-});
+);
 
 export const productReviewAtom = atom<ProductReview>({reviews: []} as ProductReview);
 
@@ -237,7 +239,7 @@ export const getProductReportAtom = atom(null, async (get, set) => {
     set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.FINISH });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
-});
+);
 
 // AI 상품 이미지 설명 생성
 export const getProductCaptionAtom = atom(null, async (get, set) => {
@@ -251,7 +253,7 @@ export const getProductCaptionAtom = atom(null, async (get, set) => {
     set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
-});
+);
 
 // AI 포미 답변 생성
 export const getProductAIAnswerAtom = atom(null, async (get, set, question: string) => {
@@ -275,16 +277,9 @@ export const getProductAIAnswerAtom = atom(null, async (get, set, question: stri
     set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.FINISH });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
-});
+);
 
-export const setProductLoadingStatusAtom = atom(null, async (get, set, { caption, review, report, question }: { caption?: LoadingStatus, review?: LoadingStatus, report?: LoadingStatus, question?: LoadingStatus }) => {
-  set(loadingStatusAtom, {
-    caption: caption ?? get(loadingStatusAtom).caption,
-    review: review ?? get(loadingStatusAtom).review,
-    report: report ?? get(loadingStatusAtom).report,
-    question: question ?? get(loadingStatusAtom).question,
-  });
-});
+export const wishProductsAtom = atomWithStorage<Product[]>("wishlist2", []);
 
 export const wishProductsAtom = atomWithStorage<Product[]>('wishlist2', []);
 
@@ -307,6 +302,5 @@ export const wishProductsAtom = atomWithStorage<Product[]>('wishlist2', []);
 //     products: [product],
 //   });
 // });
-
 
 
