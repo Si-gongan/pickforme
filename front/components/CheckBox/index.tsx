@@ -19,7 +19,7 @@ export default function CheckBox({
       <View style={[styles.wrap, checked && styles.checked]}>
         <Image
           style={styles.image}
-          source={require("../assets/images/check.png")}
+          source={require("../../assets/images/check.png")}
         />
       </View>
     </Pressable>
