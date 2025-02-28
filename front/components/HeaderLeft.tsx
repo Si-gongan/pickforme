@@ -4,8 +4,7 @@ import { useRouter } from "expo-router";
 import { HeaderBackButtonProps } from "@react-navigation/native-stack/src/types";
 
 import { View, Text } from "@components";
-import Button from "./Button";
-import useColorScheme from "../hooks/useColorScheme";
+import { useColorScheme } from "@hooks";
 
 const Icon = {
   light: require("../assets/images/icon.png"),

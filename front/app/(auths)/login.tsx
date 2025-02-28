@@ -3,7 +3,6 @@ import React from "react";
 import { ViewProps, Platform, Image, StyleSheet } from "react-native";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
-import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import * as KakaoLogins from "@react-native-seoul/kakao-login";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -19,7 +18,7 @@ import {
   loginGoogleAtom,
   userDataAtom,
 } from "../../stores/auth/atoms";
-import useColorScheme from "../../hooks/useColorScheme";
+import { useColorScheme } from "@hooks";
 
 WebBrowser.maybeCompleteAuthSession();
 

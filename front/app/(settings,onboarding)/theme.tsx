@@ -2,13 +2,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { useAtom } from "jotai";
-import Button from "../../components/Button";
 import { RadioButton } from "react-native-paper";
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
 
-import Colors from "../../constants/Colors";
-import { Text, View } from "@components";
+import Button from "../../components/Button";
 import { settingAtom } from "../../stores/auth/atoms";
+import { Colors } from "@constants";
+import { useColorScheme } from "@hooks";
+import { Text, View } from "@components";
 
 const translationMap = {
   default: "휴대폰 설정과 동일하게",

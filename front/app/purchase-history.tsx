@@ -1,17 +1,20 @@
-import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
+import { useRouter } from "expo-router";
 import { StyleSheet, ScrollView } from "react-native";
+import { useAtomValue, useSetAtom } from "jotai";
+
 import Colors from "../constants/Colors";
 import Button from "../components/Button";
+import { useColorScheme } from "@hooks";
 import { Text, View } from "@components";
-import { useAtomValue, useSetAtom } from "jotai";
 import { userDataAtom } from "../stores/auth/atoms";
 import {
   purchaseListAtom,
   getPurchaseListAtom,
 } from "../stores/purchase/atoms";
 import { formatDate } from "../utils/common";
+
+import type { ColorScheme } from "@hooks";
 
 export default function PointHistoryScreen1() {
   const router = useRouter();

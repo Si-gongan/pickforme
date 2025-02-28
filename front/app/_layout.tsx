@@ -9,13 +9,13 @@ import { Provider as JotaiProvider } from "jotai";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import useInterceptor from "../hooks/useInterceptor";
-import useColorScheme from "../hooks/useColorScheme";
 import useSocket from "../hooks/useSocket";
 import usePushToken from "../hooks/usePushToken";
 import useGetShare from "../hooks/useGetShare";
 
+import { useColorScheme } from "@hooks";
 import { Text } from "@components";
-import Colors from "../constants/Colors";
+import { Colors } from "@constants";
 
 import { bottomSheetsAtom } from "../stores/layout/atoms";
 import {

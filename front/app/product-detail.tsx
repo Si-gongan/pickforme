@@ -40,9 +40,9 @@ import { sendLogAtom } from "../stores/log/atoms";
 import { requestBottomSheetAtom, requestsAtom } from "../stores/request/atoms";
 
 import { Text, View } from "@components";
+import { useColorScheme } from "@hooks";
 import Button from "../components/Button";
 import { numComma } from "../utils/common";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
 import { useWebView } from "../components/webview-util";
 import TabContent from "../components/ProductDetailTabContent";
 
@@ -53,6 +53,8 @@ import {
   getSubscriptionAtom,
 } from "../stores/purchase/atoms";
 import { isShowNonSubscriberManagerModalAtom } from "../stores/auth/atoms";
+
+import type { ColorScheme } from "@hooks";
 
 interface ProductDetailScreenProps {}
 

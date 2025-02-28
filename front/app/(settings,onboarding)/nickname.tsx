@@ -1,16 +1,17 @@
-import { useRouter, useLocalSearchParams } from "expo-router";
 import React from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { StyleSheet, TextInput } from "react-native";
 import { useAtom } from "jotai";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { RadioButton } from "react-native-paper";
 
 import Button from "../../components/Button";
-import { RadioButton } from "react-native-paper";
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
-
-import Colors from "../../constants/Colors";
+import { useColorScheme } from "@hooks";
+import { Colors } from "@constants";
 import { Text, View } from "@components";
 import { settingAtom } from "../../stores/auth/atoms";
+
+import type { ColorScheme } from "@hooks";
 
 const translationMap = {
   none: "비장애",

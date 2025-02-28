@@ -1,10 +1,11 @@
 import React from "react";
-import { useSetAtom, useAtomValue } from 'jotai';
-import { useRouter } from 'expo-router';
-import { setPushTokenAtom, userDataAtom } from '../stores/auth/atoms'
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
+import { useSetAtom, useAtomValue } from "jotai";
+import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+
+import { setPushTokenAtom, userDataAtom } from "../stores/auth/atoms";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -20,17 +21,20 @@ const usePushToken = () => {
   const router = useRouter();
 
   React.useEffect(() => {
-    const notificationListener = Notifications.addNotificationReceivedListener((notification) => {
-      // notification 받은경우
-    });
-
-    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-      // notification 누른경우
-      const data = response.notification.request.content.data;
-      if (data.url) {
-        router.push(data.url);
+    const notificationListener = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        // notification 받은경우
       }
-    });
+    );
+
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        // notification 누른경우
+        const data = response.notification.request.content.data;
+        if (data.url) {
+          router.push(data.url);
+        }
+      });
 
     return () => {
       Notifications.removeNotificationSubscription(notificationListener);
@@ -40,11 +44,15 @@ const usePushToken = () => {
 
   React.useEffect(() => {
     if (userData?._id) {
-      registerForPushNotifications().then((token) => {
-        if (token) {
-          setPushToken({ token });
-        }
-      }).catch(error => { console.log(error) });
+      registerForPushNotifications()
+        .then((token) => {
+          if (token) {
+            setPushToken({ token });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   }, [userData?._id]);
 
@@ -55,7 +63,8 @@ async function registerForPushNotifications() {
   let token;
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== "granted") {
@@ -69,7 +78,11 @@ async function registerForPushNotifications() {
       return;
     }
 
-    token = (await Notifications.getExpoPushTokenAsync({ projectId: 'e1838378-658e-46ee-b890-0e439a47e799' })).data;
+    token = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId: "e1838378-658e-46ee-b890-0e439a47e799",
+      })
+    ).data;
   } else {
     // alert("Must use physical device for Push Notifications");
   }

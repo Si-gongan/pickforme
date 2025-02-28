@@ -7,11 +7,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Props, styles } from "../Base";
 import { isShowIntroduceAlertModalAtom } from "../../../stores/auth/atoms";
-import Colors from "../../../constants/Colors";
+import { Colors } from "@constants";
 import { View, Text } from "@components";
-import useColorScheme, { ColorScheme } from "../../../hooks/useColorScheme";
+import { useColorScheme } from "@hooks";
 import Button from "../../Button";
 import { settingAtom } from "../../../stores/auth/atoms";
+
+import type { ColorScheme } from "@hooks";
 
 //Membership
 const IntroduceAlertBottomSheet: React.FC<Props> = () => {

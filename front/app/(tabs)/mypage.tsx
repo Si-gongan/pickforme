@@ -17,13 +17,15 @@ import {
 } from "../../stores/auth/atoms";
 import { useFocusEffect } from "@react-navigation/core";
 
-import Colors from "../../constants/Colors";
+import { Colors } from "@constants";
 import { Text, View } from "@components";
+import { useColorScheme } from "@hooks";
 import Button from "../../components/Button";
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
 import * as WebBrowser from "expo-web-browser";
 
 import MypageIcon from "../../assets/images/tabbar/mypage.svg";
+
+import type { ColorScheme } from "@hooks";
 
 export default function MyPageScreen() {
   const [userData, setUserData] = useAtom(userDataAtom);

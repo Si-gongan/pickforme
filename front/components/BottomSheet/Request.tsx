@@ -11,7 +11,7 @@ import BottomSheet from "react-native-modal";
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
+import { useColorScheme } from "@hooks";
 import {
   requestBottomSheetAtom,
   addRequestAtom,
@@ -21,13 +21,15 @@ import { scrapedProductDetailAtom } from "../../stores/product/atoms";
 import { sendLogAtom } from "../../stores/log/atoms";
 
 import { QuestionRequestParams, RequestType } from "../../stores/request/types";
-import Colors from "../../constants/Colors";
+import { Colors } from "@constants";
 import { styles } from "./Base";
 import useCheckMembership from "../../hooks/useCheckMembership";
 import useCheckPoint from "../../hooks/useCheckPoint";
 
 import Button from "../Button";
 import { Text, View } from "@components";
+
+import type { ColorScheme } from "@hooks";
 
 export default function ResearchBottomSheet() {
   const headerTitleRef = useRef(null);

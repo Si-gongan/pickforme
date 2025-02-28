@@ -5,7 +5,8 @@
     "baseUrl": ".",
     "paths": {
       "@constants": ["constants/index"],
-      "@components": ["components/index"]
+      "@components": ["components/index"],
+      "@hooks": ["hooks/index"]
     }
   }
 }

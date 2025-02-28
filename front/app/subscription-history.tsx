@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
 import { StyleSheet, ScrollView } from "react-native";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import Colors from "../constants/Colors";
-import Button from "../components/Button";
+import { useColorScheme } from "@hooks";
+import { Colors } from "@constants";
 import { Text, View } from "@components";
+import Button from "../components/Button";
 import { isShowUnsubscribeModalAtom, userDataAtom } from "../stores/auth/atoms";
 import {
   subscriptionAtom,
@@ -52,6 +52,8 @@ import {
   deepLinkToSubscriptions,
 } from "react-native-iap";
 import { Product, ProductType } from "../stores/purchase/types";
+
+import type { ColorScheme } from "@hooks";
 
 type IAPProduct = Omit<IAPProductB, "type">;
 type IAPSubscription = Omit<IAPSubscriptionB, "type" | "platform">;

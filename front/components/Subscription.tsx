@@ -1,13 +1,6 @@
-import { Product, ProductType } from "../stores/purchase/types";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  subscriptionAtom,
-  getProductsAtom,
-  purchaseProductAtom,
-  productsAtom,
-  getSubscriptionAtom,
-} from "../stores/purchase/atoms";
 import { useEffect, useState } from "react";
+import { StyleSheet, Platform } from "react-native";
 import {
   initConnection,
   purchaseErrorListener,
@@ -28,11 +21,21 @@ import {
   withIAPContext,
   RequestSubscriptionAndroid,
 } from "react-native-iap";
+
+import {
+  subscriptionAtom,
+  getProductsAtom,
+  purchaseProductAtom,
+  productsAtom,
+  getSubscriptionAtom,
+} from "../stores/purchase/atoms";
+import { Product, ProductType } from "../stores/purchase/types";
 import { Text, View } from "@components";
 import Button from "../components/Button";
-import Colors from "../constants/Colors";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
-import { ScrollView, StyleSheet, Pressable, Platform } from "react-native";
+import { Colors } from "@constants";
+import { useColorScheme } from "@hooks";
+
+import type { ColorScheme } from "@hooks";
 
 type IAPProduct = Omit<IAPProductB, "type">;
 type IAPSubscription = Omit<IAPSubscriptionB, "type" | "platform">;

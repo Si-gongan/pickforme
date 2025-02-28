@@ -2,19 +2,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Platform } from "react-native";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  getProductsAtom,
-  purchaseProductAtom,
-  productsAtom,
-  getSubscriptionAtom,
-} from "../stores/purchase/atoms";
-import { Product, ProductType } from "../stores/purchase/types";
-import Colors from "../constants/Colors";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
 import * as WebBrowser from "expo-web-browser";
-
-import Button from "../components/Button";
-import { Text, View } from "@components";
 import {
   initConnection,
   purchaseErrorListener,
@@ -31,6 +19,20 @@ import {
   finishTransaction,
   withIAPContext,
 } from "react-native-iap";
+
+import {
+  getProductsAtom,
+  purchaseProductAtom,
+  productsAtom,
+  getSubscriptionAtom,
+} from "../stores/purchase/atoms";
+import { Product, ProductType } from "../stores/purchase/types";
+import { useColorScheme } from "@hooks";
+import { Colors } from "@constants";
+import { Text, View } from "@components";
+import Button from "../components/Button";
+
+import type { ColorScheme } from "@hooks";
 
 type IAPProduct = Omit<IAPProductB, "type">;
 type IAPSubscription = Omit<IAPSubscriptionB, "type" | "platform">;

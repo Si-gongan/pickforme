@@ -3,8 +3,10 @@ import { useRouter } from "expo-router";
 import { StyleSheet, ScrollView } from "react-native";
 
 import { Text, View } from "@components";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
+import { useColorScheme } from "@hooks";
 import Button from "../components/Button";
+
+import type { ColorScheme } from "@hooks";
 
 const FAQS: {
   [key: string]: {

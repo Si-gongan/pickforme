@@ -3,20 +3,21 @@
  */
 import React from "react";
 import { useRef, useEffect } from "react";
-import { findNodeHandle, AccessibilityInfo } from "react-native";
+import { findNodeHandle, AccessibilityInfo, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
+import { deepLinkToSubscriptions } from "react-native-iap";
 
 import { isShowUnsubscribeModalAtom } from "../../../stores/auth/atoms";
 import { View, Text } from "@components";
+import { useColorScheme } from "@hooks";
 import Button from "../../Button";
 import { Props, styles } from "../Base";
 import Colors from "../../../constants/Colors";
-import useColorScheme, { ColorScheme } from "../../../hooks/useColorScheme";
-import { StyleSheet } from "react-native";
 import { settingAtom } from "../../../stores/auth/atoms";
-import { deepLinkToSubscriptions } from "react-native-iap";
+
+import type { ColorScheme } from "@hooks";
 
 // Membership
 const NonSubscribedBottomSheet: React.FC<Props> = () => {

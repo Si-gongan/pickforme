@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Pressable,
-  Platform,
-  Alert,
-} from "react-native";
+import { ScrollView, StyleSheet, Platform, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -18,9 +12,8 @@ import {
   getSubscriptionAtom,
 } from "../stores/purchase/atoms";
 import { Product, ProductType } from "../stores/purchase/types";
-import Colors from "../constants/Colors";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
-import * as WebBrowser from "expo-web-browser";
+import { Colors } from "@constants";
+import { useColorScheme } from "@hooks";
 import Markdown from "react-native-markdown-display";
 
 import Button from "../components/Button";
@@ -52,6 +45,8 @@ import {
 // 2024
 import { isShowSubscriptionModalAtom } from "../stores/auth/atoms";
 import { GetPurchaseSubCheckAPI } from "../stores/purchase/apis";
+
+import type { ColorScheme } from "@hooks";
 
 type IAPProduct = Omit<IAPProductB, "type">;
 type IAPSubscription = Omit<IAPSubscriptionB, "type" | "platform">;

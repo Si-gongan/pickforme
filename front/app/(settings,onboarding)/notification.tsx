@@ -5,12 +5,13 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { RadioButton } from "react-native-paper";
 
 import Button from "../../components/Button";
-import Colors from "../../constants/Colors";
+import { Colors } from "@constants";
 import { Text, View } from "@components";
 import { PushService, SetPushSettingParams } from "../../stores/auth/types";
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
-
+import { useColorScheme } from "@hooks";
 import { setPushSettingAtom, userDataAtom } from "../../stores/auth/atoms";
+
+import type { ColorScheme } from "@hooks";
 
 const translationMap: {
   service: {

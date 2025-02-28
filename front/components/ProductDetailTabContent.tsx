@@ -9,13 +9,15 @@ import {
 } from "react-native";
 import Markdown from "react-native-markdown-display";
 import { formatDate, formatTime } from "../utils/common";
-import useColorScheme, { ColorScheme } from "../hooks/useColorScheme";
-import Colors from "../constants/Colors";
+import { useColorScheme } from "@hooks";
+import { Colors } from "@constants";
 import { TABS } from "../utils/common";
 import { Text, View } from "@components";
 import { Request } from "../stores/request/types";
 import { ProductDetailState } from "../stores/product/types";
 import { LoadingStatus } from "../stores/product/atoms";
+
+import type { ColorScheme } from "@hooks";
 
 interface TabContentProps {
   tab: TABS;

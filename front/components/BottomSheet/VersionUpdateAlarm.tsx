@@ -7,8 +7,10 @@ import { Props, styles } from "./Base";
 import { isShowVersionUpdateAlarmModalAtom } from "../../stores/auth/atoms";
 import { View, Text } from "@components";
 import Button from "../Button";
-import Colors from "../../constants/Colors";
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
+import { Colors } from "@constants";
+import { useColorScheme } from "@hooks";
+
+import type { ColorScheme } from "@hooks";
 
 const ANDROID_UPDATE_URL =
   "https://play.google.com/store/apps/details?id=com.sigonggan.pickforme";

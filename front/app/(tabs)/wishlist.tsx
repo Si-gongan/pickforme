@@ -7,10 +7,10 @@ import { getRequestsAtom, requestsAtom } from "../../stores/request/atoms";
 
 import useCheckLogin from "../../hooks/useCheckLogin";
 import { wishProductsAtom } from "../../stores/product/atoms";
-import Colors from "../../constants/Colors";
+import { Colors } from "@constants";
 import Button from "../../components/Button";
 import { Text, View } from "@components";
-import useColorScheme, { ColorScheme } from "../../hooks/useColorScheme";
+import { useColorScheme } from "@hooks";
 import ProductCard from "../../components/ProductCard";
 
 import DiscoverIcon from "../../assets/images/tabbar/requests.svg";
@@ -22,6 +22,8 @@ import {
   AccessibilityInfo,
   findNodeHandle,
 } from "react-native";
+
+import type { ColorScheme } from "@hooks";
 
 enum TABS {
   PRODUCT = "PRODUCT",
