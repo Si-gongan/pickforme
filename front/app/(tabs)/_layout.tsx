@@ -1,93 +1,34 @@
+import { Tabs } from "expo-router";
 import React from "react";
-import { useRouter, Tabs, Redirect } from "expo-router";
-import { StyleSheet, Text } from "react-native";
-import { useAtomValue, useSetAtom } from "jotai";
+import { Platform } from "react-native";
 
-import { tabNavigationAtom } from "../../stores/layout/atoms";
-
-import { hexToRgb } from "../../utils/common";
-import { settingAtom } from "@stores";
-import { Colors } from "@constants";
-import { useColorScheme } from "@hooks";
-import HeaderLeft from "../../components/HeaderLeft";
-import IndexIcon from "../../assets/images/tabbar/index.svg";
-import MypageIcon from "../../assets/images/tabbar/mypage.svg";
-import RequestsIcon from "../../assets/images/tabbar/requests.svg";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const router = useRouter();
-  const setting = useAtomValue(settingAtom);
-  const setTabNavigation = useSetAtom(tabNavigationAtom);
-
-  if (!setting.isReady) {
-    return <Redirect href="(onboarding)/nickname" />;
-  }
 
   return (
     <Tabs
-      sceneContainerStyle={{
-        paddingBottom: 84,
-        backgroundColor: Colors[colorScheme].background.primary,
-      }}
       screenOptions={{
-        tabBarStyle: {
-          position: "absolute",
-          backgroundColor: Colors[colorScheme].buttonBackground.primary,
-          borderTopWidth: 0,
-          paddingTop: 10,
-          paddingBottom: 20,
-          height: 84,
-        },
-        headerTitle: () => <Text accessible={false} />,
-        headerStyle: {
-          backgroundColor: Colors[colorScheme].background.primary,
-        },
-        tabBarActiveTintColor: Colors[colorScheme].buttonText.primary,
-        tabBarInactiveTintColor: `rgba(${hexToRgb(Colors[colorScheme].buttonText.primary)}, 0.7)`,
-        headerShadowVisible: false, // applied here
-        headerLeft: () => <HeaderLeft canGoBack={false} />,
-        headerTintColor: "transparent",
-      }}
-      screenListeners={{
-        tabPress: (e) => {
-          const nav = e.target?.split("-")[0];
-          if (nav) {
-            setTabNavigation(nav);
-          }
-        },
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        headerShown: false,
+        tabBarStyle: Platform.select({
+          ios: {
+            // Use a transparent background on iOS to show the blur effect
+            position: "absolute",
+          },
+          default: {},
+        }),
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          headerShown: false,
-          title: "홈",
-          tabBarAccessibilityLabel: "홈 탭",
-          tabBarIcon: ({ color }) => <IndexIcon style={{ color }} />,
-        }}
-      />
-      <Tabs.Screen
-        name="wishlist"
-        options={{
-          headerShown: false,
-          title: "위시리스트",
-          tabBarAccessibilityLabel: "위시리스트 탭",
-          tabBarIcon: ({ color }) => <RequestsIcon style={{ color }} />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="mypage"
-        options={{
-          headerShown: false,
-          title: "마이페이지",
-          tabBarAccessibilityLabel: "마이페이지 탭",
-          tabBarIcon: ({ color }) => <MypageIcon style={{ color }} />,
+          title: "Home",
+          // tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({});

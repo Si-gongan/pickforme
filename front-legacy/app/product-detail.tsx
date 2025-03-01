@@ -43,7 +43,6 @@ import { Text, View, Button } from "@components";
 import { useColorScheme } from "@hooks";
 import { isShowNonSubscriberManagerModalAtom } from "@stores";
 import { numComma } from "../utils/common";
-import { useWebView } from "../components/webview-util";
 import TabContent from "../components/ProductDetailTabContent";
 
 // 2024
@@ -66,16 +65,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
   const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
   const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
-  const ImageWebView = useWebView({
-    productUrl,
-    type: "images",
-    onMessage: (data) => setScrapedProductDetail({ images: data }),
-  });
-  const ReviewWebView = useWebView({
-    productUrl,
-    type: "reviews",
-    onMessage: (data) => setScrapedProductDetail({ reviews: data }),
-  });
+  // const ImageWebView = useWebView({
+  //   productUrl,
+  //   type: "images",
+  //   onMessage: (data) => setScrapedProductDetail({ images: data }),
+  // });
+  // const ReviewWebView = useWebView({
+  //   productUrl,
+  //   type: "reviews",
+  //   onMessage: (data) => setScrapedProductDetail({ reviews: data }),
+  // });
 
   const getProductDetail = useSetAtom(getProductDetailAtom);
   const initProductDetail = useSetAtom(initProductDetailAtom);
@@ -351,8 +350,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   return (
     <View style={styles.container}>
       <View accessible={false}>
-        {!isLocal && ReviewWebView}
-        {!isLocal && DetailWebView}
+        {/* {!isLocal && ReviewWebView} */}
+        {/* {!isLocal && DetailWebView} */}
       </View>
 
       <ScrollView style={styles.scrollView}>

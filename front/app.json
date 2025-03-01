@@ -1,101 +1,43 @@
 {
   "expo": {
-    "owner": "sigongan",
-    "plugins": [
-      [
-        "@react-native-seoul/kakao-login",
-        {
-          "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
-          "kotlinVersion": "1.9.0"
-        }
-      ],
-      [
-        "react-native-iap"
-      ],
-      "expo-apple-authentication",
-      "expo-font",
-      ["expo-router", {"origin": false}]
-    ],
-    "name": "픽포미",
+    "name": "pickforme",
     "slug": "pickforme",
-    "version": "3.1.1",
+    "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#000000",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "dark": {
-        "image": "./assets/images/splash_dark.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#111525"
-      }
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sigonggan.pickforme",
-      "splash": {
-        "image": "./assets/images/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "image": "./assets/images/splash_dark.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#111525"
-        }
-      },
-      "minimumVersion": "15.6",
-      "buildNumber": "1"
+      "bundleIdentifier": "com.anonymous.pickforme"
     },
     "android": {
-      "splash": {
-        "image": "./assets/images/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "image": "./assets/images/splash_dark.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#111525"
-        }
-      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sigonggan.pickforme",
-      "versionCode": 81,
-      "intentFilters": [
-        {
-          "action": "android.intent.action.SEND",
-          "data": {
-            "mimeType": "text/plain"
-          },
-          "categories": [
-            "android.intent.category.DEFAULT"
-          ]
-        }
-      ]
+      "package": "com.anonymous.pickforme"
     },
     "web": {
       "bundler": "metro",
+      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "e1838378-658e-46ee-b890-0e439a47e799"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/e1838378-658e-46ee-b890-0e439a47e799"
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
