@@ -23,6 +23,7 @@ export interface User extends LocalRegisterPayload {
   originEmail?: string;
   MembershipAt: Date;
   phone:string;
+  event:number;
 }
 
 export interface UserDocument extends User, Document {

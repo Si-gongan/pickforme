@@ -64,12 +64,21 @@ const handleLogin = async (email: string) => {
       
     } else {
       // 과거 회원 기록이 있는 경우
-      
+      const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
     }
     isRegister = true;
   } else {
     // 기존 회원
-    
+    const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
+
+    const today = new Date(); // 현재 날짜 객체 생성
+    const dayOfMonth = today.getDate(); // 오늘 날짜의 '일' 값 가져오기
+
+    if (dayOfMonth === 1 && user.event === 1) {
+      user.point = 15;
+      user.aiPoint = 99999;
+    }
+
     // update last login date
     user.lastLoginAt = new Date();
   }

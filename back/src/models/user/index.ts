@@ -54,6 +54,9 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema(
     },
     phone:{
       type: String
+    },
+    event: {
+      type: Number
     }
   },
   {
