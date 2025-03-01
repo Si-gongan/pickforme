@@ -10,6 +10,8 @@
       "@types": ["./types/index.ts"],
       "@services": ["./services/index.ts"],
       "@components": ["./components/index.ts"],
+      "@assets": ["./assets/index.ts"],
+      "@utils": ["./utils/index.ts"]
     }
   },
   "include": [
