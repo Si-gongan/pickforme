@@ -22,3 +22,7 @@ export interface IDicoverMainProducts {
   random: IProduct[];
   local: ILocalProductSection[];
 }
+
+export interface IProductDetail {
+  product: IProduct;
+}

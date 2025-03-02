@@ -42,7 +42,7 @@ export default forwardRef(function ProductCard(
   );
 
   const onPress = useCallback(function () {
-    router.push(`/product-detail?productUrl=${encodeURIComponent(data.url)}`);
+    router.push(`/product-detail?url=${encodeURIComponent(data.url)}`);
   }, []);
 
   return (

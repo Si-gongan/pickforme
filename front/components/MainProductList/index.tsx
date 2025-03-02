@@ -2,19 +2,36 @@
  * 홈 화면 메인 상품 노출
  * - 기본적으로 랜덤 카테고리 상품 노툴
  */
+import { useState, useCallback } from "react";
 import { ScrollView, FlatList, View, Text } from "react-native";
 
-import { ProductCard } from "@components";
+import { ProductCard, MoreButton } from "@components";
 import { useServiceMainProducts } from "@services";
 import useStyle from "./style";
 
 export default function MainProductList() {
-  const { data } = useServiceMainProducts();
+  const [randomCount, onRandomCount] = useState<number>(10);
+  const [specialCount, onSpecialCount] = useState<number>(15);
+
+  const { data, category } = useServiceMainProducts();
 
   const style = useStyle();
 
+  const onMore = useCallback(
+    function (type: "special" | "random") {
+      switch (type) {
+        case "special":
+          onSpecialCount(function (prev) {
+            return Math.min(prev + 5, data.special.length);
+          });
+          break;
+      }
+    },
+    [data]
+  );
+
   return (
-    <ScrollView>
+    <ScrollView showsVerticalScrollIndicator={false}>
       {data.local
         .filter(function ({ order }) {
           return order < 0;
@@ -39,6 +56,49 @@ export default function MainProductList() {
           );
         })}
 
+      {data.random.length > 0 && (
+        <View style={style.MainProductSection}>
+          <Text
+            style={[style.MainProductSectionTitle]}
+            accessible
+            accessibilityRole="header"
+          >
+            {category}
+          </Text>
+
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={false}
+            contentContainerStyle={[style.MainProductSectionListContent]}
+            data={data.random.slice(0, randomCount)}
+            keyExtractor={function (item) {
+              return `random-${item.url}`;
+            }}
+            ItemSeparatorComponent={() => (
+              <View
+                style={style.MainProductSectionSeparator}
+                accessible={false}
+              />
+            )}
+            renderItem={function ({ item }) {
+              return <ProductCard data={item} />;
+            }}
+            ListFooterComponentStyle={style.MainProductSectionListFooter}
+            ListFooterComponent={function () {
+              return (
+                data.random.length > randomCount && (
+                  <MoreButton
+                    onPress={function () {
+                      onMore("random");
+                    }}
+                  />
+                )
+              );
+            }}
+          />
+        </View>
+      )}
+
       {data.special.length > 0 && (
         <View style={style.MainProductSection}>
           <Text
@@ -50,10 +110,10 @@ export default function MainProductList() {
           </Text>
 
           <FlatList
+            showsVerticalScrollIndicator={false}
             scrollEnabled={false}
             contentContainerStyle={[style.MainProductSectionListContent]}
-            // data={data.special.slice(0, length.special)}
-            data={data.special}
+            data={data.special.slice(0, specialCount)}
             keyExtractor={function (item) {
               return `special-${item.url}`;
             }}
@@ -64,16 +124,20 @@ export default function MainProductList() {
               />
             )}
             renderItem={function ({ item }) {
-              return <ProductCard data={item} type="goldbox" />;
+              return <ProductCard data={item} />;
             }}
-            // ListFooterComponentStyle={styles.listFooter}
-            // ListFooterComponent={
-            //   data.special.length > length.special
-            //     ? () => (
-            //         <MoreButton onClick={() => handleClickMore("special")} />
-            //       )
-            //     : undefined
-            // }
+            ListFooterComponentStyle={style.MainProductSectionListFooter}
+            ListFooterComponent={function () {
+              return (
+                data.special.length > specialCount && (
+                  <MoreButton
+                    onPress={function () {
+                      onMore("special");
+                    }}
+                  />
+                )
+              );
+            }}
           />
         </View>
       )}

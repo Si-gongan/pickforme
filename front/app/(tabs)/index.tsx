@@ -28,7 +28,8 @@ function useStyle() {
     },
     Header: {
       paddingTop: insets.top,
-      height: 47 + insets.top,
+      height: 55 + insets.top,
+      paddingBottom: 8,
     },
   });
 }

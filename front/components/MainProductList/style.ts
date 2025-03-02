@@ -13,11 +13,16 @@ export default function useStyle() {
     MainProductSectionListContent: {
       justifyContent: "center",
       alignItems: "center",
+      paddingBottom: 36,
     },
     MainProductSectionSeparator: {
       height: 12,
       width: 1,
       backgroundColor: "transparent",
+    },
+    MainProductSectionListFooter: {
+      width: "100%",
+      marginTop: 12,
     },
   });
 }
