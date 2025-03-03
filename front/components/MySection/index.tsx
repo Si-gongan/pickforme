@@ -9,7 +9,7 @@ export default function MySection({ title, items }: IMySectionProps) {
 
   return (
     <View style={style.MySectionContainer}>
-      <Text style={style.MySectionTitle}>{title}</Text>
+      {title && <Text style={style.MySectionTitle}>{title}</Text>}
       <View style={style.MySectionMenuContent}>
         {items.map(function (item, index) {
           return (

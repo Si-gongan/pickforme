@@ -6,3 +6,11 @@ export interface ISetting {
   theme?: "light" | "dark" | "default";
   isReady?: boolean;
 }
+
+export interface IModal {
+  loginModal?: boolean;
+  onBoardingModal?: boolean;
+  lackPointModal?: boolean;
+  greetingModal?: boolean;
+  versionUpdateAlarmModal?: boolean;
+}

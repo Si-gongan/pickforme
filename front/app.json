@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "pickforme",
+    "owner": "sigongan",
+    "name": "픽포미",
     "slug": "pickforme",
-    "version": "1.0.0",
+    "version": "3.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -10,7 +11,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.pickforme"
+      "bundleIdentifier": "com.sigonggan.pickforme"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +26,15 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
+          "kotlinVersion": "1.9.0"
+        }
+      ],
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
@@ -33,6 +42,14 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+          }
         }
       ]
     ],

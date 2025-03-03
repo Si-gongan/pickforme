@@ -28,5 +28,13 @@
         <data android:scheme="com.anonymous.pickforme"/>
       </intent-filter>
     </activity>
+    <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:host="oauth" android:scheme="kakaoa48d1b07defd794b769579746e2bb995"/>
+      </intent-filter>
+    </activity>
   </application>
 </manifest>

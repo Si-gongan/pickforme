@@ -12,7 +12,8 @@
       "@components": ["./components/index.ts"],
       "@assets": ["./assets/index.ts"],
       "@utils": ["./utils/index.ts"],
-      "@hooks": ["./hooks/index.ts"]
+      "@hooks": ["./hooks/index.ts"],
+      "@constants": ["./constants/index.ts"]
     }
   },
   "include": [

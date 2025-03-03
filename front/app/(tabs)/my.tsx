@@ -1,12 +1,17 @@
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { useAtom } from "jotai";
 
 import { IconHeader, MySection } from "@components";
+import { userAtom } from "@stores";
+import { changeToken } from "@services";
 
 export default function MyScreen() {
   const style = useStyle();
   const router = useRouter();
+
+  const [user, onUser] = useAtom(userAtom);
 
   const goToInfo = useCallback(
     function () {
@@ -20,6 +25,15 @@ export default function MyScreen() {
       router.push("/login");
     },
     [router]
+  );
+
+  const onLogout = useCallback(
+    function () {
+      onUser({});
+      changeToken(undefined);
+      Alert.alert("로그아웃 되었습니다.");
+    },
+    [onUser]
   );
 
   return (
@@ -37,6 +51,15 @@ export default function MyScreen() {
               { name: "로그인", onPress: goToLogin },
             ]}
           />
+
+          {!!user?._id && (
+            <MySection
+              items={[
+                { name: "로그아웃", onPress: onLogout },
+                { name: "회원탈퇴", onPress: goToLogin },
+              ]}
+            />
+          )}
         </ScrollView>
       </View>
     </View>
