@@ -42,6 +42,20 @@ export default function MyScreen() {
     [router]
   );
 
+  const goToHow = useCallback(
+    function () {
+      router.push("/how");
+    },
+    [router]
+  );
+
+  const goToFAQ = useCallback(
+    function () {
+      router.push("/faq");
+    },
+    [router]
+  );
+
   const onLogout = useCallback(
     function () {
       onUser({});
@@ -108,6 +122,8 @@ export default function MyScreen() {
                   WebBrowser.openBrowserAsync("http://pf.kakao.com/_csbDxj");
                 },
               },
+              { name: "사용 설명서", onPress: goToHow },
+              { name: "자주 묻는 질문", onPress: goToFAQ },
               {
                 name: "개인정보처리방침",
                 onPress: function () {
@@ -151,7 +167,8 @@ function useStyle() {
       flex: 1,
     },
     MyScrollView: {
-      paddingVertical: 20,
+      paddingTop: 20,
+      paddingBottom: 96,
       paddingHorizontal: 20,
     },
   });

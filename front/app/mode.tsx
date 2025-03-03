@@ -8,6 +8,7 @@ export default function ModeScreen() {
   return (
     <View style={style.ModeScreenContainer}>
       <BackHeader />
+      <View></View>
     </View>
   );
 }
