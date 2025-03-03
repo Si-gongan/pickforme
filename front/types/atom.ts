@@ -1,6 +1,8 @@
+export type TVision = "none" | "low" | "blind";
+
 export interface ISetting {
   name?: string;
-  vision?: "none" | "low" | "blind";
+  vision?: TVision;
   theme?: "light" | "dark" | "default";
-  isReady: boolean;
+  isReady?: boolean;
 }

@@ -11,7 +11,8 @@
       "@services": ["./services/index.ts"],
       "@components": ["./components/index.ts"],
       "@assets": ["./assets/index.ts"],
-      "@utils": ["./utils/index.ts"]
+      "@utils": ["./utils/index.ts"],
+      "@hooks": ["./hooks/index.ts"]
     }
   },
   "include": [

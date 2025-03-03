@@ -53,6 +53,8 @@ export default function RootLayout() {
               name="product-detail"
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="info" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>
