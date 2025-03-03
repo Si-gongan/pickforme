@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
 import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import { useAtom } from "jotai";
+import * as WebBrowser from "expo-web-browser";
 
 import { IconHeader, MySection } from "@components";
 import { userAtom } from "@stores";
@@ -34,6 +35,13 @@ export default function MyScreen() {
     [router]
   );
 
+  const goToMode = useCallback(
+    function () {
+      router.push("/mode");
+    },
+    [router]
+  );
+
   const onLogout = useCallback(
     function () {
       onUser({});
@@ -60,9 +68,7 @@ export default function MyScreen() {
 
   const appSettingMenu = useMemo(
     function () {
-      const defaultMenu = [
-        { name: "화면 모드 변경하기", onPress: function () {} },
-      ];
+      const defaultMenu = [{ name: "화면 모드 변경하기", onPress: goToMode }];
       if (!!user?._id) {
         return [...defaultMenu, { name: "알림 설정하기", onPress: goToPush }];
       }
@@ -92,6 +98,34 @@ export default function MyScreen() {
           <MySection title="내 정보" items={myInfoMenu} />
 
           <MySection title="앱 설정" items={appSettingMenu} />
+
+          <MySection
+            title="고객 지원"
+            items={[
+              {
+                name: "1:1 문의",
+                onPress: function () {
+                  WebBrowser.openBrowserAsync("http://pf.kakao.com/_csbDxj");
+                },
+              },
+              {
+                name: "개인정보처리방침",
+                onPress: function () {
+                  WebBrowser.openBrowserAsync(
+                    "https://sites.google.com/view/sigongan-useterm/개인정보처리방침?authuser=0"
+                  );
+                },
+              },
+              {
+                name: "서비스 이용약관",
+                onPress: function () {
+                  WebBrowser.openBrowserAsync(
+                    "https://sites.google.com/view/sigongan-useterm/홈?authuser=0"
+                  );
+                },
+              },
+            ]}
+          />
 
           {!!user?._id && (
             <MySection
