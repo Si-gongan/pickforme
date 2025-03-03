@@ -55,6 +55,7 @@ export default function RootLayout() {
             />
             <Stack.Screen name="info" options={{ headerShown: false }} />
             <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="push" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

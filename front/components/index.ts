@@ -10,3 +10,4 @@ export { default as LoginForm } from "./LoginForm";
 export { default as Button } from "./Button";
 export { default as InfoForm } from "./InfoForm";
 export { default as Footer } from "./Footer";
+export { default as PushForm } from "./PushForm";

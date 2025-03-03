@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import { useAtom } from "jotai";
 
@@ -27,6 +27,13 @@ export default function MyScreen() {
     [router]
   );
 
+  const goToPush = useCallback(
+    function () {
+      router.push("/push");
+    },
+    [router]
+  );
+
   const onLogout = useCallback(
     function () {
       onUser({});
@@ -34,6 +41,34 @@ export default function MyScreen() {
       Alert.alert("로그아웃 되었습니다.");
     },
     [onUser]
+  );
+
+  const myInfoMenu = useMemo(
+    function () {
+      const defaultMenu = [{ name: "내 정보 수정하기", onPress: goToInfo }];
+      if (!user?._id) {
+        return [...defaultMenu, { name: "로그인", onPress: goToLogin }];
+      }
+      return [
+        ...defaultMenu,
+        { name: "멤버십 이용하기", onPress: function () {} },
+        { name: "멤버십 구매내역", onPress: function () {} },
+      ];
+    },
+    [user?._id, goToInfo, goToLogin]
+  );
+
+  const appSettingMenu = useMemo(
+    function () {
+      const defaultMenu = [
+        { name: "화면 모드 변경하기", onPress: function () {} },
+      ];
+      if (!!user?._id) {
+        return [...defaultMenu, { name: "알림 설정하기", onPress: goToPush }];
+      }
+      return defaultMenu;
+    },
+    [user?._id, goToPush]
   );
 
   return (
@@ -44,13 +79,19 @@ export default function MyScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={style.MyScrollView}
         >
-          <MySection
-            title="내 정보"
-            items={[
-              { name: "내 정보 수정하기", onPress: goToInfo },
-              { name: "로그인", onPress: goToLogin },
-            ]}
-          />
+          {!!user?._id && (
+            <MySection
+              title="잔여 이용권"
+              items={[
+                { name: `매니저 질문권 ${user.point ?? 0}회` },
+                { name: `AI 질문권 ${user.aiPoint ?? 0}회` },
+              ]}
+            />
+          )}
+
+          <MySection title="내 정보" items={myInfoMenu} />
+
+          <MySection title="앱 설정" items={appSettingMenu} />
 
           {!!user?._id && (
             <MySection

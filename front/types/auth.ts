@@ -8,6 +8,10 @@ export interface IAppleAuthPayload {
   identityToken: string;
 }
 
+export interface IPush {
+  service?: PushService;
+}
+
 export interface IUser {
   _id?: string;
   email?: string;
@@ -16,9 +20,7 @@ export interface IUser {
   level?: number;
   lastLoginAt?: string;
   token?: string;
-  push?: {
-    service: PushService;
-  };
+  push?: IPush;
 }
 
 export interface ILogin {

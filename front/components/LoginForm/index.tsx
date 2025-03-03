@@ -18,16 +18,17 @@ export default function LoginForm() {
   const style = useStyle();
   const colorScheme = useColorScheme();
 
-  const { mutateAppleLogin, isPending: isPendingAppleLogin } =
+  const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } =
     useServiceLogin();
 
   const onLoginWithKakao = useCallback(
     async function () {
       try {
         const token = await kakaoLogin();
+        mutateKakaoLogin({ accessToken: token.accessToken });
       } catch {}
     },
-    [kakaoLogin]
+    [kakaoLogin, mutateKakaoLogin]
   );
 
   const onLoginWithApple = useCallback(
@@ -46,6 +47,13 @@ export default function LoginForm() {
       } catch {}
     },
     [appleSignInAsync, mutateAppleLogin]
+  );
+
+  const onLoginWithGoogle = useCallback(
+    function () {
+      mutateGoogleLogin();
+    },
+    [mutateGoogleLogin]
   );
 
   return (
@@ -79,6 +87,7 @@ export default function LoginForm() {
         </View>
 
         <TouchableOpacity
+          onPress={onLoginWithGoogle}
           style={[style.LoginFormButton, style.LoginFormButtonGoogle]}
         >
           <Image source={GoogleImage} style={style.LoginFormButtonImage} />

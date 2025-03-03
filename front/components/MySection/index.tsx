@@ -16,6 +16,7 @@ export default function MySection({ title, items }: IMySectionProps) {
             <TouchableOpacity
               key={`section-${title}-${index}`}
               onPress={item.onPress}
+              disabled={!item.onPress}
             >
               <Text style={style.MySectionMenu}>{item.name}</Text>
             </TouchableOpacity>
