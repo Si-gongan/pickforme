@@ -93,9 +93,12 @@ const handleLogin = async (email: string) => {
   await user.save();
 
   const token = await user.generateToken();
+  const refreshToken = await user.generateRefreshToken();
+  
   return {
     user: {
       ...user.toObject(),
+      refreshToken,
       token,
     },
     isRegister,

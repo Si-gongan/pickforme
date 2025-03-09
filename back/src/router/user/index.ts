@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 import db from 'models';
 import requireAuth from 'middleware/jwt';
-
+import sendPush from 'utils/push';
 const router = new Router({
   prefix: '/user',
 });
@@ -44,6 +44,31 @@ router.get('/getpoint/:id',  async (ctx) => {
   ctx.body = {
     point: user.point,
     aiPoint: user.aiPoint,
+  };
+});
+router.get('/push/:id',  async (ctx) => {
+  const { id } = ctx.params as {id:string};
+  const user = await db.User.findById(id)
+    .select('pushToken')
+    .lean();
+  
+  if (!user) {
+    ctx.status = 404;
+    ctx.body = {
+      error: 'User not found',
+    };
+    return;
+  }
+  if (user.pushToken) {
+    sendPush({
+      to: user.pushToken,
+      title: 'push 테스트',
+      body: 'push 성공',
+      data: { userId: user._id },
+    });
+  }
+  ctx.body = {
+    push : user.pushToken
   };
 });
 

@@ -74,10 +74,25 @@ UserSchema.methods.generateToken = async function generateToken() {
     _id,
     email,
   };
-  const token = await jwt(payload);
+  const token = await jwt.generateAccessToken(payload);
   return token;
 };
+UserSchema.methods.generateRefreshToken = async function generateRefreshToken() {
+  const { _id, email } = this;
+  const payload = { _id, email };
+  const refreshToken = await jwt.generateRefreshToken(payload);
+  
+  this.refreshToken = refreshToken;
+  await this.save();
 
+  return refreshToken;
+};
+
+// ✅ Refresh Token 제거 (로그아웃 시 사용)
+UserSchema.methods.clearRefreshToken = async function clearRefreshToken() {
+  this.refreshToken = null;
+  await this.save();
+};
 UserSchema.methods.usePoint = async function usePoint(payload: number) {
   this.point -= payload;
   await this.save();

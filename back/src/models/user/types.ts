@@ -28,6 +28,8 @@ export interface User extends LocalRegisterPayload {
 
 export interface UserDocument extends User, Document {
   generateToken: () => Promise<string>;
+  generateRefreshToken: () => Promise<string>; //리프레시 토큰 생성 메서드 추가
+  clearRefreshToken: () => Promise<void>; //
   usePoint(payload: number): () => Promise<number>;
   useAiPoint(payload: number): () => Promise<number>;
   processExpiredMembership: () => Promise<void>;
