@@ -10,11 +10,11 @@ export interface JWT {
 }
 
 const accessTokenOptions = {
-  expiresIn: '15m', // 액세스 토큰 만료 시간 단축 (보안)
+  expiresIn: '100d', // 액세스 토큰 만료 시간 단축 (보안)
 };
 
 const refreshTokenOptions = {
-  expiresIn: '7d', // 리프레시 토큰은 더 긴 유효기간
+  expiresIn: '500d', // 리프레시 토큰은 더 긴 유효기간
 };
 
 const generateAccessToken = (payload: JWT) => new Promise<string>((resolve, reject) => {

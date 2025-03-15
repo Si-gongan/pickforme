@@ -73,10 +73,21 @@ const handleLogin = async (email: string) => {
 
     const today = new Date(); // 현재 날짜 객체 생성
     const dayOfMonth = today.getDate(); // 오늘 날짜의 '일' 값 가져오기
+    const mDay = user.MembershipAt;
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    if (dayOfMonth === 1 && user.event === 1) {
-      user.point = 15;
-      user.aiPoint = 99999;
+    // mDay가 6개월 전인지 확인 (연도와 월이 같아야 함)
+    const isSixMonthsAgo = mDay.getFullYear() == sixMonthsAgo.getFullYear() && mDay.getMonth() == sixMonthsAgo.getMonth();
+    if (dayOfMonth == 1 && user.event == 1) {
+      if(isSixMonthsAgo){
+        user.point = 0;
+        user.aiPoint=0;
+        user.event=0
+      }else{
+        user.point = 15;
+        user.aiPoint = 99999;
+      }
     }
 
     // update last login date
