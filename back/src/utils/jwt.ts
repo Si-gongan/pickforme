@@ -10,7 +10,7 @@ export interface JWT {
 }
 
 const accessTokenOptions = {
-  expiresIn: '100d', // 액세스 토큰 만료 시간 단축 (보안)
+  expiresIn: '30d', // 액세스 토큰 만료 시간 단축 (보안)
 };
 
 const refreshTokenOptions = {
