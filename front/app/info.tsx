@@ -11,50 +11,60 @@ import { Button, InfoForm, BackHeader, Footer } from "@components";
 import type { ISetting } from "@types";
 
 export default function InfoScreen() {
-  const style = useStyle();
-  const [setting, onSetting] = useAtom(settingAtom);
+    const style = useStyle();
+    const [setting, onSetting] = useAtom(settingAtom);
 
-  const [payload, onPayload] = useState<ISetting>(setting || {});
+    const [payload, onPayload] = useState<ISetting>(setting || {});
 
-  useEffect(
-    function () {
-      onPayload(function (prev) {
-        return { ...prev, name: setting?.name, vision: setting?.vision };
-      });
-    },
-    [setting]
-  );
+    useEffect(
+        function () {
+            onPayload(function (prev) {
+                return {
+                    ...prev,
+                    name: setting?.name,
+                    vision: setting?.vision,
+                };
+            });
+        },
+        [setting]
+    );
 
-  const onSubmit = useCallback(
-    function () {
-      onSetting(payload);
-    },
-    [payload, onSetting]
-  );
+    useEffect(() => {
+        console.log("현재 payload 상태:", payload);
+    }, [payload]);
 
-  return (
-    <View style={style.InfoScreenContainer}>
-      <BackHeader />
-      <View style={style.InfoScreenContent}>
-        <InfoForm value={payload} onChange={onPayload} />
-      </View>
-      <Footer>
-        <Button title="확인" onPress={onSubmit} />
-      </Footer>
-    </View>
-  );
+    const onSubmit = useCallback(
+        function () {
+            console.log("(info)제출된 정보:", payload);
+
+            onSetting(payload);
+        },
+        [payload, onSetting]
+    );
+
+    return (
+        <View style={style.InfoScreenContainer}>
+            <BackHeader />
+            <View style={style.InfoScreenContent}>
+                <InfoForm value={payload} onChange={onPayload} />
+            </View>
+            <Footer>
+                <Button title="확인" onPress={onSubmit} />
+            </Footer>
+        </View>
+    );
 }
 
 function useStyle() {
-  return StyleSheet.create({
-    InfoScreenContainer: {
-      flex: 1,
-      backgroundColor: "#fff",
-    },
-    InfoScreenContent: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-  });
+    return StyleSheet.create({
+        InfoScreenContainer: {
+            flex: 1,
+            backgroundColor: "#fff",
+        },
+        InfoScreenContent: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+        },
+    });
 }
