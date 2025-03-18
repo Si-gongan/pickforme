@@ -36,3 +36,10 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+run
+Podfile.lock
+.DS_Store
+package-lock.json
+yarn.lock
+Podfile.properties.json

@@ -32,7 +32,7 @@ export default function OnBoardingInfoScreen() {
         console.log("(onboarding)제출된 정보:", payload);
 
         // tabs 스크린으로 이동
-        router.replace("/(tabs)");
+        router.replace("/(starting)");
     }, [payload, onSetting, router]);
 
     return (
