@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { useAtomValue } from "jotai";
 import { settingAtom } from "@stores";
-import { Colors } from "../../constants/Colors";
+import { Colors } from "@constants";
 import { Footer, Button } from "@components";
 
 export default function StartingScreen() {
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: "bold",
-        color: Colors.light.text,
+        color: Colors.light.text.primary,
         textAlign: "center",
         marginTop: 16,
         marginBottom: 24,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
         fontSize: 22,
         width: "80%",
         fontWeight: "600",
-        color: Colors.light.text,
+        color: Colors.light.text.primary,
         textAlign: "left",
         lineHeight: 26,
         fontFamily: "Noto sans",
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         width: "80%",
         fontWeight: "400",
-        color: Colors.light.text,
+        color: Colors.light.text.primary,
         textAlign: "left",
         fontFamily: "Noto sans",
     },

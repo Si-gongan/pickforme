@@ -12,3 +12,5 @@ export { default as InfoForm } from "./InfoForm";
 export { default as Footer } from "./Footer";
 export { default as PushForm } from "./PushForm";
 export { default as SelectButton } from "./SelectButton";
+export { default as View } from "./View";
+export { default as Text } from "./Text";

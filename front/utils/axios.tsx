@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_HOST } from "@env";
+import { API_HOST } from "../constants/info";
 
 console.log(API_HOST);
 

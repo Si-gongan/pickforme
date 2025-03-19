@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 import React from "react";
-import { API_HOST } from "@env";
+import { API_HOST } from "../constants/info";
 import { userDataAtom, setPointAtom } from "../stores/auth/atoms";
 import { receiveChatAtom } from "../stores/request/atoms";
 import { pushBottomSheetAtom } from "../stores/layout/atoms";

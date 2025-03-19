@@ -1,1 +1,2 @@
-export { useColorScheme } from "./useColorScheme";
+export * from "./useThemeColor";
+export * from "./useColorScheme";

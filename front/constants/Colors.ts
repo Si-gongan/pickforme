@@ -1,26 +1,118 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+const tintColorLight = "#2f95dc";
+const tintColorDark = "#fff";
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const primary = "#111E4F";
+const primaryDark = "#424C75";
+const secondary = "#4A5CA0";
+const secondaryDark = "#313854";
+const tertiary = "#DFE4F5";
+const tertiaryDark = "#1D2336";
+const buttonText = "#EFEFEF";
+const secondary2 = "#9FA7C3";
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+export default {
+    light: {
+        text: {
+            primary,
+            secondary,
+            tertiary,
+        },
+        background: {
+            primary: "#fff",
+            secondary: "#fff",
+            tertiary,
+        },
+        tint: {
+            primary: tintColorLight,
+            secondary: tintColorLight,
+            tertiary,
+        },
+        tabIconDefault: {
+            primary: "#ccc",
+            secondary: "#ccc",
+            tertiary,
+        },
+        tabIconSelected: {
+            primary: tintColorLight,
+            secondary: tintColorLight,
+            tertiary,
+        },
+        card: {
+            primary: tertiary,
+            secondary: tertiary,
+            tertiary,
+        },
+        buttonBackground: {
+            primary,
+            secondary,
+            tertiary: "#FFFFFF",
+        },
+        disabledButtonBackground: {
+            primary: secondary2,
+            secondary: secondary2,
+            tertiary: secondary2,
+        },
+        buttonText: {
+            primary: buttonText,
+            secondary: buttonText,
+            tertiary: primary,
+        },
+        borderColor: {
+            primary: secondary2,
+            secondary: tertiary,
+            tertiary,
+        },
+    },
+    dark: {
+        text: {
+            primary: "#D9D9D9",
+            secondary: "#D9D9D9",
+            tertiary: "#D9D9D9",
+        },
+        background: {
+            primary: "#111525",
+            secondary: "#111525",
+            tertiary: "#111525",
+        },
+        tint: {
+            primary: tintColorDark,
+            secondary: tintColorDark,
+            tertiary,
+        },
+        tabIconDefault: {
+            primary: "#ccc",
+            secondary: "#ccc",
+            tertiary,
+        },
+        tabIconSelected: {
+            primary: tintColorDark,
+            secondary: tintColorDark,
+            tertiary,
+        },
+        buttonBackground: {
+            primary: primaryDark,
+            secondary: secondaryDark,
+            tertiary: tertiaryDark,
+        },
+        card: {
+            primary: tertiaryDark,
+            secondary: tertiaryDark,
+            tertiary: tertiaryDark,
+        },
+        disabledButtonBackground: {
+            primary: secondary2,
+            secondary: secondary2,
+            tertiary,
+        },
+        buttonText: {
+            primary: buttonText,
+            secondary: buttonText,
+            tertiary: buttonText,
+        },
+        borderColor: {
+            primary: secondary2,
+            secondary: secondary2,
+            tertiary: secondary2,
+        },
+    },
 };

@@ -38,6 +38,7 @@ yarn-error.*
 app-example
 
 run
+run_ios
 Podfile.lock
 .DS_Store
 package-lock.json

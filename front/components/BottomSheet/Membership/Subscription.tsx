@@ -6,9 +6,9 @@ import { useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 import { useAtom } from "jotai";
 
-import { Props, styles } from "../Base";
+import { Props, styles } from "../../BottomSheet/Base";
 import { isShowSubscriptionModalAtom } from "@stores";
-import { View, Text, Button } from "@components";
+import { Button, View, Text } from "@components";
 import { useColorScheme } from "@hooks";
 import { Colors } from "@constants";
 
@@ -24,6 +24,7 @@ const SubscriptionBottomSheet: React.FC<Props> = () => {
     const localStyles = useLocalStyles(colorScheme);
 
     const handlePress = () => {
+        // @ts-ignore - Expo Router 4 type issues
         router.push("/");
         onClose();
     };
@@ -44,12 +45,7 @@ const SubscriptionBottomSheet: React.FC<Props> = () => {
                         "픽포미 멤버가 되신 것을 환영해요.\n이제부터 한 달 무제한 질문 혜택을 누려보세요.\n지금 바로 픽포미와 쇼핑하러 갈까요?"
                     }
                 </Text>
-                <Button
-                    style={[styles.button, localStyles.button]}
-                    title="쇼핑하러 가기"
-                    onPress={handlePress}
-                    size="small"
-                />
+                <Button title="쇼핑하러 가기" onPress={handlePress} />
             </View>
         </BottomSheet>
     );

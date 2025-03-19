@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
 
-import client from "../utils/axios";
+import { client } from "../utils";
 import { isShowLoginModalAtom, userDataAtom } from "../stores/auth/atoms";
 
 const useInterceptor = () => {
@@ -9,8 +9,8 @@ const useInterceptor = () => {
     const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
     useEffect(() => {
         const clientInterceptor = client.interceptors.response.use(
-            async (response) => response,
-            async (error) => {
+            async (response: any) => response,
+            async (error: any) => {
                 console.log(
                     "Request baseURL:",
                     error.config.baseURL,
