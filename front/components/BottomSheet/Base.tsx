@@ -44,6 +44,7 @@ export const styles = StyleSheet.create({
         paddingTop: 42.99, // ASIS 20
         paddingBottom: 50,
         paddingHorizontal: 22, // ASIS 27
+        backgroundColor: "white",
     },
     button: {
         flex: 1,

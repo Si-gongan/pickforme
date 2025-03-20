@@ -1,14 +1,13 @@
 import { useRef, useEffect } from "react";
 import { findNodeHandle, AccessibilityInfo, StyleSheet } from "react-native";
 import { useRouter, Link } from "expo-router";
-import BottomSheet from "react-native-modal";
 import { useAtom } from "jotai";
 
 import { isShowOnboardingModalAtom } from "@stores";
 import { View, Text } from "@components";
-import { Props, styles as baseStyles } from "./Base";
+import { styles as baseStyles } from "./Base";
 
-const LackBottomSheet: React.FC<Props> = () => {
+function LackBottomSheet() {
     const router = useRouter();
     const headerTitleRef = useRef(null);
 
@@ -25,12 +24,7 @@ const LackBottomSheet: React.FC<Props> = () => {
         setTimeout(focusOnHeader, 500);
     }, [visible]);
     return (
-        <BottomSheet
-            style={baseStyles.base}
-            isVisible={visible}
-            onBackButtonPress={onClose}
-            onBackdropPress={onClose}
-        >
+        <View style={baseStyles.base}>
             <View style={baseStyles.bottomSheet}>
                 <View style={styles.section} ref={headerTitleRef}>
                     <Text style={styles.title}>
@@ -82,9 +76,9 @@ const LackBottomSheet: React.FC<Props> = () => {
                     </Link>
                 </View>
             </View>
-        </BottomSheet>
+        </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {

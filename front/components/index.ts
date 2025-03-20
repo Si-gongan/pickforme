@@ -14,3 +14,4 @@ export { default as PushForm } from "./PushForm";
 export { default as SelectButton } from "./SelectButton";
 export { default as View } from "./View";
 export { default as Text } from "./Text";
+export { default as How } from "./BottomSheet/How";

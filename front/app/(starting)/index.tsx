@@ -38,7 +38,7 @@ export default function StartingScreen() {
             </View>
 
             <View style={styles.footer}>
-                <Button title="확인" onPress={handleStart} />
+                <Button title="시작하기" onPress={handleStart} />
             </View>
         </View>
     );
