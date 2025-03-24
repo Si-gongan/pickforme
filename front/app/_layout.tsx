@@ -73,7 +73,7 @@ export default function RootLayout() {
                     >
                         <Stack
                             initialRouteName={
-                                setting.isReady ? "(tabs)" : "(onboarding)"
+                                user?.token ? "(hansiryun)" : (setting.isReady ? "(tabs)" : "(onboarding)")
                             }
                         >
                             {!setting.isReady ? (
@@ -85,6 +85,10 @@ export default function RootLayout() {
                                 <Fragment>
                                     <Stack.Screen
                                         name="(tabs)"
+                                        options={{ headerShown: false }}
+                                    />
+                                    <Stack.Screen
+                                        name="(hansiryun)"
                                         options={{ headerShown: false }}
                                     />                                    
                                     <Stack.Screen
