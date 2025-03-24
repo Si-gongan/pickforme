@@ -48,7 +48,8 @@ export default function InterviewScreen() {
     // 여기서 전화번호 중복 확인 로직 추가
     // 예: 서버에 확인 요청 또는 로컬 데이터와 비교
     // 임시로 예시 번호와 비교
-    if (text === '010-1234-5678') {
+    let phoneNumber = text.replace(/-/g, '');
+    if (phoneNumber === '01012345678') {
       setIsDuplicate(true);
     } else {
       setIsDuplicate(false);
