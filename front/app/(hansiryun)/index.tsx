@@ -4,12 +4,15 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Colors from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
 
 export default function InterviewScreen() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isChecked, setIsChecked] = useState(false);
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const colorScheme = useColorScheme();
   
   // 신청하기 버튼 처리
   const handleSubmit = () => {
@@ -185,13 +188,17 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    marginHorizontal: 0,
-    borderRadius: 0,
+    borderRadius: 4,
     padding: 0,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 50,
   },
   submitButton: {
-    backgroundColor: 'white',
+    backgroundColor: '#111E4F',
+    textAlign: 'center',
+    width: 50,
+    marginRight: 16, // 여백 추가
   },
   submitButtonText: {
     color: 'white',
