@@ -1,48 +1,46 @@
 import { useCallback, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import { settingAtom } from "@stores";
 import type { ISetting } from "@types";
+import { StatusBar } from "expo-status-bar";
+import { Colors } from "@constants";
 
 import { InfoForm, Footer, Button } from "@components";
 
 export default function OnBoardingInfoScreen() {
     const style = useStyle();
-
     const router = useRouter();
-    const [, onSetting] = useAtom(settingAtom);
-    const [payload, setPayload] = useState<ISetting>({
-        name: "",
-        vision: undefined,
-        isReady: false,
-    });
+    
 
-    const onSubmit = useCallback(() => {
-        // 필수 입력값 검증
-        if (!payload.name || !payload.vision) {
-            return;
-        }
-
-        // 설정 저장
-        onSetting({
-            ...payload,
-            isReady: true, // 온보딩 완료 상태로 설정
-        });
-        console.log("(onboarding)제출된 정보:", payload);
-
-        // tabs 스크린으로 이동
-        router.replace("/(starting)");
-    }, [payload, onSetting, router]);
+    const handleStart = () => {
+        router.replace("/(tabs)");
+    };
 
     return (
         <View style={style.OnBoardingInfoContainer}>
-            <View style={style.OnBoardingInfoContent}>
-                <InfoForm value={payload} onChange={setPayload} />
-            </View>
-            <Footer>
-                <Button title="확인" onPress={onSubmit} />
-            </Footer>
+            <StatusBar style="auto" />
+
+<View style={styles.content}>
+    <Text style={{ width: "100%", height: "20%" }}></Text>
+    <Text style={styles.welcomeText}>
+        안녕하세요.
+    </Text>
+    <Text style={{ width: "100%", height: 60 }}></Text>
+    <Text style={styles.welcomeText}>시각장애인을 위한</Text>
+    <Text style={{ width: "100%", height: 16 }}></Text>
+    <Text style={styles.welcomeText}>쇼핑 서비스</Text>
+    <Text style={{ width: "100%", height: 34 }}></Text>
+    <Text style={styles.welcomeSubText}>
+        <Text style={styles.boldSystemText}>픽포미</Text>에 오신것을
+        환영합니다!
+    </Text>
+</View>
+
+<View style={styles.footer}>
+    <Button title="시작하기" onPress={handleStart} />
+</View>
         </View>
     );
 }
@@ -58,3 +56,56 @@ function useStyle() {
         },
     });
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#fff",
+        justifyContent: "space-between",
+    },
+    content: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "flex-start",
+        paddingHorizontal: "4%",
+    },
+    logo: {
+        width: 200,
+        height: 200,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: Colors.light.text.primary,
+        textAlign: "center",
+        marginTop: 16,
+        marginBottom: 24,
+        fontFamily: "Noto sans",
+    },
+    welcomeText: {
+        fontSize: 22,
+        width: "80%",
+        fontWeight: "600",
+        color: Colors.light.text.primary,
+        textAlign: "left",
+        lineHeight: 26,
+        fontFamily: "Noto sans",
+    },
+    welcomeSubText: {
+        fontSize: 18,
+        width: "80%",
+        fontWeight: "400",
+        color: Colors.light.text.primary,
+        textAlign: "left",
+        fontFamily: "Noto sans",
+    },
+    boldSystemText: {
+        fontWeight: "bold",
+    },
+    footer: {
+        flex: 0.1,
+        paddingBottom: 40,
+        paddingHorizontal: 20,
+        alignItems: "center",
+    },
+});
