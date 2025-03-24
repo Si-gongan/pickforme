@@ -28,7 +28,7 @@ export default function InterviewScreen() {
     
     // 여기에 신청 API 호출 로직 추가
     alert('신청이 완료되었습니다.');
-    router.back();
+    router.replace("/(tabs)");
   };
   
   // 앞으로 보지 않기 버튼 처리
