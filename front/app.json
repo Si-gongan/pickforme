@@ -5,18 +5,19 @@
         "slug": "pickforme",
         "version": "3.1.1",
         "orientation": "portrait",
-        "icon": "./assets/images/pickforme_logo_200x200.png",
+        "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "myapp",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "ios": {
             "supportsTablet": true,
             "bundleIdentifier": "com.sigonggan.pickforme",
-            "jsEngine": "jsc"
+            "jsEngine": "jsc",
+            "icon": "./assets/images/pickforme_logo_200x200.png"
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/images/pickforme_logoWtxt_200x200.png",
+                "foregroundImage": "./assets/images/pickforme_logo_200x200.png",
                 "backgroundColor": "#ffffff"
             },
             "package": "com.anonymous.pickforme"
