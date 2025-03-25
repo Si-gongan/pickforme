@@ -8,6 +8,7 @@ import {
   SetPushTokenParams,
   SetPushSettingParams,
   SetPushSettingResponse,
+  phoneCheckParams
 } from "./types";
 
 export const AppleLoginAPI = (params: AppleLoginParams) =>
@@ -32,5 +33,9 @@ export const SetPushSettingAPI = (params: SetPushSettingParams) =>
     });
 export const QuitAPI = () =>
   client.post("/auth/quit").catch((error) => {
+    console.log(error);
+  });
+export const phoneCheckAPI = (params: phoneCheckParams) =>
+  client.post("/user/phone", params).catch((error) => {
     console.log(error);
   });

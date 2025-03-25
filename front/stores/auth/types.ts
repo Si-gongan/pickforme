@@ -40,5 +40,11 @@ export enum PushService {
   off = 'off',
 }
 
+export interface phoneCheckParams {
+  id: string;
+  phone: string;
+  token: string;
+}
+
 export type SetPushSettingParams = UserData['push'];
 export type SetPushSettingResponse = SetPushSettingParams;
