@@ -57,6 +57,9 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema(
     },
     event: {
       type: Number
+    },
+    hide: {
+      type: Number
     }
   },
   {

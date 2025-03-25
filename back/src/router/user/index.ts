@@ -112,7 +112,7 @@ router.post('/membership', requireAuth, async (ctx) => {
   
 });
 
-router.post('/phone', requireAuth, async (ctx) => {
+router.post('/phone', requireAuth,async (ctx) => {
   const { id, phone } = ctx.request.body as { id: string; phone: string };
 
   console.log(phone); // 전달받은 id 출력
@@ -130,7 +130,12 @@ router.post('/phone', requireAuth, async (ctx) => {
     ctx.body = { error: 'phone is required' };
     return;
   }
-
+  const duplicateUser = await db.User.findOne({ phone, _id: { $ne: id } });
+  if (duplicateUser) {
+    ctx.status = 409; // Conflict
+    ctx.body = { error: 'Phone number already in use by another user' };
+    return;
+  }
   // 유저 찾기
   const user = await db.User.findById(id);
   if (!user) {
@@ -150,5 +155,42 @@ router.post('/phone', requireAuth, async (ctx) => {
 
   
 });
+router.post('/setpopup',requireAuth,async (ctx) => {
+  const { id, flag } = ctx.request.body as { id: string; flag: number };
 
+  console.log(flag); // 전달받은 id 출력
+
+  // id 값 확인
+  if (!id) {
+    ctx.status = 400;
+    ctx.body = { error: 'User ID is required' };
+    return;
+  }
+
+  // MembershipAt 값 확인
+  if (!flag) {
+    ctx.status = 400;
+    ctx.body = { error: 'flag is required' };
+    return;
+  }
+
+
+  // 유저 찾기
+  const user = await db.User.findById(id);
+  if (!user) {
+    ctx.status = 404;
+    ctx.body = { error: 'User not found' };
+    return;
+  }
+  
+  // MembershipAt 값 업데이트
+  user.hide = flag; // 전달받은 값을 Date 객체로 저장
+  await user.save();
+
+  ctx.body = {
+    message: 'Popup flag Set',
+    phone: user.hide,
+  };
+  
+});
 export default router;
