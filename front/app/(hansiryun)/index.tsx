@@ -55,19 +55,15 @@ export default function InterviewScreen() {
 
 
     const id = user?._id;
-    const token = user?.token;
 
-
-    console.log('id :', id, 'token :', token);
-
-    if (!id || !token) {
+    if (!id ) {
+      console.log('id가 없습니다.');
       return;
     }    
 
     const response = await phoneCheckAPI({
       id: id,
-      phone: phoneNumber,
-      token: token,
+      phone: phoneNumber
     });
 
     console.log('response :', response);

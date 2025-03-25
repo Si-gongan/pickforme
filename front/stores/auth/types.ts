@@ -43,7 +43,6 @@ export enum PushService {
 export interface phoneCheckParams {
   id: string;
   phone: string;
-  token: string;
 }
 
 export type SetPushSettingParams = UserData['push'];

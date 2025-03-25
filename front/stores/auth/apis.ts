@@ -35,7 +35,6 @@ export const QuitAPI = () =>
   client.post("/auth/quit").catch((error) => {
     console.log(error);
   });
-export const phoneCheckAPI = (params: phoneCheckParams) =>
-  client.post("/user/phone", params).catch((error) => {
-    console.log(error);
-  });
+export const phoneCheckAPI = async ({ id, phone }: phoneCheckParams) => {
+  return await client.post('/user/phone', { id, phone });
+};
