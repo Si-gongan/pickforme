@@ -5,9 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from '../../hooks/useColorScheme';
-import { phoneCheckAPI } from '../../stores/auth/apis';
+import { PhoneCheckAPI } from '../../stores/auth/apis';
 import { userAtom } from "@stores";
 import { useAtomValue } from "jotai";
+import { setClientToken } from '../../utils/axios';
 
 export default function InterviewScreen() {
   const router = useRouter();
@@ -48,30 +49,41 @@ export default function InterviewScreen() {
   const handlePhoneChange = async (text: string) => {
     setPhoneNumber(text);
     
-    // 여기서 전화번호 중복 확인 로직 추가
-    // 예: 서버에 확인 요청 또는 로컬 데이터와 비교
-    // 임시로 예시 번호와 비교
-    let phoneNumber = text.replace(/-/g, '');
-
+    // 숫자만 추출
+    let phoneNumber = text.replace(/[^0-9]/g, '');
+    
+    // 전화번호 형식 검사 (010으로 시작하는 11자리)
+    const phoneRegex = /^010\d{8}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      console.log('유효하지 않은 전화번호 형식입니다.');
+      return;
+    }
 
     const id = user?._id;
+    const token = user?.token;
 
-    if (!id ) {
-      console.log('id가 없습니다.');
+    if (!id || !token) {
+      console.log('id 또는 token이 없습니다.');
       return;
     }    
 
-    const response = await phoneCheckAPI({
-      id: id,
-      phone: phoneNumber
-    });
+    // 토큰 설정
+    setClientToken(token);
 
-    console.log('response :', response);
+    try {
+      const response = await PhoneCheckAPI({
+        id: id,
+        phone: phoneNumber
+      });
+      console.log('response :', response?.data);
 
-    if (response?.data) {
-      setIsDuplicate(true);
-    } else {
-      setIsDuplicate(false);
+      if (response?.data?.error) {
+        setIsDuplicate(true);
+      } else {
+        setIsDuplicate(false);
+      }
+    } catch (error) {
+      console.error('API 에러:', error);
     }
   };
 
