@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 
 import { userAtom } from "@stores";
 import { useServicePush } from "@services";
-import { BackHeader, Footer, Button, PushForm } from "@components";
+import { BackHeader, Footer, Button_old as Button, PushForm } from "@components";
 
 import type { IPush } from "@types";
 
