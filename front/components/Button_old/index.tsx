@@ -18,7 +18,7 @@ interface ButtonProps
     ButtonTextProps {
   title?: string;
   variant?: "contain" | "text";
-  color?: "primary" | "secondary" | "tertiary";
+  color?: "primary" | "secondary" | "tertiary" | "white";
   size?: "large" | "medium" | "small";
   renderChildrenPosition?: "front" | "back";
   readOnly?: boolean;

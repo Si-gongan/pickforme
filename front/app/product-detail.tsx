@@ -510,6 +510,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         style={styles.button}
         size="small"
         disabled={!product}
+        textStyle={{ color: '#FFFFFF' }}
       />
     </View>
     {product?.platform === "thezam" ? (
@@ -698,6 +699,7 @@ const useStyles = (colorScheme: ColorScheme) =>
     button: {
       borderRadius: 4,
       height: 50,
+      backgroundColor: Colors[colorScheme].buttonBackground.primary,      
     },
     button2: {
       backgroundColor: "white",
