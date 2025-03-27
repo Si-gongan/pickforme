@@ -75,6 +75,9 @@ export default function RootLayout() {
                             initialRouteName={
                                 user?.token ? "(hansiryun)" : (setting.isReady ? "(tabs)" : "(onboarding)")
                             }
+                            screenOptions={{
+                                headerShown: false
+                              }}                            
                         >
                             {!setting.isReady ? (
                                 <Stack.Screen

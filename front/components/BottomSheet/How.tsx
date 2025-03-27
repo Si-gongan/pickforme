@@ -68,7 +68,10 @@ function LackBottomSheet() {
                     <Link
                         href="/(tabs)"
                         accessibilityRole="button"
-                        onPress={() => onClose()}
+                        onPress={() => {
+                            onClose();
+                            router.replace("/(tabs)");
+                        }}
                     >
                         <Text style={[styles.desc, styles.link]}>
                             홈으로 이동하기
