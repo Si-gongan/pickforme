@@ -6,14 +6,16 @@ export default function useStyle() {
       marginBottom: 60,
     },
     MainProductSectionTitle: {
-      fontSize: 16,
-      fontWeight: "500",
+      fontSize: 18,
+      fontWeight: 'bold',
       marginBottom: 23,
+      color:"#111E4F"
     },
     MainProductSectionListContent: {
       justifyContent: "center",
       alignItems: "center",
       paddingBottom: 36,
+      color:"#111E4F"
     },
     MainProductSectionSeparator: {
       height: 12,

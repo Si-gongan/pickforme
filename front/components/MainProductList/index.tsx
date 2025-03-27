@@ -25,6 +25,11 @@ export default function MainProductList() {
             return Math.min(prev + 5, data.special.length);
           });
           break;
+        case "random":
+          onRandomCount(function (prev) {
+            return Math.min(prev + 5, data.random.length);
+          });
+          break;
       }
     },
     [data]
@@ -106,7 +111,7 @@ export default function MainProductList() {
             accessible
             accessibilityRole="header"
           >
-            오늘의 특가
+            오늘의 특가 상품
           </Text>
 
           <FlatList
