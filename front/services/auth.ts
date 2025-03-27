@@ -39,16 +39,19 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     useMutation({
       mutationKey: ["mutateKakaoLogin"],
       mutationFn: function (payload: IBaseAuthPayload) {
+        console.log('서버 API 호출 시작:', payload);
         return client.post<ILogin>("/auth/kakao", payload);
       },
       onSuccess: function (response) {
+        console.log('서버 응답 성공:', response);
         if (response.status === 200) {
+          console.log('로그인 데이터:', response.data);
           onLogin(response.data);
           onSuccess?.();
         }
       },
       onError: function (error) {
-        console.log("error", error);
+        console.error('서버 API 에러:', error);
       },
     });
 

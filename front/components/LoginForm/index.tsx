@@ -1,6 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, Platform } from "react-native";
-import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
+import { login } from "@react-native-seoul/kakao-login";
 import {
   AppleAuthenticationButton,
   AppleAuthenticationButtonType,
@@ -23,12 +23,17 @@ export default function LoginForm() {
 
   const onLoginWithKakao = useCallback(
     async function () {
+      console.log('카카오 로그인 시작');
       try {
-        const token = await kakaoLogin();
+        const token = await login();
+        console.log('카카오 SDK 로그인 성공:', token);
+        console.log('서버로 토큰 전송:', token.accessToken);
         mutateKakaoLogin({ accessToken: token.accessToken });
-      } catch {}
+      } catch (error) {
+        console.error('카카오 로그인 에러:', error);
+      }
     },
-    [kakaoLogin, mutateKakaoLogin]
+    [mutateKakaoLogin]
   );
 
   const onLoginWithApple = useCallback(
