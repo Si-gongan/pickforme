@@ -20,6 +20,12 @@ export default function InterviewScreen() {
   
   // 신청하기 버튼 처리
   const handleSubmit = () => {
+
+    // fot test
+    router.replace("/(tabs)");
+    return;
+
+
     if (!phoneNumber) {
       alert('전화번호를 입력해주세요.');
       return;
@@ -161,13 +167,13 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 40,
-    paddingTop: 40,
+    paddingTop: 20,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 60,
-    marginTop: 60,
+    marginBottom: 40,
+    marginTop: 20,
     textAlign: 'center',
     color: '#111E4F',
   },

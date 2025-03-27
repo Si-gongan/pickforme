@@ -77,9 +77,11 @@ function useStyle() {
             fontSize: 22,
             lineHeight: 34,
             marginBottom: 36,
+            color: "#111E4F",
         },
         FAQRows: {
             marginTop: 24,
+            color: "#111E4F",
         },
         FAQItem: {
             flexDirection: "column",
@@ -90,11 +92,13 @@ function useStyle() {
         FAQQuestion: {
             fontSize: 14,
             fontWeight: "600",
+            color: "#111E4F",
         },
         FAQAnswer: {
             fontSize: 12,
             lineHeight: 30,
             fontWeight: "500",
+            color: "#111E4F",
         },
     });
 }
