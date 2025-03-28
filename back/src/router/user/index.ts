@@ -155,6 +155,34 @@ router.post('/phone', requireAuth,async (ctx) => {
 
   
 });
+
+router.post('/duplicationphone', requireAuth,async (ctx) => {
+  const { phone } = ctx.request.body as { phone: string };
+
+  console.log(phone); // 전달받은 id 출력
+
+  if (!phone) {
+    ctx.status = 400;
+    ctx.body = { error: 'phone is required' };
+    return;
+  }
+  const duplicateUser = await db.User.findOne({ phone });
+  if (duplicateUser) {
+    ctx.status = 409; // Conflict
+    ctx.body = { error: '1' };
+    return;
+  }
+
+
+  ctx.body = {
+    message: '0',
+  };
+
+  
+});
+
+
+
 router.post('/setpopup',requireAuth,async (ctx) => {
   const { id, flag } = ctx.request.body as { id: string; flag: number };
 
