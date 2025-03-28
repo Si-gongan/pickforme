@@ -15,6 +15,6 @@
     "trailingComma": "none",
     "useTabs": false,
     "vueIndentScriptAndStyle": false,
-    "plugins": ["prettier-plugin-svelte"],
-    "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
