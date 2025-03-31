@@ -11,7 +11,7 @@ import {
     Alert
 } from 'react-native';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import useCheckLogin from '../hooks/useCheckLogin';
@@ -52,8 +52,15 @@ import type { ColorScheme } from '@hooks';
 interface ProductDetailScreenProps {}
 
 const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
-    const { productUrl: productUrlBase } = useLocalSearchParams();
-    const productUrl = decodeURIComponent(productUrlBase?.toString() ?? '');
+    const { productUrl: productUrlBase, url: urlBase } = useLocalSearchParams();
+    const productUrl = decodeURIComponent((productUrlBase || urlBase)?.toString() ?? '');
+
+    // 쿠팡 링크가 아닌 경우 처리
+    if (!productUrl.includes('coupang')) {
+        Alert.alert('알림', '쿠팡 상품만 확인할 수 있습니다.');
+        router.back();
+        return null;
+    }
 
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -63,12 +70,18 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const ImageWebView = useWebView({
         productUrl,
         type: 'images',
-        onMessage: data => setScrapedProductDetail({ images: data })
+        onMessage: data => {
+            console.log('이미지 데이터 수신:', data);
+            setScrapedProductDetail({ images: data });
+        }
     });
     const ReviewWebView = useWebView({
         productUrl,
         type: 'reviews',
-        onMessage: data => setScrapedProductDetail({ reviews: data })
+        onMessage: data => {
+            console.log('리뷰 데이터 수신:', data[0].slice(0, 20));
+            setScrapedProductDetail({ reviews: data });
+        }
     });
 
     const getProductDetail = useSetAtom(getProductDetailAtom);
@@ -99,6 +112,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         ].find(({ url }) => decodeURIComponent(url) === productUrl) ||
         already ||
         ({ url: productUrl } as Product);
+    console.log('찾은 product:', product);
     const isLocal =
         mainProducts.local
             .map(section => section.products)
@@ -128,15 +142,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [initProductDetail]);
 
     useEffect(() => {
-        if (product) {
-            sendLog({
-                product: { url: productUrl },
-                action: 'caption',
-                metaData: {}
-            });
+        console.log('productDetail 상태 변화:', productDetail);
+    }, [productDetail]);
+
+    useEffect(() => {
+        if (product && !productDetail) {
+            // productDetail이 없을 때만 호출
+            console.log('getProductDetailAtom 호출:', { productUrl: product.url });
             getProductDetail(product);
         }
-    }, [getProductDetail, productUrl]);
+    }, [product]); // productDetail 의존성 제거
 
     useEffect(() => {
         const moveFocus = () => {
@@ -228,7 +243,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
         if (!subscription || subscription.isExpired) {
             // 모달 표시
-
             setIsShowNonSubscriberManageModal(true);
         } else {
             // await WebBrowser.openBrowserAsync('https://pf.kakao.com/_csbDxj'); // asis 시공간 카톡으로 이동
@@ -270,53 +284,27 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
         if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab]) {
             if (nextTab === TABS.REPORT) {
-                if (!isLocal && scrapedProductDetail.images?.length === 0) {
-                    let count = 0;
-                    const interval = setInterval(() => {
-                        if (count >= 5 || scrapedProductDetail.images!.length > 0) {
-                            clearInterval(interval);
-                            sendLog({
-                                product: { url: productUrl },
-                                action: 'report',
-                                metaData: {}
-                            });
-                            getProductReport(product);
-                            return;
-                        }
-                        count++;
-                    }, 1000);
-                } else {
+                if (!isLocal && scrapedProductDetail.images && scrapedProductDetail.images.length > 0) {
                     sendLog({
                         product: { url: productUrl },
                         action: 'report',
                         metaData: {}
                     });
                     getProductReport(product);
+                } else {
+                    console.log('이미지 데이터 대기 중...');
                 }
             }
             if (nextTab === TABS.REVIEW) {
-                if (!isLocal && scrapedProductDetail.reviews?.length === 0) {
-                    let count = 0;
-                    const interval = setInterval(() => {
-                        if (count >= 5 || scrapedProductDetail.reviews!.length > 0) {
-                            clearInterval(interval);
-                            sendLog({
-                                product: { url: productUrl },
-                                action: 'review',
-                                metaData: {}
-                            });
-                            getProductReview(product);
-                            return;
-                        }
-                        count++;
-                    }, 1000);
-                } else {
+                if (!isLocal && scrapedProductDetail.reviews && scrapedProductDetail.reviews.length > 0) {
                     sendLog({
                         product: { url: productUrl },
                         action: 'review',
                         metaData: {}
                     });
                     getProductReview(product);
+                } else {
+                    console.log('리뷰 데이터 대기 중...');
                 }
             }
         }
@@ -332,6 +320,18 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     return (
         <View style={styles.container}>
+            <View style={styles.header}>
+                <Pressable
+                    onPress={() => router.back()}
+                    accessible
+                    accessibilityLabel="뒤로 가기"
+                    accessibilityRole="button"
+                    style={styles.backButton}
+                >
+                    <Image style={styles.backIcon} source={require('../assets/images/icBack.png')} />
+                </Pressable>
+            </View>
+
             <View accessible={false}>
                 {!isLocal && ImageWebView}
                 {!isLocal && ReviewWebView}
@@ -344,41 +344,35 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             <Text style={styles.name}>{product.name ?? productDetail?.product?.name ?? ''}</Text>
 
                             <View style={styles.priceWrap} accessible accessibilityRole="text">
-                                {productDetail?.product ? (
-                                    <>
-                                        {(productDetail?.product?.discount_rate ?? 0) !== 0 && (
+                                <>
+                                    {(productDetail?.product?.discount_rate ?? 0) !== 0 && (
+                                        <Text
+                                            style={styles.discount_rate}
+                                            accessibilityLabel={`할인률 ${productDetail?.product?.discount_rate ?? 0}%`}
+                                        >
+                                            {productDetail?.product?.discount_rate ?? 0}%
+                                        </Text>
+                                    )}
+                                    <Text
+                                        style={styles.price}
+                                        accessibilityLabel={`현재 가격 ${numComma(
+                                            productDetail?.product?.price ?? 0
+                                        )}원`}
+                                    >
+                                        {numComma(productDetail?.product?.price ?? 0)}원
+                                    </Text>
+                                    {(productDetail?.product?.origin_price ?? 0) !== 0 &&
+                                        productDetail?.product?.price !== productDetail?.product?.origin_price && (
                                             <Text
-                                                style={styles.discount_rate}
-                                                accessibilityLabel={`할인률 ${
-                                                    productDetail?.product?.discount_rate ?? 0
-                                                }%`}
+                                                style={styles.origin_price}
+                                                accessibilityLabel={`할인 전 가격 ${numComma(
+                                                    productDetail?.product?.origin_price ?? 0
+                                                )}원`}
                                             >
-                                                {productDetail?.product?.discount_rate ?? 0}%
+                                                {numComma(productDetail?.product?.origin_price ?? 0)}
                                             </Text>
                                         )}
-                                        <Text
-                                            style={styles.price}
-                                            accessibilityLabel={`현재 가격 ${numComma(
-                                                productDetail?.product?.price ?? 0
-                                            )}원`}
-                                        >
-                                            {numComma(productDetail?.product?.price ?? 0)}원
-                                        </Text>
-                                        {(productDetail?.product?.origin_price ?? 0) !== 0 &&
-                                            productDetail?.product?.price !== productDetail?.product?.origin_price && (
-                                                <Text
-                                                    style={styles.origin_price}
-                                                    accessibilityLabel={`할인 전 가격 ${numComma(
-                                                        productDetail?.product?.origin_price ?? 0
-                                                    )}원`}
-                                                >
-                                                    {numComma(productDetail?.product?.origin_price ?? 0)}
-                                                </Text>
-                                            )}
-                                    </>
-                                ) : (
-                                    <ActivityIndicator accessibilityLabel="가격 정보 로딩 중" />
-                                )}
+                                </>
                             </View>
 
                             <View style={styles.table}>
@@ -410,6 +404,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             loadingMessages={loadingMessages}
                             loadingStatus={loadingStatus}
                             handleRegenerate={handleRegenerate}
+                            scrapedProductDetail={scrapedProductDetail}
                         />
                     </View>
                 ) : (
@@ -548,7 +543,23 @@ const useStyles = (colorScheme: ColorScheme) =>
         container: {
             width: '100%',
             flex: 1,
-            paddingTop: 20
+            paddingTop: 60
+        },
+        header: {
+            height: 60,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            // backgroundColor: Colors[colorScheme].background.tertiary,
+            backgroundColor: '#F2F2F2',
+            zIndex: 1
+        },
+        backButton: {
+            padding: 8
+        },
+        backIcon: {
+            width: 24,
+            height: 24
         },
         inner: {
             paddingHorizontal: 20,

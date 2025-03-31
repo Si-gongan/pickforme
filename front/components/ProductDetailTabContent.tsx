@@ -9,6 +9,7 @@ import { Text, View } from '@components';
 import { Request } from '../stores/request/types';
 import { ProductDetailState } from '../stores/product/types';
 import { LoadingStatus } from '../stores/product/atoms';
+import { ScrapedProductDetail } from '../stores/product/types';
 
 import type { ColorScheme } from '@hooks';
 
@@ -23,6 +24,7 @@ interface TabContentProps {
     loadingMessages: Record<TABS | 'manager', string>;
     loadingStatus: { [key in TABS]: LoadingStatus };
     handleRegenerate: () => void;
+    scrapedProductDetail: ScrapedProductDetail;
 }
 
 const TabContent: React.FC<TabContentProps> = ({
@@ -35,7 +37,8 @@ const TabContent: React.FC<TabContentProps> = ({
     request,
     loadingMessages,
     loadingStatus,
-    handleRegenerate
+    handleRegenerate,
+    scrapedProductDetail
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -46,6 +49,7 @@ const TabContent: React.FC<TabContentProps> = ({
             color: Colors[colorScheme].text.primary
         }
     });
+
     if (tab === TABS.QUESTION) {
         return (
             <QuestionTab
@@ -84,6 +88,18 @@ const TabContent: React.FC<TabContentProps> = ({
                 refs={refs}
                 markdownStyles={markdownStyles}
             />
+        );
+    } else if (tab === TABS.REVIEW && scrapedProductDetail.reviews && scrapedProductDetail.reviews.length > 0) {
+        return (
+            <View style={styles.detailWrap}>
+                <Text>리뷰 정보를 분석하는 중입니다...</Text>
+            </View>
+        );
+    } else if (tab === TABS.REPORT && scrapedProductDetail.images && scrapedProductDetail.images.length > 0) {
+        return (
+            <View style={styles.detailWrap}>
+                <Text>상품 이미지를 분석하는 중입니다...</Text>
+            </View>
         );
     } else {
         return (
@@ -203,83 +219,44 @@ interface ReviewTabProps {
 }
 
 const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles }) => {
-    // TODO
-    // const review = productDetail?.[tab];
-    // review가 객체인지 확인합니다.
-    // if (typeof review === 'object' && review !== null && 'pros' in review && 'cons' in review && 'bests' in review) {
+    const review = productDetail?.[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined;
+
     return (
         <>
-            {!productDetail?.[tab]?.pros?.length && !productDetail?.[tab]?.cons?.length ? (
+            {!review?.pros?.length && !review?.cons?.length ? (
                 <View style={styles.detailWrap} ref={refs[tab]}>
                     <Text>리뷰정보를 찾을 수 없습니다.</Text>
                 </View>
             ) : null}
-            {productDetail?.[tab]?.pros?.length !== 0 && (
+            {review?.pros?.length !== 0 && (
                 <View style={styles.detailWrap} ref={refs[tab]}>
                     <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
-                        {productDetail?.[tab]?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+                        {review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
                     </Markdown>
                 </View>
             )}
-            {productDetail?.[tab]?.cons?.length !== 0 && (
+            {review?.cons?.length !== 0 && (
                 <View style={styles.detailWrap}>
                     <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
-                        {productDetail?.[tab]?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
+                        {review?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
                     </Markdown>
                 </View>
             )}
-            {productDetail?.[tab]?.bests?.length !== 0 && (
+            {review?.bests?.length !== 0 && (
                 <View style={styles.detailWrap}>
                     <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
-                    {productDetail?.[tab]?.bests.map((row: string, i: number) => (
+                    {review?.bests.map((row: string, i: number) => (
                         <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
                             {`**리뷰 ${i + 1}:** ${row}`}
                         </Markdown>
                     ))}
                 </View>
             )}
-            {/* {!review.pros?.length && !review.cons?.length ? (
-          <View style={styles.detailWrap} ref={refs[tab]}>
-            <Text>리뷰정보를 찾을 수 없습니다.</Text>
-          </View>
-        ) : null}
-        {review.pros?.length !== 0 && (
-          <View style={styles.detailWrap} ref={refs[tab]}>
-            <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
-            <Markdown style={markdownStyles}>
-              {review.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
-            </Markdown>
-          </View>
-        )}
-        {review.cons?.length !== 0 && (
-          <View style={styles.detailWrap}>
-            <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
-            <Markdown style={markdownStyles}>
-              {review.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
-            </Markdown>
-          </View>
-        )}
-        {review.bests?.length !== 0 && (
-          <View style={styles.detailWrap}>
-            <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
-            {review.bests.map((row: string, i: number) => (
-              <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
-                {`**리뷰 ${i + 1}:** ${row}`}
-              </Markdown>
-            ))}
-          </View>
-        )} */}
         </>
     );
 };
-//   return (
-//     <View style={styles.detailWrap} ref={refs[tab]}>
-//       <Text>리뷰 정보를 찾을 수 없습니다.</Text>
-//     </View>
-//   );
-// };
 
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
