@@ -110,14 +110,14 @@ export default function InterviewScreen() {
                 phone: phoneNumber
             });
             console.log('response :', response?.data);
+        } catch (error: any) {
+            console.error('API 에러:', error);
 
-            if (response?.data?.error) {
+            if (error.response?.status === 409) {
                 setIsDuplicate(true);
             } else {
                 setIsDuplicate(false);
             }
-        } catch (error) {
-            console.error('API 에러:', error);
         }
     };
 
