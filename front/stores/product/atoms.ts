@@ -407,7 +407,7 @@ export const scrapedProductDetailAtom = atom<ScrapedProductDetail>({
 });
 
 export const setScrapedProductDetailAtom = atom(null, async (get, set, { images, reviews }: ScrapedProductDetail) => {
-    set(11, {
+    set(scrapedProductDetailAtom, {
         images: images ?? get(scrapedProductDetailAtom).images,
         reviews: reviews ?? get(scrapedProductDetailAtom).reviews
     });
