@@ -71,16 +71,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         productUrl,
         type: 'images',
         onMessage: data => {
-            console.log('이미지 데이터 수신:', data);
-            setScrapedProductDetail({ images: data });
+            console.log('이미지 데이터 수신:', data.detail_images);
+            setScrapedProductDetail({ images: data.detail_images });
         }
     });
     const ReviewWebView = useWebView({
         productUrl,
         type: 'reviews',
         onMessage: data => {
-            console.log('리뷰 데이터 수신:', data[0].slice(0, 20));
-            setScrapedProductDetail({ reviews: data });
+            console.log('리뷰 데이터 수신:', data.reviews);
+            setScrapedProductDetail({ reviews: [data.reviews.toString()] });
         }
     });
 

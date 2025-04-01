@@ -177,25 +177,9 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
         const response = await GetProductAPI(product.url);
         console.log('GetProductAPI 응답:', response.data, response.status);
 
-        // 204 상태 코드이거나 빈 응답이 오면 기본 상품 정보만 설정
+        // 빈 응답이 오면, 캐시가 비어있다는 의미이므로 종료
         if (!response.data || response.status === 204) {
-            console.log('204에러발생, 기본 상품 정보 설정:', { product, url: product.url });
-            // 기본 상품 정보에 필요한 필드들이 있는지 확인
-            const defaultState = {
-                product: {
-                    ...product,
-                    name: product.name || '',
-                    discount_rate: product.discount_rate || 0,
-                    price: product.price || 0,
-                    origin_price: product.origin_price || 0,
-                    reviews: product.reviews || 0,
-                    ratings: product.ratings || 0
-                },
-                url: product.url
-            } as ProductDetailState;
-            console.log('설정할 상태:', defaultState);
-            set(productDetailAtom, defaultState);
-            console.log('설정 후 상태:', get(productDetailAtom));
+            console.log('캐시없음:', get(productDetailAtom));
             return;
         }
 
