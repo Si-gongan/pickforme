@@ -81,3 +81,7 @@ export const ParseProductUrlAPI = (params: ParseProductUrlAPIRequest) =>
         console.log('에러 요청 baseURL:', error.config?.baseURL);
         throw error;
     });
+export const UpdateProductAPI = (params: GetProductDetailRequest) =>
+    client.put<GetProductResponse>('/discover/product', params).catch(error => {
+        console.log(error);
+    });

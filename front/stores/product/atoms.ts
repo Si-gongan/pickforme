@@ -6,12 +6,14 @@ import {
     ProductDetailState,
     Product,
     ScrapedProductDetail,
-    GetProductDetailResponse
+    GetProductDetailResponse,
+    ProductReview
 } from './types';
 import { productGroupAtom } from '../log/atoms';
 import { userDataAtom } from '../auth/atoms';
 import { atomWithStorage } from '../utils';
 import * as Haptics from 'expo-haptics';
+import { deepEqual } from '../../utils/common';
 
 import {
     GetMainProductsAPI,
@@ -21,7 +23,8 @@ import {
     GetProductReviewAPI,
     GetProductAIAnswerAPI,
     ParseProductUrlAPI,
-    SearchProductsAPI
+    SearchProductsAPI,
+    UpdateProductAPI
 } from './apis';
 import { Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
@@ -168,6 +171,60 @@ export const initProductDetailAtom = atom(null, async (get, set) => {
         report: LoadingStatus.INIT,
         question: LoadingStatus.INIT
     });
+});
+
+export const setProductAtom = atom(null, async (get, set, product: Product) => {
+    console.log('setProductAtom 호출됨:', {
+        productUrl: product.url,
+        productName: product.name,
+        productPrice: product.price
+    });
+
+    const productDetail = get(productDetailAtom);
+    console.log('현재 productDetail 상태:', productDetail);
+
+    // URL이 일치하지 않아도 상품 정보 업데이트
+    if (product.name && product.price) {
+        console.log('상품 정보 업데이트 시작:', {
+            before: productDetail?.product,
+            after: product
+        });
+
+        set(productDetailAtom, {
+            ...productDetail,
+            url: product.url,
+            product
+        });
+        console.log('productDetail 상태 업데이트 완료');
+
+        // 백엔드 db 업데이트 요청
+        try {
+            console.log('백엔드 업데이트 API 호출 시작');
+            await UpdateProductAPI({ product });
+            console.log('백엔드 업데이트 API 호출 완료');
+        } catch (error) {
+            console.error('백엔드 업데이트 API 호출 실패:', error);
+        }
+    } else {
+        console.log('필수 데이터 누락:', {
+            hasName: !!product.name,
+            hasPrice: !!product.price
+        });
+    }
+});
+export const productReviewAtom = atom<ProductReview>({ reviews: [] } as ProductReview);
+
+export const setProductReviewAtom = atom(null, async (get, set, reviews: string[]) => {
+    console.log('setProductReviewAtom 호출됨:', {
+        reviewsCount: reviews.length,
+        reviews: reviews.slice(0, 2) // 처음 2개만 로깅
+    });
+
+    const currentState = get(productReviewAtom);
+    console.log('현재 productReview 상태:', currentState);
+
+    set(productReviewAtom, { reviews });
+    console.log('productReview 상태 업데이트 완료');
 });
 
 export const getProductDetailAtom = atom(null, async (get, set, product: Product) => {

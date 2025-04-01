@@ -28,6 +28,8 @@ import {
     getProductReportAtom,
     getProductAIAnswerAtom,
     getProductDetailAtom,
+    setProductAtom,
+    setProductReviewAtom,
     loadingStatusAtom,
     setScrapedProductDetailAtom,
     scrapedProductDetailAtom
@@ -40,7 +42,10 @@ import { Text, View, Button_old as Button } from '@components';
 import { useColorScheme } from '@hooks';
 import { isShowNonSubscriberManagerModalAtom } from '@stores';
 import { numComma } from '../utils/common';
-import { useWebView } from '../components/webview-util';
+// import { useWebView } from '../components/webview-util';
+import { useWebViewReviews } from '../components/webview-reviews';
+import { useWebViewDetail } from '../components/webview-detail';
+
 import TabContent from '../components/ProductDetailTabContent';
 
 // 2024
@@ -65,25 +70,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
 
-    const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
-    const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
-    const ImageWebView = useWebView({
-        productUrl,
-        type: 'images',
-        onMessage: data => {
-            console.log('이미지 데이터 수신:', data.detail_images);
-            setScrapedProductDetail({ images: data.detail_images });
-        }
-    });
-    const ReviewWebView = useWebView({
-        productUrl,
-        type: 'reviews',
-        onMessage: data => {
-            console.log('리뷰 데이터 수신:', data.reviews);
-            setScrapedProductDetail({ reviews: [data.reviews.toString()] });
-        }
-    });
-
     const getProductDetail = useSetAtom(getProductDetailAtom);
     const initProductDetail = useSetAtom(initProductDetailAtom);
     const getProductCaption = useSetAtom(getProductCaptionAtom);
@@ -91,6 +77,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const getProductReview = useSetAtom(getProductReviewAtom);
     const getProductAIAnswer = useSetAtom(getProductAIAnswerAtom);
     const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
+    const setProductReview = useSetAtom(setProductReviewAtom);
+    const setProduct = useSetAtom(setProductAtom);
     const sendLog = useSetAtom(sendLogAtom);
 
     const productDetail = useAtomValue(productDetailAtom);
@@ -136,6 +124,25 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         question: questionRef,
         manager: managerResponseRef
     })[0];
+
+    const ReviewWebView = useWebViewReviews({
+        productUrl,
+        onMessage: data => {
+            console.log('ReviewWebView 데이터 수신:', data);
+            setProductReview(data);
+        }
+    });
+
+    const DetailWebView = useWebViewDetail({
+        productUrl,
+        onMessage: data => {
+            console.log('DetailWebView 데이터 수신:', data);
+            setProduct(data);
+        }
+    });
+
+    const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
+    const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
 
     useEffect(() => {
         initProductDetail();
@@ -282,6 +289,11 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             handlePressAIQuestionTab('');
             return;
         }
+
+        console.log('nextTab :', nextTab);
+        console.log('loadingStatus[nextTab]', loadingStatus[nextTab]);
+        console.log('productDetail?.[nextTab]', productDetail?.[nextTab]);
+
         if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab]) {
             if (nextTab === TABS.REPORT) {
                 if (!isLocal && scrapedProductDetail.images && scrapedProductDetail.images.length > 0) {
@@ -333,8 +345,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             </View>
 
             <View accessible={false}>
-                {!isLocal && ImageWebView}
                 {!isLocal && ReviewWebView}
+                {!isLocal && DetailWebView}
             </View>
 
             <ScrollView style={styles.scrollView}>

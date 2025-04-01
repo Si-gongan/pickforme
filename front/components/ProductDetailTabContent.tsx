@@ -50,6 +50,10 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     });
 
+    console.log('productDetail?.[tab]', tab, productDetail?.[tab], productDetail);
+    console.log('loadingStatus[tab]', loadingStatus[tab]);
+    console.log('scrapedProductDetail', scrapedProductDetail);
+
     if (tab === TABS.QUESTION) {
         return (
             <QuestionTab
