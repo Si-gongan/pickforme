@@ -224,6 +224,11 @@ export const setProductReviewAtom = atom(null, async (get, set, reviews: string[
     console.log('현재 productReview 상태:', currentState);
 
     set(productReviewAtom, { reviews });
+    // loadingStatusAtom 업데이트
+    set(loadingStatusAtom, {
+        ...get(loadingStatusAtom),
+        review: LoadingStatus.FINISH
+    });
     console.log('productReview 상태 업데이트 완료');
 });
 

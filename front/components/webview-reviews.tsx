@@ -58,6 +58,7 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): Reac
     const runJavaScript = () => {
         setTimeout(() => {
             if (webViewRef.current) {
+                console.log('runJavaScript in webview-reviews:', injectionCode);
                 webViewRef.current.injectJavaScript(injectionCode);
             }
         }, 1000);

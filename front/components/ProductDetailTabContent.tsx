@@ -10,6 +10,8 @@ import { Request } from '../stores/request/types';
 import { ProductDetailState } from '../stores/product/types';
 import { LoadingStatus } from '../stores/product/atoms';
 import { ScrapedProductDetail } from '../stores/product/types';
+import { useAtomValue } from 'jotai';
+import { productReviewAtom } from '../stores/product/atoms';
 
 import type { ColorScheme } from '@hooks';
 
@@ -49,11 +51,12 @@ const TabContent: React.FC<TabContentProps> = ({
             color: Colors[colorScheme].text.primary
         }
     });
+    const productReview = useAtomValue(productReviewAtom);
 
     console.log('productDetail?.[tab]', tab, productDetail?.[tab], productDetail);
     console.log('loadingStatus[tab]', loadingStatus[tab]);
     console.log('scrapedProductDetail', scrapedProductDetail);
-
+    console.log('productReview.reviews:', productReview.reviews);
     if (tab === TABS.QUESTION) {
         return (
             <QuestionTab
@@ -79,12 +82,14 @@ const TabContent: React.FC<TabContentProps> = ({
                 </View>
             </View>
         );
-    } else if (!!productDetail?.[tab]) {
+    } else if (!!productReview.reviews) {
         return tab !== 'review' ? (
             <View style={styles.detailWrap} ref={refs[tab]}>
-                <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
+                <Markdown style={markdownStyles}>
+                    {Array.isArray(productReview.reviews) ? productReview.reviews.join('\n\n') : productReview.reviews}
+                </Markdown>
             </View>
-        ) : (
+        ) : productDetail ? (
             <ReviewTab
                 styles={styles}
                 productDetail={productDetail}
@@ -92,7 +97,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 refs={refs}
                 markdownStyles={markdownStyles}
             />
-        );
+        ) : null;
     } else if (tab === TABS.REVIEW && scrapedProductDetail.reviews && scrapedProductDetail.reviews.length > 0) {
         return (
             <View style={styles.detailWrap}>
