@@ -12,6 +12,9 @@ import {
 } from 'react-native';
 
 import { useThemeColor, ThemeProps } from '../../hooks/useThemeColor';
+import { FontSizes } from '../../constants/FontSizes';
+import { useAtomValue } from 'jotai';
+import { settingAtom } from '../../stores/auth/atoms';
 
 export type TextProps = ThemeProps & DefaultTextProps;
 export type ViewProps = ThemeProps & DefaultViewProps;
@@ -24,7 +27,10 @@ export const Text = forwardRef<DefaultText, TextProps>((props, ref) => {
         lineBreakStrategyIOS: 'hangul-word' as const
     };
 
-    return <DefaultText {...defaultProps} {...otherProps} ref={ref} />;
+    const setting = useAtomValue(settingAtom);
+    const currentFontSize = FontSizes[setting.fontSize ?? 'medium'];
+
+    return <DefaultText {...defaultProps} style={[{ fontSize: currentFontSize }, style]} {...otherProps} ref={ref} />;
 });
 
 export const View = forwardRef<DefaultView, ViewProps>((props, ref) => {

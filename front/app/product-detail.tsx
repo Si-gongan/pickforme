@@ -53,6 +53,7 @@ import { TABS, loadingMessages, tabName } from '../utils/common';
 import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
 import type { ColorScheme } from '@hooks';
+import BackHeader from '../components/BackHeader';
 
 interface ProductDetailScreenProps {}
 
@@ -333,17 +334,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Pressable
-                    onPress={() => router.back()}
-                    accessible
-                    accessibilityLabel="뒤로 가기"
-                    accessibilityRole="button"
-                    style={styles.backButton}
-                >
-                    <Image style={styles.backIcon} source={require('../assets/images/icBack.png')} />
-                </Pressable>
-            </View>
+            <BackHeader />
 
             <View accessible={false}>
                 {!isLocal && ReviewWebView}
@@ -556,7 +547,7 @@ const useStyles = (colorScheme: ColorScheme) =>
         container: {
             width: '100%',
             flex: 1,
-            paddingTop: 60
+            paddingTop: 20
         },
         header: {
             height: 60,

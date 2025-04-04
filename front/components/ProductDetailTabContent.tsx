@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, TextInput, View as RNView } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { formatDate, formatTime } from '../utils/common';
-import { useColorScheme } from '@hooks';
+import useColorScheme from '../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { TABS } from '../utils/common';
 import { Text, View } from '@components';
@@ -56,7 +56,7 @@ const TabContent: React.FC<TabContentProps> = ({
     console.log('productDetail?.[tab]', tab, productDetail?.[tab], productDetail);
     console.log('loadingStatus[tab]', loadingStatus[tab]);
     console.log('scrapedProductDetail', scrapedProductDetail);
-    console.log('productReview.reviews:', productReview.reviews);
+    // console.log('productReview.reviews:', productReview.reviews);
     if (tab === TABS.QUESTION) {
         return (
             <QuestionTab
