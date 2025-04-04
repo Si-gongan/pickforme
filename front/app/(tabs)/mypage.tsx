@@ -33,7 +33,7 @@ export default function MyScreen() {
     const goToPush = useCallback(
         function () {
             // @ts-ignore - Expo Router 4 type issues
-            router.push('/settings/push');
+            router.push('/(settings)/notification');
         },
         [router]
     );
@@ -50,6 +50,14 @@ export default function MyScreen() {
         function () {
             // @ts-ignore - Expo Router 4 type issues
             router.push('/how');
+        },
+        [router]
+    );
+
+    const goToFontSize = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/(settings)/setFontSize');
         },
         [router]
     );
@@ -98,8 +106,11 @@ export default function MyScreen() {
         function () {
             const defaultMenu = [
                 { name: '화면 모드 변경하기', onPress: goToTheme },
-                { name: '글자 크기 변경하기', onPress: function () {} },
-                { name: '알림 설정하기', onPress: function () {} }
+                { name: '글자 크기 변경하기', onPress: goToFontSize },
+                {
+                    name: '알림 설정하기',
+                    onPress: goToPush
+                }
             ];
             if (!!user?._id) {
                 return [...defaultMenu, { name: '알림 설정하기', onPress: goToPush }];
