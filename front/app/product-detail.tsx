@@ -39,7 +39,7 @@ import { sendLogAtom } from '../stores/log/atoms';
 import { requestBottomSheetAtom, requestsAtom } from '../stores/request/atoms';
 
 import { Text, View, Button_old as Button } from '@components';
-import { useColorScheme } from '@hooks';
+import useColorScheme from '../hooks/useColorScheme';
 import { isShowNonSubscriberManagerModalAtom } from '@stores';
 import { numComma } from '../utils/common';
 // import { useWebView } from '../components/webview-util';
@@ -128,7 +128,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const ReviewWebView = useWebViewReviews({
         productUrl,
         onMessage: data => {
-            console.log('ReviewWebView 데이터 수신:', data);
+            // console.log('ReviewWebView 데이터 수신:', data);
             setProductReview(data);
         }
     });
@@ -136,7 +136,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const DetailWebView = useWebViewDetail({
         productUrl,
         onMessage: data => {
-            console.log('DetailWebView 데이터 수신:', data);
+            // console.log('DetailWebView 데이터 수신:', data);
             setProduct(data);
         }
     });
@@ -149,16 +149,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [initProductDetail]);
 
     useEffect(() => {
-        console.log('productDetail 상태 변화:', productDetail);
-    }, [productDetail]);
+        console.log('c1112:', productUrl);
+    }, [productUrl]);
 
     useEffect(() => {
-        if (product && !productDetail) {
-            // productDetail이 없을 때만 호출
-            console.log('getProductDetailAtom 호출:', { productUrl: product.url });
+        console.log('productUrl 상태변화 :', productUrl, productDetail);
+        if (product) {
+            sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
             getProductDetail(product);
         }
-    }, [product]); // productDetail 의존성 제거
+    }, [productUrl]);
 
     useEffect(() => {
         const moveFocus = () => {
@@ -325,6 +325,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     const handleRegenerate = () => {
+        console.log('handleRegenerate 호출됨:', { tab });
         if (tab === TABS.REPORT) getProductReport(product);
         if (tab === TABS.REVIEW) getProductReview(product);
         if (tab === TABS.CAPTION) getProductCaption(product);

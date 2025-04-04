@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as JotaiProvider, useAtomValue, useAtom } from 'jotai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import useColorScheme from '../hooks/useColorScheme';
 import { settingAtom, isLoadedAtom, userAtom } from '@stores';
 import { changeToken } from '@services';
 
