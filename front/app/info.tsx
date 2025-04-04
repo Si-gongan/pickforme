@@ -1,14 +1,14 @@
 /**
  * 내 정보 수정하기
  */
-import { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet } from "react-native";
-import { useAtom } from "jotai";
+import { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { useAtom } from 'jotai';
 
-import { settingAtom } from "@stores";
-import { Button, InfoForm, BackHeader, Footer } from "@components";
+import { settingAtom } from '@stores';
+import { Button, InfoForm, BackHeader, Footer } from '@components';
 
-import type { ISetting } from "@types";
+import type { ISetting } from '@types';
 
 export default function InfoScreen() {
     const style = useStyle();
@@ -22,7 +22,7 @@ export default function InfoScreen() {
                 return {
                     ...prev,
                     name: setting?.name,
-                    vision: setting?.vision,
+                    vision: setting?.vision
                 };
             });
         },
@@ -30,12 +30,12 @@ export default function InfoScreen() {
     );
 
     useEffect(() => {
-        console.log("현재 payload 상태:", payload);
+        console.log('현재 payload 상태:', payload);
     }, [payload]);
 
     const onSubmit = useCallback(
         function () {
-            console.log("(info)제출된 정보:", payload);
+            console.log('(info)제출된 정보:', payload);
 
             onSetting(payload);
         },
@@ -59,12 +59,12 @@ function useStyle() {
     return StyleSheet.create({
         InfoScreenContainer: {
             flex: 1,
-            backgroundColor: "#fff",
+            backgroundColor: '#fff'
         },
         InfoScreenContent: {
             flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-        },
+            justifyContent: 'center',
+            alignItems: 'center'
+        }
     });
 }

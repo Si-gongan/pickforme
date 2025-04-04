@@ -1,16 +1,16 @@
-import React, { useRef, useEffect } from "react";
-import { findNodeHandle, AccessibilityInfo, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
-import BottomSheet from "react-native-modal";
-import { useAtom } from "jotai";
+import React, { useRef, useEffect } from 'react';
+import { findNodeHandle, AccessibilityInfo, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import BottomSheet from 'react-native-modal';
+import { useAtom } from 'jotai';
 
-import { isShowNonSubscriberManagerModalAtom, settingAtom } from "@stores";
-import { View, Text, Button } from "@components";
-import { Props, styles } from "../Base";
-import { Colors } from "@constants";
-import { useColorScheme } from "@hooks";
+import { isShowNonSubscriberManagerModalAtom, settingAtom } from '@stores';
+import { View, Text, Button } from '@components';
+import { Props, styles } from '../Base';
+import { Colors } from '@constants';
+import useColorScheme from '../../../hooks/useColorScheme';
 
-import type { ColorScheme } from "@hooks";
+import type { ColorScheme } from '@hooks';
 
 // Membership
 const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
@@ -26,7 +26,7 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
     const onClose = () => setVisible(false);
 
     const handleClickYes = () => {
-        router.push("/subscription");
+        router.push('/subscription');
         onClose();
     };
     const handleClickNo = () => {
@@ -44,22 +44,14 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
     }, [visible]);
 
     return (
-        <BottomSheet
-            style={styles.base}
-            isVisible={visible}
-            onBackButtonPress={onClose}
-            onBackdropPress={onClose}
-        >
+        <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
             <View style={[styles.bottomSheet, localStyles.root]}>
-                <Text
-                    style={[styles.title, localStyles.title]}
-                    ref={headerTitleRef}
-                >
+                <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
                     픽포미플러스 멤버십 기능이에요.
                 </Text>
                 <Text style={[styles.desc, localStyles.desc]}>
                     {
-                        "픽포미플러스 멤버십을 구독하면,\n매니저에게 한 달 간 30회까지 질문이 가능해요.\n지금 멤버십을 시작하시겠어요?"
+                        '픽포미플러스 멤버십을 구독하면,\n매니저에게 한 달 간 30회까지 질문이 가능해요.\n지금 멤버십을 시작하시겠어요?'
                     }
                 </Text>
                 <View style={[styles.buttonRow, localStyles.buttonWrap]}>
@@ -89,33 +81,33 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
 const useLocalStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         root: {
-            paddingBottom: 22,
+            paddingBottom: 22
         },
         title: {
             fontSize: 18,
             lineHeight: 20,
-            fontWeight: "600",
+            fontWeight: '600',
             marginBottom: 20,
-            color: "#1e1e1e",
+            color: '#1e1e1e'
         },
         desc: {
             fontSize: 14,
             lineHeight: 20,
-            marginBottom: 39,
+            marginBottom: 39
         },
         buttonWrap: {},
         buttonOuter: {
-            flex: 1,
+            flex: 1
         },
         button1: {
-            minHeight: 50,
+            minHeight: 50
         },
         button2: {
             minHeight: 50,
-            backgroundColor: "white",
+            backgroundColor: 'white',
             borderWidth: 1,
-            borderColor: Colors[colorScheme].buttonBackground.primary,
-        },
+            borderColor: Colors[colorScheme].buttonBackground.primary
+        }
     });
 
 export default NonSubscriberManagerBottomSheet;

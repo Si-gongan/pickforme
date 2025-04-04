@@ -1,7 +1,7 @@
-import React from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
-import { StyleSheet, Platform } from "react-native";
+import React from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Platform } from 'react-native';
 import {
     initConnection,
     purchaseErrorListener,
@@ -20,32 +20,30 @@ import {
     finishTransaction,
     useIAP,
     withIAPContext,
-    RequestSubscriptionAndroid,
-} from "react-native-iap";
+    RequestSubscriptionAndroid
+} from 'react-native-iap';
 
 import {
     subscriptionAtom,
     getProductsAtom,
     purchaseProductAtom,
     productsAtom,
-    getSubscriptionAtom,
-} from "../stores/purchase/atoms";
-import { Product, ProductType } from "../stores/purchase/types";
-import { Text, View, Button } from "@components";
-import { Colors } from "@constants";
-import { useColorScheme } from "@hooks";
+    getSubscriptionAtom
+} from '../stores/purchase/atoms';
+import { Product, ProductType } from '../stores/purchase/types';
+import { Text, View, Button } from '@components';
+import { Colors } from '@constants';
+import useColorScheme from '../hooks/useColorScheme';
 
-import type { ColorScheme } from "@hooks";
+import type { ColorScheme } from '@hooks';
 
-type IAPProduct = Omit<IAPProductB, "type">;
-type IAPSubscription = Omit<IAPSubscriptionB, "type" | "platform">;
+type IAPProduct = Omit<IAPProductB, 'type'>;
+type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
 
 const PurchaseWrapper = () => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
     const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
-    const [subscriptionItems, setSubscriptionItems] = useState<
-        IAPSubscription[]
-    >([]);
+    const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
     const getProducts = useSetAtom(getProductsAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const products = useAtomValue(productsAtom);
@@ -69,9 +67,7 @@ const PurchaseWrapper = () => {
                 // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
 
                 const storeSItems = await IAPGetSubscriptions({
-                    skus: products
-                        .filter((p) => p.type === ProductType.SUBSCRIPTION)
-                        .map((p) => p.productId),
+                    skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map(p => p.productId)
                 });
 
                 // setPurchaseItems(storeItems)
@@ -79,53 +75,45 @@ const PurchaseWrapper = () => {
 
                 const addListeners = () => {
                     purchaseUpdateSubscription = purchaseUpdatedListener(
-                        async (
-                            purchase: SubscriptionPurchase | ProductPurchase
-                        ) => {
+                        async (purchase: SubscriptionPurchase | ProductPurchase) => {
                             const receipt = purchase.transactionReceipt;
 
-                            const product = products.find(
-                                ({ productId }) =>
-                                    productId === purchase.productId
-                            );
+                            const product = products.find(({ productId }) => productId === purchase.productId);
                             if (!product) {
                                 return;
                             }
-                            const isSubscription =
-                                product.type === ProductType.SUBSCRIPTION;
+                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
                             if (!receipt) {
                                 return;
                             }
-                            if (Platform.OS === "android") {
+                            if (Platform.OS === 'android') {
                                 await purchaseProduct({
                                     _id: product._id,
                                     receipt: {
                                         subscription: isSubscription,
-                                        ...JSON.parse(receipt),
-                                    },
+                                        ...JSON.parse(receipt)
+                                    }
                                 });
                             } else {
                                 await purchaseProduct({
                                     _id: product._id,
-                                    receipt,
+                                    receipt
                                 });
                             }
                             await finishTransaction({
                                 purchase,
-                                isConsumable: !isSubscription,
+                                isConsumable: !isSubscription
                             });
                         }
                     );
 
-                    purchaseErrorSubscription = purchaseErrorListener(
-                        (error: PurchaseError) => {
-                            console.error("purchaseErrorListener", error);
-                        }
-                    );
+                    purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
+                        console.error('purchaseErrorListener', error);
+                    });
                 };
                 // we make sure that "ghost" pending payment are removed
                 // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
-                if (Platform.OS === "android") {
+                if (Platform.OS === 'android') {
                     flushFailedPurchasesCachedAsPendingAndroid()
                         .then(addListeners)
                         .catch(() => {});
@@ -148,13 +136,7 @@ const PurchaseWrapper = () => {
             };
         }
     }, [products]);
-    return (
-        <PointScreen
-            products={products}
-            purchaseItems={purchaseItems}
-            subscriptionItems={subscriptionItems}
-        />
-    );
+    return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
 };
 
 interface Props {
@@ -163,11 +145,7 @@ interface Props {
     subscriptionItems: IAPSubscription[];
 }
 
-const PointScreen: React.FC<Props> = ({
-    products,
-    purchaseItems,
-    subscriptionItems,
-}) => {
+const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
     // const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
     // const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
@@ -184,16 +162,16 @@ const PointScreen: React.FC<Props> = ({
                     subscriptionOffers: [
                         {
                             sku,
-                            offerToken,
-                        },
-                    ],
+                            offerToken
+                        }
+                    ]
                 };
                 await requestSubscription(subscriptionRequest);
             } else {
                 await requestSubscription({ sku });
             }
         } catch (err: any) {
-            console.log("error!");
+            console.log('error!');
             console.warn(err.code, err.message);
         }
     };
@@ -202,16 +180,12 @@ const PointScreen: React.FC<Props> = ({
         (obj, product) => {
             if (product.type === ProductType.PURCHASE) {
                 // 단건 로직
-                const item = purchaseItems.find(
-                    ({ productId }) => product.productId === productId
-                );
+                const item = purchaseItems.find(({ productId }) => product.productId === productId);
                 if (item) {
                     obj.purchasableProducts.push({ ...item, ...product });
                 }
             } else {
-                const item = subscriptionItems.find(
-                    ({ productId }) => product.productId === productId
-                );
+                const item = subscriptionItems.find(({ productId }) => product.productId === productId);
                 if (item) {
                     obj.subscriptionProducts.push({ ...item, ...product });
                 }
@@ -220,68 +194,45 @@ const PointScreen: React.FC<Props> = ({
         },
         {
             subscriptionProducts: [] as (IAPSubscription & Product)[],
-            purchasableProducts: [] as (IAPProduct & Product)[],
+            purchasableProducts: [] as (IAPProduct & Product)[]
         }
     );
 
     return (
         <>
-            {filteredProducts.subscriptionProducts.map((product) => {
-                const color: "primary" | "tertiary" = "tertiary";
+            {filteredProducts.subscriptionProducts.map(product => {
+                const color: 'primary' | 'tertiary' = 'tertiary';
                 const buttonTextProps = { color };
-                if (product.platform === "android") {
-                    const subscriptionOffer = (
-                        product as unknown as SubscriptionAndroid
-                    ).subscriptionOfferDetails.find(
+                if (product.platform === 'android') {
+                    const subscriptionOffer = (product as unknown as SubscriptionAndroid).subscriptionOfferDetails.find(
                         (subscriptionOfferDetail: any) =>
-                            subscriptionOfferDetail.basePlanId.replace(
-                                "-",
-                                "_"
-                            ) === product.productId
+                            subscriptionOfferDetail.basePlanId.replace('-', '_') === product.productId
                     );
                     if (!subscriptionOffer) {
                         return null;
                     }
                     return (
-                        <View
-                            key={`Point-Product-${product.productId}`}
-                            style={styles.productWrap}
-                        >
+                        <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
                             <Text style={styles.productPrice}>
-                                월{" "}
+                                월{' '}
                                 {subscriptionOffer.pricingPhases.pricingPhaseList[0].formattedPrice.replace(
                                     /₩(.*)/,
-                                    "$1원"
+                                    '$1원'
                                 )}
                             </Text>
                             <Button
                                 title="멤버십 시작하기"
-                                onPress={() =>
-                                    handleClickSub(
-                                        product.productId,
-                                        subscriptionOffer.offerToken
-                                    )
-                                }
+                                onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
                             />
                         </View>
                     );
                 }
                 return (
-                    <View
-                        key={`Point-Product-${product.productId}`}
-                        style={styles.productWrap}
-                    >
+                    <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
                         <Text style={styles.productPrice}>
-                            월{" "}
-                            {(product as any).localizedPrice.replace(
-                                /₩(.*)/,
-                                "$1원"
-                            )}
+                            월 {(product as any).localizedPrice.replace(/₩(.*)/, '$1원')}
                         </Text>
-                        <Button
-                            title="멤버십 시작하기"
-                            onPress={() => handleClickSub(product.productId)}
-                        />
+                        <Button title="멤버십 시작하기" onPress={() => handleClickSub(product.productId)} />
                     </View>
                 );
             })}
@@ -292,60 +243,60 @@ const PointScreen: React.FC<Props> = ({
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
-            flex: 1,
+            flex: 1
         },
         content: {
             flex: 1,
-            padding: 31,
+            padding: 31
         },
         title: {
-            fontWeight: "600",
+            fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
-            marginBottom: 18,
+            marginBottom: 18
         },
         subtitle: {
-            fontWeight: "600",
+            fontWeight: '600',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 14,
+            marginBottom: 14
         },
         productWrap: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
             padding: 14,
             borderRadius: 10,
             borderWidth: 1,
             borderColor: Colors[colorScheme].borderColor.secondary,
-            marginVertical: 24,
+            marginVertical: 24
         },
         productButton: {
             width: 120,
             padding: 10,
-            backgroundColor: Colors[colorScheme].buttonBackground.primary,
+            backgroundColor: Colors[colorScheme].buttonBackground.primary
         },
         productPrice: {
-            fontWeight: "600",
+            fontWeight: '600',
             fontSize: 18,
-            lineHeight: 22,
+            lineHeight: 22
         },
         terms: {
             marginTop: 12,
-            fontWeight: "400",
+            fontWeight: '400',
             fontSize: 12,
-            lineHeight: 15,
+            lineHeight: 15
         },
         buttonText: {
-            fontWeight: "600",
+            fontWeight: '600',
             fontSize: 14,
             lineHeight: 17,
-            color: "white",
+            color: 'white'
         },
         termButton: {
-            marginTop: 100,
-        },
+            marginTop: 100
+        }
     });
 
 withIAPContext(PurchaseWrapper);

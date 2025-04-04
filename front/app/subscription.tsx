@@ -1,53 +1,53 @@
-import React from "react";
-import { ScrollView, StyleSheet, Platform, Alert } from "react-native";
-import { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
-import { useAtomValue, useSetAtom } from "jotai";
-import Markdown from "react-native-markdown-display";
+import React from 'react';
+import { ScrollView, StyleSheet, Platform, Alert } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useAtomValue, useSetAtom } from 'jotai';
+import Markdown from 'react-native-markdown-display';
 import {
-  initConnection,
-  purchaseErrorListener,
-  purchaseUpdatedListener,
-  ProductPurchase,
-  PurchaseError,
-  flushFailedPurchasesCachedAsPendingAndroid,
-  SubscriptionPurchase,
-  requestSubscription,
-  getProducts as IAPGetProducts,
-  getSubscriptions as IAPGetSubscriptions,
-  Product as IAPProductB,
-  Subscription as IAPSubscriptionB,
-  SubscriptionAndroid,
-  finishTransaction,
-  useIAP,
-  withIAPContext,
-  RequestSubscriptionAndroid,
-  clearProductsIOS,
-  getReceiptIOS,
-  getAvailablePurchases,
-  clearTransactionIOS,
-} from "react-native-iap";
+    initConnection,
+    purchaseErrorListener,
+    purchaseUpdatedListener,
+    ProductPurchase,
+    PurchaseError,
+    flushFailedPurchasesCachedAsPendingAndroid,
+    SubscriptionPurchase,
+    requestSubscription,
+    getProducts as IAPGetProducts,
+    getSubscriptions as IAPGetSubscriptions,
+    Product as IAPProductB,
+    Subscription as IAPSubscriptionB,
+    SubscriptionAndroid,
+    finishTransaction,
+    useIAP,
+    withIAPContext,
+    RequestSubscriptionAndroid,
+    clearProductsIOS,
+    getReceiptIOS,
+    getAvailablePurchases,
+    clearTransactionIOS
+} from 'react-native-iap';
 
 import {
-  subscriptionAtom,
-  getProductsAtom,
-  purchaseProductAtom,
-  productsAtom,
-  getSubscriptionAtom,
-} from "../stores/purchase/atoms";
-import { Product, ProductType } from "../stores/purchase/types";
-import { userDataAtom, isShowSubscriptionModalAtom } from "@stores";
-import { Colors } from "@constants";
-import { useColorScheme } from "@hooks";
-import { Text, View, Button_old as Button } from "@components";
+    subscriptionAtom,
+    getProductsAtom,
+    purchaseProductAtom,
+    productsAtom,
+    getSubscriptionAtom
+} from '../stores/purchase/atoms';
+import { Product, ProductType } from '../stores/purchase/types';
+import { userDataAtom, isShowSubscriptionModalAtom } from '@stores';
+import { Colors } from '@constants';
+import useColorScheme from '../hooks/useColorScheme';
+import { Text, View, Button_old as Button } from '@components';
 
 // 2024
-import { GetPurchaseSubCheckAPI } from "../stores/purchase/apis";
+import { GetPurchaseSubCheckAPI } from '../stores/purchase/apis';
 
-import type { ColorScheme } from "@hooks";
+import type { ColorScheme } from '@hooks';
 
-type IAPProduct = Omit<IAPProductB, "type">;
-type IAPSubscription = Omit<IAPSubscriptionB, "type" | "platform">;
+type IAPProduct = Omit<IAPProductB, 'type'>;
+type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
 
 const TERM = `
 - 이용방법: 픽은 ‘픽포미 추천’과 ‘픽포미 분석’에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
@@ -57,325 +57,331 @@ const TERM = `
 `;
 
 const checkSubscriptionStatus = async () => {
-  try {
-    const purchaseHistory = await getAvailablePurchases();
-    purchaseHistory.forEach((purchase) => {
-      if (purchase.productId === "pickforme_basic") {
-        // 구독이 유효한지 확인 후 처리
-        console.log("구독 활성화 상태");
-      }
-    });
-  } catch (error) {
-    console.warn(error);
-  }
+    try {
+        const purchaseHistory = await getAvailablePurchases();
+        purchaseHistory.forEach(purchase => {
+            if (purchase.productId === 'pickforme_basic') {
+                // 구독이 유효한지 확인 후 처리
+                console.log('구독 활성화 상태');
+            }
+        });
+    } catch (error) {
+        console.warn(error);
+    }
 };
 
 const PurchaseWrapper = () => {
-  const purchaseProduct = useSetAtom(purchaseProductAtom);
-  const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
-  const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>(
-    []
-  );
-  const getProducts = useSetAtom(getProductsAtom);
-  const getSubscription = useSetAtom(getSubscriptionAtom);
-  const products = useAtomValue(productsAtom);
-  const [fixData, setFixData] = useState<{
-    products: Product[];
-    changeCheck: boolean;
-  }>({ products: [], changeCheck: false });
+    const purchaseProduct = useSetAtom(purchaseProductAtom);
+    const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
+    const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
+    const getProducts = useSetAtom(getProductsAtom);
+    const getSubscription = useSetAtom(getSubscriptionAtom);
+    const products = useAtomValue(productsAtom);
+    const [fixData, setFixData] = useState<{
+        products: Product[];
+        changeCheck: boolean;
+    }>({ products: [], changeCheck: false });
 
-  useEffect(() => {
-    getProducts({ platform: Platform.OS });
-  }, [getProducts]);
+    useEffect(() => {
+        getProducts({ platform: Platform.OS });
+    }, [getProducts]);
 
-  useEffect(() => {
-    getSubscription();
-  }, [getSubscription]);
+    useEffect(() => {
+        getSubscription();
+    }, [getSubscription]);
 
-  // NOTE : products 의 참조값 변경으로 인한 재렌더링 방지용(기존에는 하단 2번째 useEffect 매개변수로 products 가 들어가 있었으나 값이 같아도 참조값변경으로 인한 재렌더링 발생)
-  useEffect(() => {
-    if (products !== fixData.products) {
-      setFixData({ products: products, changeCheck: !fixData.changeCheck });
-    }
-  }, [products]);
+    // NOTE : products 의 참조값 변경으로 인한 재렌더링 방지용(기존에는 하단 2번째 useEffect 매개변수로 products 가 들어가 있었으나 값이 같아도 참조값변경으로 인한 재렌더링 발생)
+    useEffect(() => {
+        if (products !== fixData.products) {
+            setFixData({ products: products, changeCheck: !fixData.changeCheck });
+        }
+    }, [products]);
 
-  useEffect(() => {
-    if (fixData.products.length) {
-      let purchaseUpdateSubscription: any = null;
-      let purchaseErrorSubscription: any = null;
+    useEffect(() => {
+        if (fixData.products.length) {
+            let purchaseUpdateSubscription: any = null;
+            let purchaseErrorSubscription: any = null;
 
-      const initializeIAP = async () => {
-        await initConnection();
+            const initializeIAP = async () => {
+                try {
+                    console.log('Initializing IAP...');
+                    console.log('Platform:', Platform.OS);
 
-        // initConnection().then(async () => {
-        // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
+                    // 연결 상태 확인
+                    const result = await initConnection();
+                    console.log('IAP Connection result:', result);
 
-        // const storeSItems = await IAPGetSubscriptions({ skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map((p) => p.productId) });
-        const storeSItems = await IAPGetSubscriptions({
-          skus: fixData.products.map((p) => p.productId),
-        });
-        // setPurchaseItems(storeItems)
-        setSubscriptionItems(storeSItems);
+                    // iOS의 경우 캐시된 제품 정보 초기화
+                    if (Platform.OS === 'ios') {
+                        await clearProductsIOS();
+                    }
 
-        const addListeners = () => {
-          purchaseUpdateSubscription = purchaseUpdatedListener(
-            async (purchase: SubscriptionPurchase | ProductPurchase) => {
-              const receipt = purchase.transactionReceipt;
+                    // Android의 경우 실패한 구매 초기화
+                    if (Platform.OS === 'android') {
+                        await flushFailedPurchasesCachedAsPendingAndroid();
+                    }
 
-              const product = fixData.products.find(
-                ({ productId }) => productId === purchase.productId
-              );
-              if (!product) {
-                console.warn("Product not found:", purchase.productId);
-                return;
-              }
-              const isSubscription = product.type === ProductType.SUBSCRIPTION;
-              if (!receipt) {
-                console.warn(
-                  "Receipt not found for product:",
-                  product.productId
-                );
-                return;
-              }
+                    try {
+                        // 구독 상품 정보 가져오기 시도
+                        console.log(
+                            'Fetching subscription items for products:',
+                            fixData.products.map(p => p.productId)
+                        );
+                        const storeSItems = await IAPGetSubscriptions({
+                            skus: fixData.products.map(p => p.productId)
+                        });
+                        console.log('Subscription items fetched:', storeSItems);
+                        setSubscriptionItems(storeSItems);
+                    } catch (error: any) {
+                        console.warn('Failed to get subscription items:', error);
+                        console.warn('Error details:', {
+                            message: error.message,
+                            code: error.code,
+                            stack: error.stack
+                        });
 
-              try {
-                if (Platform.OS === "android") {
-                  await purchaseProduct({
-                    _id: product._id,
-                    receipt: {
-                      subscription: isSubscription,
-                      ...JSON.parse(receipt),
-                    },
-                  });
-                } else {
-                  await purchaseProduct({ _id: product._id, receipt });
+                        Alert.alert('알림', '현재 결제 시스템을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
+                        return;
+                    }
+
+                    // Check if IAP is available
+                    if (Platform.OS === 'android') {
+                        await flushFailedPurchasesCachedAsPendingAndroid();
+                    }
+
+                    try {
+                        const storeSItems = await IAPGetSubscriptions({
+                            skus: fixData.products.map(p => p.productId)
+                        });
+                        setSubscriptionItems(storeSItems);
+                    } catch (error) {
+                        console.warn('Failed to get subscription items:', error);
+                        Alert.alert('알림', '현재 결제 시스템을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
+                        return;
+                    }
+
+                    const addListeners = () => {
+                        purchaseUpdateSubscription = purchaseUpdatedListener(
+                            async (purchase: SubscriptionPurchase | ProductPurchase) => {
+                                const receipt = purchase.transactionReceipt;
+
+                                const product = fixData.products.find(
+                                    ({ productId }) => productId === purchase.productId
+                                );
+                                if (!product) {
+                                    console.warn('Product not found:', purchase.productId);
+                                    return;
+                                }
+                                const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                                if (!receipt) {
+                                    console.warn('Receipt not found for product:', product.productId);
+                                    return;
+                                }
+
+                                try {
+                                    if (Platform.OS === 'android') {
+                                        await purchaseProduct({
+                                            _id: product._id,
+                                            receipt: {
+                                                subscription: isSubscription,
+                                                ...JSON.parse(receipt)
+                                            }
+                                        });
+                                    } else {
+                                        await purchaseProduct({ _id: product._id, receipt });
+                                    }
+                                    await finishTransaction({
+                                        purchase,
+                                        isConsumable: !isSubscription
+                                    });
+                                } catch (error) {
+                                    console.error('Error finalizing purchase:', error);
+                                }
+                            }
+                        );
+
+                        purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
+                            console.error('purchaseErrorListener', error);
+                        });
+                    };
+
+                    addListeners();
+                } catch (error) {
+                    console.error('Failed to initialize IAP:', error);
+                    Alert.alert('알림', '결제 시스템 초기화에 실패했습니다. 잠시 후 다시 시도해주세요.');
                 }
-                await finishTransaction({
-                  purchase,
-                  isConsumable: !isSubscription,
-                });
-              } catch (error) {
-                console.error("Error finalizing purchase:", error);
-              }
-            }
-          );
+            };
 
-          purchaseErrorSubscription = purchaseErrorListener(
-            (error: PurchaseError) => {
-              console.error("purchaseErrorListener", error);
-            }
-          );
-        };
+            initializeIAP();
 
-        if (Platform.OS === "android") {
-          flushFailedPurchasesCachedAsPendingAndroid()
-            .then(addListeners)
-            .catch(() => {});
-        } else {
-          addListeners();
+            return () => {
+                if (purchaseUpdateSubscription) {
+                    purchaseUpdateSubscription.remove();
+                    purchaseUpdateSubscription = null;
+                }
+
+                if (purchaseErrorSubscription) {
+                    purchaseErrorSubscription.remove();
+                    purchaseErrorSubscription = null;
+                }
+            };
         }
-      };
+    }, [fixData.changeCheck]);
 
-      initializeIAP();
-
-      return () => {
-        if (purchaseUpdateSubscription) {
-          purchaseUpdateSubscription.remove();
-          purchaseUpdateSubscription = null;
-        }
-
-        if (purchaseErrorSubscription) {
-          purchaseErrorSubscription.remove();
-          purchaseErrorSubscription = null;
-        }
-      };
-    }
-  }, [fixData.changeCheck]);
-
-  return (
-    <PointScreen
-      products={products}
-      purchaseItems={purchaseItems}
-      subscriptionItems={subscriptionItems}
-    />
-  );
+    return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
 };
 
 interface Props {
-  products: Product[];
-  purchaseItems: IAPProduct[];
-  subscriptionItems: IAPSubscription[];
+    products: Product[];
+    purchaseItems: IAPProduct[];
+    subscriptionItems: IAPSubscription[];
 }
-export const PointScreen: React.FC<Props> = ({
-  products,
-  purchaseItems,
-  subscriptionItems,
-}) => {
-  const router = useRouter();
-  const currentSubscription = useAtomValue(subscriptionAtom);
-  const userData = useAtomValue(userDataAtom);
-  const colorScheme = useColorScheme();
-  const styles = useStyles(colorScheme);
-  const { connected, currentPurchase, currentPurchaseError } = useIAP();
-  const markdownStyles = StyleSheet.create({
-    text: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: Colors[colorScheme].text.primary,
-    },
-  });
-
-  const [isSubscription, setIsSubscription] = useState<boolean>(false);
-  const setIsShowSubscriptionModalAtomModal = useSetAtom(
-    isShowSubscriptionModalAtom
-  );
-
-  useEffect(() => {
-    if (isSubscription) {
-      setIsShowSubscriptionModalAtomModal(true);
-    }
-  }, [isSubscription]);
-
-  const handleClickSub = async (sku: string, offerToken?: string | null) => {
-    try {
-      const subCheck = await GetPurchaseSubCheckAPI();
-      if (subCheck.data.activate) {
-        Alert.alert("이미 구독중입니다.");
-        return;
-      }
-
-      checkSubscriptionStatus;
-      if (offerToken) {
-        const subscriptionRequest: RequestSubscriptionAndroid = {
-          subscriptionOffers: [
-            {
-              sku,
-              offerToken,
-            },
-          ],
-        };
-
-        await requestSubscription(subscriptionRequest);
-        setIsSubscription(true); // 구독 완료 바텀시트
-      } else {
-        // ios
-        await clearTransactionIOS();
-
-        const request = await requestSubscription({
-          sku,
-          andDangerouslyFinishTransactionAutomaticallyIOS: false,
-        });
-        if (request) {
-          // Alert.alert('구독 성공', JSON.stringify(request));
-        } else {
-          // Alert.alert('구독 실패', '구독에 실패하였습니다.');
+export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
+    const router = useRouter();
+    const currentSubscription = useAtomValue(subscriptionAtom);
+    const userData = useAtomValue(userDataAtom);
+    const colorScheme = useColorScheme();
+    const styles = useStyles(colorScheme);
+    const { connected, currentPurchase, currentPurchaseError } = useIAP();
+    const markdownStyles = StyleSheet.create({
+        text: {
+            fontSize: 14,
+            lineHeight: 20,
+            color: Colors[colorScheme].text.primary
         }
-        setIsSubscription(true); // 구독 완료 바텀시트
-      }
-    } catch (err: any) {
-      console.log("error!");
-      console.warn(err.code, err.message);
-    }
-  };
+    });
 
-  const filteredProducts = products.reduce(
-    (obj, product) => {
-      if (product.type === ProductType.PURCHASE) {
-        // 단건 로직
-        const item = purchaseItems.find(
-          ({ productId }) => product.productId === productId
-        );
-        if (item) {
-          obj.purchasableProducts.push({ ...item, ...product });
+    const [isSubscription, setIsSubscription] = useState<boolean>(false);
+    const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
+
+    useEffect(() => {
+        if (isSubscription) {
+            setIsShowSubscriptionModalAtomModal(true);
         }
-      } else {
-        const item = subscriptionItems.find(
-          ({ productId }) => product.productId === productId
-        );
-        if (item) {
-          obj.subscriptionProducts.push({ ...item, ...product });
+    }, [isSubscription]);
+
+    const handleClickSub = async (sku: string, offerToken?: string | null) => {
+        try {
+            const subCheck = await GetPurchaseSubCheckAPI();
+            if (subCheck.data.activate) {
+                Alert.alert('이미 구독중입니다.');
+                return;
+            }
+
+            checkSubscriptionStatus;
+            if (offerToken) {
+                const subscriptionRequest: RequestSubscriptionAndroid = {
+                    subscriptionOffers: [
+                        {
+                            sku,
+                            offerToken
+                        }
+                    ]
+                };
+
+                await requestSubscription(subscriptionRequest);
+                setIsSubscription(true); // 구독 완료 바텀시트
+            } else {
+                // ios
+                await clearTransactionIOS();
+
+                const request = await requestSubscription({
+                    sku,
+                    andDangerouslyFinishTransactionAutomaticallyIOS: false
+                });
+                if (request) {
+                    // Alert.alert('구독 성공', JSON.stringify(request));
+                } else {
+                    // Alert.alert('구독 실패', '구독에 실패하였습니다.');
+                }
+                setIsSubscription(true); // 구독 완료 바텀시트
+            }
+        } catch (err: any) {
+            console.log('error!');
+            console.warn(err.code, err.message);
         }
-      }
-      return obj;
-    },
-    {
-      subscriptionProducts: [] as (IAPSubscription & Product)[],
-      purchasableProducts: [] as (IAPProduct & Product)[],
-    }
-  );
-  return (
-    <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.content}>
-          <View style={styles.description}>
-            <Text style={styles.title}>픽포미 플러스</Text>
-            <Text style={styles.subtitle}>
-              한 달 AI 질문 무제한, 매니저 질문 30회 이용권
-            </Text>
-            <Text>픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.</Text>
-            <Text>멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.</Text>
-          </View>
+    };
 
-          {filteredProducts.subscriptionProducts.map((product) => {
-            console.log("product : ", product);
-            const color: "primary" | "tertiary" = "tertiary";
-            const buttonTextProps = { color };
-            if (product.platform === "android") {
-              const subscriptionOffer = (
-                product as unknown as SubscriptionAndroid
-              ).subscriptionOfferDetails[0];
+    const filteredProducts = products.reduce(
+        (obj, product) => {
+            if (product.type === ProductType.PURCHASE) {
+                // 단건 로직
+                const item = purchaseItems.find(({ productId }) => product.productId === productId);
+                if (item) {
+                    obj.purchasableProducts.push({ ...item, ...product });
+                }
+            } else {
+                const item = subscriptionItems.find(({ productId }) => product.productId === productId);
+                if (item) {
+                    obj.subscriptionProducts.push({ ...item, ...product });
+                }
+            }
+            return obj;
+        },
+        {
+            subscriptionProducts: [] as (IAPSubscription & Product)[],
+            purchasableProducts: [] as (IAPProduct & Product)[]
+        }
+    );
+    return (
+        <View style={styles.container}>
+            <ScrollView>
+                <View style={styles.content}>
+                    <View style={styles.description}>
+                        <Text style={styles.title}>픽포미 플러스</Text>
+                        <Text style={styles.subtitle}>한 달 AI 질문 무제한, 매니저 질문 30회 이용권</Text>
+                        <Text>픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.</Text>
+                        <Text>멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.</Text>
+                    </View>
 
-              return (
-                <View
-                  key={`Point-Product-${product.productId}`}
-                  style={styles.productWrap}
-                >
-                  <Text style={styles.productPrice}>
-                    월{" "}
-                    {subscriptionOffer.pricingPhases.pricingPhaseList[0].formattedPrice.replace(
-                      /₩(.*)/,
-                      "$1원"
-                    )}
-                  </Text>
-                  <Button
-                    style={styles.productButton}
-                    title="멤버십 시작하기"
-                    size="small"
-                    onPress={() =>
-                      handleClickSub(
-                        product.productId,
-                        subscriptionOffer.offerToken
-                      )
-                    }
-                  />
+                    {filteredProducts.subscriptionProducts.map(product => {
+                        console.log('product : ', product);
+                        const color: 'primary' | 'tertiary' = 'tertiary';
+                        const buttonTextProps = { color };
+                        if (product.platform === 'android') {
+                            const subscriptionOffer = (product as unknown as SubscriptionAndroid)
+                                .subscriptionOfferDetails[0];
+
+                            return (
+                                <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
+                                    <Text style={styles.productPrice}>
+                                        월{' '}
+                                        {subscriptionOffer.pricingPhases.pricingPhaseList[0].formattedPrice.replace(
+                                            /₩(.*)/,
+                                            '$1원'
+                                        )}
+                                    </Text>
+                                    <Button
+                                        style={styles.productButton}
+                                        title="멤버십 시작하기"
+                                        size="small"
+                                        onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                    />
+                                </View>
+                            );
+                        }
+                        return (
+                            <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
+                                <Text style={styles.productPrice}>
+                                    월 {(product as any).localizedPrice.replace(/₩(.*)/, '$1원')}
+                                </Text>
+                                <Button
+                                    style={styles.productButton}
+                                    title="멤버십 시작하기"
+                                    size="small"
+                                    onPress={() => handleClickSub(product.productId, null)}
+                                />
+                            </View>
+                        );
+                    })}
+                    <Text style={styles.subtitle}>멤버십 혜택 자세히</Text>
+                    <Markdown style={markdownStyles}>
+                        {
+                            '**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 전 상품 최대 1회씩 이용 가능'
+                        }
+                    </Markdown>
                 </View>
-              );
-            }
-            return (
-              <View
-                key={`Point-Product-${product.productId}`}
-                style={styles.productWrap}
-              >
-                <Text style={styles.productPrice}>
-                  월 {(product as any).localizedPrice.replace(/₩(.*)/, "$1원")}
-                </Text>
-                <Button
-                  style={styles.productButton}
-                  title="멤버십 시작하기"
-                  size="small"
-                  onPress={() => handleClickSub(product.productId, null)}
-                />
-              </View>
-            );
-          })}
-          <Text style={styles.subtitle}>멤버십 혜택 자세히</Text>
-          <Markdown style={markdownStyles}>
-            {
-              "**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 전 상품 최대 1회씩 이용 가능"
-            }
-          </Markdown>
-        </View>
-        {/* <View style={styles.content}>
+                {/* <View style={styles.content}>
           <Button
             style={styles.termButton}
             title="픽 이용약관"
@@ -390,70 +396,70 @@ export const PointScreen: React.FC<Props> = ({
           />
           <Text style={styles.terms}>{TERM}</Text>
         </View> */}
-      </ScrollView>
-    </View>
-  );
+            </ScrollView>
+        </View>
+    );
 };
 
 const useStyles = (colorScheme: ColorScheme) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    content: {
-      flex: 1,
-      padding: 31,
-    },
-    title: {
-      fontWeight: "600",
-      fontSize: 20,
-      lineHeight: 24,
-      marginBottom: 18,
-    },
-    subtitle: {
-      fontWeight: "600",
-      fontSize: 14,
-      lineHeight: 17,
-      marginBottom: 14,
-    },
-    description: {
-      marginBottom: 16,
-    },
-    productWrap: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      width: "100%",
-      padding: 14,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: Colors[colorScheme].borderColor.secondary,
-      marginVertical: 24,
-    },
-    productButton: {
-      width: 120,
-      padding: 10,
-      backgroundColor: Colors[colorScheme].buttonBackground.primary,
-    },
-    productPrice: {
-      fontWeight: "600",
-      fontSize: 18,
-      lineHeight: 22,
-    },
-    terms: {
-      marginTop: 12,
-      fontWeight: "400",
-      fontSize: 12,
-      lineHeight: 15,
-    },
-    buttonText: {
-      fontWeight: "600",
-      fontSize: 14,
-      lineHeight: 17,
-      color: "white",
-    },
-    termButton: {
-      marginTop: 100,
-    },
-  });
+    StyleSheet.create({
+        container: {
+            flex: 1
+        },
+        content: {
+            flex: 1,
+            padding: 31
+        },
+        title: {
+            fontWeight: '600',
+            fontSize: 20,
+            lineHeight: 24,
+            marginBottom: 18
+        },
+        subtitle: {
+            fontWeight: '600',
+            fontSize: 14,
+            lineHeight: 17,
+            marginBottom: 14
+        },
+        description: {
+            marginBottom: 16
+        },
+        productWrap: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            padding: 14,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: Colors[colorScheme].borderColor.secondary,
+            marginVertical: 24
+        },
+        productButton: {
+            width: 120,
+            padding: 10,
+            backgroundColor: Colors[colorScheme].buttonBackground.primary
+        },
+        productPrice: {
+            fontWeight: '600',
+            fontSize: 18,
+            lineHeight: 22
+        },
+        terms: {
+            marginTop: 12,
+            fontWeight: '400',
+            fontSize: 12,
+            lineHeight: 15
+        },
+        buttonText: {
+            fontWeight: '600',
+            fontSize: 14,
+            lineHeight: 17,
+            color: 'white'
+        },
+        termButton: {
+            marginTop: 100
+        }
+    });
 export default withIAPContext(PurchaseWrapper);

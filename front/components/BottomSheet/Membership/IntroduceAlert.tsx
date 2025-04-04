@@ -1,17 +1,17 @@
-import React from "react";
-import BottomSheet from "react-native-modal";
-import { StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
-import { useAtom } from "jotai";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React from 'react';
+import BottomSheet from 'react-native-modal';
+import { StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAtom } from 'jotai';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Props, styles } from "../Base";
-import { isShowIntroduceAlertModalAtom, settingAtom } from "@stores";
-import { Colors } from "@constants";
-import { View, Text, Button } from "@components";
-import { useColorScheme } from "@hooks";
+import { Props, styles } from '../Base';
+import { isShowIntroduceAlertModalAtom, settingAtom } from '@stores';
+import { Colors } from '@constants';
+import { View, Text, Button } from '@components';
+import useColorScheme from '../../../hooks/useColorScheme';
 
-import type { ColorScheme } from "@hooks";
+import type { ColorScheme } from '@hooks';
 
 //Membership
 const IntroduceAlertBottomSheet: React.FC<Props> = () => {
@@ -25,7 +25,7 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
     const localStyles = useLocalStyles(colorScheme);
 
     const handleClickYes = () => {
-        router.push("/faq");
+        router.push('/faq');
         onClose();
     };
     const handleClickNo = () => {
@@ -33,28 +33,15 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
     };
 
     return (
-        <BottomSheet
-            style={styles.base}
-            isVisible={visible}
-            onBackButtonPress={onClose}
-            onBackdropPress={onClose}
-        >
+        <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
             <View style={[styles.bottomSheet, localStyles.root]}>
-                <Text style={[styles.title, localStyles.title]}>
-                    {setting.name}님! 중요한 소식이 있어요.
-                </Text>
+                <Text style={[styles.title, localStyles.title]}>{setting.name}님! 중요한 소식이 있어요.</Text>
                 <Text style={[styles.desc, localStyles.desc]}>
                     {
-                        "9월 23일부터 픽포미 한 달 무제한 질문권이 도입되어요.\n23일 전에 결제한 픽은 단일 질문권으로 사용가능해요.\n자세한 내용은 ‘자주 받는 질문’ 페이지를 참고해 주세요."
+                        '9월 23일부터 픽포미 한 달 무제한 질문권이 도입되어요.\n23일 전에 결제한 픽은 단일 질문권으로 사용가능해요.\n자세한 내용은 ‘자주 받는 질문’ 페이지를 참고해 주세요.'
                     }
                 </Text>
-                <View
-                    style={[
-                        styles.buttonRow,
-                        localStyles.buttonWrap,
-                        { paddingBottom: insets.bottom + 16 },
-                    ]}
-                >
+                <View style={[styles.buttonRow, localStyles.buttonWrap, { paddingBottom: insets.bottom + 16 }]}>
                     <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
                         <Button
                             title="자세히 보러 가기"
@@ -81,33 +68,33 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
 const useLocalStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         root: {
-            paddingBottom: 22,
+            paddingBottom: 22
         },
         title: {
             fontSize: 18,
             lineHeight: 20,
-            fontWeight: "600",
+            fontWeight: '600',
             marginBottom: 20,
-            color: "#1e1e1e",
+            color: '#1e1e1e'
         },
         desc: {
             fontSize: 14,
             lineHeight: 20,
-            marginBottom: 39,
+            marginBottom: 39
         },
         buttonWrap: {},
         buttonOuter: {
-            flex: 1,
+            flex: 1
         },
         button1: {
-            minHeight: 50,
+            minHeight: 50
         },
         button2: {
             minHeight: 50,
-            backgroundColor: "white",
+            backgroundColor: 'white',
             borderWidth: 1,
-            borderColor: Colors[colorScheme].buttonBackground.primary,
-        },
+            borderColor: Colors[colorScheme].buttonBackground.primary
+        }
     });
 
 export default IntroduceAlertBottomSheet;

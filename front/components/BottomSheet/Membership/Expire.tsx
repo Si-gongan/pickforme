@@ -1,16 +1,16 @@
-import React, { useRef, useEffect } from "react";
-import { StyleSheet, findNodeHandle, AccessibilityInfo } from "react-native";
-import { useRouter } from "expo-router";
-import BottomSheet from "react-native-modal";
-import { useAtom } from "jotai";
+import React, { useRef, useEffect } from 'react';
+import { StyleSheet, findNodeHandle, AccessibilityInfo } from 'react-native';
+import { useRouter } from 'expo-router';
+import BottomSheet from 'react-native-modal';
+import { useAtom } from 'jotai';
 
-import { isShowExpireModalAtom, settingAtom } from "@stores";
-import { View, Text, Button } from "@components";
-import { Props, styles } from "../Base";
-import { Colors } from "@constants";
-import { useColorScheme } from "@hooks";
+import { isShowExpireModalAtom, settingAtom } from '@stores';
+import { View, Text, Button } from '@components';
+import { Props, styles } from '../Base';
+import { Colors } from '@constants';
+import useColorScheme from '../../../hooks/useColorScheme';
 
-import type { ColorScheme } from "@hooks";
+import type { ColorScheme } from '@hooks';
 
 // Membership
 const ExpireBottomSheet: React.FC<Props> = () => {
@@ -26,7 +26,7 @@ const ExpireBottomSheet: React.FC<Props> = () => {
     const onClose = () => setVisible(false);
 
     const handleClickYes = () => {
-        router.push("/subscription");
+        router.push('/subscription');
         onClose();
     };
     const handleClickNo = () => {
@@ -44,22 +44,14 @@ const ExpireBottomSheet: React.FC<Props> = () => {
     }, [visible]);
 
     return (
-        <BottomSheet
-            style={styles.base}
-            isVisible={visible}
-            onBackButtonPress={onClose}
-            onBackdropPress={onClose}
-        >
+        <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
             <View style={[styles.bottomSheet, localStyles.root]}>
-                <Text
-                    style={[styles.title, localStyles.title]}
-                    ref={headerTitleRef}
-                >
+                <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
                     오늘은 픽포미 멤버십 이용 종료일이에요.
                 </Text>
                 <Text style={[styles.desc, localStyles.desc]}>
                     {
-                        "멤버십을 연장하지 않으면 앞으로 모든\n질문하기 기능이 제한되어요.\n멤버십을 연장하고 픽포미의 모든 기능을 이용해보세요."
+                        '멤버십을 연장하지 않으면 앞으로 모든\n질문하기 기능이 제한되어요.\n멤버십을 연장하고 픽포미의 모든 기능을 이용해보세요.'
                     }
                 </Text>
                 <View style={[styles.buttonRow, localStyles.buttonWrap]}>
@@ -89,33 +81,33 @@ const ExpireBottomSheet: React.FC<Props> = () => {
 const useLocalStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         root: {
-            paddingBottom: 22,
+            paddingBottom: 22
         },
         title: {
             fontSize: 18,
             lineHeight: 20,
-            fontWeight: "600",
+            fontWeight: '600',
             marginBottom: 20,
-            color: "#1e1e1e",
+            color: '#1e1e1e'
         },
         desc: {
             fontSize: 14,
             lineHeight: 20,
-            marginBottom: 39,
+            marginBottom: 39
         },
         buttonWrap: {},
         buttonOuter: {
-            flex: 1,
+            flex: 1
         },
         button1: {
-            minHeight: 50,
+            minHeight: 50
         },
         button2: {
             minHeight: 50,
-            backgroundColor: "white",
+            backgroundColor: 'white',
             borderWidth: 1,
-            borderColor: Colors[colorScheme].buttonBackground.primary,
-        },
+            borderColor: Colors[colorScheme].buttonBackground.primary
+        }
     });
 
 export default ExpireBottomSheet;
