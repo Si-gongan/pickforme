@@ -1,4 +1,4 @@
-import { useColorScheme as useColorSchemeBase, ColorSchemeName } from 'react-native';
+import { useColorScheme as useColorSchemeBase } from 'react-native';
 import { settingAtom } from '../stores/auth/atoms';
 import { useAtomValue } from 'jotai';
 

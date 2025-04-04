@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useColorScheme } from '../../hooks/useColorScheme';
+import useColorScheme from '../../hooks/useColorScheme';
 import { PhoneCheckAPI, PhoneSubmitAPI } from '../../stores/auth/apis';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
