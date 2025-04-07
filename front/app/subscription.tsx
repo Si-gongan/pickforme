@@ -39,7 +39,8 @@ import { Product, ProductType } from '../stores/purchase/types';
 import { userDataAtom, isShowSubscriptionModalAtom } from '@stores';
 import { Colors } from '@constants';
 import useColorScheme from '../hooks/useColorScheme';
-import { Text, View, Button_old as Button } from '@components';
+import { Text, View, Button_old as Button, BackHeader } from '@components';
+import { initializeIAP } from '../services/IAPservice';
 
 // 2024
 import { GetPurchaseSubCheckAPI } from '../stores/purchase/apis';
@@ -102,117 +103,14 @@ const PurchaseWrapper = () => {
             let purchaseUpdateSubscription: any = null;
             let purchaseErrorSubscription: any = null;
 
-            const initializeIAP = async () => {
+            (async () => {
                 try {
-                    console.log('Initializing IAP...');
-                    console.log('Platform:', Platform.OS);
-
-                    // 연결 상태 확인
-                    const result = await initConnection();
-                    console.log('IAP Connection result:', result);
-
-                    // iOS의 경우 캐시된 제품 정보 초기화
-                    if (Platform.OS === 'ios') {
-                        await clearProductsIOS();
-                    }
-
-                    // Android의 경우 실패한 구매 초기화
-                    if (Platform.OS === 'android') {
-                        await flushFailedPurchasesCachedAsPendingAndroid();
-                    }
-
-                    try {
-                        // 구독 상품 정보 가져오기 시도
-                        console.log(
-                            'Fetching subscription items for products:',
-                            fixData.products.map(p => p.productId)
-                        );
-                        const storeSItems = await IAPGetSubscriptions({
-                            skus: fixData.products.map(p => p.productId)
-                        });
-                        console.log('Subscription items fetched:', storeSItems);
-                        setSubscriptionItems(storeSItems);
-                    } catch (error: any) {
-                        console.warn('Failed to get subscription items:', error);
-                        console.warn('Error details:', {
-                            message: error.message,
-                            code: error.code,
-                            stack: error.stack
-                        });
-
-                        Alert.alert('알림', '현재 결제 시스템을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
-                        return;
-                    }
-
-                    // Check if IAP is available
-                    if (Platform.OS === 'android') {
-                        await flushFailedPurchasesCachedAsPendingAndroid();
-                    }
-
-                    try {
-                        const storeSItems = await IAPGetSubscriptions({
-                            skus: fixData.products.map(p => p.productId)
-                        });
-                        setSubscriptionItems(storeSItems);
-                    } catch (error) {
-                        console.warn('Failed to get subscription items:', error);
-                        Alert.alert('알림', '현재 결제 시스템을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
-                        return;
-                    }
-
-                    const addListeners = () => {
-                        purchaseUpdateSubscription = purchaseUpdatedListener(
-                            async (purchase: SubscriptionPurchase | ProductPurchase) => {
-                                const receipt = purchase.transactionReceipt;
-
-                                const product = fixData.products.find(
-                                    ({ productId }) => productId === purchase.productId
-                                );
-                                if (!product) {
-                                    console.warn('Product not found:', purchase.productId);
-                                    return;
-                                }
-                                const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                                if (!receipt) {
-                                    console.warn('Receipt not found for product:', product.productId);
-                                    return;
-                                }
-
-                                try {
-                                    if (Platform.OS === 'android') {
-                                        await purchaseProduct({
-                                            _id: product._id,
-                                            receipt: {
-                                                subscription: isSubscription,
-                                                ...JSON.parse(receipt)
-                                            }
-                                        });
-                                    } else {
-                                        await purchaseProduct({ _id: product._id, receipt });
-                                    }
-                                    await finishTransaction({
-                                        purchase,
-                                        isConsumable: !isSubscription
-                                    });
-                                } catch (error) {
-                                    console.error('Error finalizing purchase:', error);
-                                }
-                            }
-                        );
-
-                        purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
-                            console.error('purchaseErrorListener', error);
-                        });
-                    };
-
-                    addListeners();
+                    const items = await initializeIAP(fixData.products, purchaseUpdateSubscription, purchaseErrorSubscription, purchaseProduct);
+                    setSubscriptionItems(items);
                 } catch (error) {
                     console.error('Failed to initialize IAP:', error);
-                    Alert.alert('알림', '결제 시스템 초기화에 실패했습니다. 잠시 후 다시 시도해주세요.');
                 }
-            };
-
-            initializeIAP();
+            })();
 
             return () => {
                 if (purchaseUpdateSubscription) {
@@ -226,7 +124,7 @@ const PurchaseWrapper = () => {
                 }
             };
         }
-    }, [fixData.changeCheck]);
+    }, [fixData.changeCheck, purchaseProduct]);
 
     return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
 };
@@ -325,6 +223,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     );
     return (
         <View style={styles.container}>
+            <BackHeader />
             <ScrollView>
                 <View style={styles.content}>
                     <View style={styles.description}>
@@ -404,7 +303,8 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
-            flex: 1
+            flex: 1,
+            paddingTop: 30
         },
         content: {
             flex: 1,

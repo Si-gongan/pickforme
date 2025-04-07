@@ -78,6 +78,14 @@ export default function MyScreen() {
         [router]
     );
 
+    const goToSubscriptionHistory = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/subscription-history');
+        },
+        [router]
+    );
+
     const onLogout = useCallback(
         function () {
             onUser({});
@@ -96,10 +104,10 @@ export default function MyScreen() {
             return [
                 ...defaultMenu,
                 { name: '멤버십 이용하기', onPress: goToSubscription },
-                { name: '멤버십 구매내역', onPress: function () {} }
+                { name: '멤버십 구매내역', onPress: goToSubscriptionHistory }
             ];
         },
-        [user?._id, goToInfo, goToLogin, goToSubscription]
+        [user?._id, goToInfo, goToLogin, goToSubscription, goToSubscriptionHistory]
     );
 
     const appSettingMenu = useMemo(

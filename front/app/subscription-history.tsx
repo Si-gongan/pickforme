@@ -12,41 +12,22 @@ import {
     getSubscriptionAtom,
     subscriptionListAtom,
     getSubscriptionListAtom,
-    purchaseListAtom,
-    getPurchaseListAtom,
     productsAtom
 } from '../stores/purchase/atoms';
-import { formatTime, formatDate, formatDateAfterOneMonth } from '../utils/common';
-// import Subscription from "../components/Subscription";
-import { PointScreen } from './subscription';
-
-import { Platform, Linking } from 'react-native';
+import { Platform } from 'react-native';
 import { getProductsAtom, purchaseProductAtom } from '../stores/purchase/atoms';
-import * as WebBrowser from 'expo-web-browser';
-import Markdown from 'react-native-markdown-display';
 import {
-    initConnection,
-    purchaseErrorListener,
-    purchaseUpdatedListener,
-    ProductPurchase,
-    PurchaseError,
-    flushFailedPurchasesCachedAsPendingAndroid,
-    SubscriptionPurchase,
-    requestPurchase,
-    requestSubscription,
-    getProducts as IAPGetProducts,
-    getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
     SubscriptionAndroid,
-    finishTransaction,
-    useIAP,
-    withIAPContext,
     RequestSubscriptionAndroid,
-    deepLinkToSubscriptions
+    requestSubscription,
+    withIAPContext
 } from 'react-native-iap';
 import { Product, ProductType } from '../stores/purchase/types';
-
+import { initializeIAP } from '../services/IAPservice';
+import { BackHeader } from '../components';
+import { formatDate } from '../utils/common';
 import type { ColorScheme } from '@hooks';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
@@ -76,66 +57,15 @@ const PurchaseHistoryWrapper = () => {
             let purchaseUpdateSubscription: any = null;
             let purchaseErrorSubscription: any = null;
 
-            const initializeIAP = async () => {
-                await initConnection();
-
-                // initConnection().then(async () => {
-                // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
-
-                const storeSItems = await IAPGetSubscriptions({
-                    skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map(p => p.productId)
-                });
-
-                // setPurchaseItems(storeItems)
-                setSubscriptionItems(storeSItems);
-
-                const addListeners = () => {
-                    purchaseUpdateSubscription = purchaseUpdatedListener(
-                        async (purchase: SubscriptionPurchase | ProductPurchase) => {
-                            const receipt = purchase.transactionReceipt;
-
-                            const product = products.find(({ productId }) => productId === purchase.productId);
-                            if (!product) {
-                                return;
-                            }
-                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                            if (!receipt) {
-                                return;
-                            }
-                            if (Platform.OS === 'android') {
-                                await purchaseProduct({
-                                    _id: product._id,
-                                    receipt: {
-                                        subscription: isSubscription,
-                                        ...JSON.parse(receipt)
-                                    }
-                                });
-                            } else {
-                                await purchaseProduct({ _id: product._id, receipt });
-                            }
-                            await finishTransaction({
-                                purchase,
-                                isConsumable: !isSubscription
-                            });
-                        }
-                    );
-
-                    purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
-                        console.error('purchaseErrorListener', error);
-                    });
-                };
-                // we make sure that "ghost" pending payment are removed
-                // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
-                if (Platform.OS === 'android') {
-                    flushFailedPurchasesCachedAsPendingAndroid()
-                        .then(addListeners)
-                        .catch(() => {});
-                } else {
-                    addListeners();
+            (async () => {
+                try {
+                    const items = await initializeIAP(products, purchaseUpdateSubscription, purchaseErrorSubscription, purchaseProduct);
+                    setSubscriptionItems(items);
+                } catch (error) {
+                    console.error('Failed to initialize IAP:', error);
                 }
-            };
+            })();
 
-            initializeIAP();
             return () => {
                 if (purchaseUpdateSubscription) {
                     purchaseUpdateSubscription.remove();
@@ -148,7 +78,7 @@ const PurchaseHistoryWrapper = () => {
                 }
             };
         }
-    }, [products]);
+    }, [products, purchaseProduct]);
     return (
         <PointHistoryScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />
     );
@@ -169,6 +99,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
 
     const filteredProducts = products.reduce(
         (obj, product) => {
+            console.log('Product:', product);
+            console.log('SubscriptionItems:', subscriptionItems);
             if (product.type === ProductType.PURCHASE) {
                 // 단건 로직
                 const item = purchaseItems.find(({ productId }) => product.productId === productId);
@@ -177,6 +109,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                 }
             } else {
                 const item = subscriptionItems.find(({ productId }) => product.productId === productId);
+                console.log('Found subscription item:', item);
                 if (item) {
                     obj.subscriptionProducts.push({ ...item, ...product });
                 }
@@ -188,6 +121,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
             purchasableProducts: [] as (IAPProduct & Product)[]
         }
     );
+    console.log('Filtered Products:', filteredProducts);
 
     const handleClickSub = async (sku: string, offerToken?: string) => {
         try {
@@ -217,6 +151,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
 
     return (
         <View style={styles.container}>
+            <BackHeader />
             <ScrollView>
                 <View style={styles.content}>
                     <Text style={styles.title}>멤버십 구매 내역</Text>
@@ -411,7 +346,8 @@ interface Props {
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
-            flex: 1
+            flex: 1,
+            paddingTop: 30
         },
         content: {
             flex: 1,
