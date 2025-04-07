@@ -1,118 +1,118 @@
-const tintColorLight = "#2f95dc";
-const tintColorDark = "#fff";
+const tintColorLight = '#2f95dc';
+const tintColorDark = '#fff';
 
-const primary = "#111E4F";
-const primaryDark = "#424C75";
-const secondary = "#4A5CA0";
-const secondaryDark = "#313854";
-const tertiary = "#DFE4F5";
-const tertiaryDark = "#1D2336";
-const buttonText = "#EFEFEF";
-const secondary2 = "#9FA7C3";
+const primary = '#111E4F';
+const primaryDark = '#424C75';
+const secondary = '#4A5CA0';
+const secondaryDark = '#313854';
+const tertiary = '#DFE4F5';
+const tertiaryDark = '#1D2336';
+const buttonText = '#EFEFEF';
+const secondary2 = '#9FA7C3';
 
 export default {
     light: {
         text: {
-            primary,
-            secondary,
-            tertiary,
+            primary: '#1E1E1E',
+            secondary: '#fff',
+            tertiary
         },
         background: {
-            primary: "#fff",
-            secondary: "#fff",
-            tertiary,
+            primary: '#fff',
+            secondary: '#fff',
+            tertiary
         },
         tint: {
             primary: tintColorLight,
             secondary: tintColorLight,
-            tertiary,
+            tertiary
         },
         tabIconDefault: {
-            primary: "#ccc",
-            secondary: "#ccc",
-            tertiary,
+            primary: '#ccc',
+            secondary: '#ccc',
+            tertiary
         },
         tabIconSelected: {
             primary: tintColorLight,
             secondary: tintColorLight,
-            tertiary,
+            tertiary
         },
         card: {
             primary: tertiary,
             secondary: tertiary,
-            tertiary,
+            tertiary
         },
         buttonBackground: {
             primary,
             secondary,
-            tertiary: "#FFFFFF",
+            tertiary: '#FFFFFF'
         },
         disabledButtonBackground: {
             primary: secondary2,
             secondary: secondary2,
-            tertiary: secondary2,
+            tertiary: secondary2
         },
         buttonText: {
             primary: buttonText,
             secondary: buttonText,
-            tertiary: primary,
+            tertiary: primary
         },
         borderColor: {
             primary: secondary2,
             secondary: tertiary,
-            tertiary,
-        },
+            tertiary
+        }
     },
     dark: {
         text: {
-            primary: "#D9D9D9",
-            secondary: "#D9D9D9",
-            tertiary: "#D9D9D9",
+            primary: '#D9D9D9',
+            secondary: '#D9D9D9',
+            tertiary: '#D9D9D9'
         },
         background: {
-            primary: "#111525",
-            secondary: "#111525",
-            tertiary: "#111525",
+            primary: '#111525',
+            secondary: '#111525',
+            tertiary: '#111525'
         },
         tint: {
             primary: tintColorDark,
             secondary: tintColorDark,
-            tertiary,
+            tertiary
         },
         tabIconDefault: {
-            primary: "#ccc",
-            secondary: "#ccc",
-            tertiary,
+            primary: '#ccc',
+            secondary: '#ccc',
+            tertiary
         },
         tabIconSelected: {
             primary: tintColorDark,
             secondary: tintColorDark,
-            tertiary,
+            tertiary
         },
         buttonBackground: {
             primary: primaryDark,
             secondary: secondaryDark,
-            tertiary: tertiaryDark,
+            tertiary: tertiaryDark
         },
         card: {
             primary: tertiaryDark,
             secondary: tertiaryDark,
-            tertiary: tertiaryDark,
+            tertiary: tertiaryDark
         },
         disabledButtonBackground: {
             primary: secondary2,
             secondary: secondary2,
-            tertiary,
+            tertiary
         },
         buttonText: {
             primary: buttonText,
             secondary: buttonText,
-            tertiary: buttonText,
+            tertiary: buttonText
         },
         borderColor: {
             primary: secondary2,
             secondary: secondary2,
-            tertiary: secondary2,
-        },
-    },
+            tertiary: secondary2
+        }
+    }
 };

@@ -4,7 +4,8 @@ import { useRouter, Link } from 'expo-router';
 import { useAtom } from 'jotai';
 
 import { isShowOnboardingModalAtom } from '@stores';
-import { View, Text } from '@components';
+import View from '../View';
+import Text from '../Text';
 import { styles as baseStyles } from './Base';
 
 function LackBottomSheet({ isHomeButton = true }: { isHomeButton?: boolean }) {

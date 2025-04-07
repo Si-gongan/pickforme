@@ -1,7 +1,8 @@
 import { StyleSheet, TextProps, Pressable, PressableProps } from 'react-native';
 
 import { useThemeColor } from '@hooks';
-import { View, Text } from '@components';
+import View from '../View';
+import Text from '../Text';
 
 import type { ThemeProps } from '@hooks';
 
@@ -13,7 +14,7 @@ interface ButtonTextProps
 interface ButtonProps extends Omit<PressableProps, 'children'>, ButtonTextProps {
     title?: string;
     variant?: 'contain' | 'text';
-    color?: 'primary' | 'secondary' | 'tertiary' | 'white';
+    color?: 'primary' | 'secondary' | 'tertiary';
     size?: 'large' | 'medium' | 'small';
     renderChildrenPosition?: 'front' | 'back';
     readOnly?: boolean;

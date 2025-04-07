@@ -20,9 +20,15 @@ export interface ScrapedProductDetail {
     reviews?: string[]; // 웹뷰에서 스크래핑한 상품 리뷰 리스트
 }
 
-export interface GetProductDetailRequest extends ScrapedProductDetail {
+// export interface GetProductDetailRequest extends ScrapedProductDetail {
+//     product: Product;
+//     question?: string;
+// }
+
+export interface GetProductDetailRequest {
     product: Product;
-    question?: string;
+    reviews?: string[]; // 웹뷰에서 스크래핑한 상품 리뷰 리스트
+    question?: string; // AI 포미 질문
 }
 
 export interface GetProductDetailResponse {

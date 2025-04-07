@@ -1,4 +1,4 @@
-import { Receipt } from 'in-app-purchase';
+import { PurchaseResult } from 'react-native-iap';
 import { Platform } from 'react-native';
 
 export enum ProductType {
@@ -17,7 +17,7 @@ export interface Product {
 }
 
 export interface PurchaseProductParams extends Pick<Product, '_id'> {
-  receipt: Receipt,
+  receipt: PurchaseResult,
 }
 
 export interface GetProductsParams extends Pick<Product, 'platform'> { };

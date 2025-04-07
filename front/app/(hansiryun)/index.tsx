@@ -3,20 +3,20 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image 
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import useColorScheme from '../../hooks/useColorScheme';
 import { PhoneCheckAPI, PhoneSubmitAPI } from '../../stores/auth/apis';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
 import { setClientToken } from '../../utils/axios';
+import Colors from '../../constants/Colors';
+import useColorScheme from '../../hooks/useColorScheme';
 
 export default function InterviewScreen() {
     const router = useRouter();
+    const user = useAtomValue(userAtom);
+    const colorScheme = useColorScheme();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isChecked, setIsChecked] = useState(false);
     const [isDuplicate, setIsDuplicate] = useState(false);
-    const colorScheme = useColorScheme();
-    const user = useAtomValue(userAtom);
     // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
 
@@ -122,12 +122,32 @@ export default function InterviewScreen() {
     };
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={[
+                styles.container,
+                {
+                    backgroundColor:
+                        colorScheme === 'dark' ? Colors.dark.background.primary : Colors.light.background.primary
+                }
+            ]}
+        >
             <StatusBar style="auto" />
             <View style={styles.content}>
-                <Text style={styles.title}>픽포미 멤버십을 6개월간 무료로 이용해 보세요</Text>
+                <Text
+                    style={[
+                        styles.title,
+                        { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
+                    ]}
+                >
+                    픽포미 멤버십을 6개월간 무료로 이용해 보세요
+                </Text>
                 {/* <Text style={{ width: "100%", height: 60 }}></Text> */}
-                <Text style={styles.description}>
+                <Text
+                    style={[
+                        styles.description,
+                        { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
+                    ]}
+                >
                     안녕하세요!{'\n'}
                     {'\n'}픽포미에서 한국시각장애인연합회와 함께 유료 멤버십 서비스를 무료로 사용해보실 수 있는 기회를
                     제공하게 되었어요. 1분 안에 쉽게 등록하고 픽포미 유료 멤버십을 6개월간 무료로 이용해보세요.{'\n'}
@@ -144,9 +164,30 @@ export default function InterviewScreen() {
                 </Text>
 
                 <View style={styles.phoneInputContainer}>
-                    <Text style={styles.inputLabel}>전화번호</Text>
+                    <Text
+                        style={[
+                            styles.inputLabel,
+                            { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
+                        ]}
+                    >
+                        전화번호
+                    </Text>
                     <TextInput
-                        style={[styles.input, isDuplicate && styles.inputError]}
+                        style={[
+                            styles.input,
+                            isDuplicate && styles.inputError,
+                            {
+                                borderColor:
+                                    colorScheme === 'dark'
+                                        ? Colors.dark.borderColor.primary
+                                        : Colors.light.borderColor.primary,
+                                color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary,
+                                backgroundColor:
+                                    colorScheme === 'dark'
+                                        ? Colors.dark.background.primary
+                                        : Colors.light.background.primary
+                            }
+                        ]}
                         value={phoneNumber}
                         onChangeText={handlePhoneChange}
                         placeholder="전화번호를 입력해주세요"
@@ -155,7 +196,13 @@ export default function InterviewScreen() {
                     />
                     {isDuplicate && (
                         <View style={styles.errorContainer}>
-                            <Image source={require('../../assets/images/warning.png')} style={styles.warningIcon} />
+                            <Image
+                                source={require('../../assets/images/warning.png')}
+                                style={[
+                                    styles.warningIcon,
+                                    { tintColor: colorScheme === 'dark' ? '#FF6B6B' : undefined }
+                                ]}
+                            />
                             <Text style={styles.errorText}>이미 등록되어 있는 전화번호입니다</Text>
                         </View>
                     )}
@@ -164,16 +211,61 @@ export default function InterviewScreen() {
                 <View style={styles.checkboxContainer}>
                     <TouchableOpacity style={styles.checkboxWrapper} onPress={() => setIsChecked(!isChecked)}>
                         <CheckBox checked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-                        <Text style={styles.checkboxLabel}>개인 정보 수집과 이용에 동의합니다.</Text>
+                        <Text
+                            style={[
+                                styles.checkboxLabel,
+                                {
+                                    color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary
+                                }
+                            ]}
+                        >
+                            개인 정보 수집과 이용에 동의합니다.
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={[styles.button, styles.submitButton]} onPress={handleSubmit}>
-                        <Text style={styles.submitButtonText}>신청하기</Text>
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            styles.submitButton,
+                            {
+                                backgroundColor:
+                                    colorScheme === 'dark'
+                                        ? Colors.dark.buttonBackground.primary
+                                        : Colors.light.buttonBackground.primary
+                            }
+                        ]}
+                        onPress={handleSubmit}
+                    >
+                        <Text
+                            style={[
+                                styles.submitButtonText,
+                                {
+                                    color:
+                                        colorScheme === 'dark'
+                                            ? Colors.dark.text.secondary
+                                            : Colors.light.text.secondary
+                                }
+                            ]}
+                        >
+                            신청하기
+                        </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.button, styles.dontShowButton]} onPress={handleDontShowAgain}>
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            styles.dontShowButton,
+                            {
+                                borderColor:
+                                    colorScheme === 'dark'
+                                        ? Colors.dark.borderColor.primary
+                                        : Colors.light.borderColor.primary
+                            }
+                        ]}
+                        onPress={handleDontShowAgain}
+                    >
                         <Text style={styles.dontShowButtonText}>앞으로 보지 않기</Text>
                     </TouchableOpacity>
                 </View>
@@ -184,8 +276,7 @@ export default function InterviewScreen() {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: 'white'
+        flex: 1
     },
     content: {
         padding: 40,
@@ -196,14 +287,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 40,
         marginTop: 20,
-        textAlign: 'center',
-        color: '#111E4F'
+        textAlign: 'center'
     },
     description: {
         fontSize: 14,
         lineHeight: 24,
-        marginBottom: 30,
-        color: '#333'
+        marginBottom: 30
     },
     phoneInputContainer: {
         marginBottom: 20
@@ -211,12 +300,10 @@ const styles = StyleSheet.create({
     inputLabel: {
         fontSize: 16,
         fontWeight: '600',
-        marginBottom: 8,
-        color: '#333'
+        marginBottom: 8
     },
     input: {
         borderWidth: 1,
-        borderColor: '#DDD',
         borderRadius: 8,
         padding: 12,
         fontSize: 16
@@ -238,8 +325,7 @@ const styles = StyleSheet.create({
     },
     checkboxLabel: {
         marginLeft: 10,
-        fontSize: 14,
-        color: '#555'
+        fontSize: 14
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -255,23 +341,19 @@ const styles = StyleSheet.create({
         height: 50
     },
     submitButton: {
-        backgroundColor: '#111E4F',
         textAlign: 'center',
         width: 50,
-        marginRight: 16 // 여백 추가
+        marginRight: 16
     },
     submitButtonText: {
-        color: 'white',
         fontSize: 16,
         fontWeight: '600'
     },
     dontShowButton: {
         backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '#DDD'
+        borderWidth: 1
     },
     dontShowButtonText: {
-        color: '#666',
         fontSize: 14
     },
     errorContainer: {

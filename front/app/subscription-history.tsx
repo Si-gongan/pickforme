@@ -53,13 +53,18 @@ const PurchaseHistoryWrapper = () => {
     }, [getSubscription]);
 
     useEffect(() => {
-        if (products.length) {
+        if (products?.length) {
             let purchaseUpdateSubscription: any = null;
             let purchaseErrorSubscription: any = null;
 
             (async () => {
                 try {
-                    const items = await initializeIAP(products, purchaseUpdateSubscription, purchaseErrorSubscription, purchaseProduct);
+                    const items = await initializeIAP(
+                        products,
+                        purchaseUpdateSubscription,
+                        purchaseErrorSubscription,
+                        purchaseProduct
+                    );
                     setSubscriptionItems(items);
                 } catch (error) {
                     console.error('Failed to initialize IAP:', error);
