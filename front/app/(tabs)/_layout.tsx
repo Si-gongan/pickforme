@@ -39,7 +39,7 @@ export default function TabLayout() {
             </Modal>
             <Tabs
                 screenOptions={{
-                    tabBarActiveTintColor: Colors?.[colorScheme ?? 'light']?.tint?.primary || '#기본색상',
+                    tabBarActiveTintColor: Colors?.[colorScheme ?? 'light']?.text?.primary,
                     headerShown: false,
                     tabBarStyle: Platform.select({
                         ios: {

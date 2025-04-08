@@ -13,7 +13,6 @@ import { productGroupAtom } from '../log/atoms';
 import { userDataAtom } from '../auth/atoms';
 import { atomWithStorage } from '../utils';
 import * as Haptics from 'expo-haptics';
-import { deepEqual } from '../../utils/common';
 
 import {
     GetMainProductsAPI,
@@ -161,7 +160,7 @@ export const getMainProductsAtom = atom(null, async (get, set, categoryId: strin
     }
 });
 
-export const productDetailAtom = atom<ProductDetailState | void>(undefined);
+export const productDetailAtom = atom<ProductDetailState | undefined>(undefined);
 
 export const initProductDetailAtom = atom(null, async (get, set) => {
     set(productDetailAtom, { product: undefined } as ProductDetailState);
@@ -212,16 +211,17 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
         });
     }
 });
+
 export const productReviewAtom = atom<ProductReview>({ reviews: [] } as ProductReview);
 
 export const setProductReviewAtom = atom(null, async (get, set, reviews: string[]) => {
-    console.log('setProductReviewAtom 호출됨:', {
-        reviewsCount: reviews.length,
-        reviews: reviews.slice(0, 2) // 처음 2개만 로깅
-    });
+    // console.log('setProductReviewAtom 호출됨:', {
+    //     reviewsCount: reviews.length,
+    //     reviews: reviews.slice(0, 2) // 처음 2개만 로깅
+    // });
 
     const currentState = get(productReviewAtom);
-    console.log('현재 productReview 상태:', currentState);
+    // console.log('현재 productReview 상태:', currentState);
 
     set(productReviewAtom, { reviews });
     // loadingStatusAtom 업데이트
@@ -240,7 +240,7 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
         console.log('GetProductAPI 응답:', response.data, response.status);
 
         // 빈 응답이 오면, 캐시가 비어있다는 의미이므로 종료
-        if (!response.data || response.status === 204) {
+        if (!response.data) {
             console.log('캐시없음:', get(productDetailAtom));
             return;
         }
@@ -258,10 +258,11 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
             question: LoadingStatus.INIT
         });
 
-        const captionResponse = await GetProductCaptionAPI({ product });
-        console.log('캡션 API 응답:', captionResponse);
+        const captionApiResponse = await GetProductCaptionAPI({ product });
+        const captionResponse = captionApiResponse as unknown as { data: ProductDetailState } | undefined;
+        console.log('캡션 API 응답:', captionApiResponse, captionResponse);
 
-        if (captionResponse && captionResponse.data && get(productDetailAtom)?.product?.url === product.url) {
+        if (captionResponse?.data && get(productDetailAtom)?.product?.url === product.url) {
             const currentState = get(productDetailAtom);
             console.log('현재 상태:', currentState);
             const updatedState = { ...currentState, ...captionResponse.data, url: product.url };
@@ -275,8 +276,7 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         } else {
             console.log('캡션 업데이트 조건 불일치:', {
-                hasCaptionResponse: !!captionResponse,
-                hasData: !!captionResponse?.data,
+                hasProductDetail: !!captionResponse?.data,
                 currentUrl: get(productDetailAtom)?.product?.url,
                 productUrl: product.url
             });
@@ -354,11 +354,13 @@ export const getProductReportAtom = atom(null, async (get, set, product: Product
 });
 
 export const getProductCaptionAtom = atom(null, async (get, set, product: Product) => {
+    console.log('getProductCaptionAtom 호출됨:', { productUrl: product.url });
     set(loadingStatusAtom, {
         ...get(loadingStatusAtom),
         caption: LoadingStatus.LOADING
     });
     const { data: productDetail } = await GetProductCaptionAPI({ product });
+    console.log('GetProductCaptionAPI 응답:', productDetail);
     if (get(productDetailAtom)?.url === product.url) {
         set(productDetailAtom, {
             url: product.url,

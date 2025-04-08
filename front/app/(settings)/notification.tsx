@@ -89,13 +89,15 @@ export default function NotificationScreen() {
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
-            flex: 1
+            flex: 1,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         title: {
             fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
-            marginBottom: 30
+            marginBottom: 30,
+            color: Colors[colorScheme].text.primary
         },
         seperator: {
             height: 1,
@@ -103,7 +105,8 @@ const useStyles = (colorScheme: ColorScheme) =>
         },
         buttonWrap: {
             width: '100%',
-            padding: 20
+            padding: 20,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         row: {
             flex: 1,
@@ -115,7 +118,8 @@ const useStyles = (colorScheme: ColorScheme) =>
             flex: 1,
             fontWeight: '400',
             fontSize: 14,
-            lineHeight: 17
+            lineHeight: 17,
+            color: Colors[colorScheme].text.primary
         },
         scrollContainer: {
             paddingVertical: 32,

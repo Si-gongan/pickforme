@@ -64,11 +64,7 @@ export default function RootLayout() {
                     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                         <Stack
                             initialRouteName={
-                                user && user.token && user.token.length > 0
-                                    ? '(hansiryun)'
-                                    : setting.isReady
-                                    ? '(tabs)'
-                                    : '(onboarding)'
+                                user?.token ? '(hansiryun)' : setting?.isReady ? '(tabs)' : '(onboarding)'
                             }
                             screenOptions={{
                                 headerShown: false

@@ -345,7 +345,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 {!!product ? (
                     <View>
                         <View style={styles.inner}>
-                            <Text style={styles.name}>{product.name ?? productDetail?.product?.name ?? ''}</Text>
+                            <Text style={styles.name}>
+                                {product.name ?? productDetail?.product?.name ?? ''}
+                            </Text>
 
                             <View style={styles.priceWrap} accessible accessibilityRole="text">
                                 <>
@@ -382,11 +384,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             <View style={styles.table}>
                                 <View style={styles.tableList}>
                                     <View style={styles.tableRow} accessible>
-                                        <Text style={styles.tableHeader}>리뷰</Text>
-                                        <Text style={styles.tableItem}>{productDetail?.product?.reviews ?? 0} 개</Text>
+                                        <Text style={styles.tableHeader}>
+                                            리뷰
+                                        </Text>
+                                        <Text style={styles.tableItem}>
+                                            {productDetail?.product?.reviews ?? 0} 개
+                                        </Text>
                                     </View>
                                     <View style={styles.tableRow} accessible>
-                                        <Text style={styles.tableHeader}>평점</Text>
+                                        <Text style={styles.tableHeader}>
+                                            평점
+                                        </Text>
                                         <Text style={styles.tableItem}>
                                             {Math.floor(((productDetail?.product?.ratings ?? 0) / 20) * 10) / 10} 점
                                         </Text>
@@ -413,7 +421,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                     </View>
                 ) : (
                     <View style={styles.inner}>
-                        <Text>상품 정보를 불러오는 데 실패했습니다.</Text>
+                        <Text style={styles.name}>
+                            상품 정보를 불러오는 데 실패했습니다.
+                        </Text>
                     </View>
                 )}
             </ScrollView>
@@ -427,6 +437,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 handleClickWish={handleClickWish}
                 isWish={!!already}
                 isRequest={!!request}
+                colorScheme={colorScheme}
             />
         </View>
     );
@@ -470,6 +481,7 @@ interface ActionButtonsProps {
     handleClickWish: () => void;
     isWish: boolean;
     isRequest: boolean;
+    colorScheme: ColorScheme;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -480,9 +492,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     handleClickRequest,
     handleClickWish,
     isWish,
-    isRequest
+    isRequest,
+    colorScheme
 }) => (
-    <View style={styles.buttonWrap}>
+    <View style={[styles.buttonWrap]}>
         <View style={styles.buttonOuter}>
             <Button
                 title="구매하러 가기"
@@ -490,7 +503,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 style={styles.button}
                 size="small"
                 disabled={!product}
-                textStyle={{ color: '#FFFFFF' }}
+                textStyle={styles.buttonText}
             />
         </View>
         {product?.platform === 'thezam' ? (
@@ -502,19 +515,19 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     color="tertiary"
                     size="small"
                     disabled={!product}
+                    textStyle={styles.button2Text}
                 />
             </View>
         ) : (
             <View style={styles.buttonOuter}>
                 <Button
-                    // title={isRequest ? "추가 질문하기" : "매니저에게 질문하기"}
-                    // onPress={isRequest ? handleClickContact : handleClickRequest}
                     title={'매니저에게 질문하기'}
                     onPress={handleClickRequest}
                     style={[styles.button, styles.button2]}
                     color="tertiary"
                     size="small"
                     disabled={!product}
+                    textStyle={styles.button2Text}
                 />
             </View>
         )}
@@ -547,15 +560,15 @@ const useStyles = (colorScheme: ColorScheme) =>
         container: {
             width: '100%',
             flex: 1,
-            paddingTop: 20
+            paddingTop: 20,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         header: {
             height: 60,
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 20,
-            // backgroundColor: Colors[colorScheme].background.tertiary,
-            backgroundColor: '#F2F2F2',
+            backgroundColor: Colors[colorScheme].background.secondary,
             zIndex: 1
         },
         backButton: {
@@ -578,13 +591,14 @@ const useStyles = (colorScheme: ColorScheme) =>
             aspectRatio: 1,
             resizeMode: 'contain',
             width: '100%',
-            backgroundColor: Colors[colorScheme].borderColor.tertiary
+            backgroundColor: Colors[colorScheme].border.third
         },
         name: {
             fontSize: 18,
             fontWeight: '600',
             lineHeight: 20,
-            marginBottom: 11
+            marginBottom: 11,
+            color: Colors[colorScheme].text.primary
         },
         priceWrap: {
             flexDirection: 'row',
@@ -594,7 +608,8 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontSize: 18,
             fontWeight: '700',
             lineHeight: 22,
-            marginRight: 6
+            marginRight: 6,
+            color: Colors[colorScheme].text.primary
         },
         discount_rate: {
             fontSize: 18,
@@ -604,14 +619,14 @@ const useStyles = (colorScheme: ColorScheme) =>
             marginRight: 6
         },
         origin_price: {
-            color: '#576084',
             fontSize: 13,
             fontWeight: '500',
-            textDecorationLine: 'line-through'
+            textDecorationLine: 'line-through',
+            color: Colors[colorScheme].text.secondary
         },
         seperator: {
             width: '100%',
-            backgroundColor: Colors[colorScheme].borderColor.primary,
+            backgroundColor: Colors[colorScheme].border.primary,
             height: 1,
             marginVertical: 25
         },
@@ -634,19 +649,22 @@ const useStyles = (colorScheme: ColorScheme) =>
             width: 65,
             fontSize: 14,
             fontWeight: '600',
-            lineHeight: 20
+            lineHeight: 20,
+            color: Colors[colorScheme].text.primary
         },
         tableItem: {
             fontSize: 14,
             fontWeight: '500',
             lineHeight: 20,
-            flexGrow: 1
+            flexGrow: 1,
+            color: Colors[colorScheme].text.primary
         },
         tabWrap: {
             flexDirection: 'row',
             alignContent: 'stretch',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            backgroundColor: Colors[colorScheme].background.primary
         },
         tab: {
             flex: 1
@@ -657,7 +675,7 @@ const useStyles = (colorScheme: ColorScheme) =>
             flexDirection: 'row',
             borderRadius: 0,
             borderBottomWidth: 1,
-            borderColor: '#EFEFEF'
+            borderColor: Colors[colorScheme].border.third
         },
         tabButtonActive: {
             borderBottomColor: Colors[colorScheme].text.primary,
@@ -669,7 +687,6 @@ const useStyles = (colorScheme: ColorScheme) =>
             lineHeight: 17
         },
         tabButtonTextActive: {
-            color: Colors[colorScheme].text.primary,
             fontWeight: '700'
         },
         detailWrap: {
@@ -681,20 +698,27 @@ const useStyles = (colorScheme: ColorScheme) =>
             paddingBottom: 30,
             paddingHorizontal: 20,
             borderTopWidth: 1,
-            borderTopColor: Colors[colorScheme].borderColor.tertiary,
+            borderTopColor: Colors[colorScheme].border.third,
             alignContent: 'stretch',
             alignItems: 'center',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            backgroundColor: Colors[colorScheme].background.primary
         },
         button: {
             borderRadius: 4,
             height: 50,
-            backgroundColor: Colors[colorScheme].buttonBackground.primary
+            backgroundColor: Colors[colorScheme].button.primary.background
+        },
+        buttonText: {
+            color: Colors[colorScheme].text.secondary
         },
         button2: {
-            backgroundColor: 'white',
+            backgroundColor: Colors[colorScheme].background.primary,
             borderWidth: 1,
-            borderColor: Colors[colorScheme].buttonBackground.primary
+            borderColor: Colors[colorScheme].button.primary.background
+        },
+        button2Text: {
+            color: Colors[colorScheme].text.primary
         },
         heartIcon: {
             width: 24,
@@ -719,15 +743,16 @@ const useStyles = (colorScheme: ColorScheme) =>
             height: 40,
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'white',
-            borderColor: '#5F5F5F',
+            backgroundColor: Colors[colorScheme].background.primary,
+            borderColor: Colors[colorScheme].border.primary,
             borderWidth: 1,
             flexDirection: 'row'
         },
         textArea: {
             fontSize: 14,
             flex: 1,
-            width: '100%'
+            width: '100%',
+            color: Colors[colorScheme].text.primary
         },
         sendIcon: {
             flexShrink: 0,

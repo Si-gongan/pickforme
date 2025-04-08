@@ -193,6 +193,9 @@ export default function InterviewScreen() {
                         placeholder="전화번호를 입력해주세요"
                         keyboardType="phone-pad"
                         maxLength={13}
+                        placeholderTextColor={
+                            colorScheme === 'dark' ? Colors.dark.text.secondary : Colors.light.text.secondary
+                        }
                     />
                     {isDuplicate && (
                         <View style={styles.errorContainer}>
@@ -232,8 +235,8 @@ export default function InterviewScreen() {
                             {
                                 backgroundColor:
                                     colorScheme === 'dark'
-                                        ? Colors.dark.buttonBackground.primary
-                                        : Colors.light.buttonBackground.primary
+                                        ? Colors.dark.button.primary.background
+                                        : Colors.light.button.primary.background
                             }
                         ]}
                         onPress={handleSubmit}
@@ -266,7 +269,16 @@ export default function InterviewScreen() {
                         ]}
                         onPress={handleDontShowAgain}
                     >
-                        <Text style={styles.dontShowButtonText}>앞으로 보지 않기</Text>
+                        <Text
+                            style={[
+                                styles.dontShowButtonText,
+                                {
+                                    color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary
+                                }
+                            ]}
+                        >
+                            앞으로 보지 않기
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>

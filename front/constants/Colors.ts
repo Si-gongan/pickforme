@@ -1,118 +1,92 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+// Color Palette
+const palette = {
+    // Light mode colors
+    darkGray: '#1e1e1e',
+    navy: '#111e4f',
+    white: '#ffffff',
+    lightGray: '#DFE4F5',
+    borderGray: '#9FA7C3',
 
-const primary = '#111E4F';
-const primaryDark = '#424C75';
-const secondary = '#4A5CA0';
-const secondaryDark = '#313854';
-const tertiary = '#DFE4F5';
-const tertiaryDark = '#1D2336';
-const buttonText = '#EFEFEF';
-const secondary2 = '#9FA7C3';
+    // Dark mode colors
+    darkText: '#D9D9D9',
+    darkBg: '#111525',
+    darkPrimary: '#424C75',
+    darkSecondary: '#313854',
+    darkTertiary: '#1D2336'
+} as const;
 
+// Theme configuration
 export default {
     light: {
         text: {
-            primary: '#1E1E1E',
-            secondary: '#fff',
-            tertiary
+            primary: palette.darkGray,
+            secondary: palette.white,
+            third: palette.lightGray
         },
         background: {
-            primary: '#fff',
-            secondary: '#fff',
-            tertiary
-        },
-        tint: {
-            primary: tintColorLight,
-            secondary: tintColorLight,
-            tertiary
-        },
-        tabIconDefault: {
-            primary: '#ccc',
-            secondary: '#ccc',
-            tertiary
-        },
-        tabIconSelected: {
-            primary: tintColorLight,
-            secondary: tintColorLight,
-            tertiary
-        },
-        card: {
-            primary: tertiary,
-            secondary: tertiary,
-            tertiary
-        },
-        buttonBackground: {
-            primary,
-            secondary,
-            tertiary: '#FFFFFF'
-        },
-        disabledButtonBackground: {
-            primary: secondary2,
-            secondary: secondary2,
-            tertiary: secondary2
-        },
-        buttonText: {
-            primary: buttonText,
-            secondary: buttonText,
-            tertiary: primary
+            primary: palette.white,
+            secondary: palette.white,
+            third: palette.lightGray
         },
         borderColor: {
-            primary: secondary2,
-            secondary: tertiary,
-            tertiary
+            primary: palette.borderGray,
+            secondary: palette.lightGray,
+            third: palette.darkGray
+        },
+        button: {
+            primary: {
+                background: palette.navy,
+                text: palette.white
+            },
+            secondary: {
+                background: palette.white,
+                text: palette.navy
+            },
+            third: {
+                background: palette.lightGray,
+                text: palette.darkGray
+            }
+        },
+        border: {
+            primary: palette.borderGray,
+            secondary: palette.white,
+            third: palette.lightGray
         }
     },
     dark: {
         text: {
-            primary: '#D9D9D9',
-            secondary: '#D9D9D9',
-            tertiary: '#D9D9D9'
+            primary: palette.darkText,
+            secondary: palette.darkText,
+            third: palette.darkText
         },
         background: {
-            primary: '#111525',
-            secondary: '#111525',
-            tertiary: '#111525'
-        },
-        tint: {
-            primary: tintColorDark,
-            secondary: tintColorDark,
-            tertiary
-        },
-        tabIconDefault: {
-            primary: '#ccc',
-            secondary: '#ccc',
-            tertiary
-        },
-        tabIconSelected: {
-            primary: tintColorDark,
-            secondary: tintColorDark,
-            tertiary
-        },
-        buttonBackground: {
-            primary: primaryDark,
-            secondary: secondaryDark,
-            tertiary: tertiaryDark
-        },
-        card: {
-            primary: tertiaryDark,
-            secondary: tertiaryDark,
-            tertiary: tertiaryDark
-        },
-        disabledButtonBackground: {
-            primary: secondary2,
-            secondary: secondary2,
-            tertiary
-        },
-        buttonText: {
-            primary: buttonText,
-            secondary: buttonText,
-            tertiary: buttonText
+            primary: palette.darkBg,
+            secondary: palette.darkBg,
+            third: palette.darkBg
         },
         borderColor: {
-            primary: secondary2,
-            secondary: secondary2,
-            tertiary: secondary2
+            primary: palette.darkPrimary,
+            secondary: palette.darkSecondary,
+            third: palette.darkTertiary
+        },
+        button: {
+            primary: {
+                background: palette.darkPrimary,
+                text: palette.darkText
+            },
+            secondary: {
+                background: palette.darkSecondary,
+                text: palette.darkText
+            },
+            third: {
+                background: palette.darkTertiary,
+                text: palette.darkText
+            }
+        },
+        border: {
+            primary: palette.borderGray,
+            secondary: palette.darkSecondary,
+            third: palette.darkTertiary
         }
     }
-};
+} as const;

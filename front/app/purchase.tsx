@@ -58,14 +58,14 @@ const PurchaseWrapper: React.FC = () => {
                     if (Platform.OS === 'android') {
                         const purchaseReceipt = {
                             subscription: isSubscription,
-                            ...JSON.parse(receipt)
+                            ...JSON.parse(receipt as string)
                         };
                         await purchaseProduct({
                             _id: product._id,
                             receipt: purchaseReceipt
                         });
                     } else {
-                        await purchaseProduct({ _id: product._id, receipt });
+                        await purchaseProduct({ _id: product._id, receipt: receipt as string });
                     }
                     await finishTransaction({ purchase, isConsumable: !isSubscription });
                 }
@@ -182,15 +182,21 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
                 <View style={styles.content}>
                     <Text style={styles.title}>픽포미 이용권 구매</Text>
                     <Text style={styles.subtitle}>매니저 질문하기 이용가능</Text>
-                    <Text>픽포미 이용권인 '픽'을 구매하여 매니저 질문하기 기능을 이용하실 수 있어요.</Text>
+                    <Text style={styles.description}>
+                        픽포미 이용권인 '픽'을 구매하여 매니저 질문하기 기능을 이용하실 수 있어요.
+                    </Text>
                     <View style={styles.productsWrap}>
                         {filteredProducts.purchasableProducts.map(product => (
-                            <View style={styles.productWrap} key={`Point-Product-${product.productId}`}>
+                            <View
+                                style={styles.productWrap}
+                                key={`Point-Product-${product.productId}`}
+                            >
                                 <Text style={styles.productPrice}>
                                     {product.displayName} - {product.localizedPrice.replace(/₩(.*)/, '$1원')}
                                 </Text>
                                 <Button
                                     style={styles.productButton}
+                                    textStyle={styles.buttonTextStyle}
                                     title="구매하기"
                                     size="small"
                                     onPress={() => handleClick(product.productId)}
@@ -207,6 +213,7 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
                         onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈')}
                         color="tertiary"
                         size="small"
+                        textStyle={styles.termButtonText}
                     />
                     <Text style={styles.terms}>{TERM}</Text>
                 </View>
@@ -218,7 +225,8 @@ const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionIte
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
-            flex: 1
+            flex: 1,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         content: {
             flex: 1,
@@ -228,13 +236,18 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
-            marginBottom: 18
+            marginBottom: 18,
+            color: Colors[colorScheme].text.primary
         },
         subtitle: {
             fontWeight: '600',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 14
+            marginBottom: 14,
+            color: Colors[colorScheme].text.primary
+        },
+        description: {
+            color: Colors[colorScheme].text.secondary
         },
         productsWrap: {
             marginTop: 20
@@ -247,33 +260,41 @@ const useStyles = (colorScheme: ColorScheme) =>
             padding: 14,
             borderRadius: 10,
             borderWidth: 1,
-            borderColor: Colors[colorScheme].borderColor.secondary,
-            marginVertical: 8
+            marginVertical: 8,
+            backgroundColor: Colors[colorScheme].background.secondary,
+            borderColor: Colors[colorScheme].border.secondary
         },
         productButton: {
             width: 100,
             padding: 10,
-            backgroundColor: Colors[colorScheme].buttonBackground.primary
+            backgroundColor: Colors[colorScheme].button.primary.background
+        },
+        buttonTextStyle: {
+            color: Colors[colorScheme].text.secondary
         },
         productPrice: {
             fontWeight: '600',
             fontSize: 18,
-            lineHeight: 22
+            lineHeight: 22,
+            color: Colors[colorScheme].text.primary
         },
         terms: {
             marginTop: 12,
             fontWeight: '400',
             fontSize: 12,
-            lineHeight: 15
+            lineHeight: 15,
+            color: Colors[colorScheme].text.secondary
         },
         buttonText: {
             fontWeight: '600',
             fontSize: 14,
-            lineHeight: 17,
-            color: 'white'
+            lineHeight: 17
         },
         termButton: {
             marginTop: 100
+        },
+        termButtonText: {
+            color: Colors[colorScheme].text.third
         }
     });
 export default withIAPContext(PurchaseWrapper);

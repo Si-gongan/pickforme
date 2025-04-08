@@ -19,7 +19,9 @@ export const GetProductsAPI = (params: GetProductsParams) =>
 export const GetSubscriptionAPI = () =>
   client.get<Purchase>(`/purchase/subscription`).catch((error) => {
     console.log(error);
+    return null;
   });
+
 export const GetSubscriptionListAPI = () =>
   client.get<Purchase[]>(`/purchase/subscriptions`);
 export const GetPurchaseListAPI = () =>

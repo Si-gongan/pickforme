@@ -36,6 +36,7 @@ export default function PointHistoryScreen1() {
                     </Text>
                     <Button
                         style={styles.purchaseButton}
+                        textStyle={styles.buttonTextStyle}
                         title="이용권 구매하기"
                         size="small"
                         onPress={() => router.replace('/purchase')}
@@ -55,7 +56,7 @@ export default function PointHistoryScreen1() {
                             </View>
                         ))
                     ) : (
-                        <Text>구매 내역이 없습니다.</Text>
+                        <Text style={styles.emptyText}>구매 내역이 없습니다.</Text>
                     )}
                 </View>
             </ScrollView>
@@ -66,7 +67,8 @@ export default function PointHistoryScreen1() {
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
-            flex: 1
+            flex: 1,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         content: {
             flex: 1,
@@ -82,19 +84,21 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
-            marginBottom: 18
+            marginBottom: 18,
+            color: Colors[colorScheme].text.primary
         },
         subtitle: {
             fontWeight: '600',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 14
+            marginBottom: 14,
+            color: Colors[colorScheme].text.primary
         },
         seperator: {
             width: '100%',
             height: 0.5,
-            backgroundColor: Colors[colorScheme].borderColor.primary,
-            marginVertical: 20
+            marginVertical: 20,
+            backgroundColor: Colors[colorScheme].border.primary
         },
         purchaseStatus: {
             width: '100%',
@@ -105,8 +109,9 @@ const useStyles = (colorScheme: ColorScheme) =>
             padding: 14,
             borderRadius: 10,
             borderWidth: 1,
-            borderColor: Colors[colorScheme].borderColor.secondary,
-            marginBottom: 12
+            marginBottom: 12,
+            backgroundColor: Colors[colorScheme].background.secondary,
+            borderColor: Colors[colorScheme].border.secondary
         },
         purchaseWrap: {
             width: '100%',
@@ -116,39 +121,50 @@ const useStyles = (colorScheme: ColorScheme) =>
             padding: 14,
             borderRadius: 10,
             borderWidth: 1,
-            borderColor: Colors[colorScheme].borderColor.secondary,
-            marginVertical: 8
+            marginVertical: 8,
+            backgroundColor: Colors[colorScheme].background.secondary,
+            borderColor: Colors[colorScheme].border.secondary
         },
         purchaseTitle: {
             fontSize: 16,
-            lineHeight: 19
+            lineHeight: 19,
+            color: Colors[colorScheme].text.primary
         },
         purchasePrice: {
             fontWeight: '600',
             fontSize: 16,
-            lineHeight: 19
+            lineHeight: 19,
+            color: Colors[colorScheme].text.primary
         },
         purchaseDate: {
             fontWeight: '400',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 8
+            marginBottom: 8,
+            color: Colors[colorScheme].text.secondary
         },
         terms: {
             marginTop: 12,
             fontWeight: '400',
             fontSize: 12,
-            lineHeight: 15
+            lineHeight: 15,
+            color: Colors[colorScheme].text.secondary
         },
         buttonText: {
             fontWeight: '600',
             fontSize: 14,
-            lineHeight: 17,
-            color: 'white'
+            lineHeight: 17
+        },
+        buttonTextStyle: {
+            color: Colors[colorScheme].text.secondary
         },
         purchaseButton: {
             width: 120,
             padding: 10,
-            marginLeft: 'auto'
+            marginLeft: 'auto',
+            backgroundColor: Colors[colorScheme].button.primary.background
+        },
+        emptyText: {
+            color: Colors[colorScheme].text.secondary
         }
     });
