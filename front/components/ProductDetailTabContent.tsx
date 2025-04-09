@@ -53,7 +53,7 @@ const TabContent: React.FC<TabContentProps> = ({
     });
     const productReview = useAtomValue(productReviewAtom);
 
-    console.log('productDetail?.[tab]', tab, productDetail?.[tab], productDetail);
+    console.log('productDetail?.[tab]', tab, productDetail && productDetail[tab], productDetail);
     console.log('loadingStatus[tab]', loadingStatus[tab]);
     console.log('scrapedProductDetail', scrapedProductDetail);
     // console.log('productReview.reviews:', productReview.reviews);
@@ -194,7 +194,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             </View>
         ) : loadingStatus[tab] === 2 ? (
             <View ref={refs[tab]}>
-                <Markdown style={markdownStyles}>{`**AI 포미:** ${productDetail?.answer}`}</Markdown>
+                <Markdown style={markdownStyles}>{`**AI 포미:** ${productDetail && productDetail.answer}`}</Markdown>
             </View>
         ) : null}
 
@@ -228,7 +228,8 @@ interface ReviewTabProps {
 }
 
 const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles }) => {
-    const review = productDetail?.[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined;
+    const review =
+        productDetail && (productDetail[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined);
 
     return (
         <>

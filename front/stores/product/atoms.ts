@@ -37,7 +37,8 @@ export const mainProductsAtom = atom<MainProductsState>({
 export enum LoadingStatus {
     INIT,
     LOADING,
-    FINISH
+    FINISH,
+    ERROR
 }
 
 export const loadingStatusAtom = atom({
@@ -192,8 +193,20 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
         set(productDetailAtom, {
             ...productDetail,
             url: product.url,
-            product
+            product: {
+                ...productDetail?.product, // 기존 product의 정보 유지 (caption 등)
+                ...product // 새로운 정보로 업데이트
+            }
         });
+
+        // 캡션이 존재하면 loadingStatus도 업데이트 필요 : 2025.04.09
+        if (productDetail?.product?.caption) {
+            set(loadingStatusAtom, {
+                ...get(loadingStatusAtom),
+                caption: LoadingStatus.FINISH
+            });
+        }
+
         console.log('productDetail 상태 업데이트 완료');
 
         // 백엔드 db 업데이트 요청
@@ -239,10 +252,9 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
         const response = await GetProductAPI(product.url);
         console.log('GetProductAPI 응답:', response.data, response.status);
 
-        // 빈 응답이 오면, 캐시가 비어있다는 의미이므로 종료
         if (!response.data) {
             console.log('캐시없음:', get(productDetailAtom));
-            return;
+            // 캐시가 없어도 종료하면 안됨.
         }
 
         const newState = { ...response.data, url: product.url } as ProductDetailState;
@@ -258,29 +270,31 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
             question: LoadingStatus.INIT
         });
 
-        const captionApiResponse = await GetProductCaptionAPI({ product });
-        const captionResponse = captionApiResponse as unknown as { data: ProductDetailState } | undefined;
-        console.log('캡션 API 응답:', captionApiResponse, captionResponse);
+        // 2025.04.09 체크한 바로는 이유는 모르겠지만 response.data에 caption도 같이 딸려 오고 있음.
 
-        if (captionResponse?.data && get(productDetailAtom)?.product?.url === product.url) {
-            const currentState = get(productDetailAtom);
-            console.log('현재 상태:', currentState);
-            const updatedState = { ...currentState, ...captionResponse.data, url: product.url };
-            console.log('캡션 데이터 업데이트:', updatedState);
+        // const captionApiResponse = await GetProductCaptionAPI(product.url);
+        // const captionResponse = captionApiResponse as unknown as { data: ProductDetailState } | undefined;
+        // console.log('캡션 API 응답:', captionApiResponse, captionResponse);
 
-            set(productDetailAtom, updatedState);
-            set(loadingStatusAtom, {
-                ...get(loadingStatusAtom),
-                caption: LoadingStatus.FINISH
-            });
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        } else {
-            console.log('캡션 업데이트 조건 불일치:', {
-                hasProductDetail: !!captionResponse?.data,
-                currentUrl: get(productDetailAtom)?.product?.url,
-                productUrl: product.url
-            });
-        }
+        // if (captionResponse?.data && get(productDetailAtom)?.product?.url === product.url) {
+        //     const currentState = get(productDetailAtom);
+        //     console.log('현재 상태:', currentState);
+        //     const updatedState = { ...currentState, ...captionResponse.data, url: product.url };
+        //     console.log('캡션 데이터 업데이트:', updatedState);
+
+        //     set(productDetailAtom, updatedState);
+        //     set(loadingStatusAtom, {
+        //         ...get(loadingStatusAtom),
+        //         caption: LoadingStatus.FINISH
+        //     });
+        //     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        // } else {
+        //     console.log('캡션 업데이트 조건 불일치:', {
+        //         hasProductDetail: !!captionResponse?.data,
+        //         currentUrl: get(productDetailAtom)?.product?.url,
+        //         productUrl: product.url
+        //     });
+        // }
     } catch (error) {
         console.error('GetProductAPI 에러:', error);
         const errorState = {
@@ -333,11 +347,8 @@ export const getProductReportAtom = atom(null, async (get, set, product: Product
         ...get(loadingStatusAtom),
         report: LoadingStatus.LOADING
     });
-    const images = get(scrapedProductDetailAtom).images!;
-    // image length가 0이어도 그냥 진행
     const { data: productDetail } = await GetProductReportAPI({
-        product,
-        images
+        product
     });
     if (get(productDetailAtom)?.url === product.url) {
         set(productDetailAtom, {
@@ -359,19 +370,27 @@ export const getProductCaptionAtom = atom(null, async (get, set, product: Produc
         ...get(loadingStatusAtom),
         caption: LoadingStatus.LOADING
     });
-    const { data: productDetail } = await GetProductCaptionAPI({ product });
-    console.log('GetProductCaptionAPI 응답:', productDetail);
-    if (get(productDetailAtom)?.url === product.url) {
-        set(productDetailAtom, {
-            url: product.url,
-            ...get(productDetailAtom),
-            ...productDetail
-        });
+    try {
+        const productDetail = await GetProductCaptionAPI(product.url);
+        console.log('GetProductCaptionAPI 응답:', productDetail);
+        if (get(productDetailAtom)?.url === product.url) {
+            set(productDetailAtom, {
+                url: product.url,
+                ...get(productDetailAtom),
+                ...productDetail
+            });
+            set(loadingStatusAtom, {
+                ...get(loadingStatusAtom),
+                caption: LoadingStatus.FINISH
+            });
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+    } catch (error) {
+        console.error('GetProductCaptionAPI 에러:', error);
         set(loadingStatusAtom, {
             ...get(loadingStatusAtom),
-            caption: LoadingStatus.FINISH
+            caption: LoadingStatus.ERROR
         });
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 });
 

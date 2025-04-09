@@ -71,7 +71,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
 
-    const getProductDetail = useSetAtom(getProductDetailAtom);
+    const getProductDetail = useSetAtom(getProductDetailAtom); // 여기서 caption도 호출함.. 왜 이렇게??
     const initProductDetail = useSetAtom(initProductDetailAtom);
     const getProductCaption = useSetAtom(getProductCaptionAtom);
     const getProductReport = useSetAtom(getProductReportAtom);
@@ -148,10 +148,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     useEffect(() => {
         initProductDetail();
     }, [initProductDetail]);
-
-    useEffect(() => {
-        console.log('c1112:', productUrl);
-    }, [productUrl]);
 
     useEffect(() => {
         console.log('productUrl 상태변화 :', productUrl, productDetail);
@@ -345,9 +341,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 {!!product ? (
                     <View>
                         <View style={styles.inner}>
-                            <Text style={styles.name}>
-                                {product.name ?? productDetail?.product?.name ?? ''}
-                            </Text>
+                            <Text style={styles.name}>{product.name ?? productDetail?.product?.name ?? ''}</Text>
 
                             <View style={styles.priceWrap} accessible accessibilityRole="text">
                                 <>
@@ -384,17 +378,11 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             <View style={styles.table}>
                                 <View style={styles.tableList}>
                                     <View style={styles.tableRow} accessible>
-                                        <Text style={styles.tableHeader}>
-                                            리뷰
-                                        </Text>
-                                        <Text style={styles.tableItem}>
-                                            {productDetail?.product?.reviews ?? 0} 개
-                                        </Text>
+                                        <Text style={styles.tableHeader}>리뷰</Text>
+                                        <Text style={styles.tableItem}>{productDetail?.product?.reviews ?? 0} 개</Text>
                                     </View>
                                     <View style={styles.tableRow} accessible>
-                                        <Text style={styles.tableHeader}>
-                                            평점
-                                        </Text>
+                                        <Text style={styles.tableHeader}>평점</Text>
                                         <Text style={styles.tableItem}>
                                             {Math.floor(((productDetail?.product?.ratings ?? 0) / 20) * 10) / 10} 점
                                         </Text>
@@ -421,9 +409,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                     </View>
                 ) : (
                     <View style={styles.inner}>
-                        <Text style={styles.name}>
-                            상품 정보를 불러오는 데 실패했습니다.
-                        </Text>
+                        <Text style={styles.name}>상품 정보를 불러오는 데 실패했습니다.</Text>
                     </View>
                 )}
             </ScrollView>

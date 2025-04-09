@@ -1,7 +1,7 @@
 import Colors from '../constants/Colors';
 import useColorScheme from './useColorScheme';
 
-export function useThemeColor<T extends keyof typeof Colors.light & keyof typeof Colors.dark>(
+export function useThemeColor<T extends keyof typeof Colors.light>(
     props: { light?: string; dark?: string },
     colorName: T,
     color: 'primary' | 'secondary' | 'third'
@@ -12,7 +12,11 @@ export function useThemeColor<T extends keyof typeof Colors.light & keyof typeof
     if (colorFromProps) {
         return colorFromProps;
     } else {
-        return Colors[theme][colorName][color];
+        const themeColors = Colors[theme][colorName];
+        if (typeof themeColors === 'object' && themeColors !== null) {
+            return themeColors[color];
+        }
+        return themeColors;
     }
 }
 

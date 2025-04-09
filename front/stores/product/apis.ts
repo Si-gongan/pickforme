@@ -28,7 +28,7 @@ export const GetProductAPI = (url: string) => {
     return client
         .post<GetProductResponse>(`/discover/product`, { url })
         .then(response => {
-            console.log('GetProductAPI 성공:', response);
+            console.log('GetProductAPI 응답:', response);
             return response;
         })
         .catch(error => {
@@ -53,13 +53,19 @@ export const GetProductReportAPI = (params: GetProductDetailRequest) =>
         console.log('에러 요청 baseURL:', error.config?.baseURL);
         throw error;
     });
-export const GetProductCaptionAPI = (params: GetProductDetailRequest) =>
-    client.post<GetProductDetailResponse>(`/discover/product/detail/caption`, params).catch(error => {
-        console.log(error);
-        console.log('에러 요청 URL:', error.config?.url);
-        console.log('에러 요청 baseURL:', error.config?.baseURL);
-        throw error;
-    });
+export const GetProductCaptionAPI = (url: string) => {
+    console.log('GetProductCaptionAPI 호출', url);
+    return client
+        .post<GetProductDetailResponse>(`/discover/product/detail/caption`, { url })
+        .then(response => response.data)
+        .catch(error => {
+            console.log(error);
+            console.log('에러 요청 URL:', error.config?.url, url);
+            console.log('에러 요청 baseURL:', error.config?.baseURL);
+            throw error;
+        });
+};
+
 export const GetProductAIAnswerAPI = (params: GetProductDetailRequest) =>
     client.post<GetProductDetailResponse>(`/discover/product/detail/ai-answer`, params).catch(error => {
         console.log(error);
