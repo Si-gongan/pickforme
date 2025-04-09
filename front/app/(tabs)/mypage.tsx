@@ -145,7 +145,8 @@ export default function MyScreen() {
 
                     <MySection title="내 정보" items={myInfoMenu} />
 
-                    <MySection title="앱 설정" items={appSettingMenu} />
+                    {/* 후순위로 밀림 - 2025.04.09 */}
+                    {/* <MySection title="앱 설정" items={appSettingMenu} /> */}
 
                     <MySection
                         title="고객 지원"
