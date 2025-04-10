@@ -82,33 +82,19 @@ const TabContent: React.FC<TabContentProps> = ({
                 </View>
             </View>
         );
-    } else if (!!productReview.reviews) {
+    } else if (!!productDetail?.[tab]) {
         return tab !== 'review' ? (
             <View style={styles.detailWrap} ref={refs[tab]}>
-                <Markdown style={markdownStyles}>
-                    {Array.isArray(productReview.reviews) ? productReview.reviews.join('\n\n') : productReview.reviews}
-                </Markdown>
+                <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
             </View>
-        ) : productDetail ? (
+        ) : (
             <ReviewTab
                 styles={styles}
                 productDetail={productDetail}
-                tab={tab}
                 refs={refs}
                 markdownStyles={markdownStyles}
+                tab={tab}
             />
-        ) : null;
-    } else if (tab === TABS.REVIEW && scrapedProductDetail.reviews && scrapedProductDetail.reviews.length > 0) {
-        return (
-            <View style={styles.detailWrap}>
-                <Text>리뷰 정보를 분석하는 중입니다...</Text>
-            </View>
-        );
-    } else if (tab === TABS.REPORT && scrapedProductDetail.images && scrapedProductDetail.images.length > 0) {
-        return (
-            <View style={styles.detailWrap}>
-                <Text>상품 이미지를 분석하는 중입니다...</Text>
-            </View>
         );
     } else {
         return (

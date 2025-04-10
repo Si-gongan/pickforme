@@ -246,97 +246,60 @@ export const setProductReviewAtom = atom(null, async (get, set, reviews: string[
 });
 
 export const getProductDetailAtom = atom(null, async (get, set, product: Product) => {
-    console.log('getProductDetailAtom 시작:', { productUrl: product.url });
+    const response = await GetProductAPI(product.url);
+    if (response && response.data) {
+        // db에 해당 url을 갖는 상품 정보 존재할 경우 해당 값으로 초기화
+        set(productDetailAtom, { ...response.data, url: product.url });
+    } else {
+        // 정보 없을 경우 일단 입력된 상품 정보로 초기화 (이후 setProductAtom에서 업데이트 진행)
+        set(productDetailAtom, { product, url: product.url } as ProductDetailState);
+    }
 
-    try {
-        const response = await GetProductAPI(product.url);
-        console.log('GetProductAPI 응답:', response.data, response.status);
-
-        if (!response.data) {
-            console.log('캐시없음:', get(productDetailAtom));
-            // 캐시가 없어도 종료하면 안됨.
-        }
-
-        const newState = { ...response.data, url: product.url } as ProductDetailState;
-        console.log('상품 상세 정보 설정:', newState);
-        set(productDetailAtom, newState);
-        console.log('설정 후 상태:', get(productDetailAtom));
-
-        // 상품 캡션 생성 요청
+    // 상품 캡션 생성 요청
+    set(loadingStatusAtom, {
+        caption: LoadingStatus.LOADING,
+        report: LoadingStatus.INIT,
+        review: LoadingStatus.INIT,
+        question: LoadingStatus.INIT
+    });
+    const captionResponse = await GetProductCaptionAPI({ product });
+    if (captionResponse && captionResponse.data && get(productDetailAtom)?.product?.url === product.url) {
+        set(productDetailAtom, { ...get(productDetailAtom), ...captionResponse.data, url: product.url as string });
         set(loadingStatusAtom, {
-            caption: LoadingStatus.LOADING,
+            caption: LoadingStatus.FINISH,
             report: LoadingStatus.INIT,
             review: LoadingStatus.INIT,
             question: LoadingStatus.INIT
         });
-
-        // 2025.04.09 체크한 바로는 이유는 모르겠지만 response.data에 caption도 같이 딸려 오고 있음.
-        const captionApiResponse = await GetProductCaptionAPI({ product });
-        const captionResponse = captionApiResponse as unknown as { data: ProductDetailState } | undefined;
-        console.log('캡션 API 응답:', captionApiResponse, captionResponse);
-
-        if (captionResponse?.data && get(productDetailAtom)?.product?.url === product.url) {
-            const currentState = get(productDetailAtom);
-            console.log('현재 상태:', currentState);
-            const updatedState = { ...currentState, ...captionResponse.data, url: product.url };
-            console.log('캡션 데이터 업데이트:', updatedState);
-
-            set(productDetailAtom, updatedState);
-            set(loadingStatusAtom, {
-                ...get(loadingStatusAtom),
-                caption: LoadingStatus.FINISH
-            });
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        } else {
-            console.log('캡션 업데이트 조건 불일치:', {
-                hasProductDetail: !!captionResponse?.data,
-                currentUrl: get(productDetailAtom)?.product?.url,
-                productUrl: product.url
-            });
-        }
-    } catch (error) {
-        console.error('GetProductAPI 에러:', error);
-        const errorState = {
-            product: product,
-            url: product.url
-        } as ProductDetailState;
-        console.log('에러 발생 시 기본 상품 정보 설정:', errorState);
-        set(productDetailAtom, errorState);
-        console.log('설정 후 상태:', get(productDetailAtom));
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    // if (get(productDetailAtom)?.url === product.url) {
+    //   set(productDetailAtom, { url: product.url, ...get(productDetailAtom), ...productDetail });
+    //   set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
+    //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // }
 });
 
-export const getProductReviewAtom = atom(null, async (get, set, product: Product) => {
-    set(loadingStatusAtom, {
-        ...get(loadingStatusAtom),
-        review: LoadingStatus.LOADING
-    });
-    const reviews = get(scrapedProductDetailAtom).reviews!;
+// AI 리뷰 요약 정보 생성
+export const getProductReviewAtom = atom(null, async (get, set) => {
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
+    const reviews = get(productReviewAtom).reviews;
+    // 리뷰 없으면 생성 종료
     if (reviews.length === 0) {
         set(productDetailAtom, {
             ...get(productDetailAtom),
-            review: { pros: [], cons: [], bests: [] }
+            review: { pros: [], cons: [], bests: [] },
+            url: get(productDetailAtom)?.product?.url as string
         } as ProductDetailState);
-        set(loadingStatusAtom, {
-            ...get(loadingStatusAtom),
-            review: LoadingStatus.FINISH
-        });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
         return;
     }
-    const { data: productDetail } = await GetProductReviewAPI({
-        product,
-        reviews
-    });
-    if (get(productDetailAtom)?.url === product.url) {
-        set(productDetailAtom, {
-            url: product.url,
-            ...get(productDetailAtom),
-            ...productDetail
-        });
-        set(loadingStatusAtom, {
-            ...get(loadingStatusAtom),
-            review: LoadingStatus.FINISH
-        });
+    const product = get(productDetailAtom)?.product!;
+    const response = await GetProductReviewAPI({ product, reviews });
+    // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
+    if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
+        set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 });
@@ -351,7 +314,7 @@ export const getProductReportAtom = atom(null, async (get, set, product: Product
     });
     if (get(productDetailAtom)?.url === product.url) {
         set(productDetailAtom, {
-            url: product.url,
+            url: product.url as string, // 명시적으로 string 타입의 url 할당
             ...get(productDetailAtom),
             ...productDetail
         });
@@ -363,70 +326,44 @@ export const getProductReportAtom = atom(null, async (get, set, product: Product
     }
 });
 
-export const getProductCaptionAtom = atom(null, async (get, set, product: Product) => {
-    console.log('getProductCaptionAtom 호출됨:', { productUrl: product.url });
-    set(loadingStatusAtom, {
-        ...get(loadingStatusAtom),
-        caption: LoadingStatus.LOADING
-    });
-    try {
-        const productDetail = await GetProductCaptionAPI({ product });
-        console.log('GetProductCaptionAPI 응답:', productDetail);
-        if (get(productDetailAtom)?.url === product.url) {
-            set(productDetailAtom, {
-                url: product.url,
-                ...get(productDetailAtom),
-                ...productDetail
-            });
-            set(loadingStatusAtom, {
-                ...get(loadingStatusAtom),
-                caption: LoadingStatus.FINISH
-            });
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-    } catch (error) {
-        console.error('GetProductCaptionAPI 에러:', error);
-        set(loadingStatusAtom, {
-            ...get(loadingStatusAtom),
-            caption: LoadingStatus.ERROR
-        });
+// AI 상품 이미지 설명 생성
+export const getProductCaptionAtom = atom(null, async (get, set) => {
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.LOADING });
+
+    const product = get(productDetailAtom)?.product!;
+    const response = await GetProductCaptionAPI({ product });
+    // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
+    if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
+        set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 });
 
-export const getProductAIAnswerAtom = atom(null, async (get, set, product: Product, question: string) => {
-    set(loadingStatusAtom, {
-        ...get(loadingStatusAtom),
-        question: LoadingStatus.LOADING
-    });
-    const images = get(scrapedProductDetailAtom).images!;
-    const reviews = get(scrapedProductDetailAtom).reviews!;
-    const { data: productDetail } = await GetProductAIAnswerAPI({
-        product,
-        images,
-        reviews,
-        question
-    });
-
-    // 추후 멤버십 로직 도입시 point 차감 로직 추가 (이벤트 기간 동안에는 무료)
+// AI 포미 답변 생성
+export const getProductAIAnswerAtom = atom(null, async (get, set, question: string) => {
+    // ai 답변 생성 후 aiPoint 차감
     const userData = await get(userDataAtom);
-
-    if (userData!.aiPoint < 1) {
-        Alert.alert('AI 질문 횟수가 모두 차감되었어요!');
-        // set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.FINISH }); // 초기화
+    if (!userData || userData.aiPoint < 1) {
+        Alert.alert('AI 질문권 개수가 부족해요.');
         return;
     }
-    // set(userDataAtom, { ...userData!, aiPoint: userData!.aiPoint - 1});
+    set(userDataAtom, { ...userData!, aiPoint: userData!.aiPoint - 1 });
 
-    if (get(productDetailAtom)?.url === product.url) {
+    set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.LOADING });
+
+    const product = get(productDetailAtom)?.product!;
+    const reviews = get(productReviewAtom).reviews;
+    const response = await GetProductAIAnswerAPI({ product, reviews, question });
+
+    // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
+    if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
         set(productDetailAtom, {
-            url: product.url,
             ...get(productDetailAtom),
-            ...productDetail
+            ...response.data,
+            url: product.url as string // 명시적으로 string 타입의 url 할당
         });
-        set(loadingStatusAtom, {
-            ...get(loadingStatusAtom),
-            question: LoadingStatus.FINISH
-        });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.FINISH });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 });
