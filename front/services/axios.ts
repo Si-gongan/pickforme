@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export const client = axios.create({
-    // baseURL: "https://api.sigongan-ai.shop",
-    baseURL: 'http://52.79.85.108:3000',
+    baseURL: 'https://api.sigongan-ai.shop',
+    // baseURL: 'http://52.79.85.108:3000',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json'

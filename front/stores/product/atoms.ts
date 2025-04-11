@@ -22,7 +22,6 @@ import {
     GetProductReviewAPI,
     GetProductAIAnswerAPI,
     ParseProductUrlAPI,
-    SearchProductsAPI,
     UpdateProductAPI
 } from './apis';
 import { Alert } from 'react-native';
@@ -200,7 +199,7 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
         });
 
         // 캡션이 존재하면 loadingStatus도 업데이트 필요 : 2025.04.09
-        if (productDetail?.product?.caption) {
+        if (productDetail?.caption) {
             set(loadingStatusAtom, {
                 ...get(loadingStatusAtom),
                 caption: LoadingStatus.FINISH
@@ -225,24 +224,24 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
     }
 });
 
+// main 브랜치 코드 : 이거 쓰면 main product 목록 가져올때 timeout 에러 발생함
+// export const setProductAtom = atom(null, async (get, set, product: Product) => {
+//     const productDetail = get(productDetailAtom);
+
+//     if (productDetail?.product?.url === product.url) {
+//         // product가 다르면 업데이트 && 백엔드 db 업데이트 요청 (product 내 속성값이 모두 같은지 체크)
+//         if (!deepEqual(productDetail.product, product) && product.name && product.price) {
+//             set(productDetailAtom, { ...productDetail, product });
+//             // 백엔드 db 업데이트 요청
+//             await UpdateProductAPI({ product });
+//         }
+//     }
+// });
+
 export const productReviewAtom = atom<ProductReview>({ reviews: [] } as ProductReview);
 
 export const setProductReviewAtom = atom(null, async (get, set, reviews: string[]) => {
-    // console.log('setProductReviewAtom 호출됨:', {
-    //     reviewsCount: reviews.length,
-    //     reviews: reviews.slice(0, 2) // 처음 2개만 로깅
-    // });
-
-    const currentState = get(productReviewAtom);
-    // console.log('현재 productReview 상태:', currentState);
-
     set(productReviewAtom, { reviews });
-    // loadingStatusAtom 업데이트
-    set(loadingStatusAtom, {
-        ...get(loadingStatusAtom),
-        review: LoadingStatus.FINISH
-    });
-    console.log('productReview 상태 업데이트 완료');
 });
 
 export const getProductDetailAtom = atom(null, async (get, set, product: Product) => {
@@ -304,20 +303,18 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
     }
 });
 
-export const getProductReportAtom = atom(null, async (get, set, product: Product) => {
+// AI 상세페이지 설명 생성
+export const getProductReportAtom = atom(null, async (get, set) => {
     set(loadingStatusAtom, {
         ...get(loadingStatusAtom),
         report: LoadingStatus.LOADING
     });
-    const { data: productDetail } = await GetProductReportAPI({
-        product
-    });
-    if (get(productDetailAtom)?.url === product.url) {
-        set(productDetailAtom, {
-            url: product.url as string, // 명시적으로 string 타입의 url 할당
-            ...get(productDetailAtom),
-            ...productDetail
-        });
+
+    const product = get(productDetailAtom)?.product!;
+    const response = await GetProductReportAPI({ product });
+    // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
+    if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
+        set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
         set(loadingStatusAtom, {
             ...get(loadingStatusAtom),
             report: LoadingStatus.FINISH
@@ -325,7 +322,6 @@ export const getProductReportAtom = atom(null, async (get, set, product: Product
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 });
-
 // AI 상품 이미지 설명 생성
 export const getProductCaptionAtom = atom(null, async (get, set) => {
     set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.LOADING });

@@ -22,6 +22,7 @@ import {
     wishProductsAtom,
     mainProductsAtom,
     productDetailAtom,
+    productReviewAtom,
     initProductDetailAtom,
     getProductCaptionAtom,
     getProductReviewAtom,
@@ -83,6 +84,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const sendLog = useSetAtom(sendLogAtom);
 
     const productDetail = useAtomValue(productDetailAtom);
+    const productReview = useAtomValue(productReviewAtom);
     const mainProducts = useAtomValue(mainProductsAtom);
     const searchResult = useAtomValue(searchResultAtom);
     const [wishlist, setWishlist] = useAtom(wishProductsAtom);
@@ -206,7 +208,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         try {
             console.log('API 호출 시작 - getProductAIAnswer');
             console.log('전달되는 파라미터:', { product, question });
-            await getProductAIAnswer(product, question);
+            await getProductAIAnswer(question);
             console.log('API 호출 완료');
 
             setQuestion('');
@@ -287,33 +289,42 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             return;
         }
 
-        console.log('nextTab :', nextTab);
-        console.log('loadingStatus[nextTab]', loadingStatus[nextTab]);
-        console.log('productDetail?.[nextTab]', productDetail?.[nextTab]);
+        console.log('handlePressTab:', nextTab, loadingStatus[nextTab], productDetail?.[nextTab]);
 
         if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab]) {
+            console.log('handlePressTab api 호출');
             if (nextTab === TABS.REPORT) {
-                if (!isLocal && scrapedProductDetail.images && scrapedProductDetail.images.length > 0) {
-                    sendLog({
-                        product: { url: productUrl },
-                        action: 'report',
-                        metaData: {}
-                    });
-                    getProductReport(product);
+                if (!isLocal && productDetail?.product?.detail_images?.length === 0) {
+                    let count = 0;
+                    const interval = setInterval(() => {
+                        if (count >= 5 || productDetail?.product?.detail_images?.length! > 0) {
+                            clearInterval(interval);
+                            sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
+                            getProductReport();
+                            return;
+                        }
+                        count++;
+                    }, 1000);
                 } else {
-                    console.log('이미지 데이터 대기 중...');
+                    sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
+                    getProductReport();
                 }
             }
             if (nextTab === TABS.REVIEW) {
-                if (!isLocal && scrapedProductDetail.reviews && scrapedProductDetail.reviews.length > 0) {
-                    sendLog({
-                        product: { url: productUrl },
-                        action: 'review',
-                        metaData: {}
-                    });
-                    getProductReview(product);
+                if (!isLocal && productReview.reviews?.length === 0) {
+                    let count = 0;
+                    const interval = setInterval(() => {
+                        if (count >= 5 || productReview.reviews!.length > 0) {
+                            clearInterval(interval);
+                            sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
+                            getProductReview();
+                            return;
+                        }
+                        count++;
+                    }, 1000);
                 } else {
-                    console.log('리뷰 데이터 대기 중...');
+                    sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
+                    getProductReview();
                 }
             }
         }
@@ -323,9 +334,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const handleRegenerate = () => {
         console.log('handleRegenerate 호출됨:', { tab });
-        if (tab === TABS.REPORT) getProductReport(product);
-        if (tab === TABS.REVIEW) getProductReview(product);
-        if (tab === TABS.CAPTION) getProductCaption(product);
+        if (tab === TABS.REPORT) getProductReport();
+        if (tab === TABS.REVIEW) getProductReview();
+        if (tab === TABS.CAPTION) getProductCaption();
     };
 
     return (
@@ -344,35 +355,41 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             <Text style={styles.name}>{product.name ?? productDetail?.product?.name ?? ''}</Text>
 
                             <View style={styles.priceWrap} accessible accessibilityRole="text">
-                                <>
-                                    {(productDetail?.product?.discount_rate ?? 0) !== 0 && (
-                                        <Text
-                                            style={styles.discount_rate}
-                                            accessibilityLabel={`할인률 ${productDetail?.product?.discount_rate ?? 0}%`}
-                                        >
-                                            {productDetail?.product?.discount_rate ?? 0}%
-                                        </Text>
-                                    )}
-                                    <Text
-                                        style={styles.price}
-                                        accessibilityLabel={`현재 가격 ${numComma(
-                                            productDetail?.product?.price ?? 0
-                                        )}원`}
-                                    >
-                                        {numComma(productDetail?.product?.price ?? 0)}원
-                                    </Text>
-                                    {(productDetail?.product?.origin_price ?? 0) !== 0 &&
-                                        productDetail?.product?.price !== productDetail?.product?.origin_price && (
+                                {productDetail?.product?.name ? (
+                                    <>
+                                        {(productDetail?.product?.discount_rate ?? 0) !== 0 && (
                                             <Text
-                                                style={styles.origin_price}
-                                                accessibilityLabel={`할인 전 가격 ${numComma(
-                                                    productDetail?.product?.origin_price ?? 0
-                                                )}원`}
+                                                style={styles.discount_rate}
+                                                accessibilityLabel={`할인률 ${
+                                                    productDetail?.product?.discount_rate ?? 0
+                                                }%`}
                                             >
-                                                {numComma(productDetail?.product?.origin_price ?? 0)}
+                                                {productDetail?.product?.discount_rate ?? 0}%
                                             </Text>
                                         )}
-                                </>
+                                        <Text
+                                            style={styles.price}
+                                            accessibilityLabel={`현재 가격 ${numComma(
+                                                productDetail?.product?.price ?? 0
+                                            )}원`}
+                                        >
+                                            {numComma(productDetail?.product?.price ?? 0)}원
+                                        </Text>
+                                        {(productDetail?.product?.origin_price ?? 0) !== 0 &&
+                                            productDetail?.product?.price !== productDetail?.product?.origin_price && (
+                                                <Text
+                                                    style={styles.origin_price}
+                                                    accessibilityLabel={`할인 전 가격 ${numComma(
+                                                        productDetail?.product?.origin_price ?? 0
+                                                    )}원`}
+                                                >
+                                                    {numComma(productDetail?.product?.origin_price ?? 0)}
+                                                </Text>
+                                            )}
+                                    </>
+                                ) : (
+                                    <ActivityIndicator accessibilityLabel="가격 정보 로딩 중" />
+                                )}
                             </View>
 
                             <View style={styles.table}>
@@ -409,7 +426,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                     </View>
                 ) : (
                     <View style={styles.inner}>
-                        <Text style={styles.name}>상품 정보를 불러오는 데 실패했습니다.</Text>
+                        <Text>상품 정보를 불러오는 데 실패했습니다.</Text>
                     </View>
                 )}
             </ScrollView>

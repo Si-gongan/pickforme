@@ -1,8 +1,8 @@
-import { TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity, Text } from 'react-native';
 
-import useStyle from "./style";
+import useStyle from './style';
 
-import type { IButtonProps } from "./type";
+import type { IButtonProps } from './type';
 
 export default function Button({ title, label, onPress }: IButtonProps) {
     const style = useStyle();
