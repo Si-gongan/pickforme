@@ -257,6 +257,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     const handleClickRequest = useCheckLogin(() => {
+        console.log('handleClickRequest 호출');
         getSubscription();
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
         if (!subscription || subscription.isExpired) {
@@ -286,7 +287,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const handlePressTab = (nextTab: TABS) => {
         if (nextTab === TABS.QUESTION) {
             handlePressAIQuestionTab('');
-            return;
         }
 
         console.log('handlePressTab:', nextTab, loadingStatus[nextTab], productDetail?.[nextTab]);
@@ -465,7 +465,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
                         title={tabName[TAB]}
                         size="medium"
                         color={tab === TAB ? 'primary' : 'tertiary'}
-                        onPress={() => handlePressTab(TAB)}
+                        onPress={() => {
+                            console.log('tabnavigation on press', tab, TAB);
+                            handlePressTab(TAB);
+                        }}
                         accessibilityLabel={`${tabName[TAB]} 탭`}
                         selected={tab === TAB}
                     />
