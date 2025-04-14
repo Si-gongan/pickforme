@@ -8,7 +8,8 @@ import {
     SetPushTokenParams,
     SetPushSettingParams,
     SetPushSettingResponse,
-    phoneCheckParams
+    phoneCheckParams,
+    SetPopupParams
 } from './types';
 
 export const AppleLoginAPI = (params: AppleLoginParams) =>
@@ -38,6 +39,8 @@ export const PhoneCheckAPI = async ({ id, phone }: phoneCheckParams) => {
     console.log('API 응답:', response.data);
     return response;
 };
+
+export const SetPopupAPI = (params: SetPopupParams) => client.post('/user/setpopup', params);
 
 export const PhoneSubmitAPI = async ({ id, phone }: phoneCheckParams) => {
     console.log('API 호출:', { id, phone });

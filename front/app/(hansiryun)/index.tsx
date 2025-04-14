@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image 
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
-import { PhoneCheckAPI, PhoneSubmitAPI } from '../../stores/auth/apis';
+import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI } from '../../stores/auth/apis';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
 import { setClientToken } from '../../utils/axios';
@@ -23,6 +23,22 @@ export default function InterviewScreen() {
     useEffect(() => {
         if (!user.token) {
             router.replace('/(onboarding)');
+        }
+
+        setClientToken(user.token);
+
+        if (user?._id) {
+            const payload = { id: user._id, flag: '0' };
+            console.log(payload);
+
+            SetPopupAPI(payload)
+                .then(res => {
+                    console.log(res?.data);
+                    // phone 값 활용 가능
+                })
+                .catch(error => {
+                    console.error('팝업 설정 실패:', error);
+                });
         }
     }, [user]);
 
@@ -71,13 +87,15 @@ export default function InterviewScreen() {
 
     // 앞으로 보지 않기 버튼 처리
     const handleDontShowAgain = async () => {
-        router.replace('/(tabs)');
+        // router.replace('/(tabs)');
 
-        // try {
-        //     await AsyncStorage.setItem('dontShowInterviewPopup', 'true');
-        // } catch (error) {
-        //     console.error('AsyncStorage 저장 오류:', error);
-        // }
+        if (!user?._id) {
+            console.log('id가 없습니다.');
+            return;
+        }
+
+        const response = await SetPopupAPI({ id: user?._id, flag: 1 });
+        console.log('response :', response?.data);
     };
 
     // onChangeText 핸들러 수정

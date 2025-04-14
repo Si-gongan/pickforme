@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 import { IconHeader, MySection } from '@components';
 import { userAtom } from '@stores';
-import { changeToken } from '@services';
+import { changeToken } from '../../utils/axios';
 
 export default function MyScreen() {
     const style = useStyle();

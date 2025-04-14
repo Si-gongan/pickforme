@@ -1,12 +1,15 @@
 import axios from 'axios';
 import { API_HOST } from '../constants/info';
 
-console.log(API_HOST);
+// console.log('API_HOST', API_HOST);
+console.log('baseURL', 'http://52.79.85.108:3000');
+
+const baseURL = 'http://52.79.85.108:3000';
+// const baseURL = 'https://api.sigongan-ai.shop';
+// const baseURL = API_HOST
 
 const client = axios.create({
-    // baseURL: API_HOST,
-    // baseURL: 'https://api.sigongan-ai.shop',
-    baseURL: 'http://52.79.85.108:3000',
+    baseURL,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
@@ -24,5 +27,16 @@ export const setClientToken = (token?: string) => {
         delete client.defaults.headers.common.authorization;
     }
 };
+
+export function changeToken(value?: string) {
+    if (!value) {
+        delete client.defaults.headers.common.authorization;
+    } else {
+        client.defaults.headers.common = {
+            ...client.defaults.headers.common,
+            authorization: `Bearer ${value}`
+        };
+    }
+}
 
 export default client;

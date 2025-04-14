@@ -46,5 +46,10 @@ export interface phoneCheckParams {
     phone: string;
 }
 
+export interface SetPopupParams {
+    id: string;
+    flag: string;
+}
+
 export type SetPushSettingParams = UserData['push'];
 export type SetPushSettingResponse = SetPushSettingParams;

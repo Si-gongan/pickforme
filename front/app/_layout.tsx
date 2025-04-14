@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import useColorScheme from '../hooks/useColorScheme';
 import { settingAtom, isLoadedAtom, userAtom } from '@stores';
-import { changeToken } from '@services';
+import { changeToken } from '../utils/axios';
 
 SplashScreen.preventAutoHideAsync();
 

@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { client } from './axios';
+import client from '../utils/axios';
 
 import { IDicoverMainProducts, IProductDetail } from '@types';
 
