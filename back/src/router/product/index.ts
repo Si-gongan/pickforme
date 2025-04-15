@@ -29,7 +29,7 @@ router.get('/', async (ctx) => {
 // 상품목록
 router.get('/:platform', async (ctx) => {
   // NOTE: 상품 노출 시 활성화
-  /*
+  
   const {
     platform,
   } = ctx.params;
@@ -38,8 +38,8 @@ router.get('/:platform', async (ctx) => {
     type: productConverter(ProductType.SUBSCRIPTION),
   });
   ctx.body = products;
-  */
-  ctx.body = [];
+
+  // ctx.body = [];
   ctx.status = 200;
 });
 
