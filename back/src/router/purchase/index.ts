@@ -88,7 +88,7 @@ router.post('/', requireAuth, async (ctx) => {
 // 상품목록
 router.get('/products/:platform', async (ctx) => {
   // NOTE: 상품 노출 시 활성화
-  /*
+  
   const {
     platform,
   } = ctx.params;
@@ -97,8 +97,8 @@ router.get('/products/:platform', async (ctx) => {
     type: ProductType.SUBSCRIPTION,
   });
   ctx.body = products;
-  */
-  ctx.body = [];
+  
+  // ctx.body = [];
   ctx.status = 200;
 });
 // 구독 여부 체크

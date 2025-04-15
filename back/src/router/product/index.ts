@@ -30,16 +30,16 @@ router.get('/', async (ctx) => {
 router.get('/:platform', async (ctx) => {
   // NOTE: 상품 노출 시 활성화
   
-  const {
-    platform,
-  } = ctx.params;
-  const products = await db.Product.find({
-    platform,
-    type: productConverter(ProductType.SUBSCRIPTION),
-  });
-  ctx.body = products;
+  // const {
+  //   platform,
+  // } = ctx.params;
+  // const products = await db.Product.find({
+  //   platform,
+  //   type: productConverter(ProductType.SUBSCRIPTION),
+  // });
+  // ctx.body = products;
 
-  // ctx.body = [];
+  ctx.body = [];
   ctx.status = 200;
 });
 
