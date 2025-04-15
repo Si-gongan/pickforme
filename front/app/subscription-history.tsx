@@ -452,7 +452,7 @@ const useStyles = (colorScheme: ColorScheme) =>
         productButton: {
             width: 120,
             padding: 10,
-            backgroundColor: Colors[colorScheme].buttonBackground.primary
+            backgroundColor: Colors[colorScheme].button.primary.background
         },
         productPrice: {
             fontWeight: '600',

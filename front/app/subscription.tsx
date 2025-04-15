@@ -207,6 +207,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
 
     const filteredProducts = products.reduce(
         (obj, product) => {
+            console.log('filteredProducts product : ', product);
             if (product.type === ProductType.PURCHASE) {
                 // 단건 로직
                 const item = purchaseItems.find(({ productId }) => product.productId === productId);
@@ -226,6 +227,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
             purchasableProducts: [] as (IAPProduct & Product)[]
         }
     );
+    console.log('filteredProducts : ', filteredProducts);
     return (
         <View style={styles.container}>
             <BackHeader />
@@ -264,6 +266,10 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                                 </View>
                             );
                         }
+
+                        console.log('멤버십 product : ', product);
+                        console.log('product.platform:', product?.platform);
+
                         return (
                             <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
                                 <Text style={styles.productPrice}>
@@ -344,7 +350,7 @@ const useStyles = (colorScheme: ColorScheme) =>
         productButton: {
             width: 120,
             padding: 10,
-            backgroundColor: Colors[colorScheme].buttonBackground.primary
+            backgroundColor: Colors[colorScheme].button.primary.background
         },
         productPrice: {
             fontWeight: '600',

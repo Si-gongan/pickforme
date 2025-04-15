@@ -87,7 +87,7 @@ export default function InterviewScreen() {
 
     // 앞으로 보지 않기 버튼 처리
     const handleDontShowAgain = async () => {
-        // router.replace('/(tabs)');
+        router.replace('/(tabs)');
 
         if (!user?._id) {
             console.log('id가 없습니다.');
