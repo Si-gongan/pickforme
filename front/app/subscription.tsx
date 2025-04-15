@@ -78,10 +78,6 @@ const PurchaseWrapper = () => {
     const getProducts = useSetAtom(getProductsAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const products = useAtomValue(productsAtom);
-    const [fixData, setFixData] = useState<{
-        products: Product[];
-        changeCheck: boolean;
-    }>({ products: [], changeCheck: false });
 
     useEffect(() => {
         getProducts({ platform: Platform.OS });
@@ -91,32 +87,65 @@ const PurchaseWrapper = () => {
         getSubscription();
     }, [getSubscription]);
 
-    // NOTE : products 의 참조값 변경으로 인한 재렌더링 방지용(기존에는 하단 2번째 useEffect 매개변수로 products 가 들어가 있었으나 값이 같아도 참조값변경으로 인한 재렌더링 발생)
     useEffect(() => {
-        if (products !== fixData.products) {
-            setFixData({ products: products, changeCheck: !fixData.changeCheck });
-        }
-    }, [products]);
-
-    useEffect(() => {
-        if (fixData.products?.length) {
+        if (products.length) {
             let purchaseUpdateSubscription: any = null;
             let purchaseErrorSubscription: any = null;
 
-            (async () => {
-                try {
-                    const items = await initializeIAP(
-                        fixData.products,
-                        purchaseUpdateSubscription,
-                        purchaseErrorSubscription,
-                        purchaseProduct
-                    );
-                    setSubscriptionItems(items);
-                } catch (error) {
-                    console.error('Failed to initialize IAP:', error);
-                }
-            })();
+            const initializeIAP = async () => {
+                await initConnection();
 
+                // initConnection().then(async () => {
+                // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
+
+                const storeSItems = await IAPGetSubscriptions({
+                    skus: products.filter(p => p.type === ProductType.SUBSCRIPTION).map(p => p.productId)
+                });
+
+                // setPurchaseItems(storeItems)
+                setSubscriptionItems(storeSItems);
+
+                const addListeners = () => {
+                    purchaseUpdateSubscription = purchaseUpdatedListener(
+                        async (purchase: SubscriptionPurchase | ProductPurchase) => {
+                            const receipt = purchase.transactionReceipt;
+
+                            const product = products.find(({ productId }) => productId === purchase.productId);
+                            if (!product) {
+                                return;
+                            }
+                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                            if (!receipt) {
+                                return;
+                            }
+                            if (Platform.OS === 'android') {
+                                await purchaseProduct({
+                                    _id: product._id,
+                                    receipt: { subscription: isSubscription, ...JSON.parse(receipt) }
+                                });
+                            } else {
+                                await purchaseProduct({ _id: product._id, receipt });
+                            }
+                            await finishTransaction({ purchase, isConsumable: !isSubscription });
+                        }
+                    );
+
+                    purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
+                        console.error('purchaseErrorListener', error);
+                    });
+                };
+                // we make sure that "ghost" pending payment are removed
+                // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
+                if (Platform.OS === 'android') {
+                    flushFailedPurchasesCachedAsPendingAndroid()
+                        .then(addListeners)
+                        .catch(() => {});
+                } else {
+                    addListeners();
+                }
+            };
+
+            initializeIAP();
             return () => {
                 if (purchaseUpdateSubscription) {
                     purchaseUpdateSubscription.remove();
@@ -129,7 +158,7 @@ const PurchaseWrapper = () => {
                 }
             };
         }
-    }, [fixData.changeCheck, purchaseProduct]);
+    }, [products]);
 
     return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
 };
@@ -242,8 +271,6 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
 
                     {filteredProducts.subscriptionProducts.map(product => {
                         console.log('product : ', product);
-                        const color: 'primary' | 'tertiary' = 'tertiary';
-                        const buttonTextProps = { color };
                         if (product.platform === 'android') {
                             const subscriptionOffer = (product as unknown as SubscriptionAndroid)
                                 .subscriptionOfferDetails[0];

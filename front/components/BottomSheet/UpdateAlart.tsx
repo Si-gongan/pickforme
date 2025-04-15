@@ -92,7 +92,7 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             minHeight: 50,
             backgroundColor: 'white',
             borderWidth: 1,
-            borderColor: Colors[colorScheme].buttonBackground.primary
+            borderColor: Colors[colorScheme].button.primary.background
         }
     });
 

@@ -94,7 +94,7 @@ export default function InterviewScreen() {
             return;
         }
 
-        const response = await SetPopupAPI({ id: user?._id, flag: 1 });
+        const response = await SetPopupAPI({ id: user?._id, flag: '1' });
         console.log('response :', response?.data);
     };
 
