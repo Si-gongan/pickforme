@@ -8,7 +8,7 @@ const router = new Router({
   prefix: '/popup',
 });
 
-router.get('/', requireAdmin, async (ctx) => {
+router.get('/', async (ctx) => {
   const popups = await Popup.find({});
   ctx.body = popups;
 });
@@ -32,7 +32,7 @@ router.get('/active', requireAuth, async (ctx) => {
 });
 
 // 팝업 생성
-router.post('/', requireAdmin, async (ctx) => {
+router.post('/', async (ctx) => {
   try {
     const { popup_id, title, description, isActive } = ctx
       .request.body as {
@@ -77,7 +77,7 @@ router.post('/', requireAdmin, async (ctx) => {
 });
 
 // 팝업 삭제
-router.delete('/:popup_id', requireAdmin, async (ctx) => {
+router.delete('/:popup_id',  async (ctx) => {
   try {
     const { popup_id } = ctx.params;
     const result = await Popup.findOneAndDelete({
