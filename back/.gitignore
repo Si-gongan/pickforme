@@ -2,6 +2,7 @@
 node_modules
 
 # misc
+.env
 .env.development
 .env.production
 .DS_Store
