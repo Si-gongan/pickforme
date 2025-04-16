@@ -8,7 +8,8 @@ export const PurchaseProductAPI = (params: PurchaseProductParams) =>
         console.log(error);
     });
 
-export const GetProductsAPI = (params: GetProductsParams) => client.get<Product[]>(`/product/${params.platform}`);
+export const GetProductsAPI = (params: GetProductsParams) =>
+    client.get<Product[]>(`/purchase/products/${params.platform}`);
 
 export const GetSubscriptionAPI = () =>
     client.get<Purchase>(`/purchase/subscription`).catch(error => {

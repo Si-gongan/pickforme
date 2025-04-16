@@ -18,7 +18,9 @@ import { UserPointAPI } from '../user/apis';
 export const productsAtom = atom<Product[]>([]);
 
 export const getProductsAtom = atom(null, async (get, set, params: GetProductsParams) => {
+    console.log('GetProductsAPI 호출');
     const { data } = await GetProductsAPI(params);
+    console.log('GetProductsAPI 결과 :', data);
     set(productsAtom, data);
 });
 export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseProductParams) => {

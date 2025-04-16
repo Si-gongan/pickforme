@@ -1,12 +1,11 @@
 import axios from 'axios';
 import { API_HOST } from '../constants/info';
 
-// console.log('API_HOST', API_HOST);
-console.log('baseURL', 'http://52.79.85.108:3000');
-
 const baseURL = 'http://52.79.85.108:3000';
 // const baseURL = 'https://api.sigongan-ai.shop';
-// const baseURL = API_HOST
+// const baseURL = API_HOST;
+
+console.log('baseURL', baseURL);
 
 const client = axios.create({
     baseURL,

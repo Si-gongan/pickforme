@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Props, styles } from '../Base';
 import { isShowIntroduceAlertModalAtom, settingAtom } from '@stores';
 import { Colors } from '@constants';
-import { View, Text, Button } from '@components';
+import { View, Text, Button_old as Button } from '@components';
 import useColorScheme from '../../../hooks/useColorScheme';
 
 import type { ColorScheme } from '@hooks';

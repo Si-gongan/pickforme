@@ -10,7 +10,7 @@ import { useAtom } from 'jotai';
 import { deepLinkToSubscriptions } from 'react-native-iap';
 
 import { isShowUnsubscribeModalAtom, settingAtom } from '@stores';
-import { View, Text, Button } from '@components';
+import { View, Text, Button_old as Button } from '@components';
 import useColorScheme from '../../../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { Props, styles } from '../Base';
