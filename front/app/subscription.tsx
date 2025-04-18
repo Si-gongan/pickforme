@@ -369,7 +369,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     <Text style={styles.subtitle}>멤버십 혜택 자세히</Text>
                     <Markdown style={markdownStyles}>
                         {
-                            '**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 전 상품 최대 1회씩 이용 가능'
+                            '**혜택 1:** AI 질문하기 매월 무제한 이용 가능 \n**혜택 2:** 매니저 질문하기 매월 30회 이용 가능'
                         }
                     </Markdown>
                 </View>
