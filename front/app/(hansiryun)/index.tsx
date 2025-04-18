@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image 
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
-import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI } from '../../stores/auth/apis';
+import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI, GetPopupAPI } from '../../stores/auth/apis';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
 import { setClientToken } from '../../utils/axios';
@@ -28,13 +28,13 @@ export default function InterviewScreen() {
         setClientToken(user.token);
 
         if (user?._id) {
-            const payload = { id: user._id, flag: '0' };
-            console.log(payload);
-
-            SetPopupAPI(payload)
+            GetPopupAPI()
                 .then(res => {
                     console.log(res?.data);
-                    // phone 값 활용 가능
+                    const isHansiryunPopup = res?.data?.find(p => p.popup_id === 'event_hansiryun');
+                    if (!isHansiryunPopup) {
+                        router.replace('/(tabs)');
+                    }
                 })
                 .catch(error => {
                     console.error('팝업 설정 실패:', error);
@@ -94,8 +94,11 @@ export default function InterviewScreen() {
             return;
         }
 
-        const response = await SetPopupAPI({ id: user?._id, flag: '1' });
-        console.log('response :', response?.data);
+        const payload = { popup_id: 'event_hansiryun', flag: 1 };
+        console.log(payload);
+
+        const response = await SetPopupAPI(payload);
+        console.log('setpopup response :', response?.data);
     };
 
     // onChangeText 핸들러 수정

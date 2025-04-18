@@ -1,4 +1,4 @@
-import { useEffect, Suspense, Fragment } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -10,7 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import useColorScheme from '../hooks/useColorScheme';
 import { settingAtom, isLoadedAtom, userAtom } from '@stores';
-import { changeToken } from '../utils/axios';
+import { changeToken, setClientToken } from '../utils/axios';
+import { GetPopupAPI } from '../stores/auth';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +26,7 @@ export default function RootLayout() {
     const setting = useAtomValue(settingAtom);
     const user = useAtomValue(userAtom);
     const [isLoaded, onLoaded] = useAtom(isLoadedAtom);
+    const [isHansiryunPopup, setIsHansiryunPopup] = useState(false);
 
     useEffect(function () {
         (async function () {
@@ -34,6 +36,22 @@ export default function RootLayout() {
             }
         })();
     }, []);
+
+    useEffect(() => {
+        setClientToken(user.token);
+
+        if (user?._id) {
+            GetPopupAPI()
+                .then(res => {
+                    console.log(res?.data);
+                    const flag = res?.data?.find(p => p.popup_id === 'event_hansiryun');
+                    if (flag) setIsHansiryunPopup(true);
+                })
+                .catch(error => {
+                    console.error('팝업 설정 실패:', error);
+                });
+        }
+    }, [user]);
 
     useEffect(
         function () {
@@ -64,7 +82,13 @@ export default function RootLayout() {
                     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                         <Stack
                             initialRouteName={
-                                user?.token ? '(hansiryun)' : setting?.isReady ? '(tabs)' : '(onboarding)'
+                                user?.token
+                                    ? isHansiryunPopup
+                                        ? '(hansiryun)'
+                                        : '(tabs)'
+                                    : setting?.isReady
+                                    ? '(tabs)'
+                                    : '(onboarding)'
                             }
                             screenOptions={{
                                 headerShown: false

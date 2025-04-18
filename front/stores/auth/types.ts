@@ -51,5 +51,15 @@ export interface SetPopupParams {
     flag: string;
 }
 
+export interface Popup {
+    _id: string;
+    popup_id: string;
+    title: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+}
+
 export type SetPushSettingParams = UserData['push'];
 export type SetPushSettingResponse = SetPushSettingParams;
