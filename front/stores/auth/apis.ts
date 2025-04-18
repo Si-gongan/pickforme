@@ -41,6 +41,7 @@ export const PhoneCheckAPI = async ({ id, phone }: phoneCheckParams) => {
 };
 
 export const SetPopupAPI = (params: SetPopupParams) => client.post('/user/setpopup', params);
+export const GetPopupAPI = () => client.get('/popup/active');
 
 export const PhoneSubmitAPI = async ({ id, phone }: phoneCheckParams) => {
     console.log('API 호출:', { id, phone });
