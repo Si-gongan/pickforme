@@ -73,6 +73,9 @@ const handleLogin = async (email: string) => {
 
     const today = new Date(); // 현재 날짜 객체 생성
     const dayOfMonth = today.getDate(); // 오늘 날짜의 '일' 값 가져오기
+
+    if(user.MembershipAt){
+
     const mDay = user.MembershipAt;
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -89,6 +92,7 @@ const handleLogin = async (email: string) => {
         user.aiPoint = 99999;
       }
     }
+  }
 
     // update last login date
     user.lastLoginAt = new Date();
@@ -104,12 +108,12 @@ const handleLogin = async (email: string) => {
   await user.save();
 
   const token = await user.generateToken();
-  const refreshToken = await user.generateRefreshToken();
+  // const refreshToken = await user.generateRefreshToken();
   
   return {
     user: {
       ...user.toObject(),
-      refreshToken,
+      // refreshToken,
       token,
     },
     isRegister,
@@ -127,6 +131,7 @@ router.post('/google', async (ctx) => {
     `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
   `,
   );
+  
   const {
     email, verified_email,
   } = data;
@@ -149,6 +154,7 @@ router.post('/kakao', async (ctx) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  
   const {
     is_email_verified, is_email_valid, email,
   } = data?.data?.kakao_account || {};
