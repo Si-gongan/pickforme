@@ -10,7 +10,7 @@ import {
     ProductReview
 } from './types';
 import { productGroupAtom } from '../log/atoms';
-import { userDataAtom } from '../auth/atoms';
+import { userAtom } from '@stores';
 import { atomWithStorage } from '../utils';
 import * as Haptics from 'expo-haptics';
 
@@ -339,12 +339,13 @@ export const getProductCaptionAtom = atom(null, async (get, set) => {
 // AI 포미 답변 생성
 export const getProductAIAnswerAtom = atom(null, async (get, set, question: string) => {
     // ai 답변 생성 후 aiPoint 차감
-    const userData = await get(userDataAtom);
+    const userData = await get(userAtom);
+    console.log('check userData', userData);
     if (!userData || userData.aiPoint < 1) {
         Alert.alert('AI 질문권 개수가 부족해요.');
         return;
     }
-    set(userDataAtom, { ...userData!, aiPoint: userData!.aiPoint - 1 });
+    set(userAtom, { ...userData!, aiPoint: userData!.aiPoint - 1 });
 
     set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.LOADING });
 
