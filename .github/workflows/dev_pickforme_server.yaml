@@ -1,0 +1,41 @@
+name: Deploy PickForMe Server to Dev
+
+on:
+  workflow_dispatch:  # 수동 트리거만 사용
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Create and push tags
+        run: |
+          GIT_TAG_FOR_DEV="dev_$(date -u +'%y%m%d-%H%M')"
+          git tag $GIT_TAG_FOR_DEV
+          git tag -f dev_server
+          git push -f origin $GIT_TAG_FOR_DEV
+          git push -f origin dev_server
+      
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/pickforme
+            git fetch --all
+            git checkout $GIT_TAG_FOR_DEV
+            cd back
+            npm install
+            pm2 start pm2.json
