@@ -8,11 +8,25 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions" 
+          git config --global user.email "github-actions@github.com"
+
+      - name: Start SSH agent with deploy keys
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: |
+            ${{ secrets.PROD_DEPLOY_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: main  # main 브랜치 체크아웃
-          token: ${{ secrets.PROD_DEPLOY_KEY }}
+
+      - name: Set remote to SSH
+        run: git remote set-url origin git@github.com:Si-gongan/pickforme.git
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -20,7 +34,7 @@ jobs:
       
       - name: Create and push tags
         run: |
-          GIT_TAG_FOR_PROD="prod_$(date -u +'%y%m%d-%H%M')"
+          echo "GIT_TAG_FOR_PROD=prod_$(date -u +'%y%m%d-%H%M')" >> $GITHUB_ENV
           git tag $GIT_TAG_FOR_PROD
           git tag -f prod_server
           git push -f origin $GIT_TAG_FOR_PROD
