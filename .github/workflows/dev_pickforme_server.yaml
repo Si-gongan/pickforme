@@ -8,15 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Configure Git
-        run: |
-          git config --global user.name "newtonjjang" 
-          git config --global user.email "newtonjjang@naver.com"
-
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: dev
+          token: ${{ secrets.DEV_DEPLOY_KEY }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
