@@ -17,7 +17,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: |
-            ${{ secrets.DEV_DEPLOY_KEY }}
+            ${{ secrets.REPO_DEPLOY_KEY }}
 
       - name: Checkout code
         uses: actions/checkout@v3
