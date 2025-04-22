@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "newtonjjang" 
+          git config --global user.email "newtonjjang@naver.com"
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
