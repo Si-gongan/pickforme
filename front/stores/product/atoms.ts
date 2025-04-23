@@ -173,22 +173,10 @@ export const initProductDetailAtom = atom(null, async (get, set) => {
 });
 
 export const setProductAtom = atom(null, async (get, set, product: Product) => {
-    console.log('setProductAtom 호출됨:', {
-        productUrl: product.url,
-        productName: product.name,
-        productPrice: product.price
-    });
-
     const productDetail = get(productDetailAtom);
-    console.log('현재 productDetail 상태:', productDetail);
 
     // URL이 일치하지 않아도 상품 정보 업데이트
     if (product.name && product.price) {
-        console.log('상품 정보 업데이트 시작:', {
-            before: productDetail?.product,
-            after: product
-        });
-
         set(productDetailAtom, {
             ...productDetail,
             url: product.url,
@@ -206,13 +194,9 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
             });
         }
 
-        console.log('productDetail 상태 업데이트 완료');
-
         // 백엔드 db 업데이트 요청
         try {
-            console.log('백엔드 업데이트 API 호출 시작');
             await UpdateProductAPI({ product });
-            console.log('백엔드 업데이트 API 호출 완료');
         } catch (error) {
             console.error('백엔드 업데이트 API 호출 실패:', error);
         }

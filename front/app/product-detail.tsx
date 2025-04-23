@@ -41,7 +41,7 @@ import { requestBottomSheetAtom, requestsAtom } from '../stores/request/atoms';
 
 import { Text, View, Button_old as Button } from '@components';
 import useColorScheme from '../hooks/useColorScheme';
-import { isShowNonSubscriberManagerModalAtom } from '@stores';
+import { isShowNonSubscriberManagerModalAtom, isShowSubscriptionModalAtom } from '@stores';
 import { numComma } from '../utils/common';
 // import { useWebView } from '../components/webview-util';
 import { useWebViewReviews } from '../components/webview-reviews';
@@ -55,6 +55,9 @@ import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms'
 
 import type { ColorScheme } from '@hooks';
 import BackHeader from '../components/BackHeader';
+
+import Modal from 'react-native-modal';
+import Request from '../components/BottomSheet/Request';
 
 interface ProductDetailScreenProps {}
 
@@ -103,7 +106,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         ].find(({ url }) => decodeURIComponent(url) === productUrl) ||
         already ||
         ({ url: productUrl } as Product);
-    console.log('찾은 product:', product);
+
     const isLocal =
         mainProducts.local
             .map(section => section.products)
@@ -242,6 +245,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const subscription = useAtomValue(subscriptionAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const setIsShowNonSubscriberManageModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
+    const setIsShowSubscriptionModal = useSetAtom(isShowSubscriptionModalAtom);
+    const isShowSubscriptionModal = useAtomValue(isShowSubscriptionModalAtom);
+
+    const toggleSubscriptionModal = () => {
+        setIsShowSubscriptionModal(!isShowSubscriptionModal);
+    };
 
     const handleClickContact = async () => {
         getSubscription();
@@ -256,18 +265,29 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     };
 
-    const handleClickRequest = useCheckLogin(() => {
+    const handleClickRequest = useCheckLogin(async () => {
         console.log('handleClickRequest 호출');
-        getSubscription();
-        // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        if (!subscription || subscription.isExpired) {
-            // 모달 표시
-            setIsShowNonSubscriberManageModal(true);
-        } else {
-            console.log('111subscription.purchase.status:', subscription?.isExpired);
 
-            setRequestBottomSheet(product);
-        }
+        setRequestBottomSheet(product);
+        setIsShowSubscriptionModal(false);
+        setTimeout(() => {
+            setIsShowSubscriptionModal(true);
+        }, 300);
+
+        // await getSubscription();
+        // console.log('subscription:', subscription);
+        // // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
+        // if (!subscription || subscription.isExpired) {
+        //     console.log('subscription.purchase.status:', subscription);
+        //     console.log('setIsShowNonSubscriberManageModal');
+        //     // 모달 표시
+        //     setIsShowNonSubscriberManageModal(true);
+        // } else {
+        //     console.log('subscription.purchase.status:', subscription);
+        //     console.log('setRequestBottomSheet');
+        //     setRequestBottomSheet(product);
+        //     setIsShowSubscriptionModal(true);
+        // }
     });
 
     const handlePressAIQuestionTab = useCheckLogin(() => {
@@ -347,6 +367,20 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 {!isLocal && ReviewWebView}
                 {!isLocal && DetailWebView}
             </View>
+
+            <Modal
+                isVisible={isShowSubscriptionModal}
+                onBackButtonPress={toggleSubscriptionModal}
+                onBackdropPress={toggleSubscriptionModal}
+                animationIn="slideInUp" // 기본값, 아래에서 위로 올라옴
+                animationInTiming={300} // 애니메이션 속도(ms)
+                style={{
+                    justifyContent: 'flex-end', // 화면 하단에 모달 위치
+                    margin: 0 // 마진 제거
+                }}
+            >
+                <Request />
+            </Modal>
 
             <ScrollView style={styles.scrollView}>
                 {!!product ? (

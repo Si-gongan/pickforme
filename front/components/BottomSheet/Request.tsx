@@ -6,23 +6,23 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
 import useColorScheme from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
-import { isShowSubscriptionModalAtom } from '@stores';
+import { isShowSubscriptionModalAtom, isShowNonSubscriberManagerModalAtom } from '@stores';
 import { scrapedProductDetailAtom } from '../../stores/product/atoms';
 import { sendLogAtom } from '../../stores/log/atoms';
 
 import { QuestionRequestParams, RequestType } from '../../stores/request/types';
 import { Colors } from '@constants';
-import { Text, View, Button } from '@components';
+import { Text, View, Button_old as Button } from '@components';
 import { styles } from './Base';
 import useCheckMembership from '../../hooks/useCheckMembership';
 import useCheckPoint from '../../hooks/useCheckPoint';
-
 import type { ColorScheme } from '@hooks';
 
-export default function ResearchBottomSheet() {
+export default function RequestBottomSheet() {
     const headerTitleRef = useRef(null);
 
-    const isShowNonSubscribedModalVisible = useAtomValue(isShowSubscriptionModalAtom);
+    const isShowNonSubscribedModalVisible = useAtomValue(isShowNonSubscriberManagerModalAtom);
+    const isShowSubscriptionModalVisible = useAtomValue(isShowSubscriptionModalAtom);
 
     const addRequest = useSetAtom(addRequestAtom);
     const colorScheme = useColorScheme();
@@ -68,22 +68,25 @@ export default function ResearchBottomSheet() {
         setProduct(undefined);
     };
 
-    useEffect(() => {
-        const focusOnHeader = () => {
-            const node = findNodeHandle(headerTitleRef.current);
-            if (product && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(focusOnHeader, 500);
-    }, [product]);
+    // useEffect(() => {
+    //     console.log('ResearchBottomSheet product 변경', product);
+    //     console.log('isShowSubscriptionModalVisible:', isShowSubscriptionModalVisible);
+    //     const focusOnHeader = () => {
+    //         const node = findNodeHandle(headerTitleRef.current);
+    //         if (product && node) {
+    //             AccessibilityInfo.setAccessibilityFocus(node);
+    //         }
+    //     };
+    //     setTimeout(focusOnHeader, 500);
+    // }, [product, isShowSubscriptionModalVisible]);
 
-    if (isShowNonSubscribedModalVisible) {
-        console.log('미구독자');
-        return null;
-    }
+    // if (isShowNonSubscribedModalVisible) {
+    //     console.log('미구독자');
+    //     return null;
+    // }
     return (
-        <BottomSheet style={styles.base} isVisible={!!product} onBackButtonPress={onClose} onBackdropPress={onClose}>
+        // <BottomSheet style={styles.base} isVisible={!!product} onBackButtonPress={onClose} onBackdropPress={onClose}>
+        <View style={styles.base}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                 <View style={[styles.bottomSheet, localStyles.root]}>
                     <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
@@ -109,7 +112,8 @@ export default function ResearchBottomSheet() {
                     />
                 </View>
             </KeyboardAvoidingView>
-        </BottomSheet>
+        </View>
+        // </BottomSheet>
     );
 }
 

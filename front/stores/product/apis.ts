@@ -24,18 +24,13 @@ export const GetMainProductsAPI = (id: string) =>
             throw error;
         });
 export const GetProductAPI = (url: string) => {
-    console.log('GetProductAPI 호출:', { url });
     return client
         .post<GetProductResponse>(`/discover/product`, { url })
         .then(response => {
-            console.log('GetProductAPI 응답:', response);
             return response;
         })
         .catch(error => {
             console.log('GetProductAPI 에러:', error);
-            console.log('url :', url);
-            console.log('에러 요청 URL:', error.config?.url);
-            console.log('에러 요청 baseURL:', error.config?.baseURL);
             throw error;
         });
 };

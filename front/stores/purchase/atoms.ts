@@ -50,6 +50,7 @@ export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseP
 export const subscriptionAtom = atom<Purchase | null>(null);
 export const getSubscriptionAtom = atom(null, async (get, set) => {
     const response = await GetSubscriptionAPI();
+    console.log('GetSubscriptionAPI 결과 :', response?.data);
     if (response) {
         set(subscriptionAtom, response.data);
     } else {

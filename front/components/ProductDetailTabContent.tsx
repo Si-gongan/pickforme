@@ -53,10 +53,6 @@ const TabContent: React.FC<TabContentProps> = ({
     });
     const productReview = useAtomValue(productReviewAtom);
 
-    console.log('productDetail?.[tab]', tab, productDetail && productDetail[tab], productDetail);
-    console.log('loadingStatus[tab]', loadingStatus[tab]);
-    console.log('scrapedProductDetail', scrapedProductDetail);
-    // console.log('productReview.reviews:', productReview.reviews);
     if (tab === TABS.QUESTION) {
         return (
             <QuestionTab

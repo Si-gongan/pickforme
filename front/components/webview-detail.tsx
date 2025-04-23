@@ -157,7 +157,7 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
     const handleMessage = (event: WebViewMessageEvent) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
-            console.log('WebView message in webview-detail:', data);
+            // console.log('WebView message in webview-detail:', data);
 
             if (data.error) {
                 // console.error('WebView error:', data.error);
