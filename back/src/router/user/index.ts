@@ -203,6 +203,10 @@ router.post('/setpopup', requireAuth, async (ctx) => {
     return;
   }
 
+  if(!user.hide || !Array.isArray(user.hide)) {
+    user.hide = [];
+  }
+
   try {
     // flag가 1이면 숨기기 (hide 배열에 추가)
     if (flag === 1) {

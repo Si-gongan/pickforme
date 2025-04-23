@@ -24,7 +24,7 @@ export interface User extends LocalRegisterPayload {
   MembershipAt: Date;
   phone:string;
   event:number;
-  hide: string[];
+  hide: string[] | null;
 }
 
 export interface UserDocument extends User, Document {

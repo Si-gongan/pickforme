@@ -23,6 +23,10 @@ router.get('/active', requireAuth, async (ctx) => {
     ctx.body = { error: '사용자를 찾을 수 없습니다.' };
     return;
   }
+ 
+  if(!user.hide || !Array.isArray(user.hide)) {
+    user.hide = [];
+  }
 
   const hidePopupIds = new Set(user.hide.map(id => id.toString()));
   
