@@ -3,7 +3,7 @@
         "owner": "sigongan",
         "name": "픽포미",
         "slug": "pickforme",
-        "version": "3.1.1",
+        "version": "3.1.2",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "myapp",
@@ -50,9 +50,7 @@
                 "expo-build-properties",
                 {
                     "android": {
-                        "extraMavenRepos": [
-                            "https://devrepo.kakao.com/nexus/content/groups/public/"
-                        ]
+                        "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
                     }
                 }
             ]
