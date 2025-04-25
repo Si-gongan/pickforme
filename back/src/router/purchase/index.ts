@@ -94,17 +94,6 @@ router.get('/products/:platform', async (ctx) => {
   ctx.status = 200;
 });
 
-router.get('/purchases', requireAuth, async (ctx) => {
-  const purchases = await db.Purchase.find({
-    userId: ctx.state.user._id,
-    'product.type': ProductType.PURCHASE,
-  }).sort({
-    createdAt: -1,
-  });
-  ctx.body = purchases;
-  ctx.status = 200;
-});
-
 router.get('/subscriptions', requireAuth, async (ctx) => {
   const subscriptions = await db.Purchase.find({
     userId: ctx.state.user._id,
