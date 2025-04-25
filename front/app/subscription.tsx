@@ -102,6 +102,7 @@ const PurchaseWrapper = () => {
                 const subscriptionItemLists = products
                     .filter(p => p.type === ProductType.SUBSCRIPTION)
                     .map(p => p.productId);
+                // const subscriptionItemLists = ['pickforme__plus'];
                 console.log('subscriptionItemLists', subscriptionItemLists);
 
                 const storeSItems = await IAPGetSubscriptions({
