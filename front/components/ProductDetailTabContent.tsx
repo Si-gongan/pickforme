@@ -1,5 +1,13 @@
 import React from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, TextInput, View as RNView } from 'react-native';
+import {
+    ActivityIndicator,
+    Image,
+    Pressable,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View as RNView
+} from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { formatDate, formatTime } from '../utils/common';
 import useColorScheme from '../hooks/useColorScheme';
@@ -12,6 +20,7 @@ import { LoadingStatus } from '../stores/product/atoms';
 import { ScrapedProductDetail } from '../stores/product/types';
 import { useAtomValue } from 'jotai';
 import { productReviewAtom } from '../stores/product/atoms';
+import { Button_old as Button } from '@components';
 
 import type { ColorScheme } from '@hooks';
 
@@ -27,6 +36,7 @@ interface TabContentProps {
     loadingStatus: { [key in TABS]: LoadingStatus };
     handleRegenerate: () => void;
     scrapedProductDetail: ScrapedProductDetail;
+    handleLoadMore: () => void;
 }
 
 const TabContent: React.FC<TabContentProps> = ({
@@ -40,7 +50,8 @@ const TabContent: React.FC<TabContentProps> = ({
     loadingMessages,
     loadingStatus,
     handleRegenerate,
-    scrapedProductDetail
+    scrapedProductDetail,
+    handleLoadMore
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -69,7 +80,16 @@ const TabContent: React.FC<TabContentProps> = ({
                 productDetail={productDetail}
             />
         );
-    } else if (loadingStatus[tab] <= 1) {
+    } else if (loadingStatus[tab] == 0) {
+        return (
+            <View style={styles.detailWrap}>
+                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+                    <ActivityIndicator />
+                    <Text>{loadingMessages[tab]}</Text>
+                </View>
+            </View>
+        );
+    } else if (loadingStatus[tab] == 1) {
         return (
             <View style={styles.detailWrap}>
                 <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
@@ -90,6 +110,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 refs={refs}
                 markdownStyles={markdownStyles}
                 tab={tab}
+                handleLoadMore={handleLoadMore}
             />
         );
     } else {
@@ -184,9 +205,9 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             request.answer?.text ? (
                 <>
                     <View style={styles.seperator}></View>
-                    <Text style={styles.boldText} ref={refs.manager}>
-                        다음은 질문에 대한 매니저의 답변이에요.
-                    </Text>
+                    <View ref={refs.manager}>
+                        <Text style={styles.boldText}>다음은 질문에 대한 매니저의 답변이에요.</Text>
+                    </View>
                     <Markdown>{`**나의 질문:** ${request?.text}`}</Markdown>
                     <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${request?.answer?.text}`}</Markdown>
                     <Text>{`${formatDate(request?.updatedAt)} ${formatTime(request?.updatedAt)}`}</Text>
@@ -194,7 +215,9 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             ) : (
                 <>
                     <View style={styles.seperator}></View>
-                    <Text ref={refs.manager}>{loadingMessages.manager}</Text>
+                    <View ref={refs.manager}>
+                        <Text>{loadingMessages.manager}</Text>
+                    </View>
                 </>
             )
         ) : null}
@@ -207,9 +230,10 @@ interface ReviewTabProps {
     tab: TABS;
     refs: Record<string, React.RefObject<RNView>>;
     markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
+    handleLoadMore: () => void;
 }
 
-const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles }) => {
+const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles, handleLoadMore }) => {
     const review =
         productDetail && (productDetail[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined);
 
@@ -246,6 +270,9 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
                     ))}
                 </View>
             )}
+            <TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+                <Text style={styles.loadMoreText}>더 많은 리뷰 불러오기</Text>
+            </TouchableOpacity>
         </>
     );
 };
@@ -308,6 +335,16 @@ const useStyles = (colorScheme: ColorScheme) =>
         },
         boldText: {
             fontWeight: '700'
+        },
+        loadMoreButton: {
+            padding: 10,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        loadMoreText: {
+            fontSize: 14,
+            color: Colors[colorScheme].text.primary,
+            textDecorationLine: 'underline'
         }
     });
 

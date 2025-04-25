@@ -12,6 +12,7 @@ import useColorScheme from '../hooks/useColorScheme';
 import { settingAtom, isLoadedAtom, userAtom } from '@stores';
 import { changeToken, setClientToken } from '../utils/axios';
 import { GetPopupAPI } from '../stores/auth';
+import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -106,6 +107,7 @@ export default function RootLayout() {
                             <Stack.Screen name="how" options={{ headerShown: false }} />
                         </Stack>
                         <StatusBar style="auto" />
+                        <NonSubscriberManagerBottomSheet />
                     </ThemeProvider>
                 </JotaiProvider>
             </QueryClientProvider>

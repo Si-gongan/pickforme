@@ -41,8 +41,7 @@ import { requestBottomSheetAtom, requestsAtom } from '../stores/request/atoms';
 
 import { Text, View, Button_old as Button } from '@components';
 import useColorScheme from '../hooks/useColorScheme';
-import { isShowNonSubscriberManagerModalAtom, isShowSubscriptionModalAtom } from '@stores';
-import { numComma } from '../utils/common';
+import { isShowNonSubscriberManagerModalAtom, isShowSubscriptionModalAtom } from '../stores/auth/atoms';
 // import { useWebView } from '../components/webview-util';
 import { useWebViewReviews } from '../components/webview-reviews';
 import { useWebViewDetail } from '../components/webview-detail';
@@ -50,7 +49,7 @@ import { useWebViewDetail } from '../components/webview-detail';
 import TabContent from '../components/ProductDetailTabContent';
 
 // 2024
-import { TABS, loadingMessages, tabName } from '../utils/common';
+import { TABS, loadingMessages, tabName, numComma } from '../utils/common';
 import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
 import type { ColorScheme } from '@hooks';
@@ -114,9 +113,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             .find(({ url }) => decodeURIComponent(url) === productUrl) !== undefined;
 
     const [tab, setTab] = useState<TABS>(TABS.CAPTION);
-    const loadingStatus = useAtomValue(loadingStatusAtom);
-
     const [question, setQuestion] = useState('');
+    const [isRequestLoading, setIsRequestLoading] = useState(false);
+
+    const loadingStatus = useAtomValue(loadingStatusAtom);
 
     const managerResponseRef = useRef<RNView>(null);
     const captionRef = useRef<RNView>(null);
@@ -131,18 +131,18 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         manager: managerResponseRef
     })[0];
 
-    const ReviewWebView = useWebViewReviews({
-        productUrl,
-        onMessage: data => {
-            // console.log('ReviewWebView 데이터 수신:', data);
-            setProductReview(data);
-        }
-    });
+    // const ReviewWebView = useWebViewReviews({
+    //     productUrl,
+    //     onMessage: data => {
+    //         console.log('ReviewWebView 데이터 수신:', data.length);
+    //         setProductReview(data);
+    //     }
+    // });
 
     const DetailWebView = useWebViewDetail({
         productUrl,
         onMessage: data => {
-            // console.log('DetailWebView 데이터 수신:', data);
+            console.log('DetailWebView 데이터 수신:', data);
             setProduct(data);
         }
     });
@@ -265,29 +265,31 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     };
 
-    const handleClickRequest = useCheckLogin(async () => {
+    const handleClickRequest = useCheckLogin(async (message: string) => {
         console.log('handleClickRequest 호출');
 
-        setRequestBottomSheet(product);
-        setIsShowSubscriptionModal(false);
-        setTimeout(() => {
-            setIsShowSubscriptionModal(true);
-        }, 300);
-
-        // await getSubscription();
-        // console.log('subscription:', subscription);
-        // // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        // if (!subscription || subscription.isExpired) {
-        //     console.log('subscription.purchase.status:', subscription);
-        //     console.log('setIsShowNonSubscriberManageModal');
-        //     // 모달 표시
-        //     setIsShowNonSubscriberManageModal(true);
-        // } else {
-        //     console.log('subscription.purchase.status:', subscription);
-        //     console.log('setRequestBottomSheet');
-        //     setRequestBottomSheet(product);
+        // setRequestBottomSheet(product);
+        // setIsShowSubscriptionModal(false);
+        // setTimeout(() => {
         //     setIsShowSubscriptionModal(true);
-        // }
+        // }, 300);
+
+        await getSubscription();
+        console.log('subscription:', typeof subscription);
+        // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
+        if (!subscription || subscription.isExpired) {
+            console.log('subscription.purchase.status:', subscription);
+            console.log('setIsShowNonSubscriberManageModal');
+            // 모달 표시
+            setIsShowNonSubscriberManageModal(true);
+            setIsRequestLoading(false);
+        } else {
+            console.log('subscription.purchase.status:', subscription);
+            console.log('setRequestBottomSheet');
+            setRequestBottomSheet(product);
+            setIsShowSubscriptionModal(true);
+            setIsRequestLoading(false);
+        }
     });
 
     const handlePressAIQuestionTab = useCheckLogin(() => {
@@ -359,13 +361,35 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (tab === TABS.CAPTION) getProductCaption();
     };
 
+    // scrollDown 이벤트
+    const { component: reviewsComponent, scrollDown } = useWebViewReviews({
+        productUrl: product?.url || '',
+        onMessage: data => {
+            console.log('받은 리뷰 데이터:', data);
+
+            // 리뷰가 있을 때만 요약(캡션) 생성 API 호출
+            if (data && data.length > 0) {
+                console.log('리뷰 데이터 있음, 요약 생성 API 호출');
+                // 리뷰 데이터 설정
+                setProductReview(data);
+                getProductReview(); // 리뷰 요약 요청
+            }
+        }
+    });
+
+    const handleLoadMore = () => {
+        console.log('handleLoadMore');
+        setIsRequestLoading(true); // 로딩 시작
+        scrollDown();
+    };
+
     return (
         <View style={styles.container}>
             <BackHeader />
 
             <View accessible={false}>
-                {!isLocal && ReviewWebView}
                 {!isLocal && DetailWebView}
+                {!isLocal && reviewsComponent}
             </View>
 
             <Modal
@@ -456,6 +480,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             loadingStatus={loadingStatus}
                             handleRegenerate={handleRegenerate}
                             scrapedProductDetail={scrapedProductDetail}
+                            handleLoadMore={handleLoadMore}
                         />
                     </View>
                 ) : (
@@ -475,6 +500,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 isWish={!!already}
                 isRequest={!!request}
                 colorScheme={colorScheme}
+                isRequestLoading={isRequestLoading}
+                setIsRequestLoading={setIsRequestLoading}
             />
         </View>
     );
@@ -517,11 +544,13 @@ interface ActionButtonsProps {
     product: Product;
     handleClickBuy: () => void;
     handleClickContact: () => void;
-    handleClickRequest: (e: any) => void;
+    handleClickRequest: (e?: any) => void;
     handleClickWish: () => void;
     isWish: boolean;
     isRequest: boolean;
     colorScheme: ColorScheme;
+    isRequestLoading: boolean;
+    setIsRequestLoading: (loading: boolean) => void;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -533,67 +562,83 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     handleClickWish,
     isWish,
     isRequest,
-    colorScheme
-}) => (
-    <View style={[styles.buttonWrap]}>
-        <View style={styles.buttonOuter}>
-            <Button
-                title="구매하러 가기"
-                onPress={handleClickBuy}
-                style={styles.button}
-                size="small"
-                disabled={!product}
-                textStyle={styles.buttonText}
-            />
+    colorScheme,
+    isRequestLoading,
+    setIsRequestLoading
+}) => {
+    const handleRequestWithLoading = () => {
+        if (isRequestLoading) return;
+
+        setIsRequestLoading(true);
+
+        handleClickRequest();
+    };
+
+    return (
+        <View style={[styles.buttonWrap]}>
+            <View style={styles.buttonOuter}>
+                <Button
+                    title="구매하러 가기"
+                    onPress={handleClickBuy}
+                    style={styles.button}
+                    size="small"
+                    disabled={!product}
+                    textStyle={styles.buttonText}
+                />
+            </View>
+            {product?.platform === 'thezam' ? (
+                <View style={styles.buttonOuter}>
+                    <Button
+                        title="대리구매 요청하기"
+                        onPress={handleClickContact}
+                        style={[styles.button, styles.button2]}
+                        color="tertiary"
+                        size="small"
+                        disabled={!product}
+                        textStyle={styles.button2Text}
+                    />
+                </View>
+            ) : (
+                <View style={styles.buttonOuter}>
+                    <Button
+                        title={isRequestLoading ? '' : '매니저에게 질문하기'}
+                        onPress={handleRequestWithLoading}
+                        style={[styles.button, styles.button2]}
+                        color="tertiary"
+                        size="small"
+                        disabled={!product || isRequestLoading}
+                        textStyle={styles.button2Text}
+                    >
+                        {isRequestLoading && (
+                            <ActivityIndicator size="small" color={Colors[colorScheme].text.primary} />
+                        )}
+                    </Button>
+                </View>
+            )}
+            {isWish ? (
+                <Pressable
+                    onPress={handleClickWish}
+                    accessible
+                    accessibilityLabel="위시리스트 제거"
+                    accessibilityRole="button"
+                    disabled={!product}
+                >
+                    <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeartFill.png')} />
+                </Pressable>
+            ) : (
+                <Pressable
+                    onPress={handleClickWish}
+                    accessible
+                    accessibilityLabel="위시리스트 추가"
+                    accessibilityRole="button"
+                    disabled={!product}
+                >
+                    <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+                </Pressable>
+            )}
         </View>
-        {product?.platform === 'thezam' ? (
-            <View style={styles.buttonOuter}>
-                <Button
-                    title="대리구매 요청하기"
-                    onPress={handleClickContact}
-                    style={[styles.button, styles.button2]}
-                    color="tertiary"
-                    size="small"
-                    disabled={!product}
-                    textStyle={styles.button2Text}
-                />
-            </View>
-        ) : (
-            <View style={styles.buttonOuter}>
-                <Button
-                    title={'매니저에게 질문하기'}
-                    onPress={handleClickRequest}
-                    style={[styles.button, styles.button2]}
-                    color="tertiary"
-                    size="small"
-                    disabled={!product}
-                    textStyle={styles.button2Text}
-                />
-            </View>
-        )}
-        {isWish ? (
-            <Pressable
-                onPress={handleClickWish}
-                accessible
-                accessibilityLabel="위시리스트 제거"
-                accessibilityRole="button"
-                disabled={!product}
-            >
-                <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeartFill.png')} />
-            </Pressable>
-        ) : (
-            <Pressable
-                onPress={handleClickWish}
-                accessible
-                accessibilityLabel="위시리스트 추가"
-                accessibilityRole="button"
-                disabled={!product}
-            >
-                <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
-            </Pressable>
-        )}
-    </View>
-);
+    );
+};
 
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({

@@ -61,6 +61,7 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
                             onPress={handleClickYes}
                             style={[localStyles.button1]}
                             size="small"
+                            textStyle={localStyles.buttonText}
                         />
                     </View>
                     <View style={[styles.buttonWrap, localStyles.buttonOuter]}>
@@ -100,13 +101,17 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             flex: 1
         },
         button1: {
-            minHeight: 50
+            minHeight: 50,
+            backgroundColor: Colors[colorScheme].button.primary.background
         },
         button2: {
             minHeight: 50,
             backgroundColor: 'white',
             borderWidth: 1,
             borderColor: Colors[colorScheme].button.primary.background
+        },
+        buttonText: {
+            color: Colors[colorScheme].text.secondary
         }
     });
 

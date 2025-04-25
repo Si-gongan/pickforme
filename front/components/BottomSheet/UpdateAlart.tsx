@@ -4,7 +4,7 @@ import BottomSheet from 'react-native-modal';
 import { useRouter } from 'expo-router';
 import { useAtom } from 'jotai';
 
-import { View, Text, Button } from '@components';
+import { View, Text, Button_old as Button } from '@components';
 import { Props, styles } from './Base';
 import { isShowUpdateAlartModalAtom, settingAtom } from '@stores';
 import { Colors } from '@constants';
