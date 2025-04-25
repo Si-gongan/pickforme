@@ -11,8 +11,8 @@ import { useServiceMainProducts } from '@services';
 import useStyle from './style';
 
 export default function MainProductList() {
-    const [randomCount, onRandomCount] = useState<number>(10);
-    const [specialCount, onSpecialCount] = useState<number>(15);
+    const [randomCount, onRandomCount] = useState<number>(5);
+    const [specialCount, onSpecialCount] = useState<number>(5);
 
     const { data, category } = useServiceMainProducts();
 
