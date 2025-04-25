@@ -1,12 +1,8 @@
 import Router from '@koa/router';
 import db from 'models';
-import {
-  ProductType,
-} from 'models/product';
+import { ProductType } from 'models/product';
 import requireAuth from 'middleware/jwt';
-import {
-  Receipt,
-} from 'in-app-purchase';
+import { Receipt } from 'in-app-purchase';
 import iapValidator from 'utils/iap';
 
 const router = new Router({
@@ -22,9 +18,7 @@ router.post('/', requireAuth, async (ctx) => {
     return;
   }
 
-  const {
-    receipt, _id: productId,
-  } = <{ _id: string; receipt: Receipt }>ctx.request.body;
+  const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
 
   const product = await db.Product.findById(productId);
   if (!product || product.type === ProductType.PURCHASE) {
@@ -88,16 +82,14 @@ router.post('/', requireAuth, async (ctx) => {
 // 상품목록
 router.get('/products/:platform', async (ctx) => {
   // NOTE: 상품 노출 시 활성화
-  
-  const {
-    platform,
-  } = ctx.params;
+
+  const { platform } = ctx.params;
   const products = await db.Product.find({
     platform,
     type: ProductType.SUBSCRIPTION,
   });
   ctx.body = products;
-  
+
   // ctx.body = [];
   ctx.status = 200;
 });
@@ -266,9 +258,7 @@ router.get('/refund', requireAuth, async (ctx) => {
 // NOTE: 환불(미사용 / 최종결정 애플 구글로 인한 보류)
 router.post('/refund', requireAuth, async (ctx) => {
   const {
-    body: {
-      subscriptionId,
-    },
+    body: { subscriptionId },
   } = <any>ctx.request;
 
   let user;
@@ -305,7 +295,7 @@ router.post('/refund', requireAuth, async (ctx) => {
         },
         {
           isExpired: true,
-        },
+        }
       );
     } catch (error) {
       console.log(error);
@@ -326,7 +316,7 @@ router.post('/refund', requireAuth, async (ctx) => {
         {
           point: 0,
           aiPoint: 0,
-        },
+        }
       );
     } catch (error) {
       console.log(error);
