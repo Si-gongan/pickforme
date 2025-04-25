@@ -128,14 +128,6 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
   ctx.status = 200;
 });
 
-// router.get('/history', requireAuth, async (ctx) => {
-//   const usages = await db.PickHistory.find({
-//     userId: ctx.state.user._id,
-//   });
-//   ctx.body = usages;
-//   ctx.status = 200;
-// });
-
 // NOTE: 구독 조회
 router.get('/subCheck', requireAuth, async (ctx) => {
   let subscription;
