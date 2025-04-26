@@ -7,6 +7,7 @@ import {
   LocalRegisterPayload,
   PushService,
 } from './types';
+import { ProductReward } from 'models/product';
 
 const uniqueValidator = require('mongoose-unique-validator');
 
@@ -115,6 +116,13 @@ UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
   this.aiPoint -= payload;
   await this.save();
   return this.aiPoint;
+};
+
+UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(rewards: ProductReward) {
+  this.point += rewards.point;
+  this.aiPoint += rewards.aiPoint;
+  this.MembershipAt = new Date();
+  await this.save();
 };
 
 UserSchema.methods.processExpiredMembership =
