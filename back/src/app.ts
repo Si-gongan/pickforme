@@ -5,6 +5,7 @@ import bodyParser from 'koa-bodyparser';
 import http from 'http';
 import router from './router';
 import socket from './socket';
+import { registerAllSchedulers } from 'scheduler';
 
 const PORT = process.env.PORT || 3000;
 const app = new Koa();
@@ -27,3 +28,7 @@ server.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`server listen in port ${PORT}`);
 });
+
+if (process.env.NODE_ENV === 'production') {  
+  registerAllSchedulers();
+}
