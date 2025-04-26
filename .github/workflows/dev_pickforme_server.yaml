@@ -38,7 +38,7 @@ jobs:
           GIT_TAG_FOR_DEV="dev_$(date -u +'%y%m%d-%H%M')"
           echo "GIT_TAG_FOR_DEV=$GIT_TAG_FOR_DEV" >> $GITHUB_ENV
           git tag "$GIT_TAG_FOR_DEV"
-          git tag -f dev_server
+          git tag -f dev_server "$GIT_TAG_FOR_DEV"
           git push -f origin "$GIT_TAG_FOR_DEV"
           git push -f origin dev_server
 
