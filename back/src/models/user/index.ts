@@ -50,7 +50,8 @@ const UserSchema = new mongoose.Schema<UserDocument>(
       type: String,
     },
     MembershipAt: {
-      type: Date
+      type: Date,
+      default: null,
     },
     phone:{
       type: String
