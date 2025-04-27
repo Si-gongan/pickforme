@@ -41,7 +41,9 @@ const checkSubscriptionExpirations = async () => {
 
 // 매일 0시에 실행
 export function registerMembershipScheduler() {
-  schedule.scheduleJob('0 0 0 * * *', checkSubscriptionExpirations);
+  if (process.env.NODE_ENV === 'production') {
+    schedule.scheduleJob('0 0 0 * * *', checkSubscriptionExpirations);
+  }
 }
 
 export default checkSubscriptionExpirations;
