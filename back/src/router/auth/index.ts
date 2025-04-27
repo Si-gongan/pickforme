@@ -6,39 +6,10 @@ import requireAuth from 'middleware/jwt';
 import {
   PushSetting,
 } from 'models/user/types';
-import {
-  ProductType,
-} from 'models/product';
-import iapValidator from 'utils/iap';
 
 const router = new Router({
   prefix: '/auth',
 });
-
-// NOTE: 환불 후 로그인을 위한 함수
-const subscriptionCheck = async (userId: string): Promise<boolean> => {
-  const subscriptions = await db.Purchase.findOne({
-    userId,
-    'product.type': ProductType.SUBSCRIPTION,
-    isExpired: false,
-  }).sort({
-    createdAt: -1,
-  });
-
-  if (subscriptions) {
-    const purchaseData = await iapValidator.validate(
-      subscriptions.purchase.receipt,
-      subscriptions.purchase.product.productId,
-    );
-    if (!purchaseData) {
-      subscriptions.isExpired = true;
-      await subscriptions.save();
-      return true;
-    }
-  }
-
-  return false;
-};
 
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({
@@ -96,12 +67,13 @@ const handleLogin = async (email: string) => {
     user.lastLoginAt = new Date();
   }
 
+  // 이 부분도 스케쥴러에서 작업하도록 처리했습니다. branch: feat/membership-scheduler
   // NOTE: 환불 후 로그인을 위한 것
-  const subCheckRst = await subscriptionCheck(user._id);
-  if (subCheckRst) {
-    user.point = 0;
-    user.aiPoint = 0;
-  }
+  // const subCheckRst = await subscriptionCheck(user._id);
+  // if (subCheckRst) {
+  //   user.point = 0;
+  //   user.aiPoint = 0;
+  // }
 
   await user.save();
 
