@@ -71,6 +71,7 @@ const handleLogin = async (email: string) => {
     // 기존 회원
     const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
 
+    if(user.MembershipAt){
     const today = new Date(); // 현재 날짜 객체 생성
     const dayOfMonth = today.getDate(); // 오늘 날짜의 '일' 값 가져오기
     const mDay = user.MembershipAt;
@@ -87,6 +88,7 @@ const handleLogin = async (email: string) => {
       }else{
         user.point = 15;
         user.aiPoint = 99999;
+      }
       }
     }
 

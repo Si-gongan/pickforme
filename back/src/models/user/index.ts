@@ -7,6 +7,7 @@ import {
   LocalRegisterPayload,
   PushService,
 } from './types';
+import { ProductReward } from 'models/product';
 
 const uniqueValidator = require('mongoose-unique-validator');
 
@@ -50,7 +51,8 @@ const UserSchema = new mongoose.Schema<UserDocument>(
       type: String,
     },
     MembershipAt: {
-      type: Date
+      type: Date,
+      default: null,
     },
     phone:{
       type: String
@@ -97,22 +99,37 @@ UserSchema.methods.clearRefreshToken = async function clearRefreshToken() {
   this.refreshToken = null;
   await this.save();
 };
+
 UserSchema.methods.usePoint = async function usePoint(payload: number) {
+  if(this.point < payload){
+    throw new Error('포인트가 부족합니다.');
+  }
   this.point -= payload;
   await this.save();
   return this.point;
 };
 
 UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
+  if(this.aiPoint < payload){
+    throw new Error('포인트가 부족합니다.');
+  }
   this.aiPoint -= payload;
   await this.save();
   return this.aiPoint;
+};
+
+UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(rewards: ProductReward) {
+  this.point += rewards.point;
+  this.aiPoint += rewards.aiPoint;
+  this.MembershipAt = new Date();
+  await this.save();
 };
 
 UserSchema.methods.processExpiredMembership =
   async function processExpiredMembership() {
     this.point = 0;
     this.aiPoint = 15;
+    this.MembershipAt = null;
     await this.save();
   };
 

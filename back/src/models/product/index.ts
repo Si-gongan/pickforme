@@ -1,14 +1,5 @@
 import mongoose from 'mongoose';
-
-export enum ProductType {
-  PURCHASE = 0,
-  SUBSCRIPTION = 1,
-}
-
-export enum Platform {
-  IOS = 'ios',
-  ANDROID = 'android',
-}
+import { ProductType, Platform, ProductReward, IProduct, ProductModel } from './types';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -42,8 +33,17 @@ const ProductSchema = new mongoose.Schema(
   },
 );
 
-const model = mongoose.models.Products || mongoose.model('Products', ProductSchema);
 
+const model = mongoose.models.Products as ProductModel || mongoose.model<IProduct, ProductModel>('Products', ProductSchema);
+
+ProductSchema.methods.getRewards = function(): ProductReward {
+  return {
+    point: this.point,
+    aiPoint: this.aiPoint,
+  };
+};
+
+// 초기 데이터 삽입
 model.find({}).then((products) => {
   if (products.length) {
     return;
@@ -92,5 +92,7 @@ model.find({}).then((products) => {
     // }
   ]);
 });
+
+export * from './types';
 
 export default model;
