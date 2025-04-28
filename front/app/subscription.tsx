@@ -216,7 +216,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                 return;
             }
 
-            checkSubscriptionStatus;
+            await checkSubscriptionStatus();
             if (offerToken) {
                 const subscriptionRequest: RequestSubscriptionAndroid = {
                     subscriptionOffers: [
@@ -238,9 +238,9 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     andDangerouslyFinishTransactionAutomaticallyIOS: false
                 });
                 if (request) {
-                    // Alert.alert('구독 성공', JSON.stringify(request));
+                    Alert.alert('구독 성공', JSON.stringify(request));
                 } else {
-                    // Alert.alert('구독 실패', '구독에 실패하였습니다.');
+                    Alert.alert('구독 실패', '구독에 실패하였습니다.');
                 }
                 setIsSubscription(true); // 구독 완료 바텀시트
             }
