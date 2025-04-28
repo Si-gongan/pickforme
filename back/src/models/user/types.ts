@@ -23,6 +23,7 @@ export interface User extends LocalRegisterPayload {
   pushToken?: string;
   originEmail?: string;
   MembershipAt: Date | null;
+  lastMembershipAt: Date | null;
   phone:string;
   event:number;
   hide: string[] | null;

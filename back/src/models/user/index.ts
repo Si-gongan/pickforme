@@ -50,7 +50,15 @@ const UserSchema = new mongoose.Schema<UserDocument>(
     originEmail: {
       type: String,
     },
+    // 멤버쉽 시작 시점.
     MembershipAt: {
+      type: Date,
+      default: null,
+    },
+    // 멤버쉽 갱신 시점. 
+    // 지금 상품의 경우 한달뒤에 만료되고 갱신이 따로 없지만, 
+    // 한시련 이벤트의 경우 6개월 지속되기 때문에 갱신 시점을 기록하는 필드를 새롭게 만들었습니다.
+    lastMembershipAt: {
       type: Date,
       default: null,
     },
@@ -83,6 +91,7 @@ UserSchema.methods.generateToken = async function generateToken() {
   const token = await jwt.generateAccessToken(payload);
   return token;
 };
+
 UserSchema.methods.generateRefreshToken = async function generateRefreshToken() {
   const { _id, email } = this;
   const payload = { _id, email };
@@ -118,10 +127,17 @@ UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
   return this.aiPoint;
 };
 
-UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(rewards: ProductReward) {
+UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(rewards: ProductReward) {  
   this.point += rewards.point;
   this.aiPoint += rewards.aiPoint;
-  this.MembershipAt = new Date();
+
+  // 멤버쉽 갱신이 아닌 만료 후 첫 멤버쉽 구매인 경우, MembershipAt을 새롭게 기록.
+  if(!this.lastMembershipAt){
+    this.MembershipAt = new Date();
+  }
+
+  this.lastMembershipAt = new Date();
+
   await this.save();
 };
 
@@ -130,6 +146,7 @@ UserSchema.methods.processExpiredMembership =
     this.point = 0;
     this.aiPoint = 15;
     this.MembershipAt = null;
+    this.lastMembershipAt = null;
     await this.save();
   };
 
