@@ -3,9 +3,9 @@ import winston from 'winston';
 import path from 'path';
 import { LogLevel, CustomLogInfo, colors, LogSeverity } from './types';
 import slackClient from '../slack';
+import { config } from './config';
 
-const logDir = process.cwd() + '/logs';
-const isProduction = process.env.NODE_ENV === 'production';
+const { logDir, isProduction } = config;
 
 // 공통 포맷 함수
 const createLogFormat = (useColors: boolean = false) => {
