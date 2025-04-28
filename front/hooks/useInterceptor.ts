@@ -1,22 +1,18 @@
-import { useEffect } from "react";
-import { useSetAtom } from "jotai";
+import { useEffect } from 'react';
+import { useSetAtom } from 'jotai';
 
-import { client } from "../utils";
-import { isShowLoginModalAtom, userDataAtom } from "../stores/auth/atoms";
+import { client } from '../utils';
+import { isShowLoginModalAtom } from '../stores/auth/atoms';
+import { userAtom } from '@stores';
 
 const useInterceptor = () => {
-    const setUserData = useSetAtom(userDataAtom);
+    const setUserData = useSetAtom(userAtom);
     const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
     useEffect(() => {
         const clientInterceptor = client.interceptors.response.use(
             async (response: any) => response,
             async (error: any) => {
-                console.log(
-                    "Request baseURL:",
-                    error.config.baseURL,
-                    error.config.url,
-                    error.config.method
-                );
+                console.log('Request baseURL:', error.config.baseURL, error.config.url, error.config.method);
                 if (error.response) {
                     if (error.response.status === 401) {
                         console.log(error.response.message);
@@ -33,16 +29,14 @@ const useInterceptor = () => {
                         console.log(error.response.data);
                     }
                 } else {
-                    console.error("Error Details:", {
+                    console.error('Error Details:', {
                         message: error.message,
                         name: error.name,
                         stack: error.stack,
                         config: error.config,
-                        code: error.code,
+                        code: error.code
                     });
-                    console.error(
-                        "응답이 없습니다. 네트워크 오류일 수 있습니다."
-                    );
+                    console.error('응답이 없습니다. 네트워크 오류일 수 있습니다.');
                 }
                 return Promise.reject(error);
             }

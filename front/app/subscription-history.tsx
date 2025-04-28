@@ -6,7 +6,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import useColorScheme from '../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { Text, View, Button_old as Button } from '@components';
-import { isShowUnsubscribeModalAtom, userDataAtom } from '@stores';
+import { isShowUnsubscribeModalAtom, userAtom } from '@stores';
 import {
     subscriptionAtom,
     getSubscriptionAtom,
@@ -94,7 +94,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
     const colorScheme = useColorScheme();
     const currentSubscription = useAtomValue(subscriptionAtom);
     const subscriptions = useAtomValue(subscriptionListAtom);
-    const userData = useAtomValue(userDataAtom);
+    const userData = useAtomValue(userAtom);
     const styles = useStyles(colorScheme);
 
     const getCurrentSubscription = useSetAtom(getSubscriptionAtom);

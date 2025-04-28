@@ -10,7 +10,7 @@ import {
     GetPurchaseCheckAPI,
     GetPurchaseSubCheckAPI
 } from './apis';
-import { userDataAtom } from '../auth/atoms';
+import { userAtom } from '../user';
 import { atomWithStorage } from '../utils';
 import { Alert } from 'react-native';
 import { UserPointAPI } from '../user/apis';
@@ -28,7 +28,7 @@ export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseP
     if (!response) return;
 
     const { data, status } = response;
-    const userData = await get(userDataAtom);
+    const userData = await get(userAtom);
     if (!userData) {
         return;
     }
@@ -44,7 +44,7 @@ export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseP
         return;
     }
     const pointData = pointResponse.data as UserPoint;
-    set(userDataAtom, { ...userData, point: pointData.point, aiPoint: pointData.aiPoint });
+    set(userAtom, { ...userData, point: pointData.point, aiPoint: pointData.aiPoint });
 });
 
 export const subscriptionAtom = atom<Purchase | null>(null);

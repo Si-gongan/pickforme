@@ -36,7 +36,7 @@ import {
     getSubscriptionAtom
 } from '../stores/purchase/atoms';
 import { Product, ProductType } from '../stores/purchase/types';
-import { userDataAtom, isShowSubscriptionModalAtom } from '@stores';
+import { userAtom, isShowSubscriptionModalAtom } from '@stores';
 import { Colors } from '@constants';
 import useColorScheme from '../hooks/useColorScheme';
 import { Text, View, Button_old as Button, BackHeader } from '@components';
@@ -180,7 +180,7 @@ interface Props {
 export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
     const router = useRouter();
     const currentSubscription = useAtomValue(subscriptionAtom);
-    const userData = useAtomValue(userDataAtom);
+    const userData = useAtomValue(userAtom);
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
     const { connected, currentPurchase, currentPurchaseError } = useIAP();

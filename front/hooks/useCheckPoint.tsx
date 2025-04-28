@@ -1,19 +1,15 @@
-import { useAtomValue, useSetAtom } from "jotai";
-import { Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { useAtomValue, useSetAtom } from 'jotai';
+import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 
-import {
-    userDataAtom,
-    isShowLackPointModalAtom,
-    isShowLoginModalAtom,
-} from "@stores";
+import { userAtom, isShowLackPointModalAtom, isShowLoginModalAtom } from '@stores';
 // import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
 const useCheckPoint = (callback: (e?: any) => any) => {
     const setIsShowLackPointModal = useSetAtom(isShowLackPointModalAtom);
     const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
 
-    const userData = useAtomValue(userDataAtom);
+    const userData = useAtomValue(userAtom);
     // const subscription = useAtomValue(subscriptionAtom);
     // const getSubscription = useSetAtom(getSubscriptionAtom);
 
@@ -30,7 +26,7 @@ const useCheckPoint = (callback: (e?: any) => any) => {
         }
         // setIsShowLackPointModal(true);
 
-        Alert.alert("매니저 질문 갯수를 모두 소모하였어요."); // tobe
+        Alert.alert('매니저 질문 갯수를 모두 소모하였어요.'); // tobe
         // asis
         // Alert.alert('이용권이 부족해요.', '이용권을 충전하시겠어요?', [
         //   {

@@ -6,7 +6,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { Colors } from '@constants';
 import useColorScheme from '../hooks/useColorScheme';
 import { Text, View, Button_old as Button } from '@components';
-import { userDataAtom } from '@stores';
+import { userAtom } from '@stores';
 import { purchaseListAtom, getPurchaseListAtom } from '../stores/purchase/atoms';
 import { formatDate } from '../utils/common';
 
@@ -16,7 +16,7 @@ export default function PointHistoryScreen1() {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const purchases = useAtomValue(purchaseListAtom);
-    const userData = useAtomValue(userDataAtom);
+    const userData = useAtomValue(userAtom);
     const styles = useStyles(colorScheme);
 
     const getPurchaseList = useSetAtom(getPurchaseListAtom);

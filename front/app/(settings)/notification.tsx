@@ -10,8 +10,9 @@ import { Text, View } from '../../components/Settings/Themed';
 import { PushService, SetPushSettingParams } from '../../stores/auth/types';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 
-import { setPushSettingAtom, userDataAtom } from '../../stores/auth/atoms';
+import { setPushSettingAtom } from '../../stores/auth/atoms';
 import { BackHeader } from '@components';
+import { userAtom } from '@stores';
 
 const translationMap: {
     service: {
@@ -26,7 +27,7 @@ const translationMap: {
 
 export default function NotificationScreen() {
     const router = useRouter();
-    const userData = useAtomValue(userDataAtom);
+    const userData = useAtomValue(userAtom);
     const [setting, setSetting] = React.useState<SetPushSettingParams>(userData?.push ?? { service: PushService.off });
     const setPushSetting = useSetAtom(setPushSettingAtom);
     const colorScheme = useColorScheme();
