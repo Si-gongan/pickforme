@@ -1,0 +1,73 @@
+import schedule from 'node-schedule';
+import db from 'models';
+import { ProductType } from 'models/product';
+
+/**
+ * 한시련 이벤트 멤버십을 가진 유저들의 상태를 확인하고,
+ * 1. 한달이 지난 경우: 포인트를 충전
+ * 2. 6개월이 지난 경우: 멤버십 만료 처리
+ */
+
+const processHansiryunEventMembership = async () => {
+  try {
+    const now = new Date();
+    
+    // 한시련 이벤트 멤버십을 가진 유저들 조회
+    const users = await db.User.find({
+      event: 1, // 한시련 이벤트
+      MembershipAt: { $ne: null }
+    });
+
+    const eventProducts = await db.Product.find({
+      type: ProductType.SUBSCRIPTION,
+    });
+
+    const eventProduct = eventProducts.find((product) => product.productId === 'pickforme_plus');
+
+    if (!eventProduct) {
+      console.error('[Scheduler][LimitedTimeEvent] 이벤트 상품이 존재하지 않습니다.');
+      return;
+    }
+
+    for (const user of users) {
+      if (!user.MembershipAt) continue;
+
+      const membershipStartDate = new Date(user.MembershipAt);
+      const lastMembershipDate = user.lastMembershipAt || membershipStartDate;
+
+      const oneMonthLater = new Date(lastMembershipDate);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+
+      const sixMonthsLater = new Date(membershipStartDate);
+      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+
+      // 6개월이 지난 경우
+      if (now >= sixMonthsLater) {
+        await user.processExpiredMembership();
+        continue;
+      }
+
+      // 한달이 지난 경우
+      if (now >= oneMonthLater) {
+        await user.applyPurchaseRewards(eventProduct.getRewards());
+      }
+    }
+  } catch (error) {
+    console.error('[Scheduler][LimitedTimeEvent]', error);
+  }
+};
+
+/**
+ * 모든 이벤트 멤버십을 체크하는 메인 함수
+ */
+const processEventMembership = async () => {
+  await processHansiryunEventMembership();
+};
+
+export function registerEventScheduler() {
+  if (process.env.NODE_ENV === 'production') {
+    schedule.scheduleJob('0 0 0 * * *', processEventMembership);
+  }
+}
+
+export default registerEventScheduler; 
