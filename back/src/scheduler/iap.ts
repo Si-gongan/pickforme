@@ -78,4 +78,4 @@ export function registerIAPScheduler() {
   }
 }
 
-export default checkSubscriptions;
+export default registerIAPScheduler

@@ -46,4 +46,4 @@ export function registerMembershipScheduler() {
   }
 }
 
-export default checkSubscriptionExpirations;
+export default registerMembershipScheduler;
