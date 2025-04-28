@@ -5,7 +5,7 @@ import { LogLevel, CustomLogInfo, colors, LogSeverity } from './types';
 import slackClient from '../slack';
 import { config } from './config';
 
-const { logDir, isProduction } = config;
+const { logDir, isProduction, slackChannelId } = config;
 
 // 공통 포맷 함수
 const createLogFormat = (useColors: boolean = false) => {
@@ -50,13 +50,12 @@ const createFileTransports = () => [
 ];
 
 // 슬랙 전송 함수
-export const sendToSlack = async (message: string, meta?: any) => {
-  try {
-    // await slackClient.post('/chat.postMessage', {
-    //   channel: process.env.SLACK_CHANNEL,
-    //   text: message,
-    //   attachments: meta ? [{ text: JSON.stringify(meta, null, 2) }] : [],
-    // });
+export const sendToSlack = async (message: string) => {
+  try {    
+    await slackClient.post('/chat.postMessage', {
+      text: message,
+      channel: slackChannelId,
+    });
   } catch (error) {
     console.error('슬랙 메시지 전송 실패:', error);
   }

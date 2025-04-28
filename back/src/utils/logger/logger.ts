@@ -2,8 +2,9 @@
 import winston from 'winston';
 import { LogLevel, LogContext, LogSeverity } from './types';
 import { getTransports, sendToSlack } from './transports';
+import { config } from './config';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const { isProduction, slackTransportSeverityThreshold } = config;
 
 // 로거 생성
 const logger = winston.createLogger({
@@ -20,9 +21,8 @@ export const log = {
   error: async (context: LogContext, message: string, severity: LogSeverity = LogSeverity.MEDIUM, meta?: any) => {
     logger.error(message, { context, severity, ...meta });
     
-    if (isProduction && 
-        (severity === LogSeverity.CRITICAL || severity === LogSeverity.HIGH)) {
-      await sendToSlack(`[${context}] ${message}`, meta);
+    if (isProduction && severity >= slackTransportSeverityThreshold) {      
+      await sendToSlack(`[context:${context}] ${message} \n meta:${JSON.stringify(meta)}`);
     }
   },
   warn: (context: LogContext, message: string, severity: LogSeverity = LogSeverity.MEDIUM, meta?: any) => {

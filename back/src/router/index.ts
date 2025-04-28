@@ -33,10 +33,17 @@ const router = new Router();
 
 router.get("/logger-test", async (ctx) => {
   
-  log.info(LogContext.SCHEDULER, "i got something to test, but this is a critical log", LogSeverity.CRITICAL);
-  log.error(LogContext.SCHEDULER, "i got something to test, but this is a low log", LogSeverity.LOW);
-  log.warn(LogContext.SCHEDULER, "i got something to test, but this is a medium log", LogSeverity.MEDIUM);
-  log.debug(LogContext.SCHEDULER, "i got something to test, but this is a high log", LogSeverity.HIGH);
+  try {
+    throw new Error("테스트용 에러입니다. 테스트 잘 되고 있나요??");
+  } catch (error) {
+    if(error instanceof Error) {
+      log.error(LogContext.SCHEDULER, error.message, LogSeverity.CRITICAL, {
+        endPoint: "/logger-test",
+        method: "GET",
+        stack: error.stack,
+      });
+    }
+  }
 
   ctx.body = "test";
   return;

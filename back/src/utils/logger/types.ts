@@ -16,10 +16,10 @@ export enum LogContext {
 }
 
 export enum LogSeverity {
-  CRITICAL = 'critical',
-  HIGH = 'high',
-  MEDIUM = 'medium',
-  LOW = 'low',
+  CRITICAL = 4,
+  HIGH = 3,
+  MEDIUM = 2,
+  LOW = 1,
 }
 
 export interface CustomLogInfo extends winston.Logform.TransformableInfo {
