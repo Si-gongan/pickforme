@@ -12,6 +12,7 @@ import logRouter from './log';
 import productRouter from './product';
 import popupRouter from './popup';
 import db from '../models';
+import { log, LogContext, LogSeverity } from 'utils/logger';
 
 const router = new Router();
 
@@ -28,6 +29,17 @@ const router = new Router();
   popupRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
+});
+
+router.get("/logger-test", async (ctx) => {
+  
+  log.info(LogContext.SCHEDULER, "i got something to test, but this is a critical log", LogSeverity.CRITICAL);
+  log.error(LogContext.SCHEDULER, "i got something to test, but this is a low log", LogSeverity.LOW);
+  log.warn(LogContext.SCHEDULER, "i got something to test, but this is a medium log", LogSeverity.MEDIUM);
+  log.debug(LogContext.SCHEDULER, "i got something to test, but this is a high log", LogSeverity.HIGH);
+
+  ctx.body = "test";
+  return;
 });
 
 router.get('/export', async (ctx) => {

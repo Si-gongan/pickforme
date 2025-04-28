@@ -43,7 +43,8 @@
     "socket.io-client": "^4.7.0",
     "verify-apple-id-token": "^3.0.1",
     "webpack": "^4.41.2",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-node-externals": "^1.7.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/in-app-purchase": "^1.11.1",
