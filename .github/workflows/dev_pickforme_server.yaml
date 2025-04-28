@@ -1,0 +1,59 @@
+name: Deploy PickForMe Server to Dev
+
+on:
+  workflow_dispatch:  # 수동 트리거만 사용
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions" 
+          git config --global user.email "github-actions@github.com"
+
+      - name: Start SSH agent with deploy keys
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: |
+            ${{ secrets.REPO_DEPLOY_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Set remote to SSH
+        run: git remote set-url origin git@github.com:Si-gongan/pickforme.git
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Create and push tags
+        run: |
+          GIT_TAG_FOR_DEV="dev_$(date -u +'%y%m%d-%H%M')"
+          echo "GIT_TAG_FOR_DEV=$GIT_TAG_FOR_DEV" >> $GITHUB_ENV
+          git tag "$GIT_TAG_FOR_DEV"
+          git tag -f dev_server "$GIT_TAG_FOR_DEV"
+          git push -f origin "$GIT_TAG_FOR_DEV"
+          git push -f origin dev_server
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEV_EC2_HOST }}
+          username: ${{ secrets.DEV_EC2_USERNAME }}
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          script: |
+            source ~/.nvm/nvm.sh
+            nvm use 18
+            cd /home/ubuntu/pickforme
+            git fetch --all
+            git checkout $GIT_TAG_FOR_DEV
+            cd back
+            npm install
+            pm2 start pm2.json
