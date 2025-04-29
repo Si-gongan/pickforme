@@ -13,7 +13,7 @@ const SCHEDULER_NAME = 'membership';
  * 해당 유저의 멤버십 포인트를 0으로 초기화합니다.
  */
 
-const checkSubscriptionExpirations = async () => {
+export const checkSubscriptionExpirations = async () => {
   try {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -23,11 +23,13 @@ const checkSubscriptionExpirations = async () => {
       'product.type': ProductType.SUBSCRIPTION,
     }).cursor();
 
+    
     for (let purchase = await cursor.next(); purchase != null; purchase = await cursor.next()) {
+
       const oneMonthLater = new Date(purchase.createdAt);
       oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
-      if (oneMonthLater < now) {
+      if (oneMonthLater < now) {        
         await purchase.updateExpiration();
         const user = await db.User.findById(purchase.userId);
         if (user) {
@@ -49,9 +51,7 @@ const checkSubscriptionExpirations = async () => {
 
 // 매일 0시에 실행
 export function registerMembershipScheduler() {
-  if (process.env.NODE_ENV === 'production') {
-    schedule.scheduleJob('0 0 0 * * *', checkSubscriptionExpirations);
-  }
+  schedule.scheduleJob('0 0 0 * * *', checkSubscriptionExpirations);
 }
 
 export default registerMembershipScheduler;
