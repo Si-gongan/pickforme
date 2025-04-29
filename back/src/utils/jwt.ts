@@ -24,7 +24,8 @@ const generateAccessToken = (payload: JWT) => new Promise<string>((resolve, reje
     accessTokenOptions,
     (error, token) => {
       if (error) reject(error);
-      resolve(token);
+      if (!token) reject(new Error('Token generation failed'));
+      resolve(token!);
     },
   );
 });
@@ -36,7 +37,8 @@ const generateRefreshToken = (payload: JWT) => new Promise<string>((resolve, rej
     refreshTokenOptions,
     (error, token) => {
       if (error) reject(error);
-      resolve(token);
+      if (!token) reject(new Error('Token generation failed'));
+      resolve(token!);
     },
   );
 });
