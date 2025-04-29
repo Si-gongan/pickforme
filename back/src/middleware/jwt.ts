@@ -16,7 +16,11 @@ export default async (ctx: Context, next: () => Promise<any>) => {
       }
     } catch (e) {
       ctx.status = 401;
-      ctx.body = e.message;
+      if (e instanceof Error) {
+        ctx.body = e.message;
+      } else {
+        ctx.body = 'Unauthorized';
+      }
       return;
     }
   } else {
