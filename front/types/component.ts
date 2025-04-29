@@ -1,9 +1,10 @@
 export interface IIconProps {
-  size?: number;
-  color?: string;
+    size?: number;
+    color?: string;
+    opacity?: number;
 }
 
 export interface ISelectOption {
-  name: string;
-  value: string;
+    name: string;
+    value: string;
 }

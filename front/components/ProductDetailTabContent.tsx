@@ -20,7 +20,7 @@ import { LoadingStatus } from '../stores/product/atoms';
 import { ScrapedProductDetail } from '../stores/product/types';
 import { useAtomValue } from 'jotai';
 import { productReviewAtom } from '../stores/product/atoms';
-import { Button_old as Button } from '@components';
+import { useState } from 'react';
 
 import type { ColorScheme } from '@hooks';
 
@@ -63,6 +63,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     });
     const productReview = useAtomValue(productReviewAtom);
+    const [regenerateCount, setRegenerateCount] = useState(0);
 
     if (tab === TABS.QUESTION) {
         return (
@@ -113,7 +114,18 @@ const TabContent: React.FC<TabContentProps> = ({
                 handleLoadMore={handleLoadMore}
             />
         );
+    } else if (regenerateCount < 2) {
+        handleRegenerate();
+        return (
+            <View style={styles.detailWrap}>
+                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+                    <ActivityIndicator />
+                    <Text>{loadingMessages[tab]}</Text>
+                </View>
+            </View>
+        );
     } else {
+        console.log('productDetail:', productDetail);
         return (
             <View style={styles.detailWrap}>
                 <Text>정보를 불러오는데 실패했습니다.</Text>
@@ -174,7 +186,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                     console.log('onChangeText - 입력값:', text);
                     setQuestion(text);
                 }}
-                placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요"
+                placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요."
             />
 
             <Pressable

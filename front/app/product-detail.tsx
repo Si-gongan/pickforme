@@ -57,12 +57,14 @@ import BackHeader from '../components/BackHeader';
 
 import Modal from 'react-native-modal';
 import Request from '../components/BottomSheet/Request';
+import { userAtom } from '@stores';
 
 interface ProductDetailScreenProps {}
 
 const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { productUrl: productUrlBase, url: urlBase } = useLocalSearchParams();
     const productUrl = decodeURIComponent((productUrlBase || urlBase)?.toString() ?? '');
+    const userData = useAtomValue(userAtom);
 
     // 쿠팡 링크가 아닌 경우 처리
     if (!productUrl.includes('coupang')) {
@@ -142,7 +144,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const DetailWebView = useWebViewDetail({
         productUrl,
         onMessage: data => {
-            console.log('DetailWebView 데이터 수신:', data);
+            console.log('DetailWebView 이미지 데이터 수신:', data.detail_images?.length);
             setProduct(data);
         }
     });
@@ -253,7 +255,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     const handleClickContact = async () => {
-        getSubscription();
+        await getSubscription();
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
         if (!subscription || subscription.isExpired) {
@@ -275,16 +277,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         // }, 300);
 
         await getSubscription();
-        console.log('subscription:', typeof subscription);
+        console.log('subscription:', JSON.stringify(subscription));
+        console.log('userData:', userData.point);
+
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        if (!subscription || subscription.isExpired) {
-            console.log('subscription.purchase.status:', subscription);
+        if (userData.point && parseInt(userData.point.toString()) < 1) {
             console.log('setIsShowNonSubscriberManageModal');
             // 모달 표시
             setIsShowNonSubscriberManageModal(true);
             setIsRequestLoading(false);
         } else {
-            console.log('subscription.purchase.status:', subscription);
             console.log('setRequestBottomSheet');
             setRequestBottomSheet(product);
             setIsShowSubscriptionModal(true);
@@ -365,7 +367,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { component: reviewsComponent, scrollDown } = useWebViewReviews({
         productUrl: product?.url || '',
         onMessage: data => {
-            console.log('받은 리뷰 데이터:', data);
+            console.log('받은 리뷰 데이터:', data.length);
 
             // 리뷰가 있을 때만 요약(캡션) 생성 API 호출
             if (data && data.length > 0) {

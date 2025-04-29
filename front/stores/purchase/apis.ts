@@ -11,7 +11,7 @@ export const PurchaseProductAPI = (params: PurchaseProductParams) =>
 export const GetProductsAPI = (params: GetProductsParams) =>
     client.get<Product[]>(`/purchase/products/${params.platform}`);
 
-export const GetSubscriptionAPI = () => client.get<Purchase>(`/purchase/subscription`);
+export const GetSubscriptionAPI = () => client.get<Purchase>(`/purchase/subscription/status`);
 
 export const GetSubscriptionListAPI = () => client.get<Purchase[]>(`/purchase/subscriptions`);
 export const GetPurchaseListAPI = () => client.get<Purchase[]>(`/purchase/purchases`);
