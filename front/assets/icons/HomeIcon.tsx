@@ -2,7 +2,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import type { IIconProps } from '@types';
 
-export default function HomeIcon({ size, color }: IIconProps) {
+export default function HomeIcon({ size, color, opacity = 0.5 }: IIconProps) {
     return (
         <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
             <Path
@@ -12,7 +12,7 @@ export default function HomeIcon({ size, color }: IIconProps) {
                 stroke={color}
                 strokeWidth="1.5"
                 strokeLinecap="round"
-                strokeOpacity="0.5"
+                strokeOpacity={opacity}
             />
         </Svg>
     );
