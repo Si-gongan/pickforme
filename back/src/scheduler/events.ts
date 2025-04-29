@@ -80,14 +80,12 @@ const processHansiryunEventMembership = async () => {
 /**
  * 모든 이벤트 멤버십을 체크하는 메인 함수
  */
-const processEventMembership = async () => {
+export const processEventMembership = async () => {
   await processHansiryunEventMembership();
 };
 
 export function registerEventScheduler() {
-  if (process.env.NODE_ENV === 'production') {
     schedule.scheduleJob('0 0 0 * * *', processEventMembership);
-  }
 }
 
 export default registerEventScheduler; 

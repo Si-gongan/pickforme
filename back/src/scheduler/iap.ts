@@ -15,7 +15,7 @@ const SCHEDULER_NAME = 'iap';
  * 환불/만료된 구독은 isExpired를 true로 변경하고,
  * 해당 유저의 포인트/aiPoint를 0으로 초기화합니다.
  */
-const checkSubscriptions = async () => {
+export const checkSubscriptions = async () => {
   try {
     const purchases = await db.Purchase.find({
       isExpired: false,
@@ -66,7 +66,7 @@ const checkSubscriptions = async () => {
         }
       } else {
         // 구독이 환불/만료된 경우
-        purchase.isExpired = true;
+        purchase.updateExpiration();
         await purchase.save();
         try {
           await db.User.findOneAndUpdate(
@@ -95,9 +95,7 @@ const checkSubscriptions = async () => {
 };
 
 export function registerIAPScheduler() {
-  if (process.env.NODE_ENV === 'production') {
     schedule.scheduleJob('0 0 0 * * *', checkSubscriptions);
-  }
 }
 
 export default registerIAPScheduler

@@ -8,8 +8,8 @@
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "pm2": "pm2 kill && pm2 start ./pm2.json",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch --verbose",
     "test:coverage": "jest --coverage"
   },
   "author": "jinsang",

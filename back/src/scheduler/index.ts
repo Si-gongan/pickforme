@@ -1,6 +1,6 @@
 import { registerMembershipScheduler } from './membership';
 import { registerIAPScheduler } from './iap';
-import { registerEventScheduler } from './events';
+import { registerEventScheduler } from './events';  
 
 /**
  * 프로덕션 환경에서만 스케줄러를 등록합니다.
@@ -8,9 +8,9 @@ import { registerEventScheduler } from './events';
  */
 export function registerAllSchedulers() {
   if (process.env.NODE_ENV === 'production') {
-    registerMembershipScheduler();
-    registerIAPScheduler();
-    registerEventScheduler();
+  registerMembershipScheduler();
+  registerIAPScheduler();
+  registerEventScheduler();
   }
 }
 
