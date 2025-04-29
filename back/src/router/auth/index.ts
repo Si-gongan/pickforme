@@ -54,12 +54,12 @@ const handleLogin = async (email: string) => {
   await user.save();
 
   const token = await user.generateToken();
-  const refreshToken = await user.generateRefreshToken();
+  // const refreshToken = await user.generateRefreshToken();
   
   return {
     user: {
       ...user.toObject(),
-      refreshToken,
+      // refreshToken,
       token,
     },
     isRegister,
@@ -77,6 +77,7 @@ router.post('/google', async (ctx) => {
     `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
   `,
   );
+  
   const {
     email, verified_email,
   } = data;
@@ -99,6 +100,7 @@ router.post('/kakao', async (ctx) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  
   const {
     is_email_verified, is_email_valid, email,
   } = data?.data?.kakao_account || {};
