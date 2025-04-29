@@ -11,8 +11,6 @@ export enum LogLevel {
 export enum LogContext {
   SCHEDULER = 'scheduler',
   AUTH = 'auth',
-  IAP = 'iap',
-  EVENT = 'event',
 }
 
 export enum LogSeverity {

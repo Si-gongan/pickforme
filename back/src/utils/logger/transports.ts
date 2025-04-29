@@ -37,17 +37,38 @@ const createConsoleTransport = () => new winston.transports.Console({
 });
 
 // 파일 전송 설정
-const createFileTransports = () => [
-  new winston.transports.File({
-    filename: path.join(logDir, 'error.log'),
-    level: LogLevel.ERROR,
-    format: createLogFormat(false) // 색상 미적용
-  }),
-  new winston.transports.File({
-    filename: path.join(logDir, 'combined.log'),
-    format: createLogFormat(false) // 색상 미적용
-  })
-];
+const createFileTransports = () => {
+  try {
+    return [
+      new winston.transports.File({
+        filename: path.join(logDir, 'error.log'),
+        level: LogLevel.ERROR,
+        format: createLogFormat(false), // 색상 미적용
+        // 파일 시스템 에러를 처리
+        handleExceptions: true,
+        handleRejections: true
+      }),
+      new winston.transports.File({
+        filename: path.join(logDir, 'combined.log'),
+        format: createLogFormat(false), // 색상 미적용
+        // 파일 시스템 에러를 처리
+        handleExceptions: true,
+        handleRejections: true
+      })
+    ];
+  } catch (error) {
+    // 파일 시스템 에러 발생 시 콘솔로만 로깅
+    process.stderr.write(`파일 로깅 설정 실패: ${error}\n`);
+    
+    // Slack으로도 알림 (실패해도 무시)
+    if (isProduction) {
+      sendToSlack(`🚨 파일 로깅 설정 실패\n에러: ${error}`).catch(() => {
+      });
+    }
+    
+    return [createConsoleTransport()];
+  }
+};
 
 // 슬랙 전송 함수
 export const sendToSlack = async (message: string) => {
@@ -63,5 +84,17 @@ export const sendToSlack = async (message: string) => {
 
 // 전체 transport 설정
 export const getTransports = () => {
-  return isProduction ? createFileTransports() : [createConsoleTransport()];
+  try {
+    return isProduction ? createFileTransports() : [createConsoleTransport()];
+  } catch (error) {
+    // 모든 transport 설정이 실패하면 최소한의 콘솔 로깅만 사용
+    console.error('로거 설정 실패:', error);
+    
+    // Slack으로도 알림 (실패해도 무시)
+    if (isProduction) {
+      sendToSlack(`🚨 로거 설정 실패\n에러: ${error}`)
+    }
+    
+    return [createConsoleTransport()];
+  }
 };
