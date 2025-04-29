@@ -147,6 +147,10 @@ UserSchema.methods.processExpiredMembership =
     this.aiPoint = 15;
     this.MembershipAt = null;
     this.lastMembershipAt = null;
+    
+    // 멤버쉽 만료 시 이벤트도 초기화해줌. 
+    // 한시련 이벤트 종료 시 이벤트 초기화 로직을 여기서 처리해줌.
+    this.event = 0;
     await this.save();
   };
 
