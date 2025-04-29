@@ -97,12 +97,12 @@ export default function MyScreen() {
 
     const myInfoMenu = useMemo(
         function () {
-            const defaultMenu = [{ name: '내 정보 수정하기', onPress: goToInfo }];
+            // const defaultMenu = [{ name: '내 정보 수정하기', onPress: goToInfo }];
             if (!user?._id) {
-                return [...defaultMenu, { name: '로그인', onPress: goToLogin }];
+                return [{ name: '로그인', onPress: goToLogin }];
             }
             return [
-                ...defaultMenu,
+                // ...defaultMenu,
                 { name: '멤버십 이용하기', onPress: goToSubscription },
                 { name: '멤버십 구매내역', onPress: goToSubscriptionHistory }
             ];
