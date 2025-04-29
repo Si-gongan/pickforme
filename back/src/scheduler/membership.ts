@@ -1,6 +1,10 @@
 import schedule from 'node-schedule';
 import db from 'models';
 import { ProductType } from 'models/product';
+import { log } from 'utils/logger/logger';
+import { LogContext, LogSeverity } from 'utils/logger/types';
+
+const SCHEDULER_NAME = 'membership';
 
 /**
  * 매일 0시에 만료되지 않은 멤버쉽 구독 정보를 조회하고, 
@@ -10,32 +14,36 @@ import { ProductType } from 'models/product';
  */
 
 const checkSubscriptionExpirations = async () => {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  try {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
 
-  const cursor = db.Purchase.find({
-    isExpired: false,
-    'product.type': ProductType.SUBSCRIPTION,
-  }).cursor();
+    const cursor = db.Purchase.find({
+      isExpired: false,
+      'product.type': ProductType.SUBSCRIPTION,
+    }).cursor();
 
-  for (let purchase = await cursor.next(); purchase != null; purchase = await cursor.next()) {
+    for (let purchase = await cursor.next(); purchase != null; purchase = await cursor.next()) {
+      const oneMonthLater = new Date(purchase.createdAt);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
-    // 만료 처리 로직.
-    // 이 로직도 사실은 만료되었는지 여부를 따로 추상화하는게 좋지만, 
-    // 당분간은 다른 상품 추가계획이 없어 일단은 한달 뒤를 조회하는 로직으로 두었습니다.
-
-    const oneMonthLater = new Date(purchase.createdAt);
-    oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-
-    if (oneMonthLater < now) {
-      // TODO: Logger 추가하기.
-      // TODO: 트랜잭션 추가하기 -> 이거 자체를 서비스 레이어로 바꾸는것도.
-      await purchase.updateExpiration();
-      const user = await db.User.findById(purchase.userId);
-      if (user) {
-        await user.processExpiredMembership();
+      if (oneMonthLater < now) {
+        await purchase.updateExpiration();
+        const user = await db.User.findById(purchase.userId);
+        if (user) {
+          await user.processExpiredMembership();
+          log.info(LogContext.SCHEDULER, `멤버십 만료 처리 완료 - userId: ${user._id}`, LogSeverity.LOW, { 
+            scheduler: SCHEDULER_NAME,
+            userId: user._id 
+          });
+        }
       }
     }
+  } catch (error) {
+    log.error(LogContext.SCHEDULER, '멤버십 만료 처리 중 오류 발생', LogSeverity.HIGH, { 
+      scheduler: SCHEDULER_NAME,
+      error 
+    });
   }
 };
 

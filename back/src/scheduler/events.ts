@@ -1,6 +1,11 @@
 import schedule from 'node-schedule';
 import db from 'models';
 import { ProductType } from 'models/product';
+import { log } from 'utils/logger/logger';
+import { LogContext, LogSeverity } from 'utils/logger/types';
+
+const SCHEDULER_NAME = 'events';
+const productIdToApply = 'pickforme_plus';
 
 /**
  * 한시련 이벤트 멤버십을 가진 유저들의 상태를 확인하고,
@@ -22,10 +27,14 @@ const processHansiryunEventMembership = async () => {
       type: ProductType.SUBSCRIPTION,
     });
 
-    const eventProduct = eventProducts.find((product) => product.productId === 'pickforme_plus');
+    const eventProduct = eventProducts.find((product) => product.productId === productIdToApply);
 
     if (!eventProduct) {
-      console.error('[Scheduler][LimitedTimeEvent] 이벤트 상품이 존재하지 않습니다.');
+      log.error(LogContext.SCHEDULER, '이벤트 상품이 존재하지 않습니다.', LogSeverity.HIGH, {
+        scheduler: SCHEDULER_NAME,
+        productId: productIdToApply,
+        eventProducts,
+      });
       return;
     }
 
@@ -44,16 +53,27 @@ const processHansiryunEventMembership = async () => {
       // 6개월이 지난 경우
       if (now >= sixMonthsLater) {
         await user.processExpiredMembership();
+        log.info(LogContext.SCHEDULER, `이벤트 멤버십 만료 처리 완료 - userId: ${user._id}`, LogSeverity.LOW, { 
+          scheduler: SCHEDULER_NAME,
+          userId: user._id 
+        });
         continue;
       }
 
       // 한달이 지난 경우
       if (now >= oneMonthLater) {
         await user.applyPurchaseRewards(eventProduct.getRewards());
+        log.info(LogContext.SCHEDULER, `이벤트 멤버십 포인트 충전 완료 - userId: ${user._id}`, LogSeverity.LOW, { 
+          scheduler: SCHEDULER_NAME,
+          userId: user._id 
+        });
       }
     }
   } catch (error) {
-    console.error('[Scheduler][LimitedTimeEvent]', error);
+    log.error(LogContext.SCHEDULER, '이벤트 멤버십 처리 중 오류 발생', LogSeverity.HIGH, { 
+      scheduler: SCHEDULER_NAME,
+      error 
+    });
   }
 };
 
