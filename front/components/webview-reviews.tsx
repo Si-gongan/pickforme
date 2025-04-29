@@ -21,6 +21,7 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
     const [accumulatedReviews, setAccumulatedReviews] = useState<string[]>([]);
     const maxRetries = 5;
     let retryCount = 0;
+    let scrollDownCount = 0;
 
     const parseUrl = (url: string) => {
         if (url.includes('coupang')) {
@@ -120,6 +121,12 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
             // 스크롤 결과 처리
             if (parsedData.type === 'scrollResult') {
                 console.log('스크롤 결과:', parsedData.scrollChanged);
+
+                if (!parsedData.scrollChanged && scrollDownCount < 11) {
+                    scrollDown();
+                    scrollDownCount++;
+                    return;
+                }
 
                 // 스크롤 결과에 컨텐츠가 포함되어 있으면 처리
                 if (parsedData.content && parsedData.content.length > 0) {

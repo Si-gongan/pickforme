@@ -116,7 +116,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const [tab, setTab] = useState<TABS>(TABS.CAPTION);
     const [question, setQuestion] = useState('');
-    const [isRequestLoading, setIsRequestLoading] = useState(false);
 
     const loadingStatus = useAtomValue(loadingStatusAtom);
 
@@ -285,12 +284,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             console.log('setIsShowNonSubscriberManageModal');
             // 모달 표시
             setIsShowNonSubscriberManageModal(true);
-            setIsRequestLoading(false);
         } else {
             console.log('setRequestBottomSheet');
             setRequestBottomSheet(product);
             setIsShowSubscriptionModal(true);
-            setIsRequestLoading(false);
         }
     });
 
@@ -381,7 +378,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const handleLoadMore = () => {
         console.log('handleLoadMore');
-        setIsRequestLoading(true); // 로딩 시작
         scrollDown();
     };
 
@@ -502,8 +498,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 isWish={!!already}
                 isRequest={!!request}
                 colorScheme={colorScheme}
-                isRequestLoading={isRequestLoading}
-                setIsRequestLoading={setIsRequestLoading}
             />
         </View>
     );
@@ -551,8 +545,6 @@ interface ActionButtonsProps {
     isWish: boolean;
     isRequest: boolean;
     colorScheme: ColorScheme;
-    isRequestLoading: boolean;
-    setIsRequestLoading: (loading: boolean) => void;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -564,15 +556,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     handleClickWish,
     isWish,
     isRequest,
-    colorScheme,
-    isRequestLoading,
-    setIsRequestLoading
+    colorScheme
 }) => {
     const handleRequestWithLoading = () => {
-        if (isRequestLoading) return;
-
-        setIsRequestLoading(true);
-
         handleClickRequest();
     };
 
@@ -603,18 +589,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             ) : (
                 <View style={styles.buttonOuter}>
                     <Button
-                        title={isRequestLoading ? '' : '매니저에게 질문하기'}
+                        title="매니저에게 질문하기"
                         onPress={handleRequestWithLoading}
                         style={[styles.button, styles.button2]}
                         color="tertiary"
                         size="small"
-                        disabled={!product || isRequestLoading}
+                        disabled={!product}
                         textStyle={styles.button2Text}
-                    >
-                        {isRequestLoading && (
-                            <ActivityIndicator size="small" color={Colors[colorScheme].text.primary} />
-                        )}
-                    </Button>
+                    />
                 </View>
             )}
             {isWish ? (
