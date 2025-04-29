@@ -14,3 +14,4 @@ node_modules
 .webpackCache
 
 logs/*
+google_api_credentials.json

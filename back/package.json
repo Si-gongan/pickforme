@@ -7,7 +7,8 @@
     "start": "NODE_ENV=production NODE_PATH=./src ts-node src/app.ts",
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
-    "pm2": "pm2 kill && pm2 start ./pm2.json"
+    "pm2": "pm2 kill && pm2 start ./pm2.json",
+    "membership-events": "NODE_PATH=./src ts-node src/utils/events.ts"
   },
   "author": "jinsang",
   "license": "ISC",
@@ -28,6 +29,7 @@
     "dotenv": "^8.2.0",
     "expo-server-sdk": "^3.7.0",
     "fork-ts-checker-webpack-plugin": "^3.1.0",
+    "googleapis": "^148.0.0",
     "in-app-purchase": "^1.11.4",
     "jsonwebtoken": "^9.0.0",
     "koa": "^2.14.2",
