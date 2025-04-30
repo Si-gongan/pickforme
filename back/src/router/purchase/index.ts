@@ -64,10 +64,11 @@ router.post('/', requireAuth, async (ctx) => {
       }
 
       ctx.body = purchaseData;
+
+      await user.applyPurchaseRewards(product.getRewards());
+
       ctx.status = 200;
 
-      user.point = 30;
-      user.aiPoint = 1000000; // 무한, 부족하면 늘리기
       await user.save();
       return;
     }

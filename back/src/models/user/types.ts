@@ -1,3 +1,4 @@
+import { ProductReward } from 'models/product';
 import { Model, Document, Schema } from 'mongoose';
 
 export interface LocalRegisterPayload {
@@ -21,7 +22,8 @@ export interface User extends LocalRegisterPayload {
   lastLoginAt: Date;
   pushToken?: string;
   originEmail?: string;
-  MembershipAt: Date;
+  MembershipAt: Date | null;
+  lastMembershipAt: Date | null;
   phone:string;
   event:number;
   hide: string[] | null;
@@ -35,6 +37,7 @@ export interface UserDocument extends User, Document {
   useAiPoint(payload: number): () => Promise<number>;
   processExpiredMembership: () => Promise<void>;
   initMonthPoint: () => Promise<void>;
+  applyPurchaseRewards: (rewards: ProductReward) => Promise<void>;
 }
 
 export interface UserModel extends Model<UserDocument> {

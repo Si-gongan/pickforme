@@ -1,11 +1,8 @@
 import iap, { Receipt } from 'in-app-purchase';
-import db from 'models';
-import sendPush from 'utils/push';
-import schedule from 'node-schedule';
-
-import socket from 'socket';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+// TODO: 이 부분 secret key 환경변수로 이전 필요.
 iap.config({
   /* Configurations for Apple */
   appleExcludeOldTransactions: true,
@@ -35,6 +32,7 @@ iap.config({
   // debug
   // verbose: true,
 });
+
 class IAPValidator {
   private initialized = iap.setup();
 
@@ -55,77 +53,5 @@ class IAPValidator {
 }
 
 const iapValidator = new IAPValidator();
-
-const checkSubs = async () => {
-  const purchases = await db.Purchase.find({
-    isExpired: false,
-  });
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  purchases.forEach(async (purchase) => {
-    const purchaseData = await iapValidator.validate(purchase.receipt, purchase.product.productId);
-    if (purchaseData) {
-      if (purchaseData.transactionId !== purchase.purchase.transactionId) {
-        // eslint-disable-next-line no-param-reassign
-        purchase.purchase = purchaseData;
-        await purchase.save();
-        const user = await db.User.findById(purchase.userId);
-        if (user) {
-          user.point = 30;
-          user.aiPoint = 1000000;
-          await user.save();
-          /*
-          await db.PickHistory.create({
-            usage: `멤버십 충전 - ${purchase.product.displayName}`,
-            point: user.point,
-            diff: purchase.product.point,
-            userId: user._id,
-          });
-          */
-          const session = await db.Session.findOne({
-            userId: user._id,
-          });
-          if (session) {
-            socket.emit(session.connectionId, 'point', user.point);
-          }
-          if (user.pushToken) {
-            sendPush({
-              to: user.pushToken,
-              body: '멤버십 픽이 충전되었습니다',
-            });
-          }
-        }
-      }
-    } else {
-      // eslint-disable-next-line no-param-reassign
-      purchase.isExpired = true;
-      await purchase.save();
-      try {
-        // NOTE: 유저정보 수정
-        await db.User.findOneAndUpdate(
-          {
-            _id: purchase.userId,
-          },
-          {
-            point: 0,
-            aiPoint: 0,
-          }
-        );
-      } catch (error) {
-        console.log('[Schedule ERROR] : ', error);
-      }
-    }
-  });
-};
-
-if (isProd) {
-  schedule.scheduleJob('0 0 0 * * *', () => {
-    checkSubs();
-  });
-} else {
-  // schedule.scheduleJob('0 * * * * *', () => {
-  //   checkSubs();
-  // });
-}
 
 export default iapValidator;
