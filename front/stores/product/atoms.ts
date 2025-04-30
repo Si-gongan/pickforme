@@ -55,6 +55,10 @@ export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
 
 export const scrapedProductsAtom = atom<Product[]>([]);
 export const scrapedProductsQueryAtom = atom<string>('');
+export const setScrapedProductsAtom = atom(null, async (get, set, products: Product[], query: string) => {
+    set(scrapedProductsAtom, products);
+    set(scrapedProductsQueryAtom, query);
+});
 
 export const searchProductsAtom = atom(
     null,
@@ -279,6 +283,7 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
     }
     const product = get(productDetailAtom)?.product!;
     const response = await GetProductReviewAPI({ product, reviews });
+    console.log('GetProductReviewAPI response: 리뷰 데이터 함께 전송', reviews.length, '개', response.data);
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
@@ -306,12 +311,16 @@ export const getProductReportAtom = atom(null, async (get, set) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 });
+
 // AI 상품 이미지 설명 생성
 export const getProductCaptionAtom = atom(null, async (get, set) => {
+    console.log('GetProductCaptionAPI 호출');
     set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.LOADING });
 
     const product = get(productDetailAtom)?.product!;
+
     const response = await GetProductCaptionAPI({ product });
+
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });

@@ -1,5 +1,6 @@
-import type { IProduct } from "@types";
+import type { IProduct } from '@types';
 
 export interface IProductCardProps {
-  data: IProduct;
+    data: IProduct;
+    type?: string;
 }
