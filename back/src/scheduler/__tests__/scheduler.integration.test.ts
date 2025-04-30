@@ -108,6 +108,8 @@ describe('Scheduler Integration Tests', () => {
       
         expect(updatedUser?.point).toBe(100);
         expect(updatedUser?.aiPoint).toBe(1000);
+        expect(updatedUser?.MembershipAt).not.toBe(null)
+        expect(updatedUser?.lastMembershipAt).not.toBe(null)
     });
     it('환불 처리가 된 구독권의 경우 자정에 스케줄러가 실행되면 만료 처리된다.', async () => {
       const user = await db.User.create({ email: 'test@example.com', point: 100, aiPoint: 1000 });
@@ -146,6 +148,8 @@ describe('Scheduler Integration Tests', () => {
 
       expect(updatedUser?.point).toBe(0);
       expect(updatedUser?.aiPoint).toBe(0);
+      expect(updatedUser?.MembershipAt).toBe(null)
+      expect(updatedUser?.lastMembershipAt).toBe(null)
       expect(updatedPurchase?.isExpired).toBe(true);
     });
   });
@@ -190,6 +194,8 @@ describe('Scheduler Integration Tests', () => {
 
       expect(updatedUser?.point).toBe(0);
       expect(updatedUser?.aiPoint).toBe(15); // 초기화된 aiPoint
+      expect(updatedUser?.MembershipAt).toBe(null);
+      expect(updatedUser?.lastMembershipAt).toBe(null);
       expect(updatedPurchase?.isExpired).toBe(true);
     });
 
@@ -199,6 +205,7 @@ describe('Scheduler Integration Tests', () => {
             point: 100,
             aiPoint: 1000,
             MembershipAt: new Date('2023-01-02T15:00:00.000Z'),
+            lastMembershipAt: new Date('2023-01-02T15:00:00.000Z'),
           });
     
           const product = await db.Product.create({
@@ -232,6 +239,8 @@ describe('Scheduler Integration Tests', () => {
     
           expect(updatedUser?.point).toBe(100);
           expect(updatedUser?.aiPoint).toBe(1000); 
+          expect(updatedUser?.MembershipAt).not.toBe(null)
+          expect(updatedUser?.lastMembershipAt).not.toBe(null)
           expect(updatedPurchase?.isExpired).toBe(false);
     })
   });
@@ -271,6 +280,8 @@ describe('Scheduler Integration Tests', () => {
 
       expect(updatedUser?.point).toBe(0);
       expect(updatedUser?.aiPoint).toBe(15);
+      expect(updatedUser?.MembershipAt).toBe(null);
+      expect(updatedUser?.lastMembershipAt).toBe(null);
       expect(updatedUser?.lastMembershipAt).toBeDefined();
     });
 
@@ -306,6 +317,7 @@ describe('Scheduler Integration Tests', () => {
     
           expect(updatedUser?.point).toBe(100);
           expect(updatedUser?.aiPoint).toBe(1000);
+          expect(updatedUser?.MembershipAt).toBeDefined();
           expect(updatedUser?.lastMembershipAt).toBeDefined();
     })
 
@@ -341,6 +353,7 @@ describe('Scheduler Integration Tests', () => {
       
         expect(updatedUser?.point).toBe(0); // 포인트 지급 X
         expect(updatedUser?.aiPoint).toBe(0); // AI 포인트 지급 X
+        expect(updatedUser?.MembershipAt).toBeDefined()
         expect(updatedUser?.lastMembershipAt?.toISOString()).toBe('2023-01-10T15:00:00.000Z'); // 변경되지 않음
       });
       
