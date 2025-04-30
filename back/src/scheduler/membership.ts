@@ -42,9 +42,12 @@ export const checkSubscriptionExpirations = async () => {
       }
     }
   } catch (error) {
+    if (error instanceof Error)
     log.error(LogContext.SCHEDULER, '멤버십 만료 처리 중 오류 발생', LogSeverity.HIGH, { 
       scheduler: SCHEDULER_NAME,
-      error 
+      message: error.message,
+      stack: error.stack,
+      name: error.name
     });
   }
 };

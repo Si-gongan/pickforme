@@ -18,9 +18,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const uri = process.env.MONGO_URI!;
+const isTest = process.env.NODE_ENV === 'test';
 
 mongoose.connect(uri, {
-  dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'test',
+  dbName: isTest ? 'pickforme_test' : (process.env.MODE === 'dev' ? 'pickforme-dev' : 'test'),
 });
 
 const db = {

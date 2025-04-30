@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ProductType, Platform, ProductReward, IProduct, ProductModel } from './types';
+import { IProduct, Platform, ProductModel, ProductReward } from './types';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -33,9 +33,6 @@ const ProductSchema = new mongoose.Schema(
   },
 );
 
-
-const model = mongoose.models.Products as ProductModel || mongoose.model<IProduct, ProductModel>('Products', ProductSchema);
-
 ProductSchema.methods.getRewards = function(): ProductReward {
   return {
     point: this.point,
@@ -43,55 +40,59 @@ ProductSchema.methods.getRewards = function(): ProductReward {
   };
 };
 
+const model = mongoose.models.Products as ProductModel || mongoose.model<IProduct, ProductModel>('Products', ProductSchema);
+
+
 // 초기 데이터 삽입
-model.find({}).then((products) => {
-  if (products.length) {
-    return;
-  }
-  model.insertMany([
-    {
-      platform: Platform.IOS,
-      productId: 'pickforme_plus',
-      displayName: '픽포미 플러스',
-      point: 10,
-      aiPoint: 100,
-      type: ProductType.SUBSCRIPTION,
-    },
-    // {
-    //   platform: Platform.IOS,
-    //   displayName: '픽포미 1픽',
-    //   productId: 'pickforme_1pick',
-    //   type: ProductType.PURCHASE,
-    //   point: 1,
-    // }, {
-    //   platform: Platform.IOS,
-    //   displayName: '픽포미 5픽',
-    //   productId: 'pickforme_5pick',
-    //   type: ProductType.PURCHASE,
-    //   point: 5,
-    // },
-    {
-      platform: Platform.ANDROID,
-      productId: 'pickforme_plus',
-      displayName: '픽포미 플러스',
-      point: 10,
-      type: ProductType.SUBSCRIPTION,
-    },
-    // {
-    //   platform: Platform.ANDROID,
-    //   displayName: '픽포미 1픽',
-    //   productId: 'pickforme_1pick',
-    //   type: ProductType.PURCHASE,
-    //   point: 1,
-    // }, {
-    //   platform: Platform.ANDROID,
-    //   productId: 'pickforme_5pick',
-    //   displayName: '픽포미 5픽',
-    //   type: ProductType.PURCHASE,
-    //   point: 5,
-    // }
-  ]);
-});
+// model.find({}).then((products) => {
+//   if (products.length) {
+//     return;
+//   }
+//   model.insertMany([
+//     {
+//       platform: Platform.IOS,
+//       productId: 'pickforme_plus',
+//       displayName: '픽포미 플러스',
+//       point: 10,
+//       aiPoint: 100,
+//       type: ProductType.SUBSCRIPTION,
+//     },
+//     // {
+//     //   platform: Platform.IOS,
+//     //   displayName: '픽포미 1픽',
+//     //   productId: 'pickforme_1pick',
+//     //   type: ProductType.PURCHASE,
+//     //   point: 1,
+//     // }, {
+//     //   platform: Platform.IOS,
+//     //   displayName: '픽포미 5픽',
+//     //   productId: 'pickforme_5pick',
+//     //   type: ProductType.PURCHASE,
+//     //   point: 5,
+//     // },
+//     {
+//       platform: Platform.ANDROID,
+//       productId: 'pickforme_plus',
+//       displayName: '픽포미 플러스',
+//       point: 10,
+//       aiPoint: 100,
+//       type: ProductType.SUBSCRIPTION,
+//     },
+//     // {
+//     //   platform: Platform.ANDROID,
+//     //   displayName: '픽포미 1픽',
+//     //   productId: 'pickforme_1pick',
+//     //   type: ProductType.PURCHASE,
+//     //   point: 1,
+//     // }, {
+//     //   platform: Platform.ANDROID,
+//     //   productId: 'pickforme_5pick',
+//     //   displayName: '픽포미 5픽',
+//     //   type: ProductType.PURCHASE,
+//     //   point: 5,
+//     // }
+//   ]);
+// });
 
 export * from './types';
 

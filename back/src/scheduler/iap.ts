@@ -67,7 +67,7 @@ export const checkSubscriptions = async () => {
       } else {
         // 구독이 환불/만료된 경우
         purchase.updateExpiration();
-        await purchase.save();
+        
         try {
           await db.User.findOneAndUpdate(
             { _id: purchase.userId },
@@ -87,9 +87,12 @@ export const checkSubscriptions = async () => {
       }
     }
   } catch (error) {
+    if (error instanceof Error)
     log.error(LogContext.SCHEDULER, '구독 검증 중 오류 발생', LogSeverity.HIGH, { 
       scheduler: SCHEDULER_NAME,
-      error 
+      message: error.name,
+      stack: error.stack,
+      name: error.name
     });
   }
 };
