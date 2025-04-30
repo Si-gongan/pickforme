@@ -39,5 +39,12 @@ export default function useStyle() {
       color: "#1E1E1E",
       fontWeight: "700",
     },
+    ProductCardDiscount: {
+      fontSize: 11,
+      lineHeight: 14,
+      color: "#FF4545",
+      fontWeight: "500",
+      marginLeft: 5,
+    },
   });
 }
