@@ -1,5 +1,5 @@
 import { useEffect, Suspense, useState } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+// import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -49,7 +49,7 @@ export default function RootLayout() {
                     if (flag) setIsHansiryunPopup(true);
                 })
                 .catch(error => {
-                    console.error('팝업 설정 실패:', error);
+                    console.error('팝업 설정 실패 in _layout:', error);
                 });
         }
     }, [user]);
@@ -80,35 +80,35 @@ export default function RootLayout() {
         <Suspense fallback={null}>
             <QueryClientProvider client={queryClient}>
                 <JotaiProvider>
-                    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                        <Stack
-                            initialRouteName={
-                                user?.token
-                                    ? isHansiryunPopup
-                                        ? '(hansiryun)'
-                                        : '(tabs)'
-                                    : setting?.isReady
-                                    ? '(tabs)'
-                                    : '(onboarding)'
-                            }
-                            screenOptions={{
-                                headerShown: false
-                            }}
-                        >
-                            <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(hansiryun)" options={{ headerShown: false }} />
-                            <Stack.Screen name="product-detail" options={{ headerShown: false }} />
-                            <Stack.Screen name="info" options={{ headerShown: false }} />
-                            <Stack.Screen name="login" options={{ headerShown: false }} />
-                            <Stack.Screen name="push" options={{ headerShown: false }} />
-                            <Stack.Screen name="mode" options={{ headerShown: false }} />
-                            <Stack.Screen name="faq" options={{ headerShown: false }} />
-                            <Stack.Screen name="how" options={{ headerShown: false }} />
-                        </Stack>
-                        <StatusBar style="auto" />
-                        <NonSubscriberManagerBottomSheet />
-                    </ThemeProvider>
+                    {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
+                    <Stack
+                        initialRouteName={
+                            user?.token
+                                ? isHansiryunPopup
+                                    ? '(hansiryun)'
+                                    : '(tabs)'
+                                : setting?.isReady
+                                ? '(tabs)'
+                                : '(onboarding)'
+                        }
+                        screenOptions={{
+                            headerShown: false
+                        }}
+                    >
+                        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(hansiryun)" options={{ headerShown: false }} />
+                        <Stack.Screen name="product-detail" options={{ headerShown: false }} />
+                        <Stack.Screen name="info" options={{ headerShown: false }} />
+                        <Stack.Screen name="login" options={{ headerShown: false }} />
+                        <Stack.Screen name="push" options={{ headerShown: false }} />
+                        <Stack.Screen name="mode" options={{ headerShown: false }} />
+                        <Stack.Screen name="faq" options={{ headerShown: false }} />
+                        <Stack.Screen name="how" options={{ headerShown: false }} />
+                    </Stack>
+                    <StatusBar style="auto" />
+                    <NonSubscriberManagerBottomSheet />
+                    {/* </ThemeProvider> */}
                 </JotaiProvider>
             </QueryClientProvider>
         </Suspense>
