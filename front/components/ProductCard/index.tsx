@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 
 import { getNumberComma } from '@utils';
 import useStyle from './style';
-
 import type { ForwardedRef } from 'react';
 import type { IProductCardProps } from './type';
 
@@ -50,23 +49,52 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
             <View style={[styles.ProductCardContent, isBase && styles.ProductCardContentColumn]}>
                 {isBase ? (
                     <View style={styles.ProductCardContentRow}>
-                        <Text numberOfLines={1} style={styles.ProductCardName} accessible>
-                            {data.name}
-                        </Text>
-                        <Text style={styles.ProductCardPrice} accessible>
-                            {getNumberComma(data.price ?? 0)}원
-                        </Text>
-                        {data.discount_rate > 0 && (
-                            <Text style={styles.ProductCardDiscount} accessible>
-                                {data.discount_rate}% 할인
+                        <View style={styles.ProductCardTitleColumn}>
+                            {data.reviews > 0 && data.ratings > 0 && (
+                                <Text
+                                    style={[styles.ProductCardReviews, { color: 'black', fontWeight: '400' }]}
+                                    accessible
+                                >
+                                    리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
+                                </Text>
+                            )}
+                            <Text numberOfLines={1} style={styles.ProductCardName} accessible>
+                                {data.name}
                             </Text>
-                        )}
+                        </View>
+                        <View
+                            style={{
+                                width: '30%',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'flex-end',
+                                justifyContent: 'flex-end'
+                            }}
+                        >
+                            {data.discount_rate > 0 && (
+                                <Text style={styles.ProductCardDiscount} accessible>
+                                    {data.discount_rate}%
+                                </Text>
+                            )}
+                            <View style={{ marginLeft: 5 }}>
+                                <Text style={styles.ProductCardPrice} accessible>
+                                    {getNumberComma(data.price ?? 0)}원
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 ) : (
                     <View style={styles.ProductCardContentRow}>
-                        <Text numberOfLines={type === 'liked' ? 1 : 2} style={styles.ProductCardName} accessible>
-                            {data.name}
-                        </Text>
+                        <View style={styles.ProductCardTitleColumn}>
+                            {data.reviews > 0 && data.ratings > 0 && (
+                                <Text style={styles.ProductCardReviews} accessible>
+                                    리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
+                                </Text>
+                            )}
+                            <Text numberOfLines={type === 'liked' ? 1 : 2} style={styles.ProductCardName} accessible>
+                                {data.name}
+                            </Text>
+                        </View>
                         <Text style={styles.ProductCardPrice} accessible>
                             {getNumberComma(data.price ?? 0)}원
                         </Text>
