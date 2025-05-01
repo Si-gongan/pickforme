@@ -13,6 +13,7 @@ export enum ProductType {
   export interface ProductReward {
     point: number;
     aiPoint: number;
+    event?: number;
   }
 
 export interface IProduct {
