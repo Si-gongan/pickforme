@@ -400,6 +400,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                     justifyContent: 'flex-end', // 화면 하단에 모달 위치
                     margin: 0 // 마진 제거
                 }}
+                avoidKeyboard={true}
             >
                 <Request />
             </Modal>

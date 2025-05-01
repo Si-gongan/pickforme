@@ -114,8 +114,11 @@ const TabContent: React.FC<TabContentProps> = ({
                 handleLoadMore={handleLoadMore}
             />
         );
-    } else if (regenerateCount < 2) {
-        handleRegenerate();
+    } else if (regenerateCount < 3) {
+        setTimeout(() => {
+            setRegenerateCount(prev => prev + 1);
+            handleRegenerate();
+        }, 1000);
         return (
             <View style={styles.detailWrap}>
                 <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>

@@ -86,38 +86,38 @@ export default function RequestBottomSheet() {
     // }
     return (
         <View style={styles.base}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                <View style={[styles.bottomSheet, localStyles.root]}>
-                    <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
-                        상품에 대해 궁금한 점을 자유롭게 적어주세요.{'\n'}
-                        예를 들어, “이 제품의 색상과 디자인을 자세히 설명해 주세요.” 라고 물어볼 수 있어요.
-                    </Text>
-                    <View style={localStyles.textAreaContainer}>
-                        <TextInput
-                            accessibilityRole="none"
-                            accessibilityHint="텍스트 입력창"
-                            style={[localStyles.textArea, localStyles.textAreaBig]}
-                            underlineColorAndroid="transparent"
-                            numberOfLines={4}
-                            textAlignVertical="top"
-                            multiline
-                            onChangeText={text => setData({ ...data, text })}
-                        />
-                    </View>
-                    <Button
-                        style={[
-                            styles.button,
-                            {
-                                backgroundColor: Colors[colorScheme].button.primary.background
-                            }
-                        ]}
-                        title="매니저에게 질문하기"
-                        onPress={handleSubmit}
-                        disabled={disabled}
-                        textStyle={{ color: Colors[colorScheme].button.primary.text, fontSize: 14 }}
+            <View style={[styles.bottomSheet, localStyles.root]}>
+                <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
+                    상품에 대해 궁금한 점을 자유롭게 적어주세요.{'\n'}
+                    예를 들어, “이 제품의 색상과 디자인을 자세히 설명해 주세요.” 라고 물어볼 수 있어요.
+                </Text>
+                <View style={localStyles.textAreaContainer}>
+                    <TextInput
+                        accessibilityRole="none"
+                        accessibilityHint="텍스트 입력창"
+                        style={[localStyles.textArea, localStyles.textAreaBig]}
+                        underlineColorAndroid="transparent"
+                        numberOfLines={4}
+                        textAlignVertical="top"
+                        multiline
+                        onChangeText={text => setData({ ...data, text })}
                     />
                 </View>
-            </KeyboardAvoidingView>
+                <Button
+                    accessible
+                    accessibilityLabel="매니저에게 질문하기"
+                    style={[
+                        styles.button,
+                        {
+                            backgroundColor: Colors[colorScheme].button.primary.background
+                        }
+                    ]}
+                    title="매니저에게 질문하기"
+                    onPress={handleSubmit}
+                    disabled={disabled}
+                    textStyle={{ color: Colors[colorScheme].button.primary.text, fontSize: 14 }}
+                />
+            </View>
         </View>
     );
 }
