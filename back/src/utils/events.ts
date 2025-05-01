@@ -5,6 +5,16 @@ import db from 'models';
 
 dotenv.config();
 
+/**
+ * 한시련 이벤트 신청자 대상으로 멤버쉽 처리를 해주기 위한 스크립트입니다.
+ * back 폴더 아래에 google_api_credentials.json 파일을 넣어주고 (노션 픽포미 개발문서 > .env 파일 참고)
+ * env를 env.example에 맞게 업데이트 한다음에, 
+ * (노션 픽포미 개발문서 > .env의 production env로 교체.)
+ * npm run membership-events 로 실행해주세요.
+ * 
+ * 주의! 스크립트 실행 이후에는 다시 local .env로 변경해주세요!
+ */
+
 const EVENT_PRODUCT_ID = 'pickforme_plus';
 
 // 구글 API 인증 설정
@@ -42,12 +52,11 @@ async function processUser(response: FormResponse): Promise<void> {
     }
 
     if (user.event === 1) {
-      console.log(`User ${user._id} already processed`);
+      console.log(`User ${response.name} already processed`);
       return;
     }
 
     throw new Error('멤버쉽 지급 부분은 아직 미완성입니다. 추후에 user 멤버쉽 로직 dev로 머지하면 그때 이 부분 완성해주세요. product와의 연계, user멤버쉽 로직 추상화 필요.');
-
 
     // user.MembershipAt = new Date();
     // user.point += 30;
@@ -130,4 +139,6 @@ async function main() {
   }
 }
 
-main(); 
+if (require.main === module) {    
+  main();
+}
