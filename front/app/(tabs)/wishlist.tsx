@@ -97,7 +97,7 @@ export default function WishListScreen() {
                             data={wishProducts.slice().reverse()}
                             keyExtractor={product => `wishlist-wish-${product.url}`}
                             renderItem={({ item: product, index: i }) => (
-                                <ProductCard product={product} type={'liked'} />
+                                <ProductCard data={product} type={'liked'} />
                             )}
                             ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
                         />
@@ -116,7 +116,7 @@ export default function WishListScreen() {
                                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
                             keyExtractor={request => `wishlist-request-${request.product!.url}`}
                             renderItem={({ item: request, index: i }) => (
-                                <ProductCard product={request.product!} type={'request'} />
+                                <ProductCard data={request.product!} type={'request'} />
                             )}
                             ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
                         />
