@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { FlatList, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -44,6 +44,11 @@ export default function WishListScreen() {
             getRequests();
         }
     }, [getRequests, tab]);
+
+    useEffect(() => {
+        console.log('wishProducts:', JSON.stringify(wishProducts, null, 2));
+        console.log('requests:', JSON.stringify(requests, null, 2));
+    }, [wishProducts, requests]);
 
     useFocusEffect(
         useCallback(() => {
@@ -96,9 +101,7 @@ export default function WishListScreen() {
                             contentContainerStyle={styles.searchList}
                             data={wishProducts.slice().reverse()}
                             keyExtractor={product => `wishlist-wish-${product.url}`}
-                            renderItem={({ item: product, index: i }) => (
-                                <ProductCard data={product} type={'liked'} />
-                            )}
+                            renderItem={({ item: product, index: i }) => <ProductCard data={product} type={'liked'} />}
                             ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
                         />
                     )}
@@ -115,9 +118,7 @@ export default function WishListScreen() {
                                 .filter(request => request.product)
                                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
                             keyExtractor={request => `wishlist-request-${request.product!.url}`}
-                            renderItem={({ item: request, index: i }) => (
-                                <ProductCard data={request.product!} type={'request'} />
-                            )}
+                            renderItem={({ item: request }) => <ProductCard data={request.product!} type={'request'} />}
                             ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
                         />
                     )}
