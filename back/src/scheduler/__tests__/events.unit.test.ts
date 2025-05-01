@@ -65,7 +65,7 @@ describe('Event Scheduler', () => {
       };
 
       const mockProduct = {
-        productId: 'pickforme_plus',
+        productId: 'pickforme__plus',
         getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
       };
 
@@ -96,7 +96,7 @@ describe('Event Scheduler', () => {
       };
 
       const mockProduct = {
-        productId: 'pickforme_plus',
+        productId: 'pickforme__plus',
         getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
       };
 
@@ -128,7 +128,7 @@ describe('Event Scheduler', () => {
       };
 
       const mockProduct = {
-        productId: 'pickforme_plus',
+        productId: 'pickforme__plus',
         getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
       };
 
@@ -151,7 +151,7 @@ describe('Event Scheduler', () => {
       };
 
       const mockProduct = {
-        productId: 'pickforme_plus',
+        productId: 'pickforme__plus',
         getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
       };  
 

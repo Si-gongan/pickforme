@@ -5,7 +5,7 @@ import { log } from 'utils/logger/logger';
 import { LogContext, LogSeverity } from 'utils/logger/types';
 
 const SCHEDULER_NAME = 'events';
-const productIdToApply = 'pickforme_plus';
+const productIdToApply = 'pickforme__plus';
 
 /**
  * 한시련 이벤트 멤버십을 가진 유저들의 상태를 확인하고,

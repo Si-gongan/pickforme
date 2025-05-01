@@ -258,7 +258,7 @@ describe('Scheduler Integration Tests', () => {
       });
 
       await db.Product.create({
-        productId: 'pickforme_plus',
+        productId: 'pickforme__plus',
         type: 1,
         displayName: '픽포미 플러스',
         point: 100,
@@ -296,7 +296,7 @@ describe('Scheduler Integration Tests', () => {
           });
     
           await db.Product.create({
-            productId: 'pickforme_plus',
+            productId: 'pickforme__plus',
             type: 1,
             displayName: '픽포미 플러스',
             point: 100,
@@ -332,7 +332,7 @@ describe('Scheduler Integration Tests', () => {
         });
       
         await db.Product.create({
-          productId: 'pickforme_plus',
+          productId: 'pickforme__plus',
           type: 1,
           displayName: '픽포미 플러스',
           point: 100,
