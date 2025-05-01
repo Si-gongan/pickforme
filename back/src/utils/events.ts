@@ -2,20 +2,33 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import db from 'models';
+import { ProductReward } from 'models/product';
 
 dotenv.config();
 
 /**
  * 한시련 이벤트 신청자 대상으로 멤버쉽 처리를 해주기 위한 스크립트입니다.
  * back 폴더 아래에 google_api_credentials.json 파일을 넣어주고 (노션 픽포미 개발문서 > .env 파일 참고)
- * env를 env.example에 맞게 업데이트 한다음에, 
+ * env를 production용 .env로 교체한다음에
  * (노션 픽포미 개발문서 > .env의 production env로 교체.)
  * npm run membership-events 로 실행해주세요.
  * 
- * 주의! 스크립트 실행 이후에는 다시 local .env로 변경해주세요!
+ * 주의! 만약 한시련 이벤트 번호가 1번에서 바뀌게 되거나, 지급하게 되는 포인트가 30, 9999 에서 바뀌게 되면,
+ * 이 스크립트에서 지급하는 포인트도 바꿔줘야 합니다. EVENT_PRODUCT_REWARDS 객체의 값을 바꿔주세요.
+ * 
+ * 주의! 스크립트 실행 이후에는 다시 local용 .env로 변경해주세요!
  */
 
-const EVENT_PRODUCT_ID = 'pickforme_plus';
+
+// 원래는 product.getRewards() 함수를 통해서 가져오는 값이지만, 
+// 현재 product 모델에서는 event 필드가 따로 없기 때문에 임시로 이렇게 rewards 객체를 직접 만들어서 이벤트를 처리합니다.
+// 추후에 product 모델에 event 필드를 추가하고, 이 스크립트에서도 product.getRewards() 함수를 통해서 가져오는 값으로 변경해주세요.
+const EVENT_PRODUCT_REWARDS: ProductReward = {
+  point: 30,
+  aiPoint: 9999,
+  // 한시련 이벤트는 이벤트 멤버쉽 타입이 1입니다.
+  event: 1,
+}
 
 // 구글 API 인증 설정
 const auth = new google.auth.GoogleAuth({
@@ -32,9 +45,12 @@ interface FormResponse {
 
 async function processUser(response: FormResponse): Promise<void> {
   try {
+
+    const normalizedPhoneNumber = response.phoneNumber.replace(/-/g, '');
+
     const user = await db.User.findOne({
       $or: [
-        { phone: response.phoneNumber },
+        { phone: normalizedPhoneNumber },
         { email: response.email }
       ]
     }, {
@@ -47,7 +63,7 @@ async function processUser(response: FormResponse): Promise<void> {
     });
 
     if (!user) {
-      console.log(`User ${response.name} not found for phone: ${response.phoneNumber} or email: ${response.email}`);
+      console.log(`User ${response.name} not found for phone: ${normalizedPhoneNumber} or email: ${response.email}`);
       return;
     }
 
@@ -56,16 +72,9 @@ async function processUser(response: FormResponse): Promise<void> {
       return;
     }
 
-    throw new Error('멤버쉽 지급 부분은 아직 미완성입니다. 추후에 user 멤버쉽 로직 dev로 머지하면 그때 이 부분 완성해주세요. product와의 연계, user멤버쉽 로직 추상화 필요.');
+    await user.applyPurchaseRewards(EVENT_PRODUCT_REWARDS);
 
-    // user.MembershipAt = new Date();
-    // user.point += 30;
-    // user.aiPoint += 9999;
-    // user.event = 1;
-    // await user.save();
-
-    // console.log(`new event membership for User ${user._id} membership at ${user.MembershipAt} point ${user.point} aiPoint ${user.aiPoint}`);
-
+    console.log(`new event membership for User ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt}`);
   } catch (error) {
     console.error(`Error processing user ${response.email}:`, error);
     throw error;
@@ -75,14 +84,11 @@ async function processUser(response: FormResponse): Promise<void> {
 async function main() {
   try {
     // MongoDB 연결
-
     const uri = process.env.MONGO_URI;
     
     if (!uri) {
       throw new Error('MONGO_URI environment variable is required');
     }
-
-    await mongoose.connect(uri);
 
     // Google Sheets API 초기화
     const sheets = google.sheets({ version: 'v4', auth });
@@ -115,15 +121,6 @@ async function main() {
       email: row[2],
       phoneNumber: row[3],
     }));
-
-    const product = await db.Product.findOne({
-      productId: EVENT_PRODUCT_ID,
-    });
-
-    if (!product) {
-        console.log('Product not found');
-        return;
-    }
 
     // 각 응답 처리
     for (const response of formResponses) {

@@ -138,6 +138,11 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(re
 
   this.lastMembershipAt = new Date();
 
+  // 만약 이벤트 멤버쉽 구매인 경우, event 필드에 이벤트 멤버쉽 타입을 저장.
+  if(rewards.event){
+    this.event = rewards.event;
+  }
+
   await this.save();
 };
 
