@@ -116,12 +116,12 @@ router.put('/product', async (ctx) => {
     }, {
       $set: product,
     });
-    console.log('update item');
+    // console.log('update item');
   }
   // item 생성
   else {
     await db.Item.create(product);
-    console.log('create item');
+    // console.log('create item');
   }
   ctx.body = {
     product,
