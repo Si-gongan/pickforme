@@ -1,9 +1,5 @@
 import client from '../../utils/axios';
 
-import {
-  PostLogParams
-} from './types';
+import { PostLogParams } from './types';
 
-export const PostLogAPI = (params: PostLogParams) => {
-  client.post('/log', params).catch(error => { console.log(error) });
-}
+export const PostLogAPI = (params: PostLogParams) => client.post('/log', params);

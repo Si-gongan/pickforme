@@ -11,18 +11,7 @@ import {
     ParseProductUrlAPIResponse
 } from './types';
 
-export const GetMainProductsAPI = (id: string) =>
-    client
-        .get<GetMainProductsResponse>(`/discover/products/${id}`)
-        .then(response => {
-            return response;
-        })
-        .catch(error => {
-            console.log(error);
-            console.log('에러 요청 URL:', error.config?.url);
-            console.log('에러 요청 baseURL:', error.config?.baseURL);
-            throw error;
-        });
+export const GetMainProductsAPI = (id: string) => client.get<GetMainProductsResponse>(`/discover/products/${id}`);
 export const GetProductAPI = (url: string) => client.post<GetProductResponse>(`/discover/product`, { url });
 
 export const GetProductReviewAPI = (params: GetProductDetailRequest) =>

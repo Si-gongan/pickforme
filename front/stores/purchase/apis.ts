@@ -4,9 +4,7 @@ import client from '../../utils/axios';
 import { Product, Purchase, GetProductsParams, PurchaseProductParams, PurchaseSubCheck } from './types';
 
 export const PurchaseProductAPI = (params: PurchaseProductParams) =>
-    client.post<Purchase | string>('/purchase', params).catch(error => {
-        console.log(error);
-    });
+    client.post<Purchase | string>('/purchase', params);
 
 export const GetProductsAPI = (params: GetProductsParams) =>
     client.get<Product[]>(`/purchase/products/${params.platform}`);
