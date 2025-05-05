@@ -12,6 +12,7 @@ import Notification from './notification';
 import DiscoverSection from './discoverSection';
 import Log from './log';
 import Item from './item';
+import Popup from './popup';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -35,6 +36,7 @@ const db = {
   Notification,
   Log,
   Item,
+  Popup,
 };
 
 export default db;

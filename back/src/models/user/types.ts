@@ -1,4 +1,4 @@
-import { Model, Document } from 'mongoose';
+import { Model, Document, Schema } from 'mongoose';
 
 export interface LocalRegisterPayload {
   email: string;
@@ -24,7 +24,7 @@ export interface User extends LocalRegisterPayload {
   MembershipAt: Date;
   phone:string;
   event:number;
-  hide:number;
+  hide: string[] | null;
 }
 
 export interface UserDocument extends User, Document {

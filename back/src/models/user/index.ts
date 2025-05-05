@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 import jwt from 'utils/jwt';
 
 import {
@@ -10,7 +10,7 @@ import {
 
 const uniqueValidator = require('mongoose-unique-validator');
 
-const UserSchema: Schema<UserDocument> = new mongoose.Schema(
+const UserSchema = new mongoose.Schema<UserDocument>(
   {
     email: {
       type: String,
@@ -58,9 +58,10 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema(
     event: {
       type: Number
     },
-    hide: {
-      type: Number
-    }
+    hide: [{
+      // popup 모델의 popup_id 값을 저장.
+      type: String
+    }]
   },
   {
     timestamps: true,
