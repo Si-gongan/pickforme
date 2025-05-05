@@ -44,7 +44,7 @@ export default function RootLayout() {
         if (user?._id) {
             GetPopupAPI()
                 .then(res => {
-                    console.log(res?.data);
+                    console.log('팝업 설정:', res?.data);
                     const flag = res?.data?.find(p => p.popup_id === 'event_hansiryun');
                     if (flag) setIsHansiryunPopup(true);
                 })

@@ -91,7 +91,7 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                                     리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
                                 </Text>
                             )}
-                            <Text numberOfLines={type === 'liked' ? 1 : 2} style={styles.ProductCardName} accessible>
+                            <Text style={styles.ProductCardName} accessible>
                                 {data.name}
                             </Text>
                         </View>

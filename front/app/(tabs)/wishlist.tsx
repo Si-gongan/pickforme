@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { FlatList, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -44,11 +44,6 @@ export default function WishListScreen() {
             getRequests();
         }
     }, [getRequests, tab]);
-
-    useEffect(() => {
-        console.log('wishProducts:', JSON.stringify(wishProducts, null, 2));
-        console.log('requests:', JSON.stringify(requests, null, 2));
-    }, [wishProducts, requests]);
 
     useFocusEffect(
         useCallback(() => {

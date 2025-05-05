@@ -97,16 +97,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         .filter(req => req.product)
         .find(req => decodeURIComponent(req.product!.url) === productUrl);
     const already = wishlist.find(wishProduct => decodeURIComponent(wishProduct.url) === productUrl);
-    const product =
-        request?.product ||
-        searchResult?.products.find(searchItem => decodeURIComponent(searchItem.url) === productUrl) ||
-        [
-            ...mainProducts.local.map(section => section.products).flat(),
-            ...mainProducts.special,
-            ...mainProducts.random
-        ].find(({ url }) => decodeURIComponent(url) === productUrl) ||
-        already ||
-        ({ url: productUrl } as Product);
 
     const isLocal =
         mainProducts.local
@@ -139,6 +129,58 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     //         setProductReview(data);
     //     }
     // });
+
+    // URL 비교 헬퍼 함수 추출
+    const isSameProductUrl = (url: string) => decodeURIComponent(url) === productUrl;
+
+    // 제품 찾기 로직을 단계별로 명확하게 구성
+    const findProduct = (): Product => {
+        console.log('[findProduct] 검색 시작 - productUrl:', productUrl);
+        console.log('[findProduct] request:', request);
+
+        // 1. 요청에서 제품 확인
+        if (request?.product) {
+            console.log('[findProduct] request.product에서 찾음:', request.product);
+            return request.product;
+        }
+
+        console.log('[findProduct] searchResult:', searchResult);
+        // 2. 검색 결과에서 제품 확인
+        if (searchResult?.products) {
+            const foundProduct = searchResult.products.find(item => isSameProductUrl(item.url));
+            if (foundProduct) {
+                console.log('[findProduct] searchResult.products에서 찾음:', foundProduct);
+                return foundProduct;
+            }
+        }
+
+        console.log('[findProduct] mainProducts:', mainProducts);
+        // 3. 메인 제품 목록에서 제품 확인
+        const allProducts = [
+            ...mainProducts.local.map(section => section.products).flat(),
+            ...mainProducts.special,
+            ...mainProducts.random
+        ];
+        console.log('[findProduct] allProducts 길이:', allProducts.length);
+
+        const mainProduct = allProducts.find(({ url }) => isSameProductUrl(url));
+        if (mainProduct) {
+            console.log('[findProduct] allProducts에서 찾음:', mainProduct);
+            return mainProduct;
+        }
+
+        console.log('[findProduct] already(wishlist):', already);
+        // 4. 위시리스트에서 제품 확인
+        if (already) {
+            console.log('[findProduct] wishlist에서 찾음:', already);
+            return already;
+        }
+
+        // 5. 기본값 반환
+        console.log('[findProduct] 어디서도 찾지 못해 기본값 반환: { url: productUrl }');
+        return { url: productUrl } as Product;
+    };
+    const product = findProduct();
 
     const DetailWebView = useWebViewDetail({
         productUrl,
@@ -201,20 +243,13 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // TODO
     // const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
     const handleClickSend = async () => {
-        console.log('handleClickSend 시작:', { question, product }); // 입력값 확인
-
         if (!question) {
-            console.log('질문이 비어있음');
             Alert.alert('질문을 입력해주세요.');
             return;
         }
 
         try {
-            console.log('API 호출 시작 - getProductAIAnswer');
-            console.log('전달되는 파라미터:', { product, question });
             await getProductAIAnswer(question);
-            console.log('API 호출 완료');
-
             setQuestion('');
             sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
         } catch (error: any) {
@@ -267,8 +302,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     const handleClickRequest = useCheckLogin(async (message: string) => {
-        console.log('handleClickRequest 호출');
-
         // setRequestBottomSheet(product);
         // setIsShowSubscriptionModal(false);
         // setTimeout(() => {

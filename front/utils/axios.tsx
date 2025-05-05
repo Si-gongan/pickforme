@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { API_HOST } from '../constants/info';
 
-const baseURL = 'http://52.79.85.108:3000';
-// const baseURL = 'https://api.sigongan-ai.shop';
+// const baseURL = 'http://52.79.85.108:3000';
+const baseURL = 'https://api.sigongan-ai.shop';
 // const baseURL = API_HOST;
 
 console.log('baseURL', baseURL);
