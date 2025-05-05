@@ -13,6 +13,7 @@ import { productGroupAtom } from '../log/atoms';
 import { userAtom } from '@stores';
 import { atomWithStorage } from '../utils';
 import * as Haptics from 'expo-haptics';
+import { attempt } from '../../utils/axios';
 
 import {
     GetMainProductsAPI,
@@ -155,8 +156,14 @@ export const searchProductsAtom = atom(
 );
 
 export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
-    const response = await GetMainProductsAPI(categoryId);
+    const result = await attempt(() => GetMainProductsAPI(categoryId));
 
+    if (!result.ok) {
+        console.error('상품 목록 가져오기 실패:', result.error);
+        return;
+    }
+
+    const response = result.value;
     if (response && response.data) {
         set(mainProductsAtom, response.data);
     } else {
@@ -199,11 +206,9 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
         }
 
         // 백엔드 db 업데이트 요청
-        try {
-            await UpdateProductAPI({ product });
-        } catch (error) {
-            console.error('백엔드 업데이트 API 호출 실패:', error);
-        }
+
+        const result = await attempt(() => UpdateProductAPI({ product }));
+        if (!result.ok) console.error('백엔드 업데이트 API 호출 실패:', result.error);
     } else {
         console.log('필수 데이터 누락:', {
             hasName: !!product.name,
@@ -233,13 +238,21 @@ export const setProductReviewAtom = atom(null, async (get, set, reviews: string[
 });
 
 export const getProductDetailAtom = atom(null, async (get, set, product: Product) => {
-    const response = await GetProductAPI(product.url);
-    if (response && response.data) {
-        // db에 해당 url을 갖는 상품 정보 존재할 경우 해당 값으로 초기화
-        set(productDetailAtom, { ...response.data, url: product.url });
-    } else {
-        // 정보 없을 경우 일단 입력된 상품 정보로 초기화 (이후 setProductAtom에서 업데이트 진행)
+    const result = await attempt(() => GetProductAPI(product.url));
+
+    if (!result.ok) {
+        console.error('상품 정보 가져오기 실패:', result.error);
+        // 정보 없을 경우 일단 입력된 상품 정보로 초기화
         set(productDetailAtom, { product, url: product.url } as ProductDetailState);
+    } else {
+        const response = result.value;
+        if (response && response.data) {
+            // db에 해당 url을 갖는 상품 정보 존재할 경우 해당 값으로 초기화
+            set(productDetailAtom, { ...response.data, url: product.url });
+        } else {
+            // 정보 없을 경우 일단 입력된 상품 정보로 초기화
+            set(productDetailAtom, { product, url: product.url } as ProductDetailState);
+        }
     }
 
     // 상품 캡션 생성 요청
@@ -249,7 +262,21 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
         review: LoadingStatus.INIT,
         question: LoadingStatus.INIT
     });
-    const captionResponse = await GetProductCaptionAPI({ product });
+
+    const captionResult = await attempt(() => GetProductCaptionAPI({ product }));
+
+    if (!captionResult.ok) {
+        console.error('상품 캡션 생성 실패:', captionResult.error);
+        set(loadingStatusAtom, {
+            caption: LoadingStatus.ERROR,
+            report: LoadingStatus.INIT,
+            review: LoadingStatus.INIT,
+            question: LoadingStatus.INIT
+        });
+        return;
+    }
+
+    const captionResponse = captionResult.value;
     if (captionResponse && captionResponse.data && get(productDetailAtom)?.product?.url === product.url) {
         set(productDetailAtom, { ...get(productDetailAtom), ...captionResponse.data, url: product.url as string });
         set(loadingStatusAtom, {
@@ -260,11 +287,6 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
         });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    // if (get(productDetailAtom)?.url === product.url) {
-    //   set(productDetailAtom, { url: product.url, ...get(productDetailAtom), ...productDetail });
-    //   set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.FINISH });
-    //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // }
 });
 
 // AI 리뷰 요약 정보 생성
@@ -282,7 +304,16 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
         return;
     }
     const product = get(productDetailAtom)?.product!;
-    const response = await GetProductReviewAPI({ product, reviews });
+
+    const result = await attempt(() => GetProductReviewAPI({ product, reviews }));
+
+    if (!result.ok) {
+        console.error('리뷰 요약 생성 실패:', result.error);
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.ERROR });
+        return;
+    }
+
+    const response = result.value;
     console.log('GetProductReviewAPI response: 리뷰 데이터 함께 전송', reviews.length, '개', response.data);
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
@@ -300,7 +331,16 @@ export const getProductReportAtom = atom(null, async (get, set) => {
     });
 
     const product = get(productDetailAtom)?.product!;
-    const response = await GetProductReportAPI({ product });
+
+    const result = await attempt(() => GetProductReportAPI({ product }));
+
+    if (!result.ok) {
+        console.error('상세 설명 생성 실패:', result.error);
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.ERROR });
+        return;
+    }
+
+    const response = result.value;
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
@@ -319,7 +359,15 @@ export const getProductCaptionAtom = atom(null, async (get, set) => {
 
     const product = get(productDetailAtom)?.product!;
 
-    const response = await GetProductCaptionAPI({ product });
+    const result = await attempt(() => GetProductCaptionAPI({ product }));
+
+    if (!result.ok) {
+        console.error('이미지 설명 생성 실패:', result.error);
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.ERROR });
+        return;
+    }
+
+    const response = result.value;
 
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
@@ -344,7 +392,16 @@ export const getProductAIAnswerAtom = atom(null, async (get, set, question: stri
 
     const product = get(productDetailAtom)?.product!;
     const reviews = get(productReviewAtom).reviews;
-    const response = await GetProductAIAnswerAPI({ product, reviews, question });
+
+    const result = await attempt(() => GetProductAIAnswerAPI({ product, reviews, question }));
+
+    if (!result.ok) {
+        console.error('AI 답변 생성 실패:', result.error);
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.ERROR });
+        return;
+    }
+
+    const response = result.value;
 
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
@@ -393,15 +450,29 @@ export const setClipboardProductAtom = atom(null, async (get, set, text: string)
         set(clipboardProductAtom, undefined);
         return;
     }
-    const {
-        data: { platform, url }
-    } = await ParseProductUrlAPI({ url: text });
+
+    const parseResult = await attempt(() => ParseProductUrlAPI({ url: text }));
+
+    if (!parseResult.ok) {
+        console.error('URL 파싱 실패:', parseResult.error);
+        return;
+    }
+
+    const { platform, url } = parseResult.value.data;
+
     if (!url) {
         return;
     }
-    const {
-        data: { product }
-    } = await GetProductAPI(url);
+
+    const productResult = await attempt(() => GetProductAPI(url));
+
+    if (!productResult.ok) {
+        console.error('상품 정보 가져오기 실패:', productResult.error);
+        return;
+    }
+
+    const { product } = productResult.value.data;
+
     set(clipboardProductAtom, product);
     set(searchResultAtom, {
         count: 1,

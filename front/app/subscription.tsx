@@ -41,6 +41,7 @@ import { Colors } from '@constants';
 import useColorScheme from '../hooks/useColorScheme';
 import { Text, View, Button_old as Button, BackHeader } from '@components';
 import { initializeIAP } from '../services/IAPservice';
+import { attempt } from '../utils/axios';
 
 // 2024
 import { GetPurchaseSubCheckAPI } from '../stores/purchase/apis';
@@ -209,44 +210,36 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     }, [isSubscription]);
 
     const handleClickSub = async (sku: string, offerToken?: string | null) => {
-        try {
-            const subCheck = await GetPurchaseSubCheckAPI();
-            if (subCheck.data.activate) {
-                Alert.alert('이미 구독중입니다.');
-                return;
-            }
+        const subCheck = await attempt(() => GetPurchaseSubCheckAPI());
 
-            await checkSubscriptionStatus();
-            if (offerToken) {
-                const subscriptionRequest: RequestSubscriptionAndroid = {
-                    subscriptionOffers: [
-                        {
-                            sku,
-                            offerToken
-                        }
-                    ]
-                };
+        if (!subCheck.ok) {
+            Alert.alert('구독 체크 실패', '구독 체크에 실패하였습니다.');
+            return;
+        }
 
-                await requestSubscription(subscriptionRequest);
-                setIsSubscription(true); // 구독 완료 바텀시트
-            } else {
-                // ios
-                await clearTransactionIOS();
-
-                const request = await requestSubscription({
-                    sku,
-                    andDangerouslyFinishTransactionAutomaticallyIOS: false
-                });
-                if (request) {
-                    Alert.alert('구독 성공', JSON.stringify(request));
-                } else {
-                    Alert.alert('구독 실패', '구독에 실패하였습니다.');
-                }
-                setIsSubscription(true); // 구독 완료 바텀시트
-            }
-        } catch (err: any) {
-            console.log('error!');
-            console.warn(err.code, err.message);
+        if (subCheck.value?.data.activate) {
+            Alert.alert('이미 구독중입니다.');
+            return;
+        }
+        if (offerToken) {
+            const subscriptionRequest: RequestSubscriptionAndroid = {
+                subscriptionOffers: [
+                    {
+                        sku,
+                        offerToken
+                    }
+                ]
+            };
+            await requestSubscription(subscriptionRequest);
+            setIsSubscription(true); // 구독 완료 바텀시트
+        } else {
+            // ios
+            await clearTransactionIOS();
+            await requestSubscription({
+                sku,
+                andDangerouslyFinishTransactionAutomaticallyIOS: false
+            });
+            setIsSubscription(true); // 구독 완료 바텀시트
         }
     };
 

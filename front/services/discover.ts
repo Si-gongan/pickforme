@@ -1,7 +1,8 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import client from '../utils/axios';
+import client, { attempt } from '../utils/axios';
+import { GetMainProductsAPI, GetProductAPI } from '../stores/product/apis';
 
 import { IDicoverMainProducts, IProductDetail } from '@types';
 
@@ -52,9 +53,15 @@ export function useServiceMainProducts() {
             });
 
             try {
-                const response = await client.get(`/discover/products/${categoryId}`, {
-                    signal
-                });
+                // attempt 패턴과 GetMainProductsAPI 사용
+                const result = await attempt(() => GetMainProductsAPI(categoryId));
+
+                if (!result.ok) {
+                    console.error('[MainProducts] API 호출 실패:', result.error);
+                    throw new Error('FAIL_FETCH_MAIN_PRODUCTS');
+                }
+
+                const response = result.value;
 
                 console.log('[MainProducts] API 응답:', {
                     status: response.status,
@@ -106,12 +113,30 @@ export function useServiceProductDetail(url: string | null | undefined) {
     const { data } = useQuery<IProductDetail>({
         queryKey: ['fetchProductDetail', url],
         queryFn: async function ({ signal }) {
-            const response = await client.post('/discover/product', { url }, { signal });
-            console.log(response.status, response.data);
-            if (response.status === 204) {
-                return response.data;
+            try {
+                // attempt 패턴과 GetProductAPI 사용
+                const result = await attempt(() => GetProductAPI(url || ''));
+                
+                if (!result.ok) {
+                    console.error('[ProductDetail] API 호출 실패:', result.error);
+                    throw new Error('FAIL_FETCH_PRODUCT_DETAIL');
+                }
+                
+                const response = result.value;
+                console.log(response.status, response.data);
+                
+                if (response.status === 200 || response.status === 204) {
+                    return response.data;
+                }
+                throw new Error('FAIL_FETCH_PRODUCT_DETAIL');
+            } catch (error) {
+                console.error('[ProductDetail] API 호출 실패:', {
+                    error,
+                    url,
+                    message: error instanceof Error ? error.message : 'Unknown error'
+                });
+                throw error;
             }
-            throw new Error('FAIL_FETCH_PRODUCT_DETAIL');
         },
         enabled: !!url
     });

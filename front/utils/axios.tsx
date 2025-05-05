@@ -48,7 +48,7 @@ export const handleApiError = (error: any, context: string) => {
 type AttemptResult<T> = { ok: true; value: T } | { ok: false; error: any };
 
 // 비동기 함수 처리를 위한 attempt 함수
-export async function attemptAsync<T>(
+export async function attempt<T>(
     operation: () => Promise<T>,
     options = { maxAttempts: 3, delay: 1000, backoffFactor: 2 }
 ): Promise<AttemptResult<T>> {
