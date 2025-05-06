@@ -5,7 +5,7 @@ jest.mock('models', () => ({
     applyPurchaseRewards: jest.fn(),
   },
   Product: {
-    find: jest.fn().mockReturnThis(),
+    findOne: jest.fn().mockReturnThis(),
   },
 }));
 
@@ -20,19 +20,20 @@ jest.mock('utils/logger/logger', () => ({
   },
 }));
 
-jest.mock('node-schedule', () => ({
-  scheduleJob: jest.fn(),
+jest.mock('node-cron', () => ({
+  schedule: jest.fn(),
 }));
 
-import { registerEventScheduler, processEventMembership } from '../events';
+import { registerEventScheduler, handleEventScheduler } from '../events';
 import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
-import schedule from 'node-schedule';
+import cron from 'node-cron';
+import { LogContext, LogSeverity } from 'utils/logger/types';
 
 describe('Event Scheduler', () => {
   const RealDate = Date;
-  
+
   // 오늘 날짜가 2023년 2월 3일 자정 (kst) 이라고 가정.
   const mockDate = new RealDate('2023-02-02T15:00:00.000Z');
 
@@ -49,7 +50,9 @@ describe('Event Scheduler', () => {
   describe('registerEventScheduler', () => {
     it('매일 0시에 실행되도록 스케줄러가 등록된다', () => {
       registerEventScheduler();
-      expect(schedule.scheduleJob).toHaveBeenCalledWith('0 0 0 * * *', processEventMembership);
+      expect(cron.schedule).toHaveBeenCalledWith('0 0 * * *', handleEventScheduler, {
+        timezone: 'Asia/Seoul',
+      });
     });
   });
 
@@ -58,7 +61,6 @@ describe('Event Scheduler', () => {
       const mockUser = {
         _id: 'user1',
         event: 1,
-        // 15:00:00 정확히 6개월이 되도 만료가 됨.
         MembershipAt: new Date('2022-08-02T15:00:00.000Z'),
         lastMembershipAt: new Date('2023-01-02T15:00:00.000Z'),
         processExpiredMembership: jest.fn().mockResolvedValue(undefined),
@@ -70,15 +72,15 @@ describe('Event Scheduler', () => {
       };
 
       (db.User.find as jest.Mock).mockResolvedValue([mockUser]);
-      (db.Product.find as jest.Mock).mockResolvedValue([mockProduct]);
+      (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
 
-      await processEventMembership();
+      await handleEventScheduler();
 
       expect(mockUser.processExpiredMembership).toHaveBeenCalled();
       expect(log.info).toHaveBeenCalledWith(
-        'scheduler',
+        LogContext.SCHEDULER,
         expect.stringContaining('이벤트 멤버십 만료 처리 완료'),
-        1,
+        LogSeverity.LOW,
         expect.objectContaining({
           scheduler: 'events',
           userId: mockUser._id,
@@ -101,15 +103,15 @@ describe('Event Scheduler', () => {
       };
 
       (db.User.find as jest.Mock).mockResolvedValue([mockUser]);
-      (db.Product.find as jest.Mock).mockResolvedValue([mockProduct]);
+      (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
 
-      await processEventMembership();
+      await handleEventScheduler();
 
       expect(mockUser.applyPurchaseRewards).toHaveBeenCalledWith(mockProduct.getRewards());
       expect(log.info).toHaveBeenCalledWith(
-        'scheduler',
+        LogContext.SCHEDULER,
         expect.stringContaining('이벤트 멤버십 포인트 충전 완료'),
-        1,
+        LogSeverity.LOW,
         expect.objectContaining({
           scheduler: 'events',
           userId: mockUser._id,
@@ -121,9 +123,8 @@ describe('Event Scheduler', () => {
       const mockUser = {
         _id: 'user1',
         event: 1,
-        MembershipAt: new Date('2023-01-02T15:00:00.000Z'), 
-        // 현재 날짜는 2023-02-02T15:00:00.000Z 이므로 한달이 지나지 않은 경우임.
-        lastMembershipAt: new Date('2023-01-03T15:00:00.000Z'),
+        MembershipAt: new Date('2023-01-02T15:00:00.000Z'),
+        lastMembershipAt: new Date('2023-01-04T15:00:00.000Z'),
         applyPurchaseRewards: jest.fn().mockResolvedValue(undefined),
       };
 
@@ -133,15 +134,20 @@ describe('Event Scheduler', () => {
       };
 
       (db.User.find as jest.Mock).mockResolvedValue([mockUser]);
-      (db.Product.find as jest.Mock).mockResolvedValue([mockProduct]);
+      (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
 
-      await processEventMembership();
+      await handleEventScheduler();
 
       expect(mockUser.applyPurchaseRewards).not.toHaveBeenCalled();
-      expect(log.info).not.toHaveBeenCalled();
+      expect(log.info).not.toHaveBeenCalledWith(
+        LogContext.SCHEDULER,
+        expect.stringContaining('이벤트 멤버십 포인트 충전 완료'),
+        LogSeverity.LOW,
+        expect.any(Object)
+      );
     });
 
-    it('이벤트 처리중 오류가 발생하면 에러를 로깅한다. 심각도는 HIGH(3)', async () => {
+    it('이벤트 처리중 오류가 발생하면 에러를 로깅한다', async () => {
       const mockUser = {
         _id: 'user1',
         event: 1,
@@ -153,22 +159,22 @@ describe('Event Scheduler', () => {
       const mockProduct = {
         productId: 'pickforme__plus',
         getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
-      };  
+      };
 
-      (db.User.find as jest.Mock).mockResolvedValue([mockUser]);  
-      (db.Product.find as jest.Mock).mockResolvedValue([mockProduct]);
+      (db.User.find as jest.Mock).mockResolvedValue([mockUser]);
+      (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
 
-      await processEventMembership();
+      await handleEventScheduler();
 
       expect(log.error).toHaveBeenCalledWith(
-        'scheduler',
-        expect.stringContaining('이벤트 멤버십 처리 중 오류 발생'),
-        3,
+        LogContext.SCHEDULER,
+        '이벤트 멤버십 처리 중 오류 발생',
+        LogSeverity.HIGH,
         expect.objectContaining({
           scheduler: 'events',
-          error: new Error('test error'),
+          message: 'test error',
         })
       );
     });
   });
-}); 
+});
