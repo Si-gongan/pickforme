@@ -325,38 +325,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab]) {
             console.log('handlePressTab api 호출');
             if (nextTab === TABS.REPORT) {
-                if (!isLocal && productDetail?.product?.detail_images?.length === 0) {
-                    let count = 0;
-                    const interval = setInterval(() => {
-                        if (count >= 5 || productDetail?.product?.detail_images?.length! > 0) {
-                            clearInterval(interval);
-                            sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
-                            getProductReport();
-                            return;
-                        }
-                        count++;
-                    }, 1000);
-                } else {
-                    sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
-                    getProductReport();
-                }
+                sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
+                getProductReport();
             }
             if (nextTab === TABS.REVIEW) {
-                if (!isLocal && productReview.reviews?.length === 0) {
-                    let count = 0;
-                    const interval = setInterval(() => {
-                        if (count >= 5 || productReview.reviews!.length > 0) {
-                            clearInterval(interval);
-                            sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
-                            getProductReview();
-                            return;
-                        }
-                        count++;
-                    }, 1000);
-                } else {
-                    sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
-                    getProductReview();
-                }
+                sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
+                getProductReview();
             }
         }
         setTab(nextTab);
