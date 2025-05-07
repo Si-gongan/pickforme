@@ -212,6 +212,7 @@ describe('Scheduler Integration Tests', () => {
       expect(updated?.point).toBe(0);
       expect(updated?.aiPoint).toBe(15);
       expect(updated?.MembershipAt).toBe(null);
+      expect(updated?.lastMembershipAt).toBe(null);
     });
 
     it('1개월 지난 이벤트는 포인트 충전', async () => {
@@ -237,6 +238,8 @@ describe('Scheduler Integration Tests', () => {
       const updated = await db.User.findById(user._id);
       expect(updated?.point).toBe(100);
       expect(updated?.aiPoint).toBe(1000);
+      // 날짜가 갱신되었는지 확인
+      expect(updated?.lastMembershipAt).not.toBe(updated?.MembershipAt);
     });
 
     it('1개월 지나지 않은 이벤트는 충전 안됨', async () => {
@@ -262,6 +265,60 @@ describe('Scheduler Integration Tests', () => {
       const updated = await db.User.findById(user._id);
       expect(updated?.point).toBe(0);
       expect(updated?.aiPoint).toBe(0);
+    });
+
+    it('MembershipAt만 들어가 있는 기존 이벤트 유저의 경우 한달이 지나지 않았다면 포인트 충전 안됨', async () => {
+      const user = await db.User.create({
+        email: 'test@example.com',
+        event: 1,
+        point: 0,
+        aiPoint: 0,
+        MembershipAt: new Date('2023-01-04T15:00:00.000Z'),
+      });
+      await db.Product.create({
+        productId: 'pickforme__plus',
+        type: 1,
+        point: 100,
+        aiPoint:1000,
+        displayName: '픽포미 플러스',
+        platform: 'ios',
+      });
+
+      await handleEventScheduler();
+
+      const updated = await db.User.findById(user._id);
+      expect(updated?.point).toBe(0);
+      expect(updated?.aiPoint).toBe(0);
+      expect(updated?.MembershipAt).toEqual(new Date('2023-01-04T15:00:00.000Z'));
+      expect(updated?.lastMembershipAt).toBe(null);
+    });
+
+    it("MembershipAt만 들어가 있는 기존 이벤트 유저의 경우 이벤트 갱신 시에 (한달뒤) MembershipAt은 바뀌지 않고 lastMembershipAt만 바뀐다", async () => {
+      const user = await db.User.create({
+        email: 'junseok!@#!@#@!#@!@example.com',
+        event: 1,
+        point: 0,
+        aiPoint: 0,
+        MembershipAt: new Date('2022-12-29T15:00:00.000Z'),
+      });
+
+      await db.Product.create({
+        productId: 'pickforme__plus',
+        type: 1,
+        point: 100,
+        aiPoint:1000,
+        displayName: '픽포미 플러스',
+        platform: 'ios',
+      });
+
+      await handleEventScheduler();
+
+      const updated = await db.User.findById(user._id);
+      expect(updated?.point).toBe(100);
+      expect(updated?.aiPoint).toBe(1000);      
+      expect(updated?.MembershipAt).toEqual(new Date('2022-12-29T15:00:00.000Z'))
+      expect(updated?.lastMembershipAt).not.toBe(null);
+      expect(updated?.lastMembershipAt).not.toEqual(updated?.MembershipAt);
     });
   });
 });

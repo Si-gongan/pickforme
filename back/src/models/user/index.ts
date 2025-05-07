@@ -132,9 +132,11 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(re
   this.aiPoint += rewards.aiPoint;
 
   // 멤버쉽 갱신이 아닌 만료 후 첫 멤버쉽 구매인 경우, MembershipAt을 새롭게 기록.
-  if(!this.lastMembershipAt){
+  // 단 기존에 MembershipAt만 있었는 경우는 (구 유저들) MembershipAt을 새롭게 기록하지 않음.
+  if (!this.lastMembershipAt && !this.MembershipAt) {    
     this.MembershipAt = new Date();
   }
+
 
   this.lastMembershipAt = new Date();
 
