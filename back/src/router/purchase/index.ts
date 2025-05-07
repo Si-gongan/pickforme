@@ -4,6 +4,7 @@ import { ProductType } from 'models/product';
 import requireAuth from 'middleware/jwt';
 import { Receipt } from 'in-app-purchase';
 import iapValidator from 'utils/iap';
+import { subscriptionService } from '../../services/subscription.service';
 
 const router = new Router({
   prefix: '/purchase',
@@ -109,45 +110,8 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
 // 구독 상태 조회
 router.get('/subscription/status', requireAuth, async (ctx) => {
   try {
-    const subscription = await db.Purchase.findOne({
-      userId: ctx.state.user._id,
-      isExpired: false,
-      'product.type': ProductType.SUBSCRIPTION,
-    }).sort({
-      createdAt: -1,
-    });
-
-    if (!subscription) {
-      ctx.body = {
-        subscription: null,
-        activate: false,
-        leftDays: 0,
-        expiresAt: null,
-        msg: '활성화중인 구독정보가 없습니다.',
-      };
-      ctx.status = 200;
-      return;
-    }
-
-    // 현재 날짜와 만료일을 자정으로 맞춤
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-
-    const endDate = new Date(subscription.createdAt);
-    endDate.setMonth(endDate.getMonth() + 1);
-    endDate.setHours(0, 0, 0, 0);
-
-    const timeDifference = endDate.getTime() - currentDate.getTime();
-    const leftDays = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-    const activate = leftDays > 0;
-
-    ctx.body = {
-      subscription,
-      activate,
-      leftDays: Math.max(0, leftDays),
-      expiresAt: endDate.toISOString(),
-      msg: activate ? '활성화중인 구독정보를 조회하였습니다.' : '구독 기간이 만료되었습니다.',
-    };
+    const status = await subscriptionService.getSubscriptionStatus(ctx.state.user._id);
+    ctx.body = status;
     ctx.status = 200;
   } catch (error) {
     console.error('구독 상태 조회 중 에러:', error);
