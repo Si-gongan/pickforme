@@ -127,7 +127,7 @@ UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
   return this.aiPoint;
 };
 
-UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(rewards: ProductReward) {  
+UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(rewards: ProductReward, session?: mongoose.ClientSession) {  
   this.point += rewards.point;
   this.aiPoint += rewards.aiPoint;
 
@@ -145,7 +145,7 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(re
     this.event = rewards.event;
   }
 
-  await this.save();
+  await this.save({ session });
 };
 
 UserSchema.methods.processExpiredMembership =

@@ -1,10 +1,10 @@
 // scheduler.test.ts
+import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
 import db from 'models';
-import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
+import { handleEventScheduler } from '../events';
 import { handleIAPScheduler } from '../iap';
 import { handleMembershipScheduler } from '../membership';
-import { handleEventScheduler } from '../events';
 
 jest.mock('utils/iap', () => {
   const mockValidate = jest.fn();
@@ -33,7 +33,7 @@ describe('Scheduler Integration Tests', () => {
     await db.Product.deleteMany({});
   });
 
-  beforeAll(() => {
+  beforeAll(async () => {
     global.Date = class extends RealDate {
       constructor(date?: string | number | Date) {
         super();
@@ -43,11 +43,13 @@ describe('Scheduler Integration Tests', () => {
         return new RealDate(date);
       }
     } as unknown as DateConstructor;
+
+    await setupTestDB();
   });
 
   afterAll(async () => {
     global.Date = RealDate;
-    await mongoose.connection.close();
+    await teardownTestDB();
   });
 
   describe('IAP Scheduler Integration', () => {

@@ -1,9 +1,9 @@
 import Router from '@koa/router';
+import { Receipt } from 'in-app-purchase';
+import requireAuth from 'middleware/jwt';
 import db from 'models';
 import { ProductType } from 'models/product';
-import requireAuth from 'middleware/jwt';
-import { Receipt } from 'in-app-purchase';
-import iapValidator from 'utils/iap';
+import { log, LogContext, LogSeverity } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
 
 const router = new Router({
@@ -12,72 +12,38 @@ const router = new Router({
 
 // 포인트충전
 router.post('/', requireAuth, async (ctx) => {
-  console.log('구매시작');
-  const user = await db.User.findById(ctx.state.user._id);
-  if (!user) {
-    console.log('유저정보 없음');
-    return;
-  }
-
-  const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
-
-  const product = await db.Product.findById(productId);
-  if (!product || product.type === ProductType.PURCHASE) {
-    console.log('상품없음', productId);
-    ctx.body = '존재하지 않는 상품입니다';
-    ctx.status = 400;
-    return;
-  }
-
   try {
-    console.log('point', receipt, product.productId);
-    const purchase = await iapValidator.validate(receipt, product.productId);
-    console.log('purchase : ', purchase);
-    if (purchase) {
-      const exist = await db.Purchase.findOne({
-        userId: ctx.state.user._id,
-        receipt,
-      });
+    const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
 
-      let purchaseData;
-
-      if (exist) {
-        if (!exist.isExpired) {
-          console.log('이미구매한상품');
-          ctx.body = '이미 구매한 상품입니다.';
-          ctx.status = 400;
-          return;
-        }
-        exist.purchase = purchase;
-        exist.product = product;
-        exist.receipt = receipt;
-        exist.userId = ctx.state.user._id;
-        exist.isExpired = false;
-        purchaseData = await exist.save();
-      } else {
-        purchaseData = await db.Purchase.create({
-          userId: ctx.state.user._id,
-          product,
-          purchase,
-          receipt,
-          isExpired: false,
-        });
-      }
-
-      ctx.body = purchaseData;
-
-      await user.applyPurchaseRewards(product.getRewards());
-
-      ctx.status = 200;
-
-      await user.save();
+    if (!receipt || !productId) {
+      ctx.status = 400;
+      ctx.body = '잘못된 요청입니다.';
       return;
     }
-    console.log('구매검증 실패');
-  } catch (e) {
-    console.log('결제에러', e);
-    ctx.body = '결제가 정상적으로 처리되지 않았습니다. 고객센터에 문의해주세요.';
+
+    const purchaseData = await subscriptionService.createSubscription(
+      ctx.state.user._id,
+      productId,
+      receipt
+    );
+
+    ctx.status = 200;
+    ctx.body = purchaseData;
+
+  } catch (error) {
+    log.error(LogContext.PURCHASE, '결제 처리 중 에러 발생:', LogSeverity.HIGH, {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
+      endPoint: '/purchase',
+      method: 'POST',
+      userId: ctx.state.user._id, 
+    });
+
     ctx.status = 400;
+    ctx.body = error instanceof Error ? error.message : '결제 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.';
   }
 });
 

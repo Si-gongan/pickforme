@@ -2,18 +2,30 @@ import db from 'models';
 import mongoose from 'mongoose';
 import { ProductType } from 'models/product';
 import { subscriptionService } from '../subscription.service';
+import iapValidator from 'utils/iap';
+import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
+
+// iapValidator 모킹
+jest.mock('utils/iap', () => ({
+  __esModule: true,
+  default: {
+    validate: jest.fn()
+  }
+}));
 
 const RealDate = Date;
 const testDate = '2023-02-01T00:00:00+09:00';
+
 
 describe('Subscription Service Integration Tests', () => {
   beforeEach(async () => {
     await db.User.deleteMany({});
     await db.Purchase.deleteMany({});
     await db.Product.deleteMany({});
+    jest.clearAllMocks();
   });
 
-  beforeAll(() => {
+  beforeAll(async () => {
     global.Date = class extends RealDate {
       constructor(date?: string | number | Date) {
         super();
@@ -23,11 +35,12 @@ describe('Subscription Service Integration Tests', () => {
         return new RealDate(date);
       }
     } as unknown as DateConstructor;
+    await setupTestDB();
   });
 
   afterAll(async () => {
     global.Date = RealDate;
-    await mongoose.connection.close();
+    await teardownTestDB();
   });
 
   describe('getSubscriptionStatus', () => {
@@ -160,5 +173,178 @@ describe('Subscription Service Integration Tests', () => {
       expect(result.subscription?._id.toString()).toBe(recentPurchase._id.toString());
       expect(result.activate).toBe(true);
     });
+  });
+
+  describe('createSubscription', () => {
+    const mockReceipt = { /* receipt 데이터 */ };
+    const mockPurchase = { /* purchase 데이터 */ };
+
+    beforeEach(() => {
+      (iapValidator.validate as jest.Mock).mockResolvedValue(mockPurchase);
+    });
+
+    it('구독을 성공적으로 생성한다', async () => {
+      // Given
+      const user = await db.User.create({ email: 'test@example.com' });
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      // When
+      const result = await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockReceipt
+      );
+      
+      expect(result).toBeDefined();
+      expect(result.userId.toString()).toBe(user._id.toString());
+      expect(result.product.productId).toBe(product.productId);
+      expect(result.isExpired).toBe(false);
+
+      // 포인트가 정상적으로 지급되었는지 확인
+      const updatedUser = await db.User.findById(user._id);
+      expect(updatedUser?.point).toBe(100);
+      expect(updatedUser?.aiPoint).toBe(1000);
+      expect(updatedUser?.lastMembershipAt).toEqual(new Date(testDate));
+      expect(updatedUser?.MembershipAt).toEqual(new Date(testDate));
+    });
+
+    it('존재하지 않는 유저의 경우 에러를 발생시킨다', async () => {
+      // Given
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      // When & Then
+      await expect(
+        subscriptionService.createSubscription(
+          new mongoose.Types.ObjectId().toString(),
+          product._id.toString(),
+          mockReceipt
+        )
+      ).rejects.toThrow('유저정보가 없습니다.');
+    });
+
+    it('이미 구독중인 경우 에러를 발생시킨다', async () => {
+      // Given
+      const user = await db.User.create({ email: 'test@example.com' });
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      // 기존 구독 생성
+      await db.Purchase.create({
+        userId: user._id,
+        productId: product._id,
+        isExpired: false,
+        createdAt: new Date(),
+        product: { ...product.toObject() },
+      });
+
+      // When & Then
+      await expect(
+        subscriptionService.createSubscription(
+          user._id.toString(),
+          product._id.toString(),
+          mockReceipt
+        )
+      ).rejects.toThrow('이미 구독중입니다.');
+    });
+
+    it('존재하지 않는 상품의 경우 에러를 발생시킨다', async () => {
+      // Given
+      const user = await db.User.create({ email: 'test@example.com' });
+
+      // When & Then
+      await expect(
+        subscriptionService.createSubscription(
+          user._id.toString(),
+          new mongoose.Types.ObjectId().toString(),
+          mockReceipt
+        )
+      ).rejects.toThrow('존재하지 않는 구독 상품입니다.');
+    });
+
+    it('결제 검증 실패시 에러를 발생시키고 트랜잭션이 롤백된다', async () => {
+      // Given
+      const user = await db.User.create({ email: 'test@example.com' });
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      // 결제 검증 실패 모킹
+      (iapValidator.validate as jest.Mock).mockResolvedValue(null);
+
+      // When & Then
+      await expect(
+        subscriptionService.createSubscription(
+          user._id.toString(),
+          product._id.toString(),
+          mockReceipt
+        )
+      ).rejects.toThrow('결제가 정상적으로 처리되지 않았습니다.');
+
+      // 트랜잭션이 롤백되었는지 확인
+      const purchase = await db.Purchase.findOne({ userId: user._id });
+      expect(purchase).toBeNull();
+
+      const updatedUser = await db.User.findById(user._id);
+      expect(updatedUser?.point).toBe(0);
+      expect(updatedUser?.aiPoint).toBe(0);
+    });
+
+    // it('포인트 지급 실패시 트랜잭션이 롤백된다', async () => {
+    //   // Given
+    //   const user = await db.User.create({ email: 'test@example.com' });
+    //   const product = await db.Product.create({
+    //     productId: 'test_subscription',
+    //     type: ProductType.SUBSCRIPTION,
+    //     displayName: '테스트 구독',
+    //     point: 100,
+    //     aiPoint: 1000,
+    //     platform: 'ios',
+    //   });
+
+    //   // 포인트 지급 실패를 위한 모킹
+    //   jest.spyOn(user, 'applyPurchaseRewards').mockRejectedValue(new Error('포인트 지급 실패'));
+
+    //   // When & Then
+    //   await expect(
+    //     subscriptionService.createSubscription(
+    //       user._id.toString(),
+    //       product._id.toString(),
+    //       mockReceipt
+    //     )
+    //   ).rejects.toThrow('포인트 지급 실패');
+
+    //   // 트랜잭션이 롤백되었는지 확인
+    //   const purchase = await db.Purchase.findOne({ userId: user._id });
+    //   expect(purchase).toBeNull();
+
+    //   const updatedUser = await db.User.findById(user._id);
+    //   expect(updatedUser?.point).toBe(0);
+    //   expect(updatedUser?.aiPoint).toBe(0);
+    // });
   });
 }); 

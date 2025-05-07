@@ -11,6 +11,7 @@ export enum LogLevel {
 export enum LogContext {
   SCHEDULER = 'scheduler',
   AUTH = 'auth',
+  PURCHASE = 'purchase',
 }
 
 export enum LogSeverity {
