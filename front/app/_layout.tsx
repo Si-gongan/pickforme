@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import useColorScheme from '../hooks/useColorScheme';
 import { settingAtom, isLoadedAtom, userAtom } from '@stores';
-import { changeToken, setClientToken } from '../utils/axios';
+import { changeToken, setClientToken, attempt } from '../utils/axios';
 import { GetPopupAPI } from '../stores/auth';
 import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 
@@ -42,15 +42,13 @@ export default function RootLayout() {
         setClientToken(user.token);
 
         if (user?._id) {
-            GetPopupAPI()
-                .then(res => {
-                    console.log('팝업 설정:', res?.data);
-                    const flag = res?.data?.find(p => p.popup_id === 'event_hansiryun');
+            attempt(() => GetPopupAPI()).then(res => {
+                if (res.ok) {
+                    console.log('팝업 설정:', res.value?.data);
+                    const flag = res.value?.data?.find(p => p.popup_id === 'event_hansiryun');
                     if (flag) setIsHansiryunPopup(true);
-                })
-                .catch(error => {
-                    console.error('팝업 설정 실패 in _layout:', error);
-                });
+                }
+            });
         }
     }, [user]);
 

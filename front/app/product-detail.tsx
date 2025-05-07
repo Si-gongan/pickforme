@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -133,54 +133,32 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // URL 비교 헬퍼 함수 추출
     const isSameProductUrl = (url: string) => decodeURIComponent(url) === productUrl;
 
-    // 제품 찾기 로직을 단계별로 명확하게 구성
-    const findProduct = (): Product => {
-        console.log('[findProduct] 검색 시작 - productUrl:', productUrl);
-        console.log('[findProduct] request:', request);
-
+    const product = useMemo(() => {
         // 1. 요청에서 제품 확인
-        if (request?.product) {
-            console.log('[findProduct] request.product에서 찾음:', request.product);
-            return request.product;
-        }
+        if (request?.product) return request.product;
 
-        console.log('[findProduct] searchResult:', searchResult);
         // 2. 검색 결과에서 제품 확인
         if (searchResult?.products) {
             const foundProduct = searchResult.products.find(item => isSameProductUrl(item.url));
-            if (foundProduct) {
-                console.log('[findProduct] searchResult.products에서 찾음:', foundProduct);
-                return foundProduct;
-            }
+            if (foundProduct) return foundProduct;
         }
 
-        console.log('[findProduct] mainProducts:', mainProducts);
         // 3. 메인 제품 목록에서 제품 확인
         const allProducts = [
             ...mainProducts.local.map(section => section.products).flat(),
             ...mainProducts.special,
             ...mainProducts.random
         ];
-        console.log('[findProduct] allProducts 길이:', allProducts.length);
 
         const mainProduct = allProducts.find(({ url }) => isSameProductUrl(url));
-        if (mainProduct) {
-            console.log('[findProduct] allProducts에서 찾음:', mainProduct);
-            return mainProduct;
-        }
+        if (mainProduct) return mainProduct;
 
-        console.log('[findProduct] already(wishlist):', already);
         // 4. 위시리스트에서 제품 확인
-        if (already) {
-            console.log('[findProduct] wishlist에서 찾음:', already);
-            return already;
-        }
+        if (already) return already;
 
         // 5. 기본값 반환
-        console.log('[findProduct] 어디서도 찾지 못해 기본값 반환: { url: productUrl }');
         return { url: productUrl } as Product;
-    };
-    const product = findProduct();
+    }, [productUrl, request, searchResult, mainProducts, wishlist]);
 
     const DetailWebView = useWebViewDetail({
         productUrl,
@@ -198,7 +176,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [initProductDetail]);
 
     useEffect(() => {
-        console.log('productUrl 상태변화 :', productUrl, productDetail);
         if (product) {
             sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
             getProductDetail(product);

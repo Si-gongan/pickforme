@@ -9,6 +9,7 @@ import { useAtomValue } from 'jotai';
 import { setClientToken } from '../../utils/axios';
 import Colors from '../../constants/Colors';
 import useColorScheme from '../../hooks/useColorScheme';
+import { attempt } from '../../utils/axios';
 
 export default function InterviewScreen() {
     const router = useRouter();
@@ -28,17 +29,15 @@ export default function InterviewScreen() {
         setClientToken(user.token);
 
         if (user?._id) {
-            GetPopupAPI()
-                .then(res => {
-                    console.log(res?.data);
-                    const isHansiryunPopup = res?.data?.find(p => p.popup_id === 'event_hansiryun');
-                    if (!isHansiryunPopup) {
-                        router.replace('/(tabs)');
-                    }
-                })
-                .catch(error => {
-                    console.error('팝업 설정 실패:', error);
-                });
+            attempt(() => GetPopupAPI()).then(res => {
+                if (!res.ok) {
+                    console.error('팝업 설정 실패 in hansiryun:', res.error);
+                    return;
+                }
+
+                const isHansiryunPopup = res?.value?.data?.find(p => p.popup_id === 'event_hansiryun');
+                if (!isHansiryunPopup) router.replace('/(tabs)');
+            });
         }
     }, [user]);
 
@@ -71,18 +70,19 @@ export default function InterviewScreen() {
             return;
         }
 
-        try {
-            const response = await PhoneSubmitAPI({
+        attempt(() =>
+            PhoneSubmitAPI({
                 id: id,
                 phone: phoneNumber
-            });
-            console.log('response :', response?.data);
-
+            })
+        ).then(res => {
+            if (!res.ok) {
+                console.error('팝업 설정 실패 in hansiryun:', res.error);
+                return;
+            }
             alert('신청이 완료되었습니다.');
             router.replace('/(tabs)');
-        } catch (error) {
-            console.error('API 에러:', error);
-        }
+        });
     };
 
     // 앞으로 보지 않기 버튼 처리
@@ -94,11 +94,16 @@ export default function InterviewScreen() {
             return;
         }
 
-        const payload = { popup_id: 'event_hansiryun', flag: 1 };
+        const payload = { popup_id: 'event_hansiryun', flag: '1' };
         console.log(payload);
 
-        const response = await SetPopupAPI(payload);
-        console.log('setpopup response :', response?.data);
+        attempt(() => SetPopupAPI(payload)).then(res => {
+            if (!res.ok) {
+                console.error('팝업 설정 실패 in hansiryun:', res.error);
+                return;
+            }
+            console.log('setpopup response :', res?.value?.data);
+        });
     };
 
     // onChangeText 핸들러 수정
@@ -125,20 +130,12 @@ export default function InterviewScreen() {
 
         setPhoneNumber(text);
 
-        try {
-            const response = await PhoneCheckAPI({
-                id: id,
-                phone: phoneNumber
-            });
-            console.log('response :', response?.data);
-        } catch (error: any) {
-            console.error('API 에러:', error);
+        const phoneCheck = await attempt(() => PhoneCheckAPI({ id: id, phone: phoneNumber }));
 
-            if (error.response?.status === 409) {
-                setIsDuplicate(true);
-            } else {
-                setIsDuplicate(false);
-            }
+        if (phoneCheck.ok) {
+            setIsDuplicate(true);
+        } else {
+            setIsDuplicate(false);
         }
     };
 
