@@ -8,8 +8,10 @@
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "pm2": "pm2 kill && pm2 start ./pm2.json",
-    "test": "jest --verbose",
-    "test:watch": "jest --watch --verbose",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:unit": "jest --selectProjects unit",
+    "test:integration": "jest --selectProjects integration",
     "test:coverage": "jest --coverage",
     "membership-events": "NODE_PATH=./src ts-node src/utils/events.ts"
   },
