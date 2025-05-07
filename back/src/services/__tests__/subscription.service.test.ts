@@ -173,6 +173,76 @@ describe('Subscription Service Integration Tests', () => {
       expect(result.subscription?._id.toString()).toBe(recentPurchase._id.toString());
       expect(result.activate).toBe(true);
     });
+
+    it('이벤트 멤버십이 활성화된 유저는 구독 상태가 활성화된다', async () => {
+      // Given
+      const user = await db.User.create({ 
+        email: 'test@example.com',
+        event: 1,
+        MembershipAt: new Date('2023-01-15T00:00:00+09:00')
+      });
+
+      // When
+      const result = await subscriptionService.getSubscriptionStatus(user._id);
+
+      // Then
+      expect(result.activate).toBe(true);
+      expect(result.leftDays).toBeGreaterThan(0);
+      expect(result.expiresAt).toBeDefined();
+      expect(result.msg).toBe('이벤트 멤버십이 활성화되어 있습니다.');
+    });
+
+    it('이벤트 멤버십이 만료된 유저는 구독 상태가 비활성화된다', async () => {
+      // Given
+      const user = await db.User.create({ 
+        email: 'test@example.com',
+        event: 1,
+        MembershipAt: new Date('2022-07-15T00:00:00+09:00') // 6개월 이상 지난 날짜
+      });
+
+      // When
+      const result = await subscriptionService.getSubscriptionStatus(user._id);
+
+      // Then
+      expect(result.activate).toBe(false);
+      expect(result.leftDays).toBe(0);
+      expect(result.expiresAt).toBeDefined();
+      expect(result.msg).toBe('활성화중인 구독정보가 없습니다.');
+    });
+
+    it('이벤트 멤버십이 만료된 유저는 일반 구독 상태를 확인하고 구독이 있으면 활성화된 정보를 전달한다.', async () => {
+      // Given
+      const user = await db.User.create({ 
+        email: 'test@example.com',
+        event: 1,
+        MembershipAt: new Date('2022-07-15T00:00:00+09:00') // 6개월 이상 지난 날짜
+      });
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      await db.Purchase.create({
+        userId: user._id,
+        productId: product._id,
+        isExpired: false,
+        createdAt: new Date('2023-01-15T15:00:00.000Z'),
+        product: { ...product.toObject() },
+      });
+
+      // When
+      const result = await subscriptionService.getSubscriptionStatus(user._id);
+
+      // Then
+      expect(result.activate).toBe(true);
+      expect(result.leftDays).toBeGreaterThan(0);
+      expect(result.expiresAt).toBeDefined();
+      expect(result.msg).toBe('활성화중인 구독정보를 조회하였습니다.');
+    });
   });
 
   describe('createSubscription', () => {
