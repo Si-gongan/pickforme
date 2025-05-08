@@ -45,3 +45,6 @@ package-lock.json
 yarn.lock
 Podfile.properties.json
 prebuild
+
+.windsurfrules
+log

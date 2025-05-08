@@ -354,7 +354,6 @@ export const getProductReportAtom = atom(null, async (get, set) => {
 
 // AI 상품 이미지 설명 생성
 export const getProductCaptionAtom = atom(null, async (get, set) => {
-    console.log('GetProductCaptionAPI 호출');
     set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.LOADING });
 
     const product = get(productDetailAtom)?.product!;
