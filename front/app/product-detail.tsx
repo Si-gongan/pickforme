@@ -114,13 +114,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const reportRef = useRef<RNView>(null);
     const reviewRef = useRef<RNView>(null);
     const questionRef = useRef<RNView>(null);
-    const refs = useState({
-        caption: captionRef,
-        report: reportRef,
-        review: reviewRef,
-        question: questionRef,
-        manager: managerResponseRef
-    })[0];
+
+    const refs = useMemo(
+        () => ({
+            caption: captionRef,
+            report: reportRef,
+            review: reviewRef,
+            question: questionRef,
+            manager: managerResponseRef
+        }),
+        []
+    );
 
     // const ReviewWebView = useWebViewReviews({
     //     productUrl,
@@ -183,9 +187,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [productUrl]);
 
     useEffect(() => {
+        console.log('[Report] useEffect 실행됨:', {
+            loadingStatus: loadingStatus.report,
+            tab,
+            isReportTab: tab === TABS.REPORT
+        });
         const moveFocus = () => {
+            console.log('[Report] moveFocus 함수 호출됨');
             const node = findNodeHandle(reportRef.current);
+            console.log('[Report] node 확인:', { node: !!node, loadingStatus: loadingStatus.report, tab });
             if (loadingStatus.report === 2 && tab === TABS.REPORT && node) {
+                console.log('[Report] 접근성 포커스 이동 시도');
                 AccessibilityInfo.setAccessibilityFocus(node);
             }
         };
@@ -193,9 +205,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [loadingStatus.report, tab]);
 
     useEffect(() => {
+        console.log('[Review] useEffect 실행됨:', {
+            loadingStatus: loadingStatus.review,
+            tab,
+            isReviewTab: tab === TABS.REVIEW
+        });
         const moveFocus = () => {
+            console.log('[Review] moveFocus 함수 호출됨');
             const node = findNodeHandle(reviewRef.current);
+            console.log('[Review] node 확인:', { node: !!node, loadingStatus: loadingStatus.review, tab });
             if (loadingStatus.review === 2 && tab === TABS.REVIEW && node) {
+                console.log('[Review] 접근성 포커스 이동 시도');
                 AccessibilityInfo.setAccessibilityFocus(node);
             }
         };
@@ -203,14 +223,40 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [loadingStatus.review, tab]);
 
     useEffect(() => {
+        console.log('[Question] useEffect 실행됨:', {
+            loadingStatus: loadingStatus.question,
+            tab,
+            isQuestionTab: tab === TABS.QUESTION
+        });
         const moveFocus = () => {
+            console.log('[Question] moveFocus 함수 호출됨');
             const node = findNodeHandle(questionRef.current);
+            console.log('[Question] node 확인:', { node: !!node, loadingStatus: loadingStatus.question, tab });
             if (loadingStatus.question === 2 && tab === TABS.QUESTION && node) {
+                console.log('[Question] 접근성 포커스 이동 시도');
                 AccessibilityInfo.setAccessibilityFocus(node);
             }
         };
         setTimeout(moveFocus, 500);
     }, [loadingStatus.question, tab]);
+
+    useEffect(() => {
+        console.log('[Caption] useEffect 실행됨:', {
+            loadingStatus: loadingStatus.caption,
+            tab,
+            isCaptionTab: tab === TABS.CAPTION
+        });
+        const moveFocus = () => {
+            console.log('[Caption] moveFocus 함수 호출됨');
+            const node = findNodeHandle(captionRef.current);
+            console.log('[Caption] node 확인:', { node: !!node, loadingStatus: loadingStatus.caption, tab });
+            if (loadingStatus.caption === 2 && tab === TABS.CAPTION && node) {
+                console.log('[Caption] 접근성 포커스 이동 시도');
+                AccessibilityInfo.setAccessibilityFocus(node);
+            }
+        };
+        setTimeout(moveFocus, 500);
+    }, [loadingStatus.caption, tab]);
 
     const handleClickBuy = async () => {
         sendLog({ product: { url: productUrl }, action: 'link', metaData: {} });

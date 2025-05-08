@@ -101,7 +101,7 @@ const TabContent: React.FC<TabContentProps> = ({
         );
     } else if (!!productDetail?.[tab]) {
         return tab !== 'review' ? (
-            <View style={styles.detailWrap} ref={refs[tab]}>
+            <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel={`${tab} 내용`}>
                 <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
             </View>
         ) : (
@@ -211,7 +211,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                 <Text>{loadingMessages[tab]}</Text>
             </View>
         ) : loadingStatus[tab] === 2 ? (
-            <View ref={refs[tab]}>
+            <View ref={refs[tab]} accessible={true} accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}>
                 <Markdown style={markdownStyles}>{`**AI 포미:** ${productDetail && productDetail.answer}`}</Markdown>
             </View>
         ) : null}
@@ -220,7 +220,11 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             request.answer?.text ? (
                 <>
                     <View style={styles.seperator}></View>
-                    <View ref={refs.manager}>
+                    <View
+                        ref={refs.manager}
+                        accessible={true}
+                        accessibilityLabel="다음은 질문에 대한 매니저의 답변이에요."
+                    >
                         <Text style={styles.boldText}>다음은 질문에 대한 매니저의 답변이에요.</Text>
                     </View>
                     <Markdown>{`**나의 질문:** ${request?.text}`}</Markdown>
@@ -230,7 +234,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             ) : (
                 <>
                     <View style={styles.seperator}></View>
-                    <View ref={refs.manager}>
+                    <View ref={refs.manager} accessible={true} accessibilityLabel={loadingMessages.manager}>
                         <Text>{loadingMessages.manager}</Text>
                     </View>
                 </>
@@ -255,12 +259,17 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
     return (
         <>
             {!review?.pros?.length && !review?.cons?.length ? (
-                <View style={styles.detailWrap} ref={refs[tab]}>
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel="리뷰 정보를 찾을 수 없습니다."
+                >
                     <Text>리뷰정보를 찾을 수 없습니다.</Text>
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (
-                <View style={styles.detailWrap} ref={refs[tab]}>
+                <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel="긍정적인 리뷰">
                     <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
                         {review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
