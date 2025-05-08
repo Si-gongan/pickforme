@@ -99,7 +99,7 @@ export default function RequestBottomSheet() {
                         underlineColorAndroid="transparent"
                         numberOfLines={4}
                         textAlignVertical="top"
-                        multiline
+                        returnKeyType="done"
                         onChangeText={text => setData({ ...data, text })}
                     />
                 </View>
