@@ -16,7 +16,7 @@
     "baseUrl": "./src",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "types": [],
+    "types": ["jest"],
     "strictPropertyInitialization": false
   },
   "noEmit": true,

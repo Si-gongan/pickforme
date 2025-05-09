@@ -67,7 +67,7 @@ router.post('/', requireAuth, async (ctx) => {
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}\n
-어드민 링크: https://pickforme-admin.vercel.app/request?requestId=${request._id}`;
+어드민 링크: https://pickforme-admin-sigongan.vercel.app/request?requestId=${request._id}`;
 
     slack.post('/chat.postMessage', {
       text: slack_msg,
@@ -80,13 +80,15 @@ router.post('/', requireAuth, async (ctx) => {
       .lean();
 
     if (purchase) {
-      const today = new Date();
-      const oneMonthLater = new Date(purchase.createdAt);
-      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-      if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
-        await purchase.updateExpiration();
-        await user.processExpiredMembership();
-      }
+      // 이 부분 로직은 스케쥴러에서 처리하도록 변경했습니다. feat/membership-scheduler
+
+      // const today = new Date();
+      // const oneMonthLater = new Date(purchase.createdAt);
+      // oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      // if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
+      //   await purchase.updateExpiration();
+      //   await user.processExpiredMembership();
+      // }
     } else {
       // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
       const today = new Date();

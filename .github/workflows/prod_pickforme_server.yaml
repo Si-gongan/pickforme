@@ -1,0 +1,67 @@
+name: Deploy PickForMe Server to Prod
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Start SSH agent with deploy keys
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: |
+            ${{ secrets.REPO_DEPLOY_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Ensure latest main HEAD
+        run: |
+          git checkout main
+          git pull origin main
+
+      - name: Set remote to SSH
+        run: git remote set-url origin git@github.com:Si-gongan/pickforme.git
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Create and push tags
+        id: tag
+        run: |
+          TAG="prod_$(date -u +'%y%m%d-%H%M')"
+          echo "Generated tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          git tag "$TAG"
+          git tag -fa prod_server -m "latest prod server tag" "$TAG"
+          git push origin "$TAG"
+          git push --force origin prod_server
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_EC2_HOST }}
+          username: ${{ secrets.PROD_EC2_USERNAME }}
+          key: ${{ secrets.PROD_EC2_SSH_KEY }}
+          script: |
+            source ~/.nvm/nvm.sh
+            nvm use 18
+            cd /home/ubuntu/pickforme
+            git fetch origin
+            git fetch --tags --force
+            git checkout ${{ steps.tag.outputs.tag }}
+            cd back
+            npm install
+            pm2 start pm2.json

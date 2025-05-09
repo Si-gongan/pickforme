@@ -2,6 +2,7 @@
 node_modules
 
 # misc
+.env
 .env.development
 .env.production
 .DS_Store
@@ -11,3 +12,6 @@ node_modules
 
 # webpack
 .webpackCache
+
+logs/*
+google_api_credentials.json

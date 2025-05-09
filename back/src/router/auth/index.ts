@@ -6,39 +6,10 @@ import requireAuth from 'middleware/jwt';
 import {
   PushSetting,
 } from 'models/user/types';
-import {
-  ProductType,
-} from 'models/product';
-import iapValidator from 'utils/iap';
 
 const router = new Router({
   prefix: '/auth',
 });
-
-// NOTE: 환불 후 로그인을 위한 함수
-const subscriptionCheck = async (userId: string): Promise<boolean> => {
-  const subscriptions = await db.Purchase.findOne({
-    userId,
-    'product.type': ProductType.SUBSCRIPTION,
-    isExpired: false,
-  }).sort({
-    createdAt: -1,
-  });
-
-  if (subscriptions) {
-    const purchaseData = await iapValidator.validate(
-      subscriptions.purchase.receipt,
-      subscriptions.purchase.product.productId,
-    );
-    if (!purchaseData) {
-      subscriptions.isExpired = true;
-      await subscriptions.save();
-      return true;
-    }
-  }
-
-  return false;
-};
 
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({
@@ -56,6 +27,7 @@ const handleLogin = async (email: string) => {
       point: 0,
       aiPoint: 15,
     });
+    
     const usedEmail = await db.User.findOne({
       originEmail: email,
     });
@@ -64,29 +36,30 @@ const handleLogin = async (email: string) => {
       
     } else {
       // 과거 회원 기록이 있는 경우
-      
+      const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
     }
     isRegister = true;
   } else {
     // 기존 회원
-    
+    const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
+
+    // 한시련 이벤트 처리 관련 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/events.ts
+
     // update last login date
     user.lastLoginAt = new Date();
   }
 
-  // NOTE: 환불 후 로그인을 위한 것
-  const subCheckRst = await subscriptionCheck(user._id);
-  if (subCheckRst) {
-    user.point = 0;
-    user.aiPoint = 0;
-  }
+  // 환불 후 로그인 시 유저 포인트 초기화 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/iap.ts
 
   await user.save();
 
   const token = await user.generateToken();
+  // const refreshToken = await user.generateRefreshToken();
+  
   return {
     user: {
       ...user.toObject(),
+      // refreshToken,
       token,
     },
     isRegister,
@@ -104,6 +77,7 @@ router.post('/google', async (ctx) => {
     `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
   `,
   );
+  
   const {
     email, verified_email,
   } = data;
@@ -126,6 +100,7 @@ router.post('/kakao', async (ctx) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  
   const {
     is_email_verified, is_email_valid, email,
   } = data?.data?.kakao_account || {};

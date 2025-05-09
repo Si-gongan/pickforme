@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 import db from 'models';
 import requireAuth from 'middleware/jwt';
-
+import sendPush from 'utils/push';
 const router = new Router({
   prefix: '/user',
 });
@@ -46,6 +46,31 @@ router.get('/getpoint/:id',  async (ctx) => {
     aiPoint: user.aiPoint,
   };
 });
+router.get('/push/:id',  async (ctx) => {
+  const { id } = ctx.params as {id:string};
+  const user = await db.User.findById(id)
+    .select('pushToken')
+    .lean();
+  
+  if (!user) {
+    ctx.status = 404;
+    ctx.body = {
+      error: 'User not found',
+    };
+    return;
+  }
+  if (user.pushToken) {
+    sendPush({
+      to: user.pushToken,
+      title: 'push 테스트',
+      body: 'push 성공',
+      data: { userId: user._id },
+    });
+  }
+  ctx.body = {
+    push : user.pushToken
+  };
+});
 
 
 router.post('/membership', requireAuth, async (ctx) => {
@@ -87,7 +112,7 @@ router.post('/membership', requireAuth, async (ctx) => {
   
 });
 
-router.post('/phone', requireAuth, async (ctx) => {
+router.post('/phone', requireAuth,async (ctx) => {
   const { id, phone } = ctx.request.body as { id: string; phone: string };
 
   console.log(phone); // 전달받은 id 출력
@@ -105,7 +130,12 @@ router.post('/phone', requireAuth, async (ctx) => {
     ctx.body = { error: 'phone is required' };
     return;
   }
-
+  const duplicateUser = await db.User.findOne({ phone, _id: { $ne: id } });
+  if (duplicateUser) {
+    ctx.status = 409; // Conflict
+    ctx.body = { error: 'Phone number already in use by another user' };
+    return;
+  }
   // 유저 찾기
   const user = await db.User.findById(id);
   if (!user) {
@@ -126,4 +156,81 @@ router.post('/phone', requireAuth, async (ctx) => {
   
 });
 
+router.post('/duplicationphone', requireAuth,async (ctx) => {
+  const { phone } = ctx.request.body as { phone: string };
+
+  console.log(phone); // 전달받은 id 출력
+
+  if (!phone) {
+    ctx.status = 400;
+    ctx.body = { error: 'phone is required' };
+    return;
+  }
+  const duplicateUser = await db.User.findOne({ phone });
+  if (duplicateUser) {
+    ctx.status = 409; // Conflict
+    ctx.body = { error: '1' };
+    return;
+  }
+
+
+  ctx.body = {
+    message: '0',
+  };
+
+  
+});
+
+
+
+router.post('/setpopup', requireAuth, async (ctx) => {
+  const { flag, popup_id } = ctx.request.body as { 
+    flag: number;
+    popup_id: string;
+  };
+
+  const user = await db.User.findById(ctx.state.user._id);
+
+  if (!user) {
+    ctx.status = 404;
+    ctx.body = { error: 'User not found' };
+    return;
+  }
+
+  if (!popup_id) {
+    ctx.status = 400;
+    ctx.body = { error: 'popup_id is required' };
+    return;
+  }
+
+  if(!user.hide || !Array.isArray(user.hide)) {
+    user.hide = [];
+  }
+
+  try {
+    // flag가 1이면 숨기기 (hide 배열에 추가)
+    if (flag === 1) {
+      if (!user.hide.includes(popup_id)) {
+        user.hide.push(popup_id);
+      }
+    } 
+    // flag가 0이면 보이기 (hide 배열에서 제거)
+    else if (flag === 0) {
+      user.hide = user.hide.filter(id => id.toString() !== popup_id);
+    } else {
+      ctx.status = 400;
+      ctx.body = { error: 'Invalid flag value. Must be 0 or 1' };
+      return;
+    }
+
+    await user.save();
+    
+    ctx.body = {
+      message: `Popup ${flag === 1 ? 'hidden' : 'shown'} successfully`,
+    };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: 'Server error occurred' };
+  }
+});
 export default router;
