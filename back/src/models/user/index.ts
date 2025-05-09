@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from 'mongoose';
+import mongoose, { ClientSession, Schema, Types } from 'mongoose';
 import jwt from 'utils/jwt';
 
 import {
@@ -8,6 +8,7 @@ import {
   PushService,
 } from './types';
 import { ProductReward } from 'models/product';
+const { POINTS } = require('constants');
 
 const uniqueValidator = require('mongoose-unique-validator');
 
@@ -149,20 +150,20 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(re
 };
 
 UserSchema.methods.processExpiredMembership =
-  async function processExpiredMembership() {
-    this.point = 0;
-    this.aiPoint = 15;
+  async function processExpiredMembership(options?: { session?: ClientSession }) {
+    this.point = POINTS.DEFAULT_POINT;
+    this.aiPoint = POINTS.DEFAULT_AI_POINT;
     this.MembershipAt = null;
     this.lastMembershipAt = null;
     
     // 멤버쉽 만료 시 이벤트도 초기화해줌. 
     // 한시련 이벤트 종료 시 이벤트 초기화 로직을 여기서 처리해줌.
     this.event = 0;
-    await this.save();
+    await this.save(options);
   };
 
 UserSchema.methods.initMonthPoint = async function initMonthPoint() {
-  this.aiPoint = 15;
+  this.aiPoint = POINTS.DEFAULT_AI_POINT;
   await this.save();
 };
 

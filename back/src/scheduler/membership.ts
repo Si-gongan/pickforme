@@ -3,6 +3,7 @@ import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
 import { LogContext, LogSeverity } from 'utils/logger/types';
+import { subscriptionService } from 'services/subscription.service';
 
 const SCHEDULER_NAME = 'membership';
 
@@ -28,21 +29,20 @@ const checkSubscriptionExpirations = async () => {
       oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
       if (oneMonthLater < now) {
-        await purchase.updateExpiration();
-        const user = await db.User.findById(purchase.userId);
-        if (user) {
-          await user.processExpiredMembership();
+        const result = await subscriptionService.expireSubscription(purchase);
+        if (result) {
           log.info(
             LogContext.SCHEDULER,
-            `멤버십 만료 처리 완료 - userId: ${user._id}`,
+            `멤버십 만료 처리 완료 - userId: ${purchase.userId}`,
             LogSeverity.LOW,
             {
               scheduler: SCHEDULER_NAME,
-              userId: user._id,
+              userId: purchase.userId,
             }
           );
         }
       }
+
     }
   } catch (error) {
     if (error instanceof Error)

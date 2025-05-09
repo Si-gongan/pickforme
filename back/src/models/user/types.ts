@@ -35,7 +35,7 @@ export interface UserDocument extends User, Document {
   clearRefreshToken: () => Promise<void>; //
   usePoint(payload: number): () => Promise<number>;
   useAiPoint(payload: number): () => Promise<number>;
-  processExpiredMembership: () => Promise<void>;
+  processExpiredMembership: (options?: { session?: ClientSession }) => Promise<void>;
   initMonthPoint: () => Promise<void>;
   applyPurchaseRewards: (rewards: ProductReward, session?: ClientSession) => Promise<void>;
 }
