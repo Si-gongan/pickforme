@@ -87,27 +87,28 @@ export default function NotificationScreen() {
     );
 }
 
-const useStyles = (colorScheme: ColorScheme) =>
-    StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => {
+    const theme = Colors[colorScheme];
+    return StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: Colors[colorScheme].background.primary
+            backgroundColor: theme.background.primary
         },
         title: {
             fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
             marginBottom: 30,
-            color: Colors[colorScheme].text.primary
+            color: theme.text.primary
         },
         seperator: {
             height: 1,
-            backgroundColor: Colors[colorScheme].borderColor.secondary
+            backgroundColor: theme.borderColor.secondary
         },
         buttonWrap: {
             width: '100%',
             padding: 20,
-            backgroundColor: Colors[colorScheme].background.primary
+            backgroundColor: theme.background.primary
         },
         row: {
             flex: 1,
@@ -120,10 +121,12 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontWeight: '400',
             fontSize: 14,
             lineHeight: 17,
-            color: Colors[colorScheme].text.primary
+            color: theme.text.primary
         },
         scrollContainer: {
             paddingVertical: 32,
-            paddingHorizontal: 33
+            paddingHorizontal: 33,
+            backgroundColor: theme.background.primary
         }
     });
+};

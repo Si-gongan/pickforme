@@ -3,13 +3,17 @@ import { useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useAtom } from 'jotai';
 import * as WebBrowser from 'expo-web-browser';
+import useColorScheme from '../../hooks/useColorScheme';
+import type { ColorScheme } from '../../hooks/useColorScheme';
+import Colors from '../../constants/Colors';
 
 import { IconHeader, MySection } from '@components';
 import { userAtom } from '@stores';
 import { changeToken } from '../../utils/axios';
 
 export default function MyScreen() {
-    const style = useStyle();
+    const colorScheme = useColorScheme();
+    const style = useStyle(colorScheme);
     const router = useRouter();
 
     const [user, onUser] = useAtom(userAtom);
@@ -114,15 +118,12 @@ export default function MyScreen() {
         function () {
             const defaultMenu = [
                 { name: '화면 모드 변경하기', onPress: goToTheme },
-                { name: '글자 크기 변경하기', onPress: goToFontSize },
+                // { name: '글자 크기 변경하기', onPress: goToFontSize },
                 {
                     name: '알림 설정하기',
                     onPress: goToPush
                 }
             ];
-            if (!!user?._id) {
-                return [...defaultMenu, { name: '알림 설정하기', onPress: goToPush }];
-            }
             return defaultMenu;
         },
         [user?._id, goToPush]
@@ -145,8 +146,7 @@ export default function MyScreen() {
 
                     <MySection title="내 정보" items={myInfoMenu} />
 
-                    {/* 후순위로 밀림 - 2025.04.09 */}
-                    {/* <MySection title="앱 설정" items={appSettingMenu} /> */}
+                    <MySection title="앱 설정" items={appSettingMenu} />
 
                     <MySection
                         title="고객 지원"
@@ -192,19 +192,22 @@ export default function MyScreen() {
     );
 }
 
-function useStyle() {
+function useStyle(colorScheme: ColorScheme) {
+    const theme = Colors[colorScheme];
     return StyleSheet.create({
         MyContainer: {
             flex: 1,
-            backgroundColor: '#fff'
+            backgroundColor: theme.background.primary
         },
         MyContent: {
-            flex: 1
+            flex: 1,
+            backgroundColor: theme.background.primary
         },
         MyScrollView: {
             paddingTop: 20,
             paddingBottom: 96,
-            paddingHorizontal: 20
+            paddingHorizontal: 20,
+            backgroundColor: theme.background.primary
         }
     });
 }

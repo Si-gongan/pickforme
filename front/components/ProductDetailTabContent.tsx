@@ -55,6 +55,7 @@ const TabContent: React.FC<TabContentProps> = ({
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
+    const textStyle = { color: Colors[colorScheme].text.primary };
     const markdownStyles = StyleSheet.create({
         text: {
             fontSize: 14,
@@ -79,6 +80,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 tab={tab}
                 markdownStyles={markdownStyles}
                 productDetail={productDetail}
+                colorScheme={colorScheme}
             />
         );
     } else if (loadingStatus[tab] == 0) {
@@ -112,6 +114,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 markdownStyles={markdownStyles}
                 tab={tab}
                 handleLoadMore={handleLoadMore}
+                colorScheme={colorScheme}
             />
         );
     } else if (regenerateCount < 3) {
@@ -131,14 +134,14 @@ const TabContent: React.FC<TabContentProps> = ({
         console.log('productDetail:', productDetail);
         return (
             <View style={styles.detailWrap}>
-                <Text>정보를 불러오는데 실패했습니다.</Text>
+                <Text style={textStyle}>정보를 불러오는데 실패했습니다.</Text>
                 <Pressable
                     onPress={handleRegenerate}
                     accessible
                     accessibilityRole="button"
                     accessibilityLabel="다시 생성하기"
                 >
-                    <Text>다시 생성하기</Text>
+                    <Text style={textStyle}>다시 생성하기</Text>
                 </Pressable>
             </View>
         );
@@ -157,6 +160,7 @@ interface QuestionTabProps {
     tab: TABS;
     markdownStyles: any;
     productDetail: ProductDetailState | void;
+    colorScheme: ColorScheme;
 }
 
 const QuestionTab: React.FC<QuestionTabProps> = ({
@@ -170,7 +174,8 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     loadingStatus,
     tab,
     markdownStyles,
-    productDetail
+    productDetail,
+    colorScheme
 }) => (
     <View style={styles.detailWrap}>
         <View style={styles.inputWrap}>
@@ -190,6 +195,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                     setQuestion(text);
                 }}
                 placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요."
+                placeholderTextColor={colorScheme === 'dark' ? '#aaaaaa' : '#888888'}
             />
 
             <Pressable
@@ -208,7 +214,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
         {loadingStatus[tab] === 1 ? (
             <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
                 <ActivityIndicator />
-                <Text>{loadingMessages[tab]}</Text>
+                <Text style={{ color: Colors[colorScheme].text.primary }}>{loadingMessages[tab]}</Text>
             </View>
         ) : loadingStatus[tab] === 2 ? (
             <View ref={refs[tab]} accessible={true} accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}>
@@ -235,7 +241,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                 <>
                     <View style={styles.seperator}></View>
                     <View ref={refs.manager} accessible={true} accessibilityLabel={loadingMessages.manager}>
-                        <Text>{loadingMessages.manager}</Text>
+                        <Text style={{ color: Colors[colorScheme].text.primary }}>{loadingMessages.manager}</Text>
                     </View>
                 </>
             )
@@ -250,9 +256,18 @@ interface ReviewTabProps {
     refs: Record<string, React.RefObject<RNView>>;
     markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
     handleLoadMore: () => void;
+    colorScheme: ColorScheme;
 }
 
-const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs, markdownStyles, handleLoadMore }) => {
+const ReviewTab: React.FC<ReviewTabProps> = ({
+    styles,
+    productDetail,
+    tab,
+    refs,
+    markdownStyles,
+    handleLoadMore,
+    colorScheme
+}) => {
     const review =
         productDetail && (productDetail[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined);
 
@@ -265,7 +280,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ styles, productDetail, tab, refs,
                     accessible={true}
                     accessibilityLabel="리뷰 정보를 찾을 수 없습니다."
                 >
-                    <Text>리뷰정보를 찾을 수 없습니다.</Text>
+                    <Text style={{ color: Colors[colorScheme].text.primary }}>리뷰정보를 찾을 수 없습니다.</Text>
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (
@@ -315,14 +330,16 @@ const useStyles = (colorScheme: ColorScheme) =>
         reviewListTitle: {
             fontSize: 14,
             fontWeight: '700',
-            marginBottom: 13
+            marginBottom: 13,
+            color: Colors[colorScheme].text.primary
         },
         reviewListRow: {
             flexDirection: 'row'
         },
         reviewListRowText: {
             lineHeight: 24,
-            fontSize: 14
+            fontSize: 14,
+            color: Colors[colorScheme].text.primary
         },
         indicatorWrap: {
             flexDirection: 'row',
@@ -339,15 +356,16 @@ const useStyles = (colorScheme: ColorScheme) =>
             height: 40,
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'white',
-            borderColor: '#5F5F5F',
+            backgroundColor: Colors[colorScheme].background.secondary,
+            borderColor: Colors[colorScheme].border.third,
             borderWidth: 1,
             flexDirection: 'row'
         },
         textArea: {
             fontSize: 14,
             flex: 1,
-            width: '100%'
+            width: '100%',
+            color: Colors[colorScheme].text.primary
         },
         sendIcon: {
             flexShrink: 0,
@@ -358,7 +376,8 @@ const useStyles = (colorScheme: ColorScheme) =>
             alignItems: 'center'
         },
         boldText: {
-            fontWeight: '700'
+            fontWeight: '700',
+            color: Colors[colorScheme].text.primary
         },
         loadMoreButton: {
             padding: 10,

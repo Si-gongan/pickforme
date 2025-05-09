@@ -5,7 +5,7 @@ import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
 
 import { isShowExpireModalAtom, settingAtom } from '@stores';
-import { View, Text, Button } from '@components';
+import { View, Text, Button_old as Button } from '@components';
 import { Props, styles } from '../Base';
 import { Colors } from '@constants';
 import useColorScheme from '../../../hooks/useColorScheme';

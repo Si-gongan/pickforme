@@ -15,6 +15,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import useColorScheme from '../../hooks/useColorScheme';
+import type { ColorScheme } from '../../hooks/useColorScheme';
+import Colors from '../../constants/Colors';
 
 import {
     setScrapedProductsAtom,
@@ -35,7 +38,8 @@ const SORTERS = ['scoreDesc'];
 const SORTER_NAME = ['추천순', '낮은가격순', '높은가격순', '판매량순', '최신순'];
 
 export default function HomeScreen() {
-    const style = useStyle();
+    const colorScheme = useColorScheme();
+    const style = useStyle(colorScheme);
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
@@ -241,13 +245,14 @@ export default function HomeScreen() {
     );
 }
 
-function useStyle() {
+function useStyle(colorScheme: ColorScheme) {
     const insets = useSafeAreaInsets();
+    const theme = Colors[colorScheme];
 
     return StyleSheet.create({
         Container: {
             flex: 1,
-            backgroundColor: '#fff',
+            backgroundColor: theme.background.primary,
             paddingHorizontal: 12
         },
         Header: {
@@ -269,15 +274,16 @@ function useStyle() {
             height: 47,
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'white',
-            borderColor: '#5F5F5F',
+            backgroundColor: theme.background.secondary,
+            borderColor: theme.border.primary,
             borderWidth: 1,
             flexDirection: 'row'
         },
         textArea: {
             fontSize: 14,
             flex: 1,
-            width: '100%'
+            width: '100%',
+            color: theme.text.primary
         },
         resetIcon: {
             flexShrink: 0,
@@ -306,12 +312,13 @@ function useStyle() {
             paddingHorizontal: 20,
             paddingVertical: 12,
             borderBottomWidth: 1,
-            borderBottomColor: '#d9d9d9',
+            borderBottomColor: theme.border.primary,
             flexDirection: 'row',
             justifyContent: 'space-between'
         },
         productCount: {
-            fontWeight: '700'
+            fontWeight: '700',
+            color: theme.text.primary
         },
         sorterSelector: {
             marginHorizontal: 0,
@@ -320,11 +327,13 @@ function useStyle() {
             gap: 8
         },
         sorter: {
-            fontSize: 13
+            fontSize: 13,
+            color: theme.text.primary
         },
         selectedSorter: {
             fontWeight: '700',
-            fontSize: 13
+            fontSize: 13,
+            color: theme.text.primary
         },
         scrollView: {
             paddingVertical: 20,
@@ -342,7 +351,8 @@ function useStyle() {
         loading: {
             paddingHorizontal: 20,
             textAlign: 'center',
-            flex: 1
+            flex: 1,
+            color: theme.text.primary
         }
     });
 }

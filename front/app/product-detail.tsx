@@ -606,7 +606,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeartFill.png')} />
+                    <Image
+                        style={styles.heartIcon}
+                        source={require('../assets/images/discover/icHeartFill.png')}
+                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
+                    />
                 </Pressable>
             ) : (
                 <Pressable
@@ -616,7 +620,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+                    <Image
+                        style={styles.heartIcon}
+                        source={require('../assets/images/discover/icHeart.png')}
+                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
+                    />
                 </Pressable>
             )}
         </View>
@@ -752,10 +760,12 @@ const useStyles = (colorScheme: ColorScheme) =>
         tabButtonText: {
             fontSize: 14,
             fontWeight: '400',
-            lineHeight: 17
+            lineHeight: 17,
+            color: Colors[colorScheme].text.primary
         },
         tabButtonTextActive: {
-            fontWeight: '700'
+            fontWeight: '700',
+            color: Colors[colorScheme].text.primary
         },
         detailWrap: {
             padding: 28

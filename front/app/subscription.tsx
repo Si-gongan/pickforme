@@ -307,13 +307,17 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     return (
         <View style={styles.container}>
             <BackHeader />
-            <ScrollView>
+            <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
                     <View style={styles.description}>
                         <Text style={styles.title}>픽포미 플러스</Text>
                         <Text style={styles.subtitle}>한 달 AI 질문 무제한, 매니저 질문 30회 이용권</Text>
-                        <Text>픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.</Text>
-                        <Text>멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.</Text>
+                        <Text style={{ color: Colors[colorScheme].text.primary }}>
+                            픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.
+                        </Text>
+                        <Text style={{ color: Colors[colorScheme].text.primary }}>
+                            멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.
+                        </Text>
                     </View>
 
                     {filteredProducts.subscriptionProducts.map(product => {
@@ -391,7 +395,8 @@ const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
             flex: 1,
-            paddingTop: 30
+            paddingTop: 30,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         content: {
             flex: 1,
@@ -401,16 +406,19 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
-            marginBottom: 18
+            marginBottom: 18,
+            color: Colors[colorScheme].text.primary
         },
         subtitle: {
             fontWeight: '600',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 14
+            marginBottom: 14,
+            color: Colors[colorScheme].text.primary
         },
         description: {
-            marginBottom: 16
+            marginBottom: 16,
+            color: Colors[colorScheme].text.primary
         },
         productWrap: {
             flexDirection: 'row',
@@ -421,7 +429,8 @@ const useStyles = (colorScheme: ColorScheme) =>
             borderRadius: 10,
             borderWidth: 1,
             borderColor: Colors[colorScheme].borderColor.secondary,
-            marginVertical: 24
+            marginVertical: 24,
+            backgroundColor: Colors[colorScheme].background.secondary
         },
         productButton: {
             width: 120,
@@ -431,13 +440,15 @@ const useStyles = (colorScheme: ColorScheme) =>
         productPrice: {
             fontWeight: '600',
             fontSize: 18,
-            lineHeight: 22
+            lineHeight: 22,
+            color: Colors[colorScheme].text.primary
         },
         terms: {
             marginTop: 12,
             fontWeight: '400',
             fontSize: 12,
-            lineHeight: 15
+            lineHeight: 15,
+            color: Colors[colorScheme].text.primary
         },
         buttonText: {
             fontWeight: '600',

@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import useColorScheme from '../../hooks/useColorScheme';
+import type { ColorScheme } from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
@@ -9,7 +11,8 @@ import { useAtomValue } from 'jotai';
 import { InfoForm, Footer, Button } from '@components';
 
 export default function OnBoardingInfoScreen() {
-    const style = useStyle();
+    const colorScheme = useColorScheme();
+    const style = useStyle(colorScheme);
     const router = useRouter();
     const user = useAtomValue(userAtom);
 
@@ -25,18 +28,19 @@ export default function OnBoardingInfoScreen() {
 
     return (
         <View style={style.OnBoardingInfoContainer}>
-            <StatusBar style="auto" />
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-            <View style={styles.content}>
+            <View style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary }]}>
                 <Text style={{ width: '100%', height: '20%' }}></Text>
-                <Text style={styles.welcomeText}>안녕하세요.</Text>
+                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary }]}>안녕하세요.</Text>
                 <Text style={{ width: '100%', height: 60 }}></Text>
-                <Text style={styles.welcomeText}>시각장애인을 위한</Text>
+                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary }]}>시각장애인을 위한</Text>
                 <Text style={{ width: '100%', height: 16 }}></Text>
-                <Text style={styles.welcomeText}>쇼핑 서비스</Text>
+                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary }]}>쇼핑 서비스</Text>
                 <Text style={{ width: '100%', height: 34 }}></Text>
-                <Text style={styles.welcomeSubText}>
-                    <Text style={styles.boldSystemText}>픽포미</Text>에 오신것을 환영합니다!
+                <Text style={[styles.welcomeSubText, { color: Colors[colorScheme].text.primary }]}>
+                    <Text style={[styles.boldSystemText, { color: Colors[colorScheme].text.primary }]}>픽포미</Text>에
+                    오신것을 환영합니다!
                 </Text>
             </View>
 
@@ -47,11 +51,11 @@ export default function OnBoardingInfoScreen() {
     );
 }
 
-function useStyle() {
+function useStyle(colorScheme: ColorScheme) {
     return StyleSheet.create({
         OnBoardingInfoContainer: {
             flex: 1,
-            backgroundColor: '#fff'
+            backgroundColor: Colors[colorScheme].background.primary
         },
         OnBoardingInfoContent: {
             flex: 1
@@ -62,7 +66,6 @@ function useStyle() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
         justifyContent: 'space-between'
     },
     content: {

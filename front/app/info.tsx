@@ -4,6 +4,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
+import useColorScheme from '../hooks/useColorScheme';
+import Colors from '../constants/Colors';
 
 import { settingAtom } from '@stores';
 import { Button, InfoForm, BackHeader, Footer } from '@components';
@@ -11,7 +13,8 @@ import { Button, InfoForm, BackHeader, Footer } from '@components';
 import type { ISetting } from '@types';
 
 export default function InfoScreen() {
-    const style = useStyle();
+    const colorScheme = useColorScheme();
+    const style = useStyle(colorScheme);
     const [setting, onSetting] = useAtom(settingAtom);
 
     const [payload, onPayload] = useState<ISetting>(setting || {});
@@ -55,11 +58,12 @@ export default function InfoScreen() {
     );
 }
 
-function useStyle() {
+function useStyle(colorScheme: ReturnType<typeof useColorScheme>) {
+    const theme = Colors[colorScheme];
     return StyleSheet.create({
         InfoScreenContainer: {
             flex: 1,
-            backgroundColor: '#fff'
+            backgroundColor: theme.background.primary
         },
         InfoScreenContent: {
             flex: 1,

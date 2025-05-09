@@ -1,30 +1,34 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
+import useColorScheme from '../../hooks/useColorScheme';
+import Colors from '../../constants/Colors';
 
 export default function useStyle() {
-  return StyleSheet.create({
-    MainProductSection: {
-      marginBottom: 60,
-    },
-    MainProductSectionTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 23,
-      color:"#111E4F"
-    },
-    MainProductSectionListContent: {
-      justifyContent: "center",
-      alignItems: "center",
-      paddingBottom: 36,
-      color:"#111E4F"
-    },
-    MainProductSectionSeparator: {
-      height: 12,
-      width: 1,
-      backgroundColor: "transparent",
-    },
-    MainProductSectionListFooter: {
-      width: "100%",
-      marginTop: 12,
-    },
-  });
+    const colorScheme = useColorScheme();
+    const theme = Colors[colorScheme];
+    return StyleSheet.create({
+        MainProductSection: {
+            marginBottom: 60
+        },
+        MainProductSectionTitle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            marginBottom: 23,
+            color: theme.text.primary
+        },
+        MainProductSectionListContent: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingBottom: 36,
+            color: theme.text.primary
+        },
+        MainProductSectionSeparator: {
+            height: 12,
+            width: 1,
+            backgroundColor: 'transparent'
+        },
+        MainProductSectionListFooter: {
+            width: '100%',
+            marginTop: 12
+        }
+    });
 }

@@ -1,8 +1,13 @@
 import { StyleSheet } from 'react-native';
+import { ColorScheme } from '../../hooks/useColorScheme';
+import { Colors } from '../../constants';
 
 export interface Props {}
 
-export const styles = StyleSheet.create({
+// 다크모드 지원 스타일 함수 생성
+export const createStyles = (colorScheme: ColorScheme) => {
+  const theme = Colors[colorScheme];
+  return StyleSheet.create({
     base: {
         justifyContent: 'flex-end',
         marginBottom: 10
@@ -44,9 +49,13 @@ export const styles = StyleSheet.create({
         paddingTop: 42.99, // ASIS 20
         paddingBottom: 50,
         paddingHorizontal: 22, // ASIS 27
-        backgroundColor: 'white'
+        backgroundColor: theme.background.primary
     },
     button: {
         flex: 1
     }
-});
+  });
+};
+
+// 기본 스타일로 라이트 모드 사용 (호환성을 위해)
+export const styles = createStyles('light');
