@@ -63,9 +63,11 @@ const TabContent: React.FC<TabContentProps> = ({
             color: Colors[colorScheme].text.primary
         }
     });
-    const productReview = useAtomValue(productReviewAtom);
+    // 상품 리뷰 데이터는 현재 productDetail에 포함되어 있음.
+    // const productReview = useAtomValue(productReviewAtom);
     const [regenerateCount, setRegenerateCount] = useState(0);
 
+    // 1. Question 탭 처리
     if (tab === TABS.QUESTION) {
         return (
             <QuestionTab
@@ -83,7 +85,10 @@ const TabContent: React.FC<TabContentProps> = ({
                 colorScheme={colorScheme}
             />
         );
-    } else if (loadingStatus[tab] == 0) {
+    }
+
+    // 2. 로딩 상태 처리
+    if (loadingStatus[tab] === 0 || loadingStatus[tab] === 1) {
         return (
             <View style={styles.detailWrap}>
                 <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
@@ -92,32 +97,33 @@ const TabContent: React.FC<TabContentProps> = ({
                 </View>
             </View>
         );
-    } else if (loadingStatus[tab] == 1) {
+    }
+
+    // 3. 상품 상세 정보가 있는 경우
+    if (productDetail?.[tab]) {
+        if (tab === 'review') {
+            return (
+                <ReviewTab
+                    styles={styles}
+                    productDetail={productDetail}
+                    refs={refs}
+                    markdownStyles={markdownStyles}
+                    tab={tab}
+                    handleLoadMore={handleLoadMore}
+                    colorScheme={colorScheme}
+                />
+            );
+        }
+
         return (
-            <View style={styles.detailWrap}>
-                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
-                    <ActivityIndicator />
-                    <Text>{loadingMessages[tab]}</Text>
-                </View>
-            </View>
-        );
-    } else if (!!productDetail?.[tab]) {
-        return tab !== 'review' ? (
             <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel={`${tab} 내용`}>
                 <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
             </View>
-        ) : (
-            <ReviewTab
-                styles={styles}
-                productDetail={productDetail}
-                refs={refs}
-                markdownStyles={markdownStyles}
-                tab={tab}
-                handleLoadMore={handleLoadMore}
-                colorScheme={colorScheme}
-            />
         );
-    } else if (regenerateCount < 3) {
+    }
+
+    // 4. 재시도 로직
+    if (regenerateCount < 3) {
         setTimeout(() => {
             setRegenerateCount(prev => prev + 1);
             handleRegenerate();
@@ -130,22 +136,22 @@ const TabContent: React.FC<TabContentProps> = ({
                 </View>
             </View>
         );
-    } else {
-        console.log('productDetail:', productDetail);
-        return (
-            <View style={styles.detailWrap}>
-                <Text style={textStyle}>정보를 불러오는데 실패했습니다.</Text>
-                <Pressable
-                    onPress={handleRegenerate}
-                    accessible
-                    accessibilityRole="button"
-                    accessibilityLabel="다시 생성하기"
-                >
-                    <Text style={textStyle}>다시 생성하기</Text>
-                </Pressable>
-            </View>
-        );
     }
+
+    // 5. 실패 상태
+    return (
+        <View style={styles.detailWrap}>
+            <Text style={textStyle}>정보를 불러오는데 실패했습니다.</Text>
+            <Pressable
+                onPress={handleRegenerate}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="다시 생성하기"
+            >
+                <Text style={textStyle}>다시 생성하기</Text>
+            </Pressable>
+        </View>
+    );
 };
 
 interface QuestionTabProps {
