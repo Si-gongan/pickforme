@@ -65,7 +65,7 @@ const TabContent: React.FC<TabContentProps> = ({
     });
     // 상품 리뷰 데이터는 현재 productDetail에 포함되어 있음.
     // const productReview = useAtomValue(productReviewAtom);
-    const [regenerateCount, setRegenerateCount] = useState(0);
+    // const [regenerateCount, setRegenerateCount] = useState(0);
 
     // 1. Question 탭 처리
     if (tab === TABS.QUESTION) {
@@ -122,23 +122,7 @@ const TabContent: React.FC<TabContentProps> = ({
         );
     }
 
-    // 4. 재시도 로직
-    if (regenerateCount < 3) {
-        setTimeout(() => {
-            setRegenerateCount(prev => prev + 1);
-            handleRegenerate();
-        }, 1000);
-        return (
-            <View style={styles.detailWrap}>
-                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
-                    <ActivityIndicator />
-                    <Text>{loadingMessages[tab]}</Text>
-                </View>
-            </View>
-        );
-    }
-
-    // 5. 실패 상태
+    // 4. 실패 상태
     return (
         <View style={styles.detailWrap}>
             <Text style={textStyle}>정보를 불러오는데 실패했습니다.</Text>
