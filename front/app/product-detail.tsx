@@ -114,13 +114,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const reportRef = useRef<RNView>(null);
     const reviewRef = useRef<RNView>(null);
     const questionRef = useRef<RNView>(null);
-    const refs = useState({
-        caption: captionRef,
-        report: reportRef,
-        review: reviewRef,
-        question: questionRef,
-        manager: managerResponseRef
-    })[0];
+
+    const refs = useMemo(
+        () => ({
+            caption: captionRef,
+            report: reportRef,
+            review: reviewRef,
+            question: questionRef,
+            manager: managerResponseRef
+        }),
+        []
+    );
 
     // const ReviewWebView = useWebViewReviews({
     //     productUrl,
@@ -211,6 +215,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         };
         setTimeout(moveFocus, 500);
     }, [loadingStatus.question, tab]);
+
+    useEffect(() => {
+        const moveFocus = () => {
+            const node = findNodeHandle(captionRef.current);
+            if (loadingStatus.caption === 2 && tab === TABS.CAPTION && node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+            }
+        };
+        setTimeout(moveFocus, 500);
+    }, [loadingStatus.caption, tab]);
 
     const handleClickBuy = async () => {
         sendLog({ product: { url: productUrl }, action: 'link', metaData: {} });
@@ -592,7 +606,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeartFill.png')} />
+                    <Image
+                        style={styles.heartIcon}
+                        source={require('../assets/images/discover/icHeartFill.png')}
+                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
+                    />
                 </Pressable>
             ) : (
                 <Pressable
@@ -602,7 +620,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image style={styles.heartIcon} source={require('../assets/images/discover/icHeart.png')} />
+                    <Image
+                        style={styles.heartIcon}
+                        source={require('../assets/images/discover/icHeart.png')}
+                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
+                    />
                 </Pressable>
             )}
         </View>
@@ -738,10 +760,12 @@ const useStyles = (colorScheme: ColorScheme) =>
         tabButtonText: {
             fontSize: 14,
             fontWeight: '400',
-            lineHeight: 17
+            lineHeight: 17,
+            color: Colors[colorScheme].text.primary
         },
         tabButtonTextActive: {
-            fontWeight: '700'
+            fontWeight: '700',
+            color: Colors[colorScheme].text.primary
         },
         detailWrap: {
             padding: 28

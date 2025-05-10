@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, ReactElement } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { View } from 'react-native';
 import { Product } from '../stores/product/types';
+import { resolveRedirectUrl } from '@/utils/url';
 
 interface WebViewProps {
     productUrl: string;
@@ -19,21 +20,31 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
     try {
       const currentUrl = window.location.href;
       const payload = JSON.stringify({ url: currentUrl });
-      window.ReactNativeWebView.postMessage(payload);
+        window.ReactNativeWebView.postMessage(payload);
     } catch (e) {
       window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
     }
   })();`;
 
     const convertUrl = (url: string) => {
-        // console.log('url:', url);
+        console.log('url:', url);
+
         let convertedUrl = '';
+
         // https://m.coupang.com/vm/mlp/mweb/mlp-landing?flowId=2&productId=324788226&itemId=3801974770&vendorItemId=86953840553&...
         if (url.includes('coupang')) {
             setPlatform('coupang');
+
             if (url.includes('link.coupang.com')) {
+                // 쿠팡앱에서 링크를 가져온 경우
+                // redirect url을 찾는다.
+                resolveRedirectUrl(url).then(redirectUrl => {
+                    console.log('redirectUrl:', redirectUrl);
+                    convertUrl(redirectUrl);
+                });
                 return;
             }
+
             let productId = url.split('productId=')[1]?.split('&')[0];
             if (!productId) {
                 productId = url.split('products/')[1]?.split('?')[0];
@@ -190,7 +201,6 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
     };
 
     useEffect(() => {
-        // console.log('productUrl:', productUrl);
         setRetryCount(0);
         runJavaScript(currentUrlInjectionCode);
     }, [productUrl]);

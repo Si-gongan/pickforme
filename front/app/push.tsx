@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
+import useColorScheme from "../hooks/useColorScheme";
+import Colors from "../constants/Colors";
 
 import { userAtom } from "@stores";
 import { useServicePush } from "@services";
@@ -10,7 +12,8 @@ import { BackHeader, Footer, Button_old as Button, PushForm } from "@components"
 import type { IPush } from "@types";
 
 export default function PushScreen() {
-    const style = useStyle();
+    const colorScheme = useColorScheme();
+    const style = useStyle(colorScheme);
     const router = useRouter();
     const [user, onUser] = useAtom(userAtom);
 
@@ -57,11 +60,12 @@ export default function PushScreen() {
     );
 }
 
-function useStyle() {
+function useStyle(colorScheme: ReturnType<typeof useColorScheme>) {
+    const theme = Colors[colorScheme];
     return StyleSheet.create({
         PushContainer: {
             flex: 1,
-            backgroundColor: "#fff",
+            backgroundColor: theme.background.primary,
         },
         PushContent: {
             flex: 1,

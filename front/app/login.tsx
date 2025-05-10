@@ -2,12 +2,15 @@ import { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
+import useColorScheme from "../hooks/useColorScheme";
+import Colors from "../constants/Colors";
 
 import { LoginForm, BackHeader } from "@components";
 import { userAtom } from "@stores";
 
 export default function LoginScreen() {
-  const style = useStyle();
+  const colorScheme = useColorScheme();
+  const style = useStyle(colorScheme);
 
   const user = useAtomValue(userAtom);
   const router = useRouter();
@@ -31,11 +34,12 @@ export default function LoginScreen() {
   );
 }
 
-function useStyle() {
+function useStyle(colorScheme: ReturnType<typeof useColorScheme>) {
+  const theme = Colors[colorScheme];
   return StyleSheet.create({
     LoginScreenContainer: {
       flex: 1,
-      backgroundColor: "#FFFFFF",
+      backgroundColor: theme.background.primary,
     },
     LoginScreenContent: {
       flex: 1,

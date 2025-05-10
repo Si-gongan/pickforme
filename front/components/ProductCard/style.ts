@@ -1,6 +1,10 @@
 import { StyleSheet } from 'react-native';
+import useColorScheme from '../../hooks/useColorScheme';
+import { Colors } from '../../constants';
 
 export default function useStyle() {
+    const colorScheme = useColorScheme();
+    const theme = Colors[colorScheme];
     return StyleSheet.create({
         ProductCard: {
             width: '100%'
@@ -13,7 +17,7 @@ export default function useStyle() {
             alignItems: 'flex-end',
             justifyContent: 'space-between',
             width: '100%',
-            backgroundColor: '#F1F1F1'
+            backgroundColor: theme.background.secondary
         },
         ProductCardContentColumn: {
             flexDirection: 'column',
@@ -24,11 +28,11 @@ export default function useStyle() {
             flexDirection: 'row',
             gap: 10,
             marginBottom: 6,
-            backgroundColor: '#F1F1F1'
+            backgroundColor: theme.background.secondary
         },
         ProductCardName: {
             fontSize: 12,
-            color: '#1E1E1E',
+            color: theme.text.primary,
             fontWeight: '500',
             lineHeight: 20,
             flex: 1
@@ -36,20 +40,20 @@ export default function useStyle() {
         ProductCardPrice: {
             fontSize: 12,
             lineHeight: 14.52,
-            color: '#1E1E1E',
+            color: theme.text.primary,
             fontWeight: '700'
         },
         ProductCardDiscount: {
             fontSize: 11,
             lineHeight: 14,
-            color: '#4A5CA0',
+            color: theme.text.primary,
             fontWeight: '500',
             marginLeft: 5
         },
         ProductCardReviews: {
             fontSize: 10,
             lineHeight: 12,
-            color: '#666666',
+            color: theme.text.primary,
             fontWeight: '400',
             marginBottom: 4,
             width: '100%'

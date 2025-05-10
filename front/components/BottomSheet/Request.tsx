@@ -13,7 +13,7 @@ import { sendLogAtom } from '../../stores/log/atoms';
 import { QuestionRequestParams, RequestType } from '../../stores/request/types';
 import { Colors } from '@constants';
 import { Text, View, Button_old as Button } from '@components';
-import { styles } from './Base';
+import { createStyles } from './Base';
 import useCheckMembership from '../../hooks/useCheckMembership';
 import useCheckPoint from '../../hooks/useCheckPoint';
 import type { ColorScheme } from '@hooks';
@@ -27,6 +27,7 @@ export default function RequestBottomSheet() {
     const addRequest = useSetAtom(addRequestAtom);
     const colorScheme = useColorScheme();
     const localStyles = useLocalStyles(colorScheme);
+    const styles = createStyles(colorScheme);
 
     const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
 
@@ -67,23 +68,6 @@ export default function RequestBottomSheet() {
         setData({ ...data, text: '' });
         setProduct(undefined);
     };
-
-    // useEffect(() => {
-    //     console.log('ResearchBottomSheet product 변경', product);
-    //     console.log('isShowSubscriptionModalVisible:', isShowSubscriptionModalVisible);
-    //     const focusOnHeader = () => {
-    //         const node = findNodeHandle(headerTitleRef.current);
-    //         if (product && node) {
-    //             AccessibilityInfo.setAccessibilityFocus(node);
-    //         }
-    //     };
-    //     setTimeout(focusOnHeader, 500);
-    // }, [product, isShowSubscriptionModalVisible]);
-
-    // if (isShowNonSubscribedModalVisible) {
-    //     console.log('미구독자');
-    //     return null;
-    // }
     return (
         <View style={styles.base}>
             <View style={[styles.bottomSheet, localStyles.root]}>
@@ -99,7 +83,7 @@ export default function RequestBottomSheet() {
                         underlineColorAndroid="transparent"
                         numberOfLines={4}
                         textAlignVertical="top"
-                        multiline
+                        returnKeyType="done"
                         onChangeText={text => setData({ ...data, text })}
                     />
                 </View>
@@ -132,7 +116,7 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             lineHeight: 17,
             fontWeight: '400',
             marginBottom: 20,
-            color: '#1e1e1e'
+            color: Colors[colorScheme].text.primary
         },
         textAreaContainer: {
             width: '100%',

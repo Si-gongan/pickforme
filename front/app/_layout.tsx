@@ -78,7 +78,6 @@ export default function RootLayout() {
         <Suspense fallback={null}>
             <QueryClientProvider client={queryClient}>
                 <JotaiProvider>
-                    {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
                     <Stack
                         initialRouteName={
                             user?.token
@@ -106,7 +105,6 @@ export default function RootLayout() {
                     </Stack>
                     <StatusBar style="auto" />
                     <NonSubscriberManagerBottomSheet />
-                    {/* </ThemeProvider> */}
                 </JotaiProvider>
             </QueryClientProvider>
         </Suspense>

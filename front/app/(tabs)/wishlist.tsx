@@ -123,8 +123,9 @@ export default function WishListScreen() {
     );
 }
 
-const useStyles = (colorScheme: ColorScheme) =>
-    StyleSheet.create({
+const useStyles = (colorScheme: ColorScheme) => {
+    const theme = Colors[colorScheme];
+    return StyleSheet.create({
         horizontalPadder: {
             paddingHorizontal: 20
         },
@@ -135,17 +136,20 @@ const useStyles = (colorScheme: ColorScheme) =>
         container: {
             width: '100%',
             flex: 1,
-            paddingTop: 50
+            paddingTop: 50,
+            backgroundColor: theme.background.primary
         },
         title: {
             fontWeight: '600',
             fontSize: 22,
             lineHeight: 27,
-            marginBottom: 13
+            marginBottom: 13,
+            color: theme.text.primary
         },
         scrollView: {
             paddingVertical: 20,
-            flex: 1
+            flex: 1,
+            backgroundColor: theme.background.primary
         },
         seperatorRow: {
             height: 12,
@@ -167,7 +171,8 @@ const useStyles = (colorScheme: ColorScheme) =>
         sectionTitle: {
             fontSize: 16,
             fontWeight: '500',
-            marginBottom: 23
+            marginBottom: 23,
+            color: theme.text.primary
         },
         more: {
             flex: 1,
@@ -177,10 +182,10 @@ const useStyles = (colorScheme: ColorScheme) =>
         moreButton: {
             width: 36,
             height: 36,
-            backgroundColor: '#F1F1F1',
+            backgroundColor: theme.background.third,
             borderRadius: 36,
             borderWidth: 1,
-            borderColor: Colors[colorScheme].text.primary,
+            borderColor: theme.text.primary,
             alignItems: 'center',
             justifyContent: 'center'
         },
@@ -190,7 +195,8 @@ const useStyles = (colorScheme: ColorScheme) =>
         },
         moreText: {
             fontSize: 8,
-            lineHeight: 11
+            lineHeight: 11,
+            color: theme.text.primary
         },
         inputWrap: {
             marginBottom: 10,
@@ -200,15 +206,16 @@ const useStyles = (colorScheme: ColorScheme) =>
             height: 47,
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'white',
-            borderColor: Colors[colorScheme].text.primary,
+            backgroundColor: theme.background.secondary,
+            borderColor: theme.text.primary,
             borderWidth: 1,
             flexDirection: 'row'
         },
         textArea: {
             fontSize: 14,
             flex: 1,
-            width: '100%'
+            width: '100%',
+            color: theme.text.primary
         },
         sendIcon: {
             flexShrink: 0,
@@ -223,7 +230,8 @@ const useStyles = (colorScheme: ColorScheme) =>
             marginBottom: 9
         },
         backText: {
-            textDecorationLine: 'underline'
+            textDecorationLine: 'underline',
+            color: theme.text.primary
         },
         searchList: {
             paddingHorizontal: 20,
@@ -235,13 +243,14 @@ const useStyles = (colorScheme: ColorScheme) =>
             paddingVertical: 20,
             paddingHorizontal: 20,
             textAlign: 'center',
-            flex: 1
+            flex: 1,
+            color: theme.text.primary
         },
         header: {
             flexDirection: 'row'
         },
         icon: {
-            color: Colors[colorScheme].text.primary,
+            color: theme.text.primary,
             marginRight: 9,
             marginTop: 2
         },
@@ -259,19 +268,21 @@ const useStyles = (colorScheme: ColorScheme) =>
             flexDirection: 'row',
             borderRadius: 0,
             borderBottomWidth: 1,
-            borderColor: '#EFEFEF'
+            borderColor: theme.border.primary
         },
         tabButtonActive: {
-            borderBottomColor: Colors[colorScheme].text.primary,
+            borderBottomColor: theme.text.primary,
             borderBottomWidth: 2
         },
         tabButtonText: {
             fontSize: 14,
             fontWeight: '400',
-            lineHeight: 17
+            lineHeight: 17,
+            color: theme.text.primary
         },
         tabButtonTextActive: {
-            color: Colors[colorScheme].text.primary,
+            color: theme.text.primary,
             fontWeight: '700'
         }
     });
+};

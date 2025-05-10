@@ -157,7 +157,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
     return (
         <View style={styles.container}>
             <BackHeader />
-            <ScrollView>
+            <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
                     <Text style={styles.title}>멤버십 구매 내역</Text>
                     {currentSubscription && (
@@ -165,11 +165,15 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                             <Text style={styles.subtitle}>전체</Text>
                             <View style={styles.purchaseStatus}>
                                 <View style={styles.row}>
-                                    <Text>{formatDate(currentSubscription?.createdAt)} 결제</Text>
+                                    <Text style={{ color: Colors[colorScheme].text.primary }}>
+                                        {formatDate(currentSubscription?.createdAt)} 결제
+                                    </Text>
                                 </View>
                                 <View style={styles.row}>
-                                    <Text>픽포미 플러스 월간 이용권</Text>
-                                    <Text>4,900원</Text>
+                                    <Text style={{ color: Colors[colorScheme].text.primary }}>
+                                        픽포미 플러스 월간 이용권
+                                    </Text>
+                                    <Text style={{ color: Colors[colorScheme].text.primary }}>4,900원</Text>
                                 </View>
                             </View>
 
@@ -177,6 +181,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                 style={styles.purchaseButton}
                                 title="멤버십 해지하기"
                                 size="small"
+                                textStyle={{ color: Colors[colorScheme].text.secondary }}
                                 onPress={() => router.replace('/')}
                             />
                         </>
@@ -202,30 +207,6 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 </Text>
                                             </View>
                                         </View>
-                                        {/* <Button
-                      style={styles.purchaseButton}
-                      title="멤버십 해지하기"
-                      size="small"
-                      // onPress={() => router.replace('/'+ANDROID_UPDATE_URL)}
-                      onPress={
-                        () => {
-                          setIsShowNonSubscribedModal(true);
-                        }
-                        // async () => {
-                        // try {
-                        //   // SKU 값과 필요한 옵션을 추가
-                        //   await deepLinkToSubscriptions({
-                        //     sku: "pickforme_basic",  // 실제 구독 상품 SKU
-                        //     isAmazonDevice: false  // Amazon 장치가 아닌 경우 false로 설정
-                        //   });
-                        // } catch (err) {
-                        //   console.error("구독 관리 페이지로 이동하는 중 오류 발생:", err);
-                        // }
-                        // const url = Platform.OS === 'android' ? ANDROID_UPDATE_URL : IOS_UPDATE_URL;
-                        // Linking.openURL(url); // 플랫폼에 맞는 스토어 URL을 엽니다.
-                        // }
-                      }
-                    /> */}
                                     </React.Fragment>
                                 ))
                         ) : (
@@ -257,7 +238,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                     style={styles.productButton}
                                                     title="멤버십 시작하기"
                                                     size="small"
-                                                    // onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                                    textStyle={{ color: Colors[colorScheme].text.secondary }}
                                                     onPress={() => router.replace('/subscription')}
                                                 />
                                             </View>
@@ -272,7 +253,6 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 style={styles.productButton}
                                                 title="멤버십 시작하기"
                                                 size="small"
-                                                // onPress={() => handleClickSub(product.productId)}
                                                 onPress={() => router.replace('/subscription')}
                                             />
                                         </View>
@@ -283,7 +263,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                     ) : (
                         <>
                             <Text style={styles.subtitle}>구매 내역이 없습니다.</Text>
-                            <Text>
+                            <Text style={{ color: Colors[colorScheme].text.primary }}>
                                 {
                                     '픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.\n멤버십은 결제일로부터 한 달이 지나면 자동해지됩니다.'
                                 }
@@ -314,7 +294,6 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 style={styles.productButton}
                                                 title="멤버십 시작하기"
                                                 size="small"
-                                                // onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
                                                 onPress={() => router.replace('/subscription')}
                                             />
                                         </View>
@@ -329,7 +308,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                             style={styles.productButton}
                                             title="멤버십 시작하기"
                                             size="small"
-                                            // onPress={() => handleClickSub(product.productId)}
+                                            textStyle={{ color: Colors[colorScheme].text.secondary }}
                                             onPress={() => router.replace('/subscription')}
                                         />
                                     </View>
@@ -352,7 +331,8 @@ const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         container: {
             flex: 1,
-            paddingTop: 30
+            paddingTop: 30,
+            backgroundColor: Colors[colorScheme].background.primary
         },
         content: {
             flex: 1,
@@ -368,13 +348,16 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontWeight: '600',
             fontSize: 20,
             lineHeight: 24,
-            marginBottom: 18
+            marginBottom: 18,
+            color: Colors[colorScheme].text.primary
         },
         subtitle: {
             fontWeight: '600',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 14
+            marginTop: 32,
+            marginBottom: 14,
+            color: Colors[colorScheme].text.primary
         },
         seperator: {
             width: '100%',
@@ -392,7 +375,8 @@ const useStyles = (colorScheme: ColorScheme) =>
             borderRadius: 10,
             borderWidth: 1,
             borderColor: Colors[colorScheme].borderColor.secondary,
-            marginBottom: 12
+            marginBottom: 12,
+            backgroundColor: Colors[colorScheme].background.secondary
         },
         purchaseWrap: {
             width: '100%',
@@ -404,28 +388,33 @@ const useStyles = (colorScheme: ColorScheme) =>
             borderRadius: 10,
             borderWidth: 1,
             borderColor: Colors[colorScheme].borderColor.secondary,
-            marginVertical: 8
+            marginVertical: 8,
+            backgroundColor: Colors[colorScheme].background.secondary
         },
         purchaseTitle: {
             fontSize: 16,
-            lineHeight: 19
+            lineHeight: 19,
+            color: Colors[colorScheme].text.primary
         },
         purchasePrice: {
             fontWeight: '600',
             fontSize: 16,
-            lineHeight: 19
+            lineHeight: 19,
+            color: Colors[colorScheme].text.primary
         },
         purchaseDate: {
             fontWeight: '400',
             fontSize: 14,
             lineHeight: 17,
-            marginBottom: 8
+            marginBottom: 8,
+            color: Colors[colorScheme].text.primary
         },
         terms: {
             marginTop: 12,
             fontWeight: '400',
             fontSize: 12,
-            lineHeight: 15
+            lineHeight: 15,
+            color: Colors[colorScheme].text.primary
         },
         buttonText: {
             fontWeight: '600',
@@ -436,7 +425,8 @@ const useStyles = (colorScheme: ColorScheme) =>
         purchaseButton: {
             width: 120,
             padding: 10,
-            marginLeft: 'auto'
+            marginLeft: 'auto',
+            backgroundColor: Colors[colorScheme].button.primary.background
         },
         productWrap: {
             flexDirection: 'row',
@@ -457,7 +447,8 @@ const useStyles = (colorScheme: ColorScheme) =>
         productPrice: {
             fontWeight: '600',
             fontSize: 18,
-            lineHeight: 22
+            lineHeight: 22,
+            color: Colors[colorScheme].text.primary
         }
     });
 
