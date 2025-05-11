@@ -58,6 +58,7 @@ import BackHeader from '../components/BackHeader';
 import Modal from 'react-native-modal';
 import Request from '../components/BottomSheet/Request';
 import { userAtom } from '@stores';
+import { useTabData } from '@/hooks/product-detail/useTabData';
 
 interface ProductDetailScreenProps {}
 
@@ -174,6 +175,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
     const setScrapedProductDetail = useSetAtom(setScrapedProductDetailAtom);
+
+    useTabData({
+        tab,
+        productDetail,
+        productUrl,
+        productReview: productReview.reviews,
+        loadingStatus
+    });
 
     useEffect(() => {
         initProductDetail();
@@ -334,19 +343,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             handlePressAIQuestionTab('');
         }
 
-        console.log('handlePressTab:', nextTab, loadingStatus[nextTab], productDetail?.[nextTab]);
-
-        if (loadingStatus[nextTab] === 0 && !productDetail?.[nextTab]) {
-            console.log('handlePressTab api 호출');
-            if (nextTab === TABS.REPORT) {
-                sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
-                getProductReport();
-            }
-            if (nextTab === TABS.REVIEW) {
-                sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
-                getProductReview();
-            }
-        }
         setTab(nextTab);
         moveFocusToProductDetail(nextTab);
     };

@@ -256,39 +256,6 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
             set(productDetailAtom, { product, url: product.url } as ProductDetailState);
         }
     }
-
-    // 상품 캡션 생성 요청
-    set(loadingStatusAtom, {
-        caption: LoadingStatus.LOADING,
-        report: LoadingStatus.INIT,
-        review: LoadingStatus.INIT,
-        question: LoadingStatus.INIT
-    });
-
-    const captionResult = await attempt(() => GetProductCaptionAPI({ product }));
-
-    if (!captionResult.ok) {
-        console.error('상품 캡션 생성 실패:', captionResult.error);
-        set(loadingStatusAtom, {
-            caption: LoadingStatus.ERROR,
-            report: LoadingStatus.INIT,
-            review: LoadingStatus.INIT,
-            question: LoadingStatus.INIT
-        });
-        return;
-    }
-
-    const captionResponse = captionResult.value;
-    if (captionResponse && captionResponse.data && get(productDetailAtom)?.product?.url === product.url) {
-        set(productDetailAtom, { ...get(productDetailAtom), ...captionResponse.data, url: product.url as string });
-        set(loadingStatusAtom, {
-            caption: LoadingStatus.FINISH,
-            report: LoadingStatus.INIT,
-            review: LoadingStatus.INIT,
-            question: LoadingStatus.INIT
-        });
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
 });
 
 // AI 리뷰 요약 정보 생성
