@@ -17,7 +17,7 @@ export default function useStyle() {
             alignItems: 'flex-end',
             justifyContent: 'space-between',
             width: '100%',
-            backgroundColor: theme.background.secondary
+            backgroundColor: theme.background.third
         },
         ProductCardContentColumn: {
             flexDirection: 'column',
@@ -28,7 +28,7 @@ export default function useStyle() {
             flexDirection: 'row',
             gap: 10,
             marginBottom: 6,
-            backgroundColor: theme.background.secondary
+            backgroundColor: theme.background.third
         },
         ProductCardName: {
             fontSize: 12,

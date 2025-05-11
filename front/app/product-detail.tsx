@@ -514,10 +514,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
                         title={tabName[TAB]}
                         size="medium"
                         color={tab === TAB ? 'primary' : 'tertiary'}
-                        onPress={() => {
-                            console.log('tabnavigation on press', tab, TAB);
-                            handlePressTab(TAB);
-                        }}
+                        onPress={() => handlePressTab(TAB)}
                         accessibilityLabel={`${tabName[TAB]} 탭`}
                         selected={tab === TAB}
                     />

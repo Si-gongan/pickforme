@@ -4,7 +4,7 @@ const palette = {
     darkGray: '#1e1e1e',
     navy: '#111e4f',
     white: '#ffffff',
-    lightGray: '#DFE4F5',
+    lightGray: '#F1F1F1',
     borderGray: '#9FA7C3',
 
     // Dark mode colors
