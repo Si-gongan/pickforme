@@ -167,10 +167,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const DetailWebView = useWebViewDetail({
         productUrl,
-        onMessage: data => {
-            console.log('DetailWebView 이미지 데이터 수신:', data.detail_images?.length);
-            setProduct(data);
-        }
+        onMessage: data => setProduct(data)
     });
 
     const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
