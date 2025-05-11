@@ -93,7 +93,7 @@ const TabContent: React.FC<TabContentProps> = ({
             <View style={styles.detailWrap}>
                 <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
                     <ActivityIndicator />
-                    <Text>{loadingMessages[tab]}</Text>
+                    <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
                 </View>
             </View>
         );
@@ -204,7 +204,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
         {loadingStatus[tab] === 1 ? (
             <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
                 <ActivityIndicator />
-                <Text style={{ color: Colors[colorScheme].text.primary }}>{loadingMessages[tab]}</Text>
+                <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
             </View>
         ) : loadingStatus[tab] === 2 ? (
             <View ref={refs[tab]} accessible={true} accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}>
@@ -225,13 +225,15 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                     </View>
                     <Markdown>{`**나의 질문:** ${request?.text}`}</Markdown>
                     <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${request?.answer?.text}`}</Markdown>
-                    <Text>{`${formatDate(request?.updatedAt)} ${formatTime(request?.updatedAt)}`}</Text>
+                    <Text style={{ color: Colors[colorScheme].text.primary }}>{`${formatDate(
+                        request?.updatedAt
+                    )} ${formatTime(request?.updatedAt)}`}</Text>
                 </>
             ) : (
                 <>
                     <View style={styles.seperator}></View>
                     <View ref={refs.manager} accessible={true} accessibilityLabel={loadingMessages.manager}>
-                        <Text style={{ color: Colors[colorScheme].text.primary }}>{loadingMessages.manager}</Text>
+                        <Text style={styles.loadingMessageText}>{loadingMessages.manager}</Text>
                     </View>
                 </>
             )
@@ -378,6 +380,10 @@ const useStyles = (colorScheme: ColorScheme) =>
             fontSize: 14,
             color: Colors[colorScheme].text.primary,
             textDecorationLine: 'underline'
+        },
+        loadingMessageText: {
+            fontSize: 14,
+            color: Colors[colorScheme].text.primary
         }
     });
 
