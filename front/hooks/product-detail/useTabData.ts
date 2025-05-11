@@ -30,10 +30,6 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
     const checkRequiredData = (tab: TABS, productDetail: ProductDetailState | void): boolean => {
         if (!productDetail) return false;
 
-        if (productDetail && productDetail.product) {
-            console.log('product', Object.keys(productDetail.product));
-        }
-
         switch (tab) {
             case TABS.CAPTION:
                 return !!(productDetail.product?.name && productDetail.product?.thumbnail);
@@ -44,9 +40,7 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
                     productDetail.product.detail_images.length > 0
                 );
             case TABS.REVIEW:
-                return productReview.length > 0;
-            case TABS.QUESTION:
-                return !!productDetail.product?.name;
+                return !!(productReview.length > 0 && productDetail.product?.name);
             default:
                 return false;
         }
@@ -72,27 +66,29 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
 
     // 각 탭별 API 호출 함수
     const callTabAPI = (tab: TABS) => {
+
+        // question tab은 자동으로 호출되므로 패스.
         if (tab === TABS.QUESTION) {
             console.log('question 탭 호출');
             return;
         }
 
-        // 이미 데이터를 가져오고 있다 -> 그러면 중복호출임.
-        // 데이터를 가져오는데 실패했다 -> handleRegenerate를 통해서 유저가 수동으로 호출해야 함.
-        // 데이터를 가져오는데 성공했다. 그러면 또 가져올 필요가 없음.
+        // 1: 이미 데이터를 가져오고 있다 -> 그러면 중복호출임.
+        // 2: 데이터를 가져오는데 실패했다 -> handleRegenerate를 통해서 유저가 수동으로 호출해야 함.
+        // 3: 데이터를 가져오는데 성공했다. 그러면 또 가져올 필요가 없음.
         if (loadingStatus[tab] !== LoadingStatus.INIT) {
-            console.log(`${tab} 탭이 초기화 상태가 아닙니다. 현재상태 - ${LoadingStatus[loadingStatus[tab]]}`);
-
+            // console.log(`${tab} 탭이 초기화 상태가 아닙니다. 현재상태 - ${LoadingStatus[loadingStatus[tab]]}`);
             return;
         }
 
+        // 사실 위에서 3번 상태이면 데이터가 존재하는것이므로 여기 조건을 통과할 일은 거의 없지만 예외처리를 위해 남겨둠.
         if (hasTabData(tab, productDetail)) {
-            console.log(`${tab} 탭의 데이터가 이미 존재합니다.`);
+            // console.log(`${tab} 탭의 데이터가 이미 존재합니다.`);
             return;
         }
 
         if (!checkRequiredData(tab, productDetail)) {
-            console.log(`${tab} 탭에 필요한 데이터가 없습니다.`);
+            // console.log(`${tab} 탭에 필요한 데이터가 없습니다.`);
             return;
         }
 
