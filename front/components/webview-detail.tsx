@@ -31,13 +31,12 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
 
         let convertedUrl = '';
 
-        // https://m.coupang.com/vm/mlp/mweb/mlp-landing?flowId=2&productId=324788226&itemId=3801974770&vendorItemId=86953840553&...
+        // 쿠팡 URL 처리
         if (url.includes('coupang')) {
             setPlatform('coupang');
 
+            // 쿠팡 앱 링크 처리 (link.coupang.com)
             if (url.includes('link.coupang.com')) {
-                // 쿠팡앱에서 링크를 가져온 경우
-                // redirect url을 찾는다.
                 resolveRedirectUrl(url).then(redirectUrl => {
                     console.log('redirectUrl:', redirectUrl);
                     convertUrl(redirectUrl);
@@ -45,24 +44,49 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
                 return;
             }
 
-            let productId = url.split('productId=')[1]?.split('&')[0];
-            if (!productId) {
-                productId = url.split('products/')[1]?.split('?')[0];
+            // 쿠팡 제품 ID 추출
+            let productId = null;
+
+            // 패턴 1: productId= 쿼리 파라미터
+            if (url.includes('productId=')) {
+                productId = url.split('productId=')[1]?.split('&')[0];
             }
+            // 패턴 2: products/ 경로 사용 (모바일 및 데스크톱)
+            else if (url.includes('coupang.com/vp/products/') || url.includes('coupang.com/vm/products/')) {
+                let idPart = url.split('products/')[1] || '';
+                productId = idPart.split(/[\?#]/)[0]; // 쿼리스트링이나 해시 태그 제거
+            }
+            // 패턴 3: 검색 결과 패턴 (itemId로 시작하는 경우)
+            else if (url.includes('/su/') && url.includes('/items/')) {
+                const itemMatch = url.match(/\/items\/([0-9]+)/);
+                if (itemMatch && itemMatch[1]) productId = itemMatch[1];
+            }
+
+            if (!productId) {
+                console.error('쿠팡 제품 ID를 찾을 수 없습니다. 원본 URL 그대로 사용:', url);
+                setPlatform('general');
+                setUrl(url);
+                return;
+            }
+
+            // 추가 파라미터 추출
             const itemId = url.split('itemId=')[1]?.split('&')[0];
             const vendorItemId = url.split('vendorItemId=')[1]?.split('&')[0];
+
+            // 최종 모바일 URL 구성
             convertedUrl = `https://m.coupang.com/vm/products/${productId}`;
             if (itemId) {
                 convertedUrl += `?itemId=${itemId}`;
             }
             if (vendorItemId) {
-                convertedUrl += `&vendorItemId=${vendorItemId}`;
+                convertedUrl += itemId ? `&vendorItemId=${vendorItemId}` : `?vendorItemId=${vendorItemId}`;
             }
         } else {
+            // 쿠팡 이외의 URL 처리
             setPlatform('general');
             convertedUrl = url;
         }
-        // console.log('convertedUrl:', convertedUrl);
+
         setUrl(convertedUrl);
     };
 
