@@ -48,7 +48,7 @@ export interface phoneCheckParams {
 
 export interface SetPopupParams {
     popup_id: string;
-    flag: string;
+    flag: number;
 }
 
 export interface Popup {

@@ -94,7 +94,7 @@ export default function InterviewScreen() {
             return;
         }
 
-        const payload = { popup_id: 'event_hansiryun', flag: '1' };
+        const payload = { popup_id: 'event_hansiryun', flag: 1 };
         console.log(payload);
 
         attempt(() => SetPopupAPI(payload)).then(res => {
