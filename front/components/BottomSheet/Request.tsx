@@ -17,6 +17,7 @@ import { createStyles } from './Base';
 import useCheckMembership from '../../hooks/useCheckMembership';
 import useCheckPoint from '../../hooks/useCheckPoint';
 import type { ColorScheme } from '@hooks';
+import useCheckLogin from '../../hooks/useCheckLogin';
 
 export default function RequestBottomSheet() {
     const headerTitleRef = useRef(null);
@@ -47,7 +48,7 @@ export default function RequestBottomSheet() {
             addRequest(params);
         }
     });
-    const handleSubmit = () => {
+    const handleSubmit = useCheckLogin(() => {
         const params = {
             ...data,
             product,
@@ -61,7 +62,7 @@ export default function RequestBottomSheet() {
             action: 'request',
             metaData: {}
         });
-    };
+    });
     const disabled = !data.text;
     const [product, setProduct] = useAtom(requestBottomSheetAtom);
     const onClose = () => {

@@ -48,7 +48,6 @@ import { useWebViewDetail } from '../components/webview-detail';
 
 import TabContent from '../components/ProductDetailTabContent';
 
-// 2024
 import { TABS, loadingMessages, tabName, numComma } from '../utils/common';
 import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
@@ -547,9 +546,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     isRequest,
     colorScheme
 }) => {
-    const handleRequestWithLoading = () => {
-        handleClickRequest();
-    };
+    const handleRequestWithLoading = useCheckLogin(handleClickRequest);
 
     return (
         <View style={[styles.buttonWrap]}>
