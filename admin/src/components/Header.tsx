@@ -19,6 +19,9 @@ const Header: React.FC = () => {
           <Link href="/notifications">Notifications</Link>
         </NavItem>
         <NavItem>
+          <Link href="/popup">Manage Popup</Link>
+        </NavItem>
+        <NavItem>
           <Link href="/login">Login</Link>
         </NavItem>
       </NavList>
