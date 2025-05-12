@@ -144,9 +144,7 @@ export default function HomeScreen() {
                             accessibilityLabel="검색어 입력창"
                             onChangeText={text => setText(text)}
                             placeholder="찾고 싶은 상품 키워드 또는 링크를 입력해 보세요"
-                            placeholderTextColor={
-                                colorScheme === 'dark' ? Colors.dark.text.secondary : Colors.light.text.secondary
-                            }
+                            placeholderTextColor={Colors[colorScheme].text.placeholder}
                         />
                         {!!text.length && (
                             <Pressable

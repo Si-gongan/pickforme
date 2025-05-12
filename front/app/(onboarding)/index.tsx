@@ -23,7 +23,7 @@ export default function OnBoardingInfoScreen() {
     }, [user]);
 
     const handleStart = () => {
-        router.replace('/(tabs)');
+        router.replace('/login');
     };
 
     return (
