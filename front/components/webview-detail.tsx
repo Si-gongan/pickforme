@@ -9,7 +9,7 @@ interface WebViewProps {
     onMessage: (data: Product) => void;
 }
 
-export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): ReactElement => {
+export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): JSX.Element | null => {
     const webViewRef = useRef<WebView>(null);
     const [url, setUrl] = useState<string>('');
     const [platform, setPlatform] = useState<string>('');
@@ -17,14 +17,14 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
     const maxRetries = 5;
 
     const currentUrlInjectionCode = `(function() {
-    try {
-      const currentUrl = window.location.href;
-      const payload = JSON.stringify({ url: currentUrl });
-        window.ReactNativeWebView.postMessage(payload);
-    } catch (e) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-    }
-  })();`;
+        try {
+          const currentUrl = window.location.href;
+          const payload = JSON.stringify({ url: currentUrl });
+            window.ReactNativeWebView.postMessage(payload);
+        } catch (e) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
+        }
+      })();`;
 
     const convertUrl = (url: string) => {
         console.log('url:', url);
@@ -225,23 +225,22 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): React
     };
 
     useEffect(() => {
+        setUrl('');
         setRetryCount(0);
-        runJavaScript(currentUrlInjectionCode);
+        convertUrl(productUrl);
     }, [productUrl]);
 
-    return (
-        <View style={{ width: '100%', height: 1 }}>
-            <WebView
-                ref={webViewRef}
-                source={{ uri: url ? url : productUrl }}
-                onMessage={handleMessage}
-                onLoadEnd={() => runJavaScript(currentUrlInjectionCode)}
-                onError={handleError}
-                style={{ opacity: 0, height: 0 }}
-                cacheEnabled={false}
-                cacheMode="LOAD_NO_CACHE"
-                renderToHardwareTextureAndroid={true}
-            />
-        </View>
-    );
+    return url ? (
+        <WebView
+            ref={webViewRef}
+            source={{ uri: url }}
+            onMessage={handleMessage}
+            onLoadEnd={() => runJavaScript(currentUrlInjectionCode)}
+            onError={handleError}
+            style={{ opacity: 0, height: 0 }}
+            cacheEnabled={false}
+            cacheMode="LOAD_NO_CACHE"
+            renderToHardwareTextureAndroid={true}
+        />
+    ) : null;
 };
