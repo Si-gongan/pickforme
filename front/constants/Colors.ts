@@ -6,6 +6,8 @@ const palette = {
     white: '#ffffff',
     lightGray: '#F1F1F1',
     borderGray: '#9FA7C3',
+    placeholderGray: '#9C9C9C',
+    placeholderGrayDark: '#B3B3B3',
 
     // Dark mode colors
     darkText: '#D9D9D9',
@@ -21,12 +23,15 @@ export default {
         text: {
             primary: palette.darkGray,
             secondary: palette.white,
-            third: palette.lightGray
+            third: palette.lightGray,
+            placeholder: palette.placeholderGray
         },
         background: {
             primary: palette.white,
             secondary: palette.white,
-            third: palette.lightGray
+            third: palette.lightGray,
+            productCard: palette.lightGray,
+            moreButton: palette.white
         },
         borderColor: {
             primary: palette.white,
@@ -57,12 +62,15 @@ export default {
         text: {
             primary: palette.darkText,
             secondary: palette.darkText,
-            third: palette.darkText
+            third: palette.darkText,
+            placeholder: palette.placeholderGrayDark
         },
         background: {
             primary: palette.darkBg,
             secondary: palette.darkBg,
-            third: palette.darkPrimary
+            third: palette.darkPrimary,
+            productCard: palette.darkBg,
+            moreButton: palette.darkPrimary
         },
         borderColor: {
             primary: palette.darkPrimary,

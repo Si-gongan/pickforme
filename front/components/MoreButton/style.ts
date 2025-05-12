@@ -14,7 +14,7 @@ export default function useStyle() {
             borderColor: theme.border.third,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.background.third
+            backgroundColor: theme.background.moreButton
         },
         MoreButtonText: {
             color: theme.text.primary,
