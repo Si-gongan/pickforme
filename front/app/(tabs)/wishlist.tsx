@@ -182,7 +182,7 @@ const useStyles = (colorScheme: ColorScheme) => {
         moreButton: {
             width: 36,
             height: 36,
-            backgroundColor: theme.background.third,
+            backgroundColor: theme.background.secondary,
             borderRadius: 36,
             borderWidth: 1,
             borderColor: theme.text.primary,

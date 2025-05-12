@@ -10,7 +10,7 @@ const palette = {
     // Dark mode colors
     darkText: '#D9D9D9',
     darkBg: '#111525',
-    darkPrimary: '#424C75',
+    darkPrimary: '#4A5CA0',
     darkSecondary: '#313854',
     darkTertiary: '#1D2336'
 } as const;
@@ -29,7 +29,7 @@ export default {
             third: palette.lightGray
         },
         borderColor: {
-            primary: palette.borderGray,
+            primary: palette.white,
             secondary: palette.lightGray,
             third: palette.darkGray
         },
@@ -62,7 +62,7 @@ export default {
         background: {
             primary: palette.darkBg,
             secondary: palette.darkBg,
-            third: palette.darkBg
+            third: palette.darkPrimary
         },
         borderColor: {
             primary: palette.darkPrimary,

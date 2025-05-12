@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, Platform } from 'react-native';
+import { router } from 'expo-router';
 import { login } from '@react-native-seoul/kakao-login';
 import {
     AppleAuthenticationButton,
@@ -18,15 +19,16 @@ export default function LoginForm() {
     const style = useStyle();
     const colorScheme = useColorScheme();
 
-    const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin();
+    const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
+        onSuccess: () => {
+            router.replace('/(tabs)');
+        }
+    });
 
     const onLoginWithKakao = useCallback(
         async function () {
-            console.log('카카오 로그인 시작');
             try {
                 const token = await login();
-                console.log('카카오 SDK 로그인 성공:', token);
-                console.log('서버로 토큰 전송:', token.accessToken);
                 mutateKakaoLogin({ accessToken: token.accessToken });
             } catch (error) {
                 console.error('카카오 로그인 에러:', error);
