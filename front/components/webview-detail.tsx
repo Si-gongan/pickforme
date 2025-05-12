@@ -241,6 +241,7 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): JSX.E
             cacheEnabled={false}
             cacheMode="LOAD_NO_CACHE"
             renderToHardwareTextureAndroid={true}
+            mediaPlaybackRequiresUserAction={true}
         />
     ) : null;
 };
