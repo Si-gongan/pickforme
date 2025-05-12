@@ -94,7 +94,10 @@ export default function WishListScreen() {
                     ) : (
                         <FlatList
                             contentContainerStyle={styles.searchList}
-                            data={wishProducts.slice().reverse()}
+                            data={wishProducts
+                                .slice()
+                                .reverse()
+                                .filter(product => product.name)}
                             keyExtractor={product => `wishlist-wish-${product.url}`}
                             renderItem={({ item: product, index: i }) => <ProductCard data={product} type={'liked'} />}
                             ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
@@ -110,7 +113,7 @@ export default function WishListScreen() {
                         <FlatList
                             contentContainerStyle={styles.searchList}
                             data={requests
-                                .filter(request => request.product)
+                                .filter(request => request.product && request.product.name)
                                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
                             keyExtractor={request => `wishlist-request-${request.product!.url}`}
                             renderItem={({ item: request }) => <ProductCard data={request.product!} type={'request'} />}
