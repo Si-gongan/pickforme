@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/core';
-import { useSetAtom, useAtomValue } from 'jotai';
+import { useSetAtom, useAtomValue, useAtom } from 'jotai';
 import {
     View,
     StyleSheet,
@@ -94,9 +94,16 @@ export default function HomeScreen() {
         };
     }, [isSearching]);
 
+    // 메인 상품 데이터와 카테고리 정보 가져오기
+    const [mainProducts, setMainProducts] = useAtom(mainProductsAtom);
+    const [currentCategory, setCurrentCategory] = useState('');
+
     useEffect(() => {
-        const id = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
-        getMainProducts(id);
+        const randomCategoryId = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
+
+        console.log('tabs getMainProducts', randomCategoryId);
+        setCurrentCategory(categoryName[randomCategoryId as keyof typeof categoryName]);
+        getMainProducts(randomCategoryId);
     }, [getMainProducts]);
 
     // 검색 핸들러
@@ -240,7 +247,7 @@ export default function HomeScreen() {
                 </>
             ) : (
                 // 메인 상품 목록
-                <MainProductList />
+                <MainProductList data={mainProducts} category={currentCategory} />
             )}
         </View>
     );

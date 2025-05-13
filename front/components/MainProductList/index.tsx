@@ -1,20 +1,26 @@
 /**
  * 홈 화면 메인 상품 노출
- * - 기본적으로 랜덤 카테고리 상품 노툴
+ * - 기본적으로 랜덤 카테고리 상품 노출
  */
 import { useState, useCallback } from 'react';
 import { ScrollView, FlatList, View, Text } from 'react-native';
 
 import ProductCard from '../ProductCard';
 import MoreButton from '../MoreButton';
-import { useServiceMainProducts } from '@services';
 import useStyle from './style';
 
-export default function MainProductList() {
+// GetMainProductsResponse 타입 유지를 위한 import
+import { MainProductsState } from '../../stores/product/types';
+
+// props 타입 정의
+interface MainProductListProps {
+    data: MainProductsState;
+    category: string;
+}
+
+export default function MainProductList({ data, category }: MainProductListProps) {
     const [randomCount, onRandomCount] = useState<number>(5);
     const [specialCount, onSpecialCount] = useState<number>(5);
-
-    const { data, category } = useServiceMainProducts();
 
     const style = useStyle();
 
