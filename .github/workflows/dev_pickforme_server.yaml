@@ -22,13 +22,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: dev
+          ref: develop
           fetch-depth: 0
 
-      - name: Ensure latest dev HEAD
+      - name: Ensure latest develop HEAD
         run: |
-          git checkout dev
-          git pull origin dev
+          git checkout develop
+          git pull origin develop
 
       - name: Set Git remote to SSH
         run: git remote set-url origin git@github.com:Si-gongan/pickforme.git
