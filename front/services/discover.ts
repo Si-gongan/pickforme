@@ -1,10 +1,10 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 
 import client, { attempt } from '../utils/axios';
 import { GetMainProductsAPI, GetProductAPI } from '../stores/product/apis';
-import { mainProductsAtom } from '../stores/product/atoms';
+import { mainProductsAtom, getMainProductsAtom } from '../stores/product/atoms';
 
 import { IDicoverMainProducts, IProductDetail } from '@types';
 
@@ -35,6 +35,7 @@ export function useServiceMainProducts() {
      * 카테고리별 베스트 (랜덩) + 오늘의 특가 상품 (스페셜)
      */
     const [mainProducts, setMainProducts] = useAtom(mainProductsAtom);
+    const getMainProducts = useSetAtom(getMainProductsAtom);
 
     const categoryId = useMemo(function () {
         const keys = Object.keys(CATEGORIES);
@@ -57,6 +58,9 @@ export function useServiceMainProducts() {
             });
 
             try {
+                // atom을 통해 데이터를 가져와 동기화 문제 해결
+                await getMainProducts(categoryId);
+                
                 // attempt 패턴과 GetMainProductsAPI 사용
                 const result = await attempt(() => GetMainProductsAPI(categoryId));
 
@@ -77,6 +81,8 @@ export function useServiceMainProducts() {
                 });
 
                 if (response.status === 200) {
+                    // 데이터 동기화를 위해 mainProductsAtom 직접 업데이트
+                    setMainProducts(response.data);
                     return response.data;
                 }
                 throw new Error('FAIL_FETCH_MAIN_PRODUCTS');

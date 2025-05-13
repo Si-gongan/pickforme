@@ -38,7 +38,6 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): JSX.E
             // 쿠팡 앱 링크 처리 (link.coupang.com)
             if (url.includes('link.coupang.com')) {
                 resolveRedirectUrl(url).then(redirectUrl => {
-                    console.log('redirectUrl:', redirectUrl);
                     convertUrl(redirectUrl);
                 });
                 return;
