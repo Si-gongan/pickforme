@@ -1,9 +1,9 @@
 import db from 'models';
-import mongoose from 'mongoose';
 import { ProductType } from 'models/product';
-import { subscriptionService } from '../subscription.service';
+import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
+import { subscriptionService } from '../subscription.service';
 const { POINTS } = require('constants');
 
 // iapValidator 모킹
@@ -891,6 +891,172 @@ describe('Subscription Service Integration Tests', () => {
           new mongoose.Types.ObjectId().toString()
         )
       ).rejects.toThrow();
+    });
+  });
+
+  describe('getSubscriptionProductsByPlatform', () => {
+    it('특정 플랫폼의 구독 상품 목록을 조회한다', async () => {
+      // Given
+      const iosProduct = await db.Product.create({
+        productId: 'ios_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: 'iOS 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      const androidProduct = await db.Product.create({
+        productId: 'android_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: 'Android 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'android',
+      });
+
+      // When
+      const iosProducts = await subscriptionService.getSubscriptionProductsByPlatform('ios');
+      const androidProducts = await subscriptionService.getSubscriptionProductsByPlatform('android');
+
+      // Then
+      expect(iosProducts).toHaveLength(1);
+      expect(iosProducts[0].productId).toBe('ios_subscription');
+      expect(androidProducts).toHaveLength(1);
+      expect(androidProducts[0].productId).toBe('android_subscription');
+    });
+
+    it('존재하지 않는 플랫폼의 경우 빈 배열을 반환한다', async () => {
+      // When
+      const products = await subscriptionService.getSubscriptionProductsByPlatform('unknown');
+
+      // Then
+      expect(products).toHaveLength(0);
+    });
+  });
+
+  describe('getUserSubscriptions', () => {
+    it('유저의 구독 내역을 생성일자 내림차순으로 조회한다', async () => {
+      // Given
+      const user = await db.User.create({ email: 'test@example.com' });
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      const mockReceipt = {
+        transactionDate: new Date('2023-01-01T15:00:00.000Z'),
+        transactionId: 'test_transaction_id_1',
+        productId: product._id.toString(),
+        price: 100,
+        currency: 'USD',
+      };
+
+      const mockReceipt2 = {
+        transactionDate: new Date('2023-01-15T15:00:00.000Z'),
+        transactionId: 'test_transaction_id_2',
+        productId: product._id.toString(),
+        price: 100,
+        currency: 'USD',
+      };
+
+      (iapValidator.validate as jest.Mock).mockResolvedValue({
+        purchase: {
+          productId: product._id.toString(),
+          price: 100,
+          currency: 'USD',
+        },
+      });
+
+      const oldSubscription = await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockReceipt
+      );
+
+      // 이전 구독 만료시키기
+      await subscriptionService.expireSubscription(oldSubscription);
+
+      // 새로운 구독 생성
+      const newSubscription = await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockReceipt2
+      );
+
+      // When
+      const subscriptions = await subscriptionService.getUserSubscriptions(user._id.toString());
+
+      // Then
+      expect(subscriptions).toHaveLength(2);
+      // FIXME: 왜 테스트 결과 0번이 old가 되는거지.
+      expect(subscriptions[0]._id.toString()).toBe(newSubscription._id.toString());
+      expect(subscriptions[1]._id.toString()).toBe(oldSubscription._id.toString());
+    });
+
+    it('다른 유저의 구독 내역은 조회되지 않는다', async () => {
+      // Given
+      const user1 = await db.User.create({ email: 'user1@example.com' });
+      const user2 = await db.User.create({ email: 'user2@example.com' });
+      const product = await db.Product.create({
+        productId: 'test_subscription',
+        type: ProductType.SUBSCRIPTION,
+        displayName: '테스트 구독',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      const mockReceipt = {
+        transactionDate: new Date(),
+        transactionId: 'test_transaction_id',
+        productId: product._id.toString(),
+        price: 100,
+        currency: 'USD',
+      };
+
+      (iapValidator.validate as jest.Mock).mockResolvedValue({
+        purchase: {
+          productId: product._id.toString(),
+          price: 100,
+          currency: 'USD',
+        },
+      });
+
+      await subscriptionService.createSubscription(
+        user1._id.toString(),
+        product._id.toString(),
+        mockReceipt
+      );
+
+      // When
+      const subscriptions = await subscriptionService.getUserSubscriptions(user2._id.toString());
+
+      // Then
+      expect(subscriptions).toHaveLength(0);
+    });
+
+    it('구독이 아닌 상품은 조회되지 않는다', async () => {
+      // Given
+      const user = await db.User.create({ email: 'test@example.com' });
+      const product = await db.Product.create({
+        productId: 'test_product',
+        type: ProductType.PURCHASE,
+        displayName: '테스트 상품',
+        point: 100,
+        aiPoint: 1000,
+        platform: 'ios',
+      });
+
+      // When
+      const subscriptions = await subscriptionService.getUserSubscriptions(user._id.toString());
+
+      // Then
+      expect(subscriptions).toHaveLength(0);
     });
   });
 }); 
