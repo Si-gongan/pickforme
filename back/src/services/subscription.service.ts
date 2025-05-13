@@ -5,6 +5,7 @@ import { ProductType } from 'models/product';
 import { IPurchase, IPurchaseMethods } from 'models/purchase/types';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
+import { log, LogContext, LogSeverity } from 'utils/logger';
 
 class SubscriptionService {
   private static instance: SubscriptionService;
@@ -16,6 +17,24 @@ class SubscriptionService {
       SubscriptionService.instance = new SubscriptionService();
     }
     return SubscriptionService.instance;
+  }
+
+  public async getSubscriptionProductsByPlatform(platform: string) {
+    const products = await db.Product.find({
+      platform,
+      type: ProductType.SUBSCRIPTION,
+    });
+    return products;
+  }
+
+  public async getUserSubscriptions(userId: string) {
+    const subscriptions = await db.Purchase.find({
+      userId,
+      'product.type': ProductType.SUBSCRIPTION,
+    }).sort({
+      createdAt: -1,
+    });
+    return subscriptions;
   }
 
   public async createSubscription(userId: string, productId: string, receipt: Receipt) {
@@ -56,7 +75,7 @@ class SubscriptionService {
 
       await session.commitTransaction();
       
-      return purchaseData[0].toObject();
+      return purchaseData[0]
     } catch (error) {
       await session.abortTransaction();
       throw error;

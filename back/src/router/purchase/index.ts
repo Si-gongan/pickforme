@@ -1,8 +1,6 @@
 import Router from '@koa/router';
 import { Receipt } from 'in-app-purchase';
 import requireAuth from 'middleware/jwt';
-import db from 'models';
-import { ProductType } from 'models/product';
 import { log, LogContext, LogSeverity } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
 
@@ -10,7 +8,7 @@ const router = new Router({
   prefix: '/purchase',
 });
 
-// 포인트충전
+// 구독 구매 
 router.post('/', requireAuth, async (ctx) => {
   try {
     const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
@@ -47,28 +45,25 @@ router.post('/', requireAuth, async (ctx) => {
   }
 });
 
-// 상품목록
+// 구독 상품 목록 조회 
 router.get('/products/:platform', async (ctx) => {
-  // NOTE: 상품 노출 시 활성화
-
   const { platform } = ctx.params;
-  const products = await db.Product.find({
-    platform,
-    type: ProductType.SUBSCRIPTION,
-  });
-  ctx.body = products;
 
-  // ctx.body = [];
+  if (!platform) {
+    ctx.status = 400;
+    ctx.body = '플랫폼 정보가 없습니다.';
+    return;
+  }
+
+  const products = await subscriptionService.getSubscriptionProductsByPlatform(platform);
+  
+  ctx.body = products;
   ctx.status = 200;
 });
 
+// 유저 구독 목록 조회 
 router.get('/subscriptions', requireAuth, async (ctx) => {
-  const subscriptions = await db.Purchase.find({
-    userId: ctx.state.user._id,
-    'product.type': ProductType.SUBSCRIPTION,
-  }).sort({
-    createdAt: -1,
-  });
+  const subscriptions = await subscriptionService.getUserSubscriptions(ctx.state.user._id);
   ctx.body = subscriptions;
   ctx.status = 200;
 });
@@ -92,7 +87,7 @@ router.get('/subscription/status', requireAuth, async (ctx) => {
   }
 });
 
-// NOTE: 환불대상 조회
+// 환불대상 조회
 router.get('/refund', requireAuth, async (ctx) => {
   try {
     const result = await subscriptionService.checkRefundEligibility(ctx.state.user._id);
@@ -117,7 +112,7 @@ router.get('/refund', requireAuth, async (ctx) => {
   }
 });
 
-// NOTE: 환불 처리
+// 환불 처리
 router.post('/refund', requireAuth, async (ctx) => {
   const {
     body: { subscriptionId },
