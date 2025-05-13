@@ -22,7 +22,7 @@ const isTest = process.env.NODE_ENV === 'test';
 
 if (!isTest) {
   mongoose.connect(uri, {
-    dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme',
+    dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'test',
   });
 }
 
