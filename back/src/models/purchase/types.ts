@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose';
+import { ClientSession, Document, Model } from 'mongoose';
 
 export interface IPurchase extends Document, IPurchaseMethods {
   receipt: any;
@@ -11,7 +11,7 @@ export interface IPurchase extends Document, IPurchaseMethods {
 }
 
 export interface IPurchaseMethods {
-  updateExpiration: () => Promise<void>;
+  updateExpiration: (options?: { session?: ClientSession }) => Promise<void>;
 }
 
 export type PurchaseModel = Model<IPurchase, {}, IPurchaseMethods>;

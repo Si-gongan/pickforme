@@ -50,9 +50,9 @@ const PurchaseSchema = new mongoose.Schema(
 );
 
 // 도메인 메서드 정의
-PurchaseSchema.methods.updateExpiration = async function updateExpiration() {
+PurchaseSchema.methods.updateExpiration = async function updateExpiration(options?: { session?: mongoose.ClientSession }) {
   this.isExpired = true;
-  await this.save();
+  await this.save(options);
 };
 
 const Purchase = mongoose.model<IPurchase, PurchaseModel>(
