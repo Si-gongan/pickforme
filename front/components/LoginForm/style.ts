@@ -6,7 +6,9 @@ export default function useStyle() {
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme];
     return StyleSheet.create({
-        LoginFormContainer: {},
+        LoginFormContainer: {
+            backgroundColor: theme.background.primary
+        },
         LoginFormTitle: {
             fontSize: 20,
             lineHeight: 28,
