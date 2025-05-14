@@ -8,7 +8,9 @@ import {
   PushService,
 } from './types';
 import { ProductReward } from 'models/product';
-const { POINTS } = require('constants');
+import constants from '../../constants';
+
+const { POINTS } = constants;
 
 const uniqueValidator = require('mongoose-unique-validator');
 

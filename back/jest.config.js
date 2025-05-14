@@ -1,6 +1,12 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  transform: {
+    '^.+\\.ts?$': 'ts-jest',
+  },
+  transformIgnorePatterns: ['<rootDir>/node_modules/'],
+  testMatch: ['**/__tests__/**/*.test.ts'],
+  setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
   moduleNameMapper: {
     '^models$': '<rootDir>/src/models',
     '^models/(.*)$': '<rootDir>/src/models/$1',
@@ -10,11 +16,7 @@ module.exports = {
     '^scheduler/(.*)$': '<rootDir>/src/scheduler/$1',
     '^socket$': '<rootDir>/src/socket.ts',
     '^socket/(.*)$': '<rootDir>/src/socket.ts',
-    '^constants$': '<rootDir>/src/constants',
-    '^constants/(.*)$': '<rootDir>/src/constants/$1',
   },
-  testMatch: ['**/__tests__/**/*.test.ts'],
-  setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
   verbose: true,
   projects: [
     {
@@ -29,8 +31,6 @@ module.exports = {
         '^scheduler/(.*)$': '<rootDir>/src/scheduler/$1',
         '^socket$': '<rootDir>/src/socket.ts',
         '^socket/(.*)$': '<rootDir>/src/socket.ts',
-        '^constants$': '<rootDir>/src/constants',
-        '^constants/(.*)$': '<rootDir>/src/constants/$1',
         '^services$': '<rootDir>/src/services',
         '^services/(.*)$': '<rootDir>/src/services/$1',
       },
@@ -47,8 +47,6 @@ module.exports = {
         '^scheduler/(.*)$': '<rootDir>/src/scheduler/$1',
         '^socket$': '<rootDir>/src/socket.ts',
         '^socket/(.*)$': '<rootDir>/src/socket.ts',
-        '^constants$': '<rootDir>/src/constants',
-        '^constants/(.*)$': '<rootDir>/src/constants/$1',
         '^services$': '<rootDir>/src/services',
         '^services/(.*)$': '<rootDir>/src/services/$1',
       }

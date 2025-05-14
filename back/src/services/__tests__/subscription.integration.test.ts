@@ -4,7 +4,9 @@ import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
 import { subscriptionService } from '../subscription.service';
-const { POINTS } = require('constants');
+import constants from '../../constants';
+
+const { POINTS } = constants;
 
 // iapValidator 모킹
 jest.mock('utils/iap', () => ({

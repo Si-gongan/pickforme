@@ -1,11 +1,12 @@
-const { POINTS } = require('constants');
 import { Receipt } from 'in-app-purchase';
 import db from 'models';
 import { ProductType } from 'models/product';
 import { IPurchase, IPurchaseMethods } from 'models/purchase/types';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
-import { log, LogContext, LogSeverity } from 'utils/logger';
+import constants from '../constants';
+
+const { POINTS } = constants;
 
 class SubscriptionService {
   private static instance: SubscriptionService;
