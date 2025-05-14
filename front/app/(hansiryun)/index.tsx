@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
@@ -10,6 +10,7 @@ import { setClientToken } from '../../utils/axios';
 import Colors from '../../constants/Colors';
 import useColorScheme from '../../hooks/useColorScheme';
 import { attempt } from '../../utils/axios';
+import { AxiosError } from 'axios';
 
 export default function InterviewScreen() {
     const router = useRouter();
@@ -57,6 +58,11 @@ export default function InterviewScreen() {
             return;
         }
 
+        if (isDuplicate) {
+            alert('이미 등록되어 있는 전화번호입니다.');
+            return;
+        }
+
         const id = user?._id;
         const token = user?.token;
 
@@ -66,7 +72,7 @@ export default function InterviewScreen() {
         }
 
         if (!phoneRegex.test(phoneNumber)) {
-            alert('유효하지 않은 전화번호 형식입니다.');
+            alert('유효하지 않은 전화번호 형식입니다. \n 010으로 시작하는 11자리 숫자를 입력해주세요.');
             return;
         }
 
@@ -75,13 +81,28 @@ export default function InterviewScreen() {
                 id: id,
                 phone: phoneNumber
             })
-        ).then(res => {
+        ).then(async res => {
             if (!res.ok) {
                 console.error('팝업 설정 실패 in hansiryun:', res.error);
                 return;
             }
+
+            // 구글 폼 링크로 이동
+            await Linking.openURL('https://forms.gle/WW3ZbZunF9LCdQnr7');
+
             alert('신청이 완료되었습니다.');
             router.replace('/(tabs)');
+        });
+
+        // 신청했으므로 더이상 보이지 않도록 처리.
+        const payload = { popup_id: 'event_hansiryun', flag: 1 };
+
+        attempt(() => SetPopupAPI(payload)).then(res => {
+            if (!res.ok) {
+                console.error('팝업 설정 실패 in hansiryun:', res.error);
+                return;
+            }
+            console.log('setpopup response :', res?.value?.data);
         });
     };
 
@@ -108,6 +129,8 @@ export default function InterviewScreen() {
 
     // onChangeText 핸들러 수정
     const handlePhoneChange = async (text: string) => {
+        setIsDuplicate(false);
+
         setPhoneNumber(text);
         // 숫자만 추출
         let phoneNumber = text.replace(/[^0-9]/g, '');
@@ -130,12 +153,13 @@ export default function InterviewScreen() {
 
         setPhoneNumber(text);
 
-        const phoneCheck = await attempt(() => PhoneCheckAPI({ id: id, phone: phoneNumber }));
-
-        if (phoneCheck.ok) {
-            setIsDuplicate(true);
-        } else {
+        try {
+            await PhoneCheckAPI({ id: id, phone: phoneNumber });
             setIsDuplicate(false);
+        } catch (error) {
+            if (error instanceof AxiosError && error.response?.status === 409) {
+                setIsDuplicate(true);
+            }
         }
     };
 

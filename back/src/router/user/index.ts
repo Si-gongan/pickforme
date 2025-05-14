@@ -7,9 +7,7 @@ const router = new Router({
 });
 
 router.get('/my', requireAuth, async (ctx) => {
-  const user = await db.User.findById(ctx.state.user._id)
-    .select('point aiPoint')
-    .lean();
+  const user = await db.User.findById(ctx.state.user._id).select('point aiPoint').lean();
 
   if (!user) {
     ctx.status = 404;
@@ -25,14 +23,10 @@ router.get('/my', requireAuth, async (ctx) => {
   };
 });
 
+router.get('/getpoint/:id', async (ctx) => {
+  const { id } = ctx.params as { id: string };
+  const user = await db.User.findById(id).select('point aiPoint').lean();
 
-
-router.get('/getpoint/:id',  async (ctx) => {
-  const { id } = ctx.params as {id:string};
-  const user = await db.User.findById(id)
-    .select('point aiPoint')
-    .lean();
-  
   if (!user) {
     ctx.status = 404;
     ctx.body = {
@@ -46,12 +40,10 @@ router.get('/getpoint/:id',  async (ctx) => {
     aiPoint: user.aiPoint,
   };
 });
-router.get('/push/:id',  async (ctx) => {
-  const { id } = ctx.params as {id:string};
-  const user = await db.User.findById(id)
-    .select('pushToken')
-    .lean();
-  
+router.get('/push/:id', async (ctx) => {
+  const { id } = ctx.params as { id: string };
+  const user = await db.User.findById(id).select('pushToken').lean();
+
   if (!user) {
     ctx.status = 404;
     ctx.body = {
@@ -68,10 +60,9 @@ router.get('/push/:id',  async (ctx) => {
     });
   }
   ctx.body = {
-    push : user.pushToken
+    push: user.pushToken,
   };
 });
-
 
 router.post('/membership', requireAuth, async (ctx) => {
   const { id, MembershipAt } = ctx.request.body as { id: string; MembershipAt: string };
@@ -99,7 +90,7 @@ router.post('/membership', requireAuth, async (ctx) => {
     ctx.body = { error: 'User not found' };
     return;
   }
-  
+
   // MembershipAt 값 업데이트
   user.MembershipAt = new Date(MembershipAt); // 전달받은 값을 Date 객체로 저장
   await user.save();
@@ -108,11 +99,9 @@ router.post('/membership', requireAuth, async (ctx) => {
     message: 'Membership date updated successfully',
     MembershipAt: user.MembershipAt,
   };
-
-  
 });
 
-router.post('/phone', requireAuth,async (ctx) => {
+router.post('/phone', requireAuth, async (ctx) => {
   const { id, phone } = ctx.request.body as { id: string; phone: string };
 
   console.log(phone); // 전달받은 id 출력
@@ -143,7 +132,7 @@ router.post('/phone', requireAuth,async (ctx) => {
     ctx.body = { error: 'User not found' };
     return;
   }
-  
+
   // MembershipAt 값 업데이트
   user.phone = phone; // 전달받은 값을 Date 객체로 저장
   await user.save();
@@ -152,39 +141,40 @@ router.post('/phone', requireAuth,async (ctx) => {
     message: 'Membership date updated successfully',
     phone: user.phone,
   };
-
-  
 });
 
-router.post('/duplicationphone', requireAuth,async (ctx) => {
+router.post('/duplicationphone', requireAuth, async (ctx) => {
   const { phone } = ctx.request.body as { phone: string };
-
-  console.log(phone); // 전달받은 id 출력
 
   if (!phone) {
     ctx.status = 400;
     ctx.body = { error: 'phone is required' };
     return;
   }
+
+  const phoneRegex = /^010\d{8}$/;
+
+  if (!phoneRegex.test(phone)) {
+    ctx.status = 400;
+    ctx.body = { error: 'Invalid phone number format' };
+    return;
+  }
+
   const duplicateUser = await db.User.findOne({ phone });
+
   if (duplicateUser) {
     ctx.status = 409; // Conflict
     ctx.body = { error: '1' };
     return;
   }
 
-
   ctx.body = {
     message: '0',
   };
-
-  
 });
 
-
-
 router.post('/setpopup', requireAuth, async (ctx) => {
-  const { flag, popup_id } = ctx.request.body as { 
+  const { flag, popup_id } = ctx.request.body as {
     flag: number;
     popup_id: string;
   };
@@ -203,7 +193,7 @@ router.post('/setpopup', requireAuth, async (ctx) => {
     return;
   }
 
-  if(!user.hide || !Array.isArray(user.hide)) {
+  if (!user.hide || !Array.isArray(user.hide)) {
     user.hide = [];
   }
 
@@ -213,10 +203,10 @@ router.post('/setpopup', requireAuth, async (ctx) => {
       if (!user.hide.includes(popup_id)) {
         user.hide.push(popup_id);
       }
-    } 
+    }
     // flag가 0이면 보이기 (hide 배열에서 제거)
     else if (flag === 0) {
-      user.hide = user.hide.filter(id => id.toString() !== popup_id);
+      user.hide = user.hide.filter((id) => id.toString() !== popup_id);
     } else {
       ctx.status = 400;
       ctx.body = { error: 'Invalid flag value. Must be 0 or 1' };
@@ -224,7 +214,7 @@ router.post('/setpopup', requireAuth, async (ctx) => {
     }
 
     await user.save();
-    
+
     ctx.body = {
       message: `Popup ${flag === 1 ? 'hidden' : 'shown'} successfully`,
     };
