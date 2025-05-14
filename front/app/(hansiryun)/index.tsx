@@ -10,6 +10,7 @@ import { setClientToken } from '../../utils/axios';
 import Colors from '../../constants/Colors';
 import useColorScheme from '../../hooks/useColorScheme';
 import { attempt } from '../../utils/axios';
+import { AxiosError } from 'axios';
 
 export default function InterviewScreen() {
     const router = useRouter();
@@ -54,6 +55,11 @@ export default function InterviewScreen() {
 
         if (!isChecked) {
             alert('개인 정보 수집과 이용에 동의해주세요.');
+            return;
+        }
+
+        if (isDuplicate) {
+            alert('이미 등록되어 있는 전화번호입니다.');
             return;
         }
 
@@ -123,6 +129,8 @@ export default function InterviewScreen() {
 
     // onChangeText 핸들러 수정
     const handlePhoneChange = async (text: string) => {
+        setIsDuplicate(false);
+
         setPhoneNumber(text);
         // 숫자만 추출
         let phoneNumber = text.replace(/[^0-9]/g, '');
@@ -145,12 +153,13 @@ export default function InterviewScreen() {
 
         setPhoneNumber(text);
 
-        const phoneCheck = await attempt(() => PhoneCheckAPI({ id: id, phone: phoneNumber }));
-
-        if (phoneCheck.ok) {
-            setIsDuplicate(true);
-        } else {
+        try {
+            await PhoneCheckAPI({ id: id, phone: phoneNumber });
             setIsDuplicate(false);
+        } catch (error) {
+            if (error instanceof AxiosError && error.response?.status === 409) {
+                setIsDuplicate(true);
+            }
         }
     };
 
