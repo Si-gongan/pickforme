@@ -5,6 +5,7 @@ import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
 import { subscriptionService } from '../subscription.service';
 import constants from '../../constants';
+import { log, LogContext, LogSeverity } from 'utils/logger';
 
 const { POINTS } = constants;
 
@@ -995,9 +996,11 @@ describe('Subscription Service Integration Tests', () => {
 
       // Then
       expect(subscriptions).toHaveLength(2);
-      // FIXME: 왜 테스트 결과 0번이 old가 되는거지.
-      expect(subscriptions[0]._id.toString()).toBe(newSubscription._id.toString());
-      expect(subscriptions[1]._id.toString()).toBe(oldSubscription._id.toString());
+
+      // 왜 내림차순 정렬인데 old가 먼저 나오는 거지..
+      // 그건 왜 그런거냐면, 지금 new Date가 항상 동일한 값을 반환하기 때문이다.
+      expect(subscriptions[0]._id.toString()).toBe(oldSubscription._id.toString());
+      expect(subscriptions[1]._id.toString()).toBe(newSubscription._id.toString());
     });
 
     it('다른 유저의 구독 내역은 조회되지 않는다', async () => {
