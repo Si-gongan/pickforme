@@ -1,3 +1,7 @@
 // constants/index.ts
 
-module.exports = require('./points');
+import { POINTS } from './points';
+
+export default {
+  POINTS,
+};
