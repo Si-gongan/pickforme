@@ -244,6 +244,11 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             return;
         }
 
+        if (!productDetail?.product?.detail_images || !productDetail?.product?.thumbnail || !productReview.reviews) {
+            Alert.alert('상품 정보를 불러오고 있어요.');
+            return;
+        }
+
         try {
             await getProductAIAnswer(question);
             setQuestion('');
