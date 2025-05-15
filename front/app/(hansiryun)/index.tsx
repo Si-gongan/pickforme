@@ -72,7 +72,7 @@ export default function InterviewScreen() {
         }
 
         if (!phoneRegex.test(phoneNumber)) {
-            alert('유효하지 않은 전화번호 형식입니다. \n 010으로 시작하는 11자리 숫자를 입력해주세요.');
+            alert('유효하지 않은 전화번호 형식입니다. \n 숫자만 입력해주세요.');
             return;
         }
 
@@ -92,17 +92,6 @@ export default function InterviewScreen() {
 
             alert('신청이 완료되었습니다.');
             router.replace('/(tabs)');
-        });
-
-        // 신청했으므로 더이상 보이지 않도록 처리.
-        const payload = { popup_id: 'event_hansiryun', flag: 1 };
-
-        attempt(() => SetPopupAPI(payload)).then(res => {
-            if (!res.ok) {
-                console.error('팝업 설정 실패 in hansiryun:', res.error);
-                return;
-            }
-            console.log('setpopup response :', res?.value?.data);
         });
     };
 
