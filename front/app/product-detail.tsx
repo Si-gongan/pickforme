@@ -238,7 +238,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     // TODO
     // const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
-    const handleClickSend = async () => {
+    const handleClickSend = useCheckLogin(async () => {
         if (!question) {
             Alert.alert('질문을 입력해주세요.');
             return;
@@ -261,7 +261,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 config: error.config
             });
         }
-    };
+    });
 
     const handleClickWish = async () => {
         if (already) {
@@ -302,13 +302,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     };
 
-    const handleClickRequest = useCheckLogin(async (message: string) => {
-        // setRequestBottomSheet(product);
-        // setIsShowSubscriptionModal(false);
-        // setTimeout(() => {
-        //     setIsShowSubscriptionModal(true);
-        // }, 300);
-
+    const handleClickRequest = useCheckLogin(async () => {
         await getSubscription();
         console.log('subscription:', JSON.stringify(subscription));
         console.log('userData:', userData.point);
@@ -325,9 +319,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     });
 
-    const handlePressAIQuestionTab = useCheckLogin(() => {
-        setTab(TABS.QUESTION);
-    });
+    const handlePressAIQuestionTab = () => setTab(TABS.QUESTION);
 
     const moveFocusToProductDetail = (nextTab: TABS) => {
         const moveFocus = () => {
