@@ -304,11 +304,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const handleClickRequest = useCheckLogin(async () => {
         await getSubscription();
-        console.log('subscription:', JSON.stringify(subscription));
-        console.log('userData:', userData.point);
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        if (userData.point && parseInt(userData.point.toString()) < 1) {
+        if (!subscription || subscription.isExpired) {
             console.log('setIsShowNonSubscriberManageModal');
             // 모달 표시
             setIsShowNonSubscriberManageModal(true);

@@ -164,21 +164,11 @@ export default function InterviewScreen() {
         >
             <StatusBar style="auto" />
             <View style={styles.content}>
-                <Text
-                    style={[
-                        styles.title,
-                        { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
-                    ]}
-                >
+                <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]}>
                     픽포미 멤버십을 6개월간 무료로 이용해 보세요
                 </Text>
                 {/* <Text style={{ width: "100%", height: 60 }}></Text> */}
-                <Text
-                    style={[
-                        styles.description,
-                        { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
-                    ]}
-                >
+                <Text style={[styles.description, { color: Colors[colorScheme].text.primary }]}>
                     안녕하세요!{'\n'}
                     {'\n'}픽포미에서 한국시각장애인연합회와 함께 유료 멤버십 서비스를 무료로 사용해보실 수 있는 기회를
                     제공하게 되었어요. 1분 안에 쉽게 등록하고 픽포미 유료 멤버십을 6개월간 무료로 이용해보세요.{'\n'}
@@ -195,28 +185,15 @@ export default function InterviewScreen() {
                 </Text>
 
                 <View style={styles.phoneInputContainer}>
-                    <Text
-                        style={[
-                            styles.inputLabel,
-                            { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
-                        ]}
-                    >
-                        전화번호
-                    </Text>
+                    <Text style={[styles.inputLabel, { color: Colors[colorScheme].text.primary }]}>전화번호</Text>
                     <TextInput
                         style={[
                             styles.input,
                             isDuplicate && styles.inputError,
                             {
-                                borderColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.borderColor.primary
-                                        : Colors.light.borderColor.primary,
-                                color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary,
-                                backgroundColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.background.primary
-                                        : Colors.light.background.primary
+                                borderColor: Colors[colorScheme].border.primary,
+                                color: Colors[colorScheme].text.primary,
+                                backgroundColor: Colors[colorScheme].background.primary
                             }
                         ]}
                         value={phoneNumber}
@@ -224,9 +201,7 @@ export default function InterviewScreen() {
                         placeholder="전화번호를 입력해주세요"
                         keyboardType="phone-pad"
                         maxLength={13}
-                        placeholderTextColor={
-                            colorScheme === 'dark' ? Colors.dark.text.secondary : Colors.light.text.secondary
-                        }
+                        placeholderTextColor={Colors[colorScheme].text.placeholder}
                     />
                     {isDuplicate && (
                         <View style={styles.errorContainer}>
@@ -249,7 +224,7 @@ export default function InterviewScreen() {
                             style={[
                                 styles.checkboxLabel,
                                 {
-                                    color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary
+                                    color: Colors[colorScheme].text.primary
                                 }
                             ]}
                         >
@@ -264,10 +239,7 @@ export default function InterviewScreen() {
                             styles.button,
                             styles.submitButton,
                             {
-                                backgroundColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.button.primary.background
-                                        : Colors.light.button.primary.background
+                                backgroundColor: Colors[colorScheme].button.primary.background
                             }
                         ]}
                         onPress={handleSubmit}
@@ -292,10 +264,7 @@ export default function InterviewScreen() {
                             styles.button,
                             styles.dontShowButton,
                             {
-                                borderColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.borderColor.primary
-                                        : Colors.light.borderColor.primary
+                                borderColor: Colors[colorScheme].border.primary
                             }
                         ]}
                         onPress={handleDontShowAgain}
@@ -304,7 +273,7 @@ export default function InterviewScreen() {
                             style={[
                                 styles.dontShowButtonText,
                                 {
-                                    color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary
+                                    color: Colors[colorScheme].text.primary
                                 }
                             ]}
                         >
