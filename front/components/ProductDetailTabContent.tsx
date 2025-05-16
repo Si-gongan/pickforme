@@ -116,7 +116,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }
 
         return (
-            <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel={`${tab} 내용`}>
+            <View style={styles.detailWrap} ref={refs[tab]} accessibilityLabel={`${tab} 내용`}>
                 <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
             </View>
         );

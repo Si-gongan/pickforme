@@ -33,7 +33,8 @@ import {
     setProductReviewAtom,
     loadingStatusAtom,
     setScrapedProductDetailAtom,
-    scrapedProductDetailAtom
+    scrapedProductDetailAtom,
+    LoadingStatus
 } from '../stores/product/atoms';
 import { Product } from '../stores/product/types';
 import { sendLogAtom } from '../stores/log/atoms';
@@ -106,7 +107,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const [tab, setTab] = useState<TABS>(TABS.CAPTION);
     const [question, setQuestion] = useState('');
-
+    const [tabPressed, setTabPressed] = useState(false); // 탭 변경 여부를 추적하는 상태 추가
     const loadingStatus = useAtomValue(loadingStatusAtom);
 
     const managerResponseRef = useRef<RNView>(null);
@@ -190,46 +191,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             getProductDetail(product);
         }
     }, [productUrl]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(reportRef.current);
-            if (loadingStatus.report === 2 && tab === TABS.REPORT && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.report, tab]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(reviewRef.current);
-            if (loadingStatus.review === 2 && tab === TABS.REVIEW && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.review, tab]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(questionRef.current);
-            if (loadingStatus.question === 2 && tab === TABS.QUESTION && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.question, tab]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(captionRef.current);
-            if (loadingStatus.caption === 2 && tab === TABS.CAPTION && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.caption, tab]);
 
     const handleClickBuy = async () => {
         sendLog({ product: { url: productUrl }, action: 'link', metaData: {} });
@@ -319,24 +280,54 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const handlePressAIQuestionTab = () => setTab(TABS.QUESTION);
 
-    const moveFocusToProductDetail = (nextTab: TABS) => {
-        const moveFocus = () => {
-            const node = findNodeHandle(refs[nextTab].current);
-            if (loadingStatus[nextTab] === 2 && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    };
-
     const handlePressTab = (nextTab: TABS) => {
         if (nextTab === TABS.QUESTION) {
-            handlePressAIQuestionTab('');
+            handlePressAIQuestionTab();
         }
-
+        console.log('handlePressTab 호출됨:', { nextTab });
         setTab(nextTab);
-        moveFocusToProductDetail(nextTab);
+        setTabPressed(true);
     };
+
+    useEffect(() => {
+        if (loadingStatus.report === LoadingStatus.FINISH && tab === TABS.REPORT) {
+            const node = findNodeHandle(refs.report?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.report}`);
+            }
+        }
+    }, [loadingStatus.report, tab]);
+
+    useEffect(() => {
+        if (loadingStatus.question === LoadingStatus.FINISH && tab === TABS.QUESTION) {
+            const node = findNodeHandle(refs.question?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.question}`);
+            }
+        }
+    }, [loadingStatus.question, tab]);
+
+    useEffect(() => {
+        if (loadingStatus.review === LoadingStatus.FINISH && tab === TABS.REVIEW) {
+            const node = findNodeHandle(refs.review?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.review}`);
+            }
+        }
+    }, [loadingStatus.review, tab]);
+
+    useEffect(() => {
+        if (tabPressed && loadingStatus.caption === LoadingStatus.FINISH && tab === TABS.CAPTION) {
+            const node = findNodeHandle(refs.caption?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.caption}`);
+            }
+        }
+    }, [loadingStatus.caption, tab, tabPressed]);
 
     const handleRegenerate = () => {
         console.log('handleRegenerate 호출됨:', { tab });
@@ -509,6 +500,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
                         size="medium"
                         color={tab === TAB ? 'primary' : 'tertiary'}
                         onPress={() => handlePressTab(TAB)}
+                        accessible
                         accessibilityLabel={`${tabName[TAB]} 탭`}
                         selected={tab === TAB}
                     />
