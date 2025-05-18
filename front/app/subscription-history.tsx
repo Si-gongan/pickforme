@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Linking } from 'react-native';
 import { useAtomValue, useSetAtom } from 'jotai';
 
 import useColorScheme from '../hooks/useColorScheme';
@@ -27,7 +27,7 @@ import {
 import { Product, ProductType } from '../stores/purchase/types';
 import { initializeIAP } from '../services/IAPservice';
 import { BackHeader } from '../components';
-import { formatDate } from '../utils/common';
+import { formatDate, formatMonthDay } from '../utils/common';
 import type { ColorScheme } from '@hooks';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
@@ -93,14 +93,9 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
     const router = useRouter();
     const colorScheme = useColorScheme();
     const currentSubscription = useAtomValue(subscriptionAtom);
-    const subscriptions = useAtomValue(subscriptionListAtom);
-    const userData = useAtomValue(userAtom);
     const styles = useStyles(colorScheme);
 
     const getCurrentSubscription = useSetAtom(getSubscriptionAtom);
-    const getSubscriptionList = useSetAtom(getSubscriptionListAtom);
-
-    const setIsShowNonSubscribedModal = useSetAtom(isShowUnsubscribeModalAtom);
 
     const filteredProducts = products.reduce(
         (obj, product) => {
@@ -126,7 +121,6 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
             purchasableProducts: [] as (IAPProduct & Product)[]
         }
     );
-    console.log('Filtered Products:', filteredProducts);
 
     const handleClickSub = async (sku: string, offerToken?: string) => {
         try {
@@ -149,10 +143,11 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
         }
     };
 
+    const handleClickUnsubscribe = async () => {};
+
     useEffect(() => {
         getCurrentSubscription();
-        getSubscriptionList();
-    }, [getCurrentSubscription, getSubscriptionList]);
+    }, [getCurrentSubscription]);
 
     return (
         <View style={styles.container}>
@@ -160,106 +155,32 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
                     <Text style={styles.title}>멤버십 구매 내역</Text>
-                    {currentSubscription && (
+                    {currentSubscription?.activate ? (
                         <>
-                            <Text style={styles.subtitle}>전체</Text>
+                            {/* <Text style={styles.subtitle}>전체</Text> */}
                             <View style={styles.purchaseStatus}>
                                 <View style={styles.row}>
                                     <Text style={{ color: Colors[colorScheme].text.primary }}>
-                                        {formatDate(currentSubscription?.createdAt)} 결제
+                                        {formatMonthDay(currentSubscription?.createdAt || '')} 결제 완료
+                                    </Text>
+                                    <Text style={{ color: Colors[colorScheme].text.primary }}>
+                                        {formatMonthDay(currentSubscription?.expiresAt || '')} 해지 예정
                                     </Text>
                                 </View>
                                 <View style={styles.row}>
-                                    <Text style={{ color: Colors[colorScheme].text.primary }}>
-                                        픽포미 플러스 월간 이용권
-                                    </Text>
-                                    <Text style={{ color: Colors[colorScheme].text.primary }}>4,900원</Text>
+                                    <Text style={styles.purchaseTitle}>픽포미 플러스 월간 이용권</Text>
+                                    <Text style={styles.purchasePrice}>4,900원</Text>
                                 </View>
                             </View>
 
                             <Button
-                                style={styles.purchaseButton}
+                                style={styles.unSubscribeButton}
                                 title="멤버십 해지하기"
                                 size="small"
-                                textStyle={{ color: Colors[colorScheme].text.secondary }}
-                                onPress={() => router.replace('/')}
+                                textStyle={styles.unSubscribeButton}
+                                onPress={handleClickUnsubscribe}
                             />
                         </>
-                    )}
-                    {subscriptions && subscriptions.length > 0 ? (
-                        subscriptions.some(subscription => !subscription.isExpired) ? ( // 구독 중인 항목 필터링
-                            subscriptions
-                                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // 가장 최근 날짜로 정렬
-                                .slice(0, 1) // 하나의 구독만 표시
-                                .map((subscription, index) => (
-                                    <React.Fragment key={`subscription-${index}`}>
-                                        <Text style={styles.subtitle}>전체</Text>
-                                        <View key={`subscription-${index}`} style={styles.purchaseWrap}>
-                                            <Text style={styles.purchaseDate}>
-                                                {formatDate(subscription.createdAt)} 결제
-                                            </Text>
-                                            <View style={styles.row}>
-                                                <Text style={styles.purchaseTitle}>
-                                                    {subscription.product.displayName} 월간 이용권
-                                                </Text>
-                                                <Text style={styles.purchasePrice}>
-                                                    {subscription.purchase.isTrial ? '무료' : '4,900원'}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                    </React.Fragment>
-                                ))
-                        ) : (
-                            <>
-                                {filteredProducts.subscriptionProducts.map(product => {
-                                    const color: 'primary' | 'tertiary' = 'tertiary';
-                                    const buttonTextProps = { color };
-                                    if (product.platform === 'android') {
-                                        const subscriptionOffer = (
-                                            product as unknown as SubscriptionAndroid
-                                        ).subscriptionOfferDetails.find(
-                                            subscriptionOfferDetail =>
-                                                subscriptionOfferDetail.basePlanId.replace('-', '_') ===
-                                                product.productId
-                                        );
-                                        if (!subscriptionOffer) {
-                                            return null;
-                                        }
-                                        return (
-                                            <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
-                                                <Text style={styles.productPrice}>
-                                                    월{' '}
-                                                    {subscriptionOffer.pricingPhases.pricingPhaseList[0].formattedPrice.replace(
-                                                        /₩(.*)/,
-                                                        '$1원'
-                                                    )}
-                                                </Text>
-                                                <Button
-                                                    style={styles.productButton}
-                                                    title="멤버십 시작하기"
-                                                    size="small"
-                                                    textStyle={{ color: Colors[colorScheme].text.secondary }}
-                                                    onPress={() => router.replace('/subscription')}
-                                                />
-                                            </View>
-                                        );
-                                    }
-                                    return (
-                                        <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
-                                            <Text style={styles.productPrice}>
-                                                월 {(product as any).localizedPrice.replace(/₩(.*)/, '$1원')}
-                                            </Text>
-                                            <Button
-                                                style={styles.productButton}
-                                                title="멤버십 시작하기"
-                                                size="small"
-                                                onPress={() => router.replace('/subscription')}
-                                            />
-                                        </View>
-                                    );
-                                })}
-                            </>
-                        )
                     ) : (
                         <>
                             <Text style={styles.subtitle}>구매 내역이 없습니다.</Text>
@@ -427,6 +348,15 @@ const useStyles = (colorScheme: ColorScheme) =>
             padding: 10,
             marginLeft: 'auto',
             backgroundColor: Colors[colorScheme].button.primary.background
+        },
+        unSubscribeButton: {
+            marginLeft: 'auto',
+            paddingRight: 10
+        },
+        unSubscribeButtonText: {
+            fontSize: 13,
+            fontWeight: '600',
+            color: Colors[colorScheme].button.primary.background
         },
         productWrap: {
             flexDirection: 'row',

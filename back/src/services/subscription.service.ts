@@ -96,6 +96,7 @@ class SubscriptionService {
         activate: false,
         leftDays: 0,
         expiresAt: null,
+        createdAt: null,
         msg: "유저정보가 없습니다.",
       };
     }
@@ -119,6 +120,7 @@ class SubscriptionService {
           activate: true,
           leftDays,
           expiresAt: expiredDate.toISOString(),
+          createdAt: membershipAt.toISOString(),
           msg: '이벤트 멤버십이 활성화되어 있습니다.',
         };
       }
@@ -138,6 +140,7 @@ class SubscriptionService {
         activate: false,
         leftDays: 0,
         expiresAt: null,
+        createdAt: null,
         msg: '활성화중인 구독정보가 없습니다.',
       };
     }
@@ -156,6 +159,7 @@ class SubscriptionService {
       activate,
       leftDays: Math.max(0, leftDays),
       expiresAt: endDate.toISOString(),
+      createdAt: subscription.createdAt,
       msg: activate ? '활성화중인 구독정보를 조회하였습니다.' : '구독 기간이 만료되었습니다.',
     };
   }

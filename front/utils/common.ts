@@ -15,6 +15,15 @@ export const formatDate = (date: string | Date) => {
     return `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 };
 
+export function formatMonthDay(isoString: string): string {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월 ${day}일`;
+}
+
 export const formatDateAfterOneMonth = (date: string | Date) => {
     const today = new Date(date);
     today.setMonth(today.getMonth() + 1);
