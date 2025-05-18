@@ -1,6 +1,6 @@
 import client, { handleApiError } from '../../utils/axios';
 
-import { Product, Purchase, GetProductsParams, PurchaseProductParams, PurchaseSubCheck } from './types';
+import { Product, Purchase, GetProductsParams, PurchaseProductParams, PurchaseSubCheck, GetSubscriptionResponse } from './types';
 
 export const PurchaseProductAPI = (params: PurchaseProductParams) =>
     client.post<Purchase | string>('/purchase', params).catch(error => handleApiError(error, 'PurchaseProduct'));
@@ -10,12 +10,7 @@ export const GetProductsAPI = (params: GetProductsParams) =>
 
 export const GetSubscriptionAPI = () =>
     client
-        .get<{
-            activate: boolean;
-            expiresAt: string;
-            leftDays: number;
-            msg: string;
-        }>(`/purchase/subscription/status`)
+        .get<GetSubscriptionResponse>(`/purchase/subscription/status`)
         .catch(error => handleApiError(error, 'GetSubscription'));
 
 export const GetSubscriptionListAPI = () =>

@@ -51,6 +51,14 @@ export interface Purchase {
     createdAt: string;
 }
 
+export interface GetSubscriptionResponse {
+    activate: boolean;
+    leftDays: number;
+    msg: string;
+    expiresAt: string | null;
+    createdAt: string | null;
+}
+
 export interface PurchaseSubCheck {
     sub?: Purchase; // (조회된 DB의 purchase);
     activate: boolean; // (활성화된 구독여부 - true 있음 / false 없음)
