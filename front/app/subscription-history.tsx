@@ -143,7 +143,20 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
         }
     };
 
-    const handleClickUnsubscribe = async () => {};
+    const handleClickUnsubscribe = async () => {
+        try {
+            if (Platform.OS === 'android') {
+                // Android의 경우 구글 플레이 스토어로 이동
+                await Linking.openURL('https://play.google.com/store/account/subscriptions');
+            } else {
+                // iOS의 경우 앱스토어 설정으로 이동
+                await Linking.openURL('https://apps.apple.com/account/subscriptions');
+            }
+        } catch (error) {
+            console.error('구독 해지 처리 중 에러 발생:', error);
+            Alert.alert('구독 해지 처리 중 오류가 발생했습니다.');
+        }
+    };
 
     useEffect(() => {
         getCurrentSubscription();
