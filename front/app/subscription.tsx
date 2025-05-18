@@ -44,7 +44,7 @@ import { initializeIAP } from '../services/IAPservice';
 import { attempt } from '../utils/axios';
 
 // 2024
-import { GetPurchaseSubCheckAPI } from '../stores/purchase/apis';
+import { GetPurchaseSubCheckAPI, GetSubscriptionAPI } from '../stores/purchase/apis';
 
 import type { ColorScheme } from '@hooks';
 
@@ -52,7 +52,7 @@ type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
 
 const TERM = `
-- 이용방법: 픽은 ‘픽포미 추천’과 ‘픽포미 분석’에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
+- 이용방법: 픽은 '픽포미 추천'과 '픽포미 분석'에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
 - 이용기간: 픽은 결제일로부터 30일 동안 이용할 수 있습니다.
 - 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 구글 플레이 또는 앱스토어에 등록된 계정으로 요금이 부과됩니다.
 - 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 사용 중인 픽은 만료 시까지 이용 가능하며, 다음달 구독부터 결제 및 사용이 자동 해지됩니다.
@@ -89,7 +89,7 @@ const PurchaseWrapper = () => {
     }, [getSubscription]);
 
     useEffect(() => {
-        console.log('products', products);
+        // console.log('products', products);
         if (products.length) {
             let purchaseUpdateSubscription: any = null;
             let purchaseErrorSubscription: any = null;
@@ -185,6 +185,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
     const { connected, currentPurchase, currentPurchaseError } = useIAP();
+    const [subscriptionLoading, setSubscriptionLoading] = useState<boolean>(false);
     const markdownStyles = StyleSheet.create({
         text: {
             fontSize: 14,
@@ -210,36 +211,48 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     }, [isSubscription]);
 
     const handleClickSub = async (sku: string, offerToken?: string | null) => {
-        const subCheck = await attempt(() => GetPurchaseSubCheckAPI());
+        try {
+            if (subscriptionLoading) {
+                return;
+            }
 
-        if (!subCheck.ok) {
-            Alert.alert('구독 체크 실패', '구독 체크에 실패하였습니다.');
-            return;
-        }
+            setSubscriptionLoading(true);
 
-        if (subCheck.value?.data.activate) {
-            Alert.alert('이미 구독중입니다.');
-            return;
-        }
-        if (offerToken) {
-            const subscriptionRequest: RequestSubscriptionAndroid = {
-                subscriptionOffers: [
-                    {
-                        sku,
-                        offerToken
-                    }
-                ]
-            };
-            await requestSubscription(subscriptionRequest);
-            setIsSubscription(true); // 구독 완료 바텀시트
-        } else {
-            // ios
-            await clearTransactionIOS();
-            await requestSubscription({
-                sku,
-                andDangerouslyFinishTransactionAutomaticallyIOS: false
-            });
-            setIsSubscription(true); // 구독 완료 바텀시트
+            const subCheck = await GetSubscriptionAPI();
+            const { activate } = subCheck.data;
+
+            if (activate) {
+                Alert.alert('이미 픽포미 플러스를 구독중이에요!');
+                return;
+            }
+
+            if (offerToken) {
+                const subscriptionRequest: RequestSubscriptionAndroid = {
+                    subscriptionOffers: [
+                        {
+                            sku,
+                            offerToken
+                        }
+                    ]
+                };
+                await requestSubscription(subscriptionRequest);
+                setIsSubscription(true);
+            } else {
+                // ios
+                await clearTransactionIOS();
+                await requestSubscription({
+                    sku,
+                    andDangerouslyFinishTransactionAutomaticallyIOS: false
+                });
+                setIsSubscription(true);
+            }
+        } catch (error) {
+            console.error('구독 처리 중 에러 발생:', error);
+            Alert.alert('구독 처리 중 오류가 발생했습니다.');
+            // 필요한 경우 에러 상태 처리
+            setIsSubscription(false);
+        } finally {
+            setSubscriptionLoading(false);
         }
     };
 
@@ -301,6 +314,8 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     };
 
     useEffect(() => {
+        console.log('products가 들어왔음', products);
+
         getFilteredProducts();
     }, [products, purchaseItems, subscriptionItems]);
 
