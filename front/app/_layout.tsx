@@ -14,6 +14,7 @@ import { changeToken, setClientToken, attempt } from '../utils/axios';
 import { GetPopupAPI } from '../stores/auth';
 import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 import LoginBottomSheet from '../components/BottomSheet/Login';
+import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -107,6 +108,7 @@ export default function RootLayout() {
                     <StatusBar style="auto" />
                     <NonSubscriberManagerBottomSheet />
                     <LoginBottomSheet />
+                    <SubscriptionBottomSheet />
                 </JotaiProvider>
             </QueryClientProvider>
         </Suspense>
