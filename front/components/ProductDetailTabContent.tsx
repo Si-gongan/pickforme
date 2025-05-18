@@ -116,7 +116,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }
 
         return (
-            <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel={`${tab} 내용`}>
+            <View style={styles.detailWrap} ref={refs[tab]} accessibilityLabel={`${tab} 내용`}>
                 <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
             </View>
         );
@@ -276,7 +276,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (
-                <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel="긍정적인 리뷰">
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel={`긍정적인 리뷰: ${review?.pros.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
+                >
                     <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
                         {review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
@@ -284,7 +289,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.cons?.length !== 0 && (
-                <View style={styles.detailWrap}>
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel={`부정적인 리뷰: ${review?.cons.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
+                >
                     <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
                         {review?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
@@ -292,7 +302,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.bests?.length !== 0 && (
-                <View style={styles.detailWrap}>
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel={`베스트 리뷰: ${review?.bests.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
+                >
                     <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
                     {review?.bests.map((row: string, i: number) => (
                         <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
@@ -301,7 +316,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                     ))}
                 </View>
             )}
-            <TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+            <TouchableOpacity
+                onPress={handleLoadMore}
+                style={styles.loadMoreButton}
+                accessible
+                accessibilityLabel="더 많은 리뷰 불러오기"
+            >
                 <Text style={styles.loadMoreText}>더 많은 리뷰 불러오기</Text>
             </TouchableOpacity>
         </>

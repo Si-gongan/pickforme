@@ -66,10 +66,9 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
 
     // 각 탭별 API 호출 함수
     const callTabAPI = (tab: TABS) => {
-
         // question tab은 자동으로 호출되므로 패스.
         if (tab === TABS.QUESTION) {
-            console.log('question 탭 호출');
+            // console.log('question 탭 호출');
             return;
         }
 

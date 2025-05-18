@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, Linking } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    TouchableOpacity,
+    ScrollView,
+    Image,
+    Linking,
+    KeyboardAvoidingView,
+    Platform
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CheckBox } from '@components';
@@ -153,167 +164,143 @@ export default function InterviewScreen() {
     };
 
     return (
-        <ScrollView
-            style={[
-                styles.container,
-                {
-                    backgroundColor:
-                        colorScheme === 'dark' ? Colors.dark.background.primary : Colors.light.background.primary
-                }
-            ]}
-        >
-            <StatusBar style="auto" />
-            <View style={styles.content}>
-                <Text
-                    style={[
-                        styles.title,
-                        { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
-                    ]}
-                >
-                    픽포미 멤버십을 6개월간 무료로 이용해 보세요
-                </Text>
-                {/* <Text style={{ width: "100%", height: 60 }}></Text> */}
-                <Text
-                    style={[
-                        styles.description,
-                        { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
-                    ]}
-                >
-                    안녕하세요!{'\n'}
-                    {'\n'}픽포미에서 한국시각장애인연합회와 함께 유료 멤버십 서비스를 무료로 사용해보실 수 있는 기회를
-                    제공하게 되었어요. 1분 안에 쉽게 등록하고 픽포미 유료 멤버십을 6개월간 무료로 이용해보세요.{'\n'}
-                    {'\n'}
-                    신청 방법은 다음과 같습니다.{'\n'}첫 번째, 아래 전화번호 입력창에 전화번호를 입력해주세요.{'\n'}두
-                    번째, 아래 신청하기 버튼을 누르고, 연결되는 구글폼을 작성해주세요.{'\n'}
-                    이미 넓은마을을 통해 구글폼을 제출하신 분은 다시 작성하지 않으셔도 돼요. 구글폼 제출까지 하셨다면
-                    신청이 완료됩니다.{'\n'}
-                    {'\n'}
-                    한번 신청하시면, 신청일 기준 다음 달 1일부터 6개월 간 멤버십 서비스를 이용하실 수 있어요. 더욱
-                    자세한 내용이 궁금하시다면 넓은마을 픽포미 공지사항을 참고해 주세요!{'\n'}
-                    {'\n'}
-                    항상 픽포미 서비스를 애용해 주셔서 감사드립니다.{'\n'}
-                </Text>
-
-                <View style={styles.phoneInputContainer}>
-                    <Text
-                        style={[
-                            styles.inputLabel,
-                            { color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary }
-                        ]}
-                    >
-                        전화번호
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <ScrollView
+                style={[
+                    styles.container,
+                    {
+                        backgroundColor:
+                            colorScheme === 'dark' ? Colors.dark.background.primary : Colors.light.background.primary
+                    }
+                ]}
+            >
+                <StatusBar style="auto" />
+                <View style={styles.content}>
+                    <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]}>
+                        픽포미 멤버십을 6개월간 무료로 이용해 보세요
                     </Text>
-                    <TextInput
-                        style={[
-                            styles.input,
-                            isDuplicate && styles.inputError,
-                            {
-                                borderColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.borderColor.primary
-                                        : Colors.light.borderColor.primary,
-                                color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary,
-                                backgroundColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.background.primary
-                                        : Colors.light.background.primary
-                            }
-                        ]}
-                        value={phoneNumber}
-                        onChangeText={handlePhoneChange}
-                        placeholder="전화번호를 입력해주세요"
-                        keyboardType="phone-pad"
-                        maxLength={13}
-                        placeholderTextColor={
-                            colorScheme === 'dark' ? Colors.dark.text.secondary : Colors.light.text.secondary
-                        }
-                    />
-                    {isDuplicate && (
-                        <View style={styles.errorContainer}>
-                            <Image
-                                source={require('../../assets/images/warning.png')}
+                    {/* <Text style={{ width: "100%", height: 60 }}></Text> */}
+                    <Text style={[styles.description, { color: Colors[colorScheme].text.primary }]}>
+                        안녕하세요!{'\n'}
+                        {'\n'}픽포미에서 한국시각장애인연합회와 함께 유료 멤버십 서비스를 무료로 사용해보실 수 있는
+                        기회를 제공하게 되었어요. 1분 안에 쉽게 등록하고 픽포미 유료 멤버십을 6개월간 무료로
+                        이용해보세요.{'\n'}
+                        {'\n'}
+                        신청 방법은 다음과 같습니다.{'\n'}첫 번째, 아래 전화번호 입력창에 전화번호를 입력해주세요.{'\n'}
+                        두 번째, 아래 신청하기 버튼을 누르고, 연결되는 구글폼을 작성해주세요.{'\n'}
+                        이미 넓은마을을 통해 구글폼을 제출하신 분은 다시 작성하지 않으셔도 돼요. 구글폼 제출까지
+                        하셨다면 신청이 완료됩니다.{'\n'}
+                        {'\n'}
+                        한번 신청하시면, 신청일 기준 다음 달 1일부터 6개월 간 멤버십 서비스를 이용하실 수 있어요. 더욱
+                        자세한 내용이 궁금하시다면 넓은마을 픽포미 공지사항을 참고해 주세요!{'\n'}
+                        {'\n'}
+                        항상 픽포미 서비스를 애용해 주셔서 감사드립니다.{'\n'}
+                    </Text>
+
+                    <View style={styles.phoneInputContainer}>
+                        <Text style={[styles.inputLabel, { color: Colors[colorScheme].text.primary }]}>전화번호</Text>
+                        <TextInput
+                            style={[
+                                styles.input,
+                                isDuplicate && styles.inputError,
+                                {
+                                    borderColor: Colors[colorScheme].border.primary,
+                                    color: Colors[colorScheme].text.primary,
+                                    backgroundColor: Colors[colorScheme].background.primary
+                                }
+                            ]}
+                            value={phoneNumber}
+                            onChangeText={handlePhoneChange}
+                            placeholder="전화번호를 입력해주세요"
+                            keyboardType="phone-pad"
+                            maxLength={13}
+                            placeholderTextColor={Colors[colorScheme].text.placeholder}
+                            returnKeyType="send"
+                            onSubmitEditing={() => {
+                                setPhoneNumber(phoneNumber);
+                            }}
+                        />
+                        {isDuplicate && (
+                            <View style={styles.errorContainer}>
+                                <Image
+                                    source={require('../../assets/images/warning.png')}
+                                    style={[
+                                        styles.warningIcon,
+                                        { tintColor: colorScheme === 'dark' ? '#FF6B6B' : undefined }
+                                    ]}
+                                />
+                                <Text style={styles.errorText}>이미 등록되어 있는 전화번호입니다</Text>
+                            </View>
+                        )}
+                    </View>
+
+                    <View style={styles.checkboxContainer}>
+                        <TouchableOpacity style={styles.checkboxWrapper} onPress={() => setIsChecked(!isChecked)}>
+                            <CheckBox checked={isChecked} onPress={() => setIsChecked(!isChecked)} />
+                            <Text
                                 style={[
-                                    styles.warningIcon,
-                                    { tintColor: colorScheme === 'dark' ? '#FF6B6B' : undefined }
+                                    styles.checkboxLabel,
+                                    {
+                                        color: Colors[colorScheme].text.primary
+                                    }
                                 ]}
-                            />
-                            <Text style={styles.errorText}>이미 등록되어 있는 전화번호입니다</Text>
-                        </View>
-                    )}
-                </View>
+                            >
+                                개인 정보 수집과 이용에 동의합니다.
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-                <View style={styles.checkboxContainer}>
-                    <TouchableOpacity style={styles.checkboxWrapper} onPress={() => setIsChecked(!isChecked)}>
-                        <CheckBox checked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-                        <Text
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
                             style={[
-                                styles.checkboxLabel,
+                                styles.button,
+                                styles.submitButton,
                                 {
-                                    color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary
+                                    backgroundColor: Colors[colorScheme].button.primary.background
                                 }
                             ]}
+                            onPress={handleSubmit}
                         >
-                            개인 정보 수집과 이용에 동의합니다.
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                            <Text
+                                style={[
+                                    styles.submitButtonText,
+                                    {
+                                        color:
+                                            colorScheme === 'dark'
+                                                ? Colors.dark.text.secondary
+                                                : Colors.light.text.secondary
+                                    }
+                                ]}
+                            >
+                                신청하기
+                            </Text>
+                        </TouchableOpacity>
 
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={[
-                            styles.button,
-                            styles.submitButton,
-                            {
-                                backgroundColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.button.primary.background
-                                        : Colors.light.button.primary.background
-                            }
-                        ]}
-                        onPress={handleSubmit}
-                    >
-                        <Text
+                        <TouchableOpacity
                             style={[
-                                styles.submitButtonText,
+                                styles.button,
+                                styles.dontShowButton,
                                 {
-                                    color:
-                                        colorScheme === 'dark'
-                                            ? Colors.dark.text.secondary
-                                            : Colors.light.text.secondary
+                                    borderColor: Colors[colorScheme].border.primary
                                 }
                             ]}
+                            onPress={handleDontShowAgain}
                         >
-                            신청하기
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[
-                            styles.button,
-                            styles.dontShowButton,
-                            {
-                                borderColor:
-                                    colorScheme === 'dark'
-                                        ? Colors.dark.borderColor.primary
-                                        : Colors.light.borderColor.primary
-                            }
-                        ]}
-                        onPress={handleDontShowAgain}
-                    >
-                        <Text
-                            style={[
-                                styles.dontShowButtonText,
-                                {
-                                    color: colorScheme === 'dark' ? Colors.dark.text.primary : Colors.light.text.primary
-                                }
-                            ]}
-                        >
-                            앞으로 보지 않기
-                        </Text>
-                    </TouchableOpacity>
+                            <Text
+                                style={[
+                                    styles.dontShowButtonText,
+                                    {
+                                        color: Colors[colorScheme].text.primary
+                                    }
+                                ]}
+                            >
+                                앞으로 보지 않기
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 

@@ -11,7 +11,7 @@ const palette = {
 
     // Dark mode colors
     darkText: '#D9D9D9',
-    darkBg: '#111525',
+    darkNavyBlue: '#111525',
     darkPrimary: '#4A5CA0',
     darkSecondary: '#313854',
     darkTertiary: '#1D2336'
@@ -66,10 +66,10 @@ export default {
             placeholder: palette.placeholderGrayDark
         },
         background: {
-            primary: palette.darkBg,
-            secondary: palette.darkBg,
+            primary: palette.darkNavyBlue,
+            secondary: palette.darkNavyBlue,
             third: palette.darkPrimary,
-            productCard: palette.darkBg,
+            productCard: palette.darkNavyBlue,
             moreButton: palette.darkPrimary
         },
         borderColor: {
