@@ -160,7 +160,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
                     <Text style={styles.title}>멤버십 구매 내역</Text>
-                    {currentSubscription && (
+                    {currentSubscription && currentSubscription.createdAt && (
                         <>
                             <Text style={styles.subtitle}>전체</Text>
                             <View style={styles.purchaseStatus}>
