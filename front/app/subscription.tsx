@@ -89,7 +89,6 @@ const PurchaseWrapper = () => {
     }, [getSubscription]);
 
     useEffect(() => {
-        // console.log('products', products);
         if (products.length) {
             let purchaseUpdateSubscription: any = null;
             let purchaseErrorSubscription: any = null;
@@ -103,14 +102,10 @@ const PurchaseWrapper = () => {
                 const subscriptionItemLists = products
                     .filter(p => p.type === ProductType.SUBSCRIPTION)
                     .map(p => p.productId);
-                // const subscriptionItemLists = ['pickforme__plus'];
-                console.log('subscriptionItemLists', subscriptionItemLists);
 
                 const storeSItems = await IAPGetSubscriptions({
                     skus: subscriptionItemLists
                 });
-
-                console.log('storeSItems', storeSItems);
 
                 // setPurchaseItems(storeItems)
                 setSubscriptionItems(storeSItems);
@@ -259,19 +254,19 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     const getFilteredProducts = () => {
         let filteredTmp = products.reduce(
             (obj, product) => {
-                console.log('filteredProducts product : ', product);
+                // console.log('filteredProducts product : ', product);
                 if (product.type === ProductType.PURCHASE) {
                     // 단건 로직
                     const item = purchaseItems.find(({ productId }) => {
-                        console.log('productId in purchaseItems', productId, product.productId);
+                        // console.log('productId in purchaseItems', productId, product.productId);
                         return product.productId === productId;
                     });
                     if (item) {
-                        console.log('purchaseItems item found:', item);
+                        // console.log('purchaseItems item found:', item);
                         obj.purchasableProducts.push({ ...item, ...product });
                     }
                 } else {
-                    console.log('subscriptionItems type:', typeof subscriptionItems[0], subscriptionItems);
+                    // console.log('subscriptionItems type:', typeof subscriptionItems[0], subscriptionItems);
 
                     // subscriptionItems가 문자열 배열인 경우
                     if (
@@ -281,7 +276,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     ) {
                         const stringItems = subscriptionItems as unknown as string[];
                         if (stringItems.includes(product.productId)) {
-                            console.log('String array match found for:', product.productId);
+                            // console.log('String array match found for:', product.productId);
                             // 문자열 배열에서 일치하는 항목 찾음
                             const dummyItem = {
                                 productId: product.productId,
@@ -293,11 +288,11 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     } else {
                         // 객체 배열인 경우 (원래 코드)
                         const item = subscriptionItems.find(({ productId }) => {
-                            console.log('productId in subscriptionItems', productId, product.productId);
+                            // console.log('productId in subscriptionItems', productId, product.productId);
                             return product.productId === productId;
                         });
                         if (item) {
-                            console.log('subscriptionItems item found:', item);
+                            // console.log('subscriptionItems item found:', item);
                             obj.subscriptionProducts.push({ ...item, ...product });
                         }
                     }
@@ -309,12 +304,12 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                 purchasableProducts: [] as (IAPProduct & Product)[]
             }
         );
-        console.log('filteredTmp : ', filteredTmp);
+        // console.log('filteredTmp : ', filteredTmp);
         setFilteredProducts(filteredTmp);
     };
 
     useEffect(() => {
-        console.log('products가 들어왔음', products);
+        // console.log('products가 들어왔음', products);
 
         getFilteredProducts();
     }, [products, purchaseItems, subscriptionItems]);
@@ -336,7 +331,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     </View>
 
                     {filteredProducts.subscriptionProducts.map(product => {
-                        console.log('product : ', product);
+                        // console.log('product : ', product);
                         if (product.platform === 'android') {
                             const subscriptionOffer = (product as unknown as SubscriptionAndroid)
                                 .subscriptionOfferDetails[0];
@@ -361,8 +356,8 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                             );
                         }
 
-                        console.log('멤버십 product : ', product);
-                        console.log('product.platform:', product?.platform);
+                        // console.log('멤버십 product : ', product);
+                        // console.log('product.platform:', product?.platform);
 
                         return (
                             <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
