@@ -6,7 +6,7 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
 import useColorScheme from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
-import { isShowSubscriptionModalAtom, isShowNonSubscriberManagerModalAtom } from '@stores';
+import { isShowSubscriptionModalAtom, isShowNonSubscriberManagerModalAtom, membershipModalTypeAtom } from '@stores';
 import { scrapedProductDetailAtom } from '../../stores/product/atoms';
 import { sendLogAtom } from '../../stores/log/atoms';
 
@@ -48,7 +48,9 @@ export default function RequestBottomSheet() {
             addRequest(params);
         }
     });
+    const setMembershipModalType = useSetAtom(membershipModalTypeAtom);
     const handleSubmit = useCheckLogin(() => {
+        setMembershipModalType('MANAGER');
         const params = {
             ...data,
             product,

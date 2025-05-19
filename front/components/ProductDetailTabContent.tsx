@@ -18,9 +18,6 @@ import { Request } from '../stores/request/types';
 import { ProductDetailState } from '../stores/product/types';
 import { LoadingStatus } from '../stores/product/atoms';
 import { ScrapedProductDetail } from '../stores/product/types';
-import { useAtomValue } from 'jotai';
-import { productReviewAtom } from '../stores/product/atoms';
-import { useState } from 'react';
 
 import type { ColorScheme } from '@hooks';
 

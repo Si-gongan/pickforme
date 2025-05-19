@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
 
-import { isShowNonSubscriberManagerModalAtom, settingAtom } from '@stores';
+import { isShowNonSubscriberManagerModalAtom, settingAtom, membershipModalTypeAtom } from '@stores';
 import { View, Text, Button_old as Button } from '@components';
 import { Props, styles } from '../Base';
 import { Colors } from '@constants';
@@ -19,6 +19,7 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
 
     const [visible, setVisible] = useAtom(isShowNonSubscriberManagerModalAtom);
     const [setting] = useAtom(settingAtom);
+    const [modalType] = useAtom(membershipModalTypeAtom);
 
     const colorScheme = useColorScheme();
     const localStyles = useLocalStyles(colorScheme);
@@ -47,12 +48,12 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
         <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
             <View style={[styles.bottomSheet, localStyles.root]}>
                 <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
-                    픽포미플러스 멤버십 기능이에요.
+                    픽포미 플러스 멤버십 기능이에요.
                 </Text>
                 <Text style={[styles.desc, localStyles.desc]}>
-                    {
-                        '픽포미플러스 멤버십을 구독하면,\n매니저에게 한 달 간 30회까지 질문이 가능해요.\n지금 멤버십을 시작하시겠어요?'
-                    }
+                    {modalType === 'AI'
+                        ? '픽포미 멤버십을 구매하면,\n한 달 간 AI에게 무제한 질문이 가능해요.\n지금 멤버십을 시작하시겠어요?'
+                        : '픽포미플러스 멤버십을 구독하면,\n매니저에게 한 달 간 30회까지 질문이 가능해요.\n지금 멤버십을 시작하시겠어요?'}
                 </Text>
                 <View style={[styles.buttonRow, localStyles.buttonWrap]}>
                     <View style={[styles.buttonWrap, localStyles.buttonOuter]}>

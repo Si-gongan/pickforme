@@ -59,6 +59,7 @@ import Modal from 'react-native-modal';
 import Request from '../components/BottomSheet/Request';
 import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
+import { membershipModalTypeAtom } from '../stores/auth/atoms';
 
 interface ProductDetailScreenProps {}
 
@@ -66,6 +67,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { productUrl: productUrlBase, url: urlBase } = useLocalSearchParams();
     const productUrl = decodeURIComponent((productUrlBase || urlBase)?.toString() ?? '');
     const userData = useAtomValue(userAtom);
+    const setMembershipModalType = useSetAtom(membershipModalTypeAtom);
 
     // 쿠팡 링크가 아닌 경우 처리
     if (!productUrl.includes('coupang')) {
@@ -198,7 +200,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     // TODO
-    // const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
+    const setIsShowNonSubscriberManagerModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
     const handleClickSend = useCheckLogin(async () => {
         if (!question) {
             Alert.alert('질문을 입력해주세요.');
@@ -207,6 +209,22 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         if (!productDetail?.product?.detail_images || !productDetail?.product?.thumbnail || !productReview.reviews) {
             Alert.alert('상품 정보를 불러오고 있어요.');
+            return;
+        }
+
+        // AI 질문을 위한 모달 타입 설정
+        setMembershipModalType('AI');
+
+        // 구독 및 AI 포인트 체크
+        await getSubscription();
+        if (
+            !subscription ||
+            subscription.isExpired ||
+            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
+        ) {
+            console.log('AI 질문 - 멤버십 필요');
+            // 모달 표시
+            setIsShowNonSubscriberManagerModal(true);
             return;
         }
 
@@ -267,7 +285,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         await getSubscription();
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        if (!subscription || subscription.isExpired) {
+        setMembershipModalType('MANAGER');
+        if (
+            !subscription ||
+            subscription.isExpired ||
+            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
+        ) {
             console.log('setIsShowNonSubscriberManageModal');
             // 모달 표시
             setIsShowNonSubscriberManageModal(true);
