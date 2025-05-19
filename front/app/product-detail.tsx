@@ -96,9 +96,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const searchResult = useAtomValue(searchResultAtom);
     const [wishlist, setWishlist] = useAtom(wishProductsAtom);
     const requests = useAtomValue(requestsAtom);
-    const request = requests
-        .filter(req => req.product)
-        .find(req => decodeURIComponent(req.product!.url) === productUrl);
+    // 현재 상품에 대한 모든 request를 필터링하고 최신순(updatedAt 기준)으로 정렬
+    const productRequests = requests
+        .filter(req => req.product && decodeURIComponent(req.product.url) === productUrl)
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    // 이전 코드와의 호환성을 위해 첫 번째 request도 유지 (필요한 경우 사용)
+    const request = productRequests.length > 0 ? productRequests[0] : undefined;
     const already = wishlist.find(wishProduct => decodeURIComponent(wishProduct.url) === productUrl);
 
     const isLocal =
@@ -291,11 +294,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             subscription.isExpired ||
             (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
         ) {
-            console.log('setIsShowNonSubscriberManageModal');
-            // 모달 표시
             setIsShowNonSubscriberManageModal(true);
         } else {
-            console.log('setRequestBottomSheet');
             setRequestBottomSheet(product);
             setIsShowSubscriptionModal(true);
         }
@@ -474,6 +474,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             setQuestion={setQuestion}
                             handleClickSend={handleClickSend}
                             request={request}
+                            productRequests={productRequests}
                             loadingMessages={loadingMessages}
                             loadingStatus={loadingStatus}
                             handleRegenerate={handleRegenerate}

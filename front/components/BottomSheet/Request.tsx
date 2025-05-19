@@ -72,13 +72,18 @@ export default function RequestBottomSheet() {
         setProduct(undefined);
     };
     return (
-        <View style={styles.base}>
+        <View style={styles.base} accessible accessibilityLabel="매니저 질문하기">
             <View style={[styles.bottomSheet, localStyles.root]}>
-                <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
-                    상품에 대해 궁금한 점을 자유롭게 적어주세요.{'\n'}
-                    예를 들어, “이 제품의 색상과 디자인을 자세히 설명해 주세요.” 라고 물어볼 수 있어요.
+                <Text
+                    style={[styles.title, localStyles.title]}
+                    ref={headerTitleRef}
+                    accessible
+                    accessibilityLabel="상품에 대해 궁금한 점을 자유롭게 적어주세요. 예를 들어, 이 제품의 색상과 디자인을 자세히 설명해 주세요 라고 물어볼 수 있어요."
+                >
+                    상품에 대해 궁금한 점을 자유롭게 적어주세요.{'\n'} {'\n'}
+                    예를 들어, "이 제품의 색상과 디자인을 자세히 설명해 주세요." 라고 물어볼 수 있어요.
                 </Text>
-                <View style={localStyles.textAreaContainer}>
+                <View style={localStyles.textAreaContainer} accessible accessibilityLabel="질문 입력 영역">
                     <TextInput
                         accessibilityRole="none"
                         accessibilityHint="텍스트 입력창"
@@ -123,7 +128,7 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
         },
         textAreaContainer: {
             width: '100%',
-            borderColor: Colors[colorScheme].borderColor.primary,
+            borderColor: Colors[colorScheme].borderColor.secondary,
             borderWidth: 1,
             padding: 5,
             marginBottom: 24
