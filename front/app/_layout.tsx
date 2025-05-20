@@ -14,6 +14,7 @@ import { changeToken, setClientToken, attempt } from '../utils/axios';
 import { GetPopupAPI } from '../stores/auth';
 import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 import LoginBottomSheet from '../components/BottomSheet/Login';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,6 +30,8 @@ export default function RootLayout() {
     const user = useAtomValue(userAtom);
     const [isLoaded, onLoaded] = useAtom(isLoadedAtom);
     const [isHansiryunPopup, setIsHansiryunPopup] = useState(false);
+
+    useScreenTracking();
 
     useEffect(function () {
         (async function () {
