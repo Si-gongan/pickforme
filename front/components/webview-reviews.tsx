@@ -1,3 +1,11 @@
+// 목적: 상품 리뷰를 수집하기 위한 웹뷰입니다.
+// 기능:
+// 쿠팡 상품 URL로부터 리뷰 페이지 URL을 추출하고 해당 페이지를 숨겨진 웹뷰로 불러옵니다.
+// 웹 페이지에서 리뷰 내용을 추출하여 문자열 배열로 변환합니다.
+// 스크롤 다운 기능을 제공하여 더 많은 리뷰를 로드할 수 있게 합니다.
+// 중복 리뷰는 제거하고 새로운 리뷰만 누적하여 전달합니다.
+// 특징: 스크롤 다운 시 새로운 리뷰를 감지하여 기존 리뷰와 합쳐서 전달하는 메커니즘이 있습니다.
+
 import React, { useRef, useState, useEffect, ReactElement } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { View } from 'react-native';
