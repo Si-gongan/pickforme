@@ -75,7 +75,16 @@ router.get('/subscription/status', requireAuth, async (ctx) => {
     ctx.body = status;
     ctx.status = 200;
   } catch (error) {
-    console.error('구독 상태 조회 중 에러:', error);
+    log.error(LogContext.PURCHASE, '구독 상태 조회 중 에러:', LogSeverity.HIGH, {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
+      endPoint: '/purchase/subscription/status',
+      method: 'GET',
+      userId: ctx.state.user._id,
+    });
     ctx.body = {
       subscription: null,
       activate: false,
