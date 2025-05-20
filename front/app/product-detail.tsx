@@ -59,6 +59,7 @@ import Modal from 'react-native-modal';
 import Request from '../components/BottomSheet/Request';
 import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
+import { logEvent } from '@/services/firebase';
 
 interface ProductDetailScreenProps {}
 
@@ -209,6 +210,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             Alert.alert('상품 정보를 불러오고 있어요.');
             return;
         }
+
+        logEvent('question_send', {
+            screen: 'ProductDetailScreen',
+            item_id: productUrl,
+            item_name: productDetail?.product?.name,
+            question: question,
+            category: 'product_detail'
+        });
 
         try {
             await getProductAIAnswer(question);
