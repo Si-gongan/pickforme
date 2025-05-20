@@ -13,14 +13,16 @@
             "supportsTablet": true,
             "bundleIdentifier": "com.sigonggan.pickforme",
             "jsEngine": "jsc",
-            "icon": "./assets/images/pickforme_logo_200x200.png"
+            "icon": "./assets/images/pickforme_logo_200x200.png",
+            "googleServicesFile": "./GoogleService-Info.plist"
         },
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/pickforme_logo_200x200.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.anonymous.pickforme"
+            "package": "com.anonymous.pickforme",
+            "googleServicesFile": "./google-services.json"
         },
         "web": {
             "bundler": "metro",
@@ -28,6 +30,7 @@
             "favicon": "./assets/images/pickforme_logoWtxt_200x200.png"
         },
         "plugins": [
+            ["@react-native-firebase/app", "@react-native-firebase/analytics"],
             [
                 "@react-native-seoul/kakao-login",
                 {
@@ -51,6 +54,9 @@
                 {
                     "android": {
                         "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+                    },
+                    "ios": {
+                        "useFrameworks": "static"
                     }
                 }
             ]
