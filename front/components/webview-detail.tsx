@@ -14,9 +14,10 @@ import { resolveRedirectUrl } from '@/utils/url';
 interface WebViewProps {
     productUrl: string;
     onMessage: (data: Product) => void;
+    onError?: () => void;
 }
 
-export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): JSX.Element | null => {
+export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProps): JSX.Element | null => {
     const webViewRef = useRef<WebView>(null);
     const [url, setUrl] = useState<string>('');
     const [platform, setPlatform] = useState<string>('');
@@ -228,6 +229,7 @@ export const useWebViewDetail = ({ productUrl, onMessage }: WebViewProps): JSX.E
 
     const handleError = (event: any) => {
         console.warn('WebView error:', event.nativeEvent);
+        onError?.();
     };
 
     useEffect(() => {

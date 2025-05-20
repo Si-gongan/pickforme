@@ -2,9 +2,9 @@ export interface IProduct {
   name: string;
   price: number;
   origin_price: number; // 할인 전 가격
-  discount_rate: number; // 할인율
-  reviews: number; // 리뷰 수
-  ratings: number; // 평점
+  discount_rate: number | null; // 할인율
+  reviews: number | null; // 리뷰 수
+  ratings: number | null; // 평점
   url: string; // 상품 링크 주소
   thumbnail: string; // 상품 썸네일 이미지 주소
   platform: string;

@@ -13,7 +13,7 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
 
     const isBase = useMemo(
         function () {
-            return !['liked', 'request'].includes(type || '') && !!data.ratings;
+            return !['liked', 'request'].includes(type || '') && data.ratings !== null && data.ratings !== undefined;
         },
         [type, data]
     );
@@ -25,12 +25,12 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
 
             if (isBase) {
                 // 할인율 정보 추가
-                if ((data.discount_rate ?? 0) !== 0) {
+                if (data.discount_rate !== null && data.discount_rate !== undefined && data.discount_rate !== 0) {
                     mainLabel += ` 할인률 ${data.discount_rate}%`;
                 }
 
                 // 리뷰 개수와 평점 추가
-                if (data.reviews > 0 && data.ratings > 0) {
+                if (data.reviews !== null && data.reviews > 0 && data.ratings !== null && data.ratings > 0) {
                     mainLabel += ` 리뷰 ${data.reviews}개 평점 ${Math.floor((data.ratings / 20) * 10) / 10}점`;
                 }
             }
@@ -79,7 +79,7 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                                     justifyContent: 'flex-end'
                                 }}
                             >
-                                {data.discount_rate > 0 && (
+                                {data.discount_rate !== null && data.discount_rate > 0 && (
                                     <Text style={styles.ProductCardDiscount} accessible>
                                         {data.discount_rate}%
                                     </Text>
@@ -102,9 +102,11 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                         {/* 나머지 정보 2행 */}
                         <View style={styles.ProductCardContentRow}>
                             <View style={styles.ProductCardTitleColumn}>
-                                <Text style={styles.ProductCardReviews} accessible>
-                                    리뷰 {data.reviews || 0}개 평점 {Math.floor(((data.ratings || 0) / 20) * 10) / 10}점
-                                </Text>
+                                {data.reviews !== null && data.reviews > -1 && data.ratings !== null && data.ratings > -1 && (
+                                    <Text style={styles.ProductCardReviews} accessible>
+                                        리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
+                                    </Text>
+                                )}
                             </View>
                             <Text style={styles.ProductCardPrice} accessible>
                                 {getNumberComma(data.price ?? 0)}원
