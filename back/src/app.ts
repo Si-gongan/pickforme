@@ -6,6 +6,8 @@ import http from 'http';
 import router from './router';
 import socket from './socket';
 import { registerAllSchedulers } from 'scheduler';
+import { log } from './utils/logger';
+import { LogContext, LogSeverity } from './utils/logger';
 
 const PORT = process.env.PORT || 3000;
 const app = new Koa();
@@ -15,11 +17,32 @@ const corsOptions = {
   credentials: true,
 };
 
-app
-  .use(cors(corsOptions))
-  .use(bodyParser())
-  .use(router.routes())
-  .use(router.allowedMethods());
+// 전역 에러 핸들러 미들웨어
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err: any) {
+    const error = err as Error;
+    // 에러 로깅
+    await log.error(LogContext.GLOBAL, `Global error: ${error.message}`, LogSeverity.HIGH, {
+      stack: error.stack,
+      path: ctx.path,
+      method: ctx.method,
+      status: ctx.status,
+    });
+
+    // 클라이언트에 에러 응답
+    ctx.status = err.status || 500;
+    ctx.body = {
+      error: {
+        message: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : error.message,
+      },
+    };
+    ctx.app.emit('error', err, ctx);
+  }
+});
+
+app.use(cors(corsOptions)).use(bodyParser()).use(router.routes()).use(router.allowedMethods());
 
 const server = http.createServer(app.callback());
 socket.setServer(server);
@@ -29,6 +52,6 @@ server.listen(PORT, () => {
   console.log(`server listen in port ${PORT}`);
 });
 
-if (process.env.NODE_ENV === 'production') {  
+if (process.env.NODE_ENV === 'production') {
   registerAllSchedulers();
 }

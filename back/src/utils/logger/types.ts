@@ -12,6 +12,8 @@ export enum LogContext {
   SCHEDULER = 'scheduler',
   AUTH = 'auth',
   PURCHASE = 'purchase',
+  GLOBAL = 'global',
+  SERVER = 'server',
 }
 
 export enum LogSeverity {
@@ -32,5 +34,5 @@ export const colors = {
   warn: '\x1b[33m',
   info: '\x1b[32m',
   debug: '\x1b[34m',
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 } as const;
