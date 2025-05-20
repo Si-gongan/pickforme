@@ -1,18 +1,29 @@
 {
-  "cli": {
-    "version": ">= 3.13.3"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
+    "cli": {
+        "version": ">= 3.13.3"
     },
-    "preview": {
-      "distribution": "internal"
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal"
+        },
+        "preview": {
+            "distribution": "internal"
+        },
+        "production": {},
+        "develop": {
+            "distribution": "store"
+        }
     },
-    "production": {}
-  },
-  "submit": {
-    "production": {}
-  }
+    "submit": {
+        "production": {}
+    },
+    "update": {
+        "develop": {
+            "channel": "develop"
+        },
+        "production": {
+            "channel": "production"
+        }
+    }
 }
