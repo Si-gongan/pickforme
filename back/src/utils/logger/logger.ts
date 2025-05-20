@@ -44,7 +44,13 @@ export const log = {
     
     // Slack 전송 (transports.ts에서 이미 try-catch로 처리됨)
     if (isProduction && severity >= slackTransportSeverityThreshold) {      
-      await sendToSlack(`[context:${context}] ${message} \n meta:${JSON.stringify(meta)}`);
+      await sendToSlack({
+        context,
+        message,
+        severity,
+        stack: meta?.stack,
+        meta: meta ? { ...meta, stack: undefined } : undefined
+      });
     }
   },
   warn: (context: LogContext, message: string, severity: LogSeverity = LogSeverity.MEDIUM, meta?: any) => {
