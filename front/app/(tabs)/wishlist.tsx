@@ -5,6 +5,7 @@ import { Product } from '../../stores/product/types';
 import { useRouter } from 'expo-router';
 
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
+import { Request } from '../../stores/request/types';
 
 import useCheckLogin from '../../hooks/useCheckLogin';
 import { wishProductsAtom } from '../../stores/product/atoms';
@@ -20,6 +21,7 @@ import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 
 import { useWebViewDetail } from '../../components/webview-detail';
+import { mainProductsAtom } from '../../stores/product/atoms';
 
 enum TABS {
     PRODUCT = 'PRODUCT',
@@ -36,6 +38,7 @@ export default function WishListScreen() {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
     const wishProducts = useAtomValue(wishProductsAtom);
+    const mainProducts = useAtomValue(mainProductsAtom);
     const setWishProducts = useSetAtom(wishProductsAtom);
     const headerTitleRef = useRef<TextBase>(null);
     const [tab, setTab] = React.useState<TABS>(TABS.PRODUCT);
@@ -47,6 +50,7 @@ export default function WishListScreen() {
     // 위시리스트 및 문의 상품의 평점/리뷰/할인율이 없는 경우 처리
     const [currentProductUrl, setCurrentProductUrl] = useState<string>('');
     const [currentTab, setCurrentTab] = useState<TABS | null>(null);
+    const [requestsWithUniqueProduct, setRequestsWithUniqueProduct] = useState<Request[]>([]);
 
     React.useEffect(() => {
         if (tab === TABS.REQUEST) {
@@ -184,14 +188,38 @@ export default function WishListScreen() {
     React.useEffect(() => {
         if (tab === TABS.REQUEST && requests.length > 0) {
             // product 값이 있는 요청만 가져와서 평점/리뷰가 없는 상품 필터링
-            const requestsWithProduct = requests.filter(request => request.product);
-            const filteredRequests = requestsWithProduct.filter(request =>
-                filterProductsNeedingUpdate(request.product!)
-            );
+
+            // URL 기준으로 고유한 요청만 필터링
+            const urlSet = new Set();
+            const uniqueRequests = requests.filter(request => {
+                if (!request.product || !request.product.url) return false;
+
+                // 이미 처리한 URL이면 건너뛰기
+                if (urlSet.has(request.product.url)) return false;
+
+                // 새로운 URL 추가
+                urlSet.add(request.product.url);
+                return true;
+            });
+
+            console.log('unique requests:', uniqueRequests.length);
+            // 상태 변수에 고유한 요청 저장
+            setRequestsWithUniqueProduct(uniqueRequests);
+
+            const filteredRequests = uniqueRequests.filter(request => filterProductsNeedingUpdate(request.product!));
 
             if (filteredRequests.length > 0) {
                 const url = filteredRequests[0].product!.url;
                 console.log('문의 상품 업데이트 시작:', url);
+
+                // mainproduct에서 찾아보기
+                // const mainProduct = mainProducts.find(product => product.url === url);
+                // if (mainProduct) {
+                //     setCurrentProductUrl(url);
+                //     setCurrentTab(TABS.PRODUCT);
+                // }
+
+                // product에 없으면 webview를 이용해서 호출
                 setCurrentProductUrl(url);
                 setCurrentTab(TABS.REQUEST);
             }
@@ -328,9 +356,7 @@ export default function WishListScreen() {
     return (
         <>
             {/* WebView를 화면 외부에 위치시켜 보이지 않게 합니다 */}
-            <View style={{ position: 'absolute', width: 0, height: 0, opacity: 0, overflow: 'hidden', zIndex: -1 }}>
-                {currentProductUrl && DetailWebView}
-            </View>
+            <View style={{ height: 0, opacity: 0 }}>{currentProductUrl && DetailWebView}</View>
             <View style={styles.container}>
                 <View style={styles.horizontalPadder}>
                     <View style={styles.header}>
@@ -379,12 +405,12 @@ export default function WishListScreen() {
                 )}
                 {tab === 'REQUEST' && (
                     <>
-                        {!requests.filter(request => request.product).length ? (
+                        {!requestsWithUniqueProduct.length ? (
                             <Text style={styles.loading}>문의한 상품이 없습니다.</Text>
                         ) : (
                             <FlatList
                                 contentContainerStyle={styles.searchList}
-                                data={requests
+                                data={requestsWithUniqueProduct
                                     .filter(request => request.product && request.product.name)
                                     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
                                 keyExtractor={(request, index) => `wishlist-request-${request.product!.url}-${index}`}
