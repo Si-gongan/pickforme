@@ -16,7 +16,7 @@ import { Props, styles } from '../Base';
 
 import type { ColorScheme } from '@hooks';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Membership
 const UnsubscribeBottomSheet: React.FC<Props> = () => {
@@ -63,10 +63,18 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
 
     return (
         <BottomSheet
-            style={[styles.base, { margin: 0, width: SCREEN_WIDTH }]}
             isVisible={visible}
             onBackButtonPress={onClose}
             onBackdropPress={onClose}
+            backdropOpacity={0.5}
+            useNativeDriver
+            hideModalContentWhileAnimating
+            deviceHeight={SCREEN_HEIGHT}
+            style={{
+                margin: 0,
+                width: SCREEN_WIDTH,
+                justifyContent: 'flex-end'
+            }}
         >
             <View style={[styles.bottomSheet, localStyles.root]}>
                 <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
