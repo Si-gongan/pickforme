@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet } from 'react-native';
 import {
     getSubscriptions as IAPGetSubscriptions,
@@ -44,6 +44,10 @@ const PurchaseWrapper = () => {
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const products = useAtomValue(productsAtom);
 
+    const purchaseUpdateRef = useRef<any>(null);
+    const purchaseErrorRef = useRef<any>(null);
+    const hasListenerInitializedRef = useRef(false);
+
     useEffect(() => {
         getProducts({ platform: Platform.OS });
     }, [getProducts]);
@@ -53,80 +57,64 @@ const PurchaseWrapper = () => {
     }, [getSubscription]);
 
     useEffect(() => {
-        if (products.length) {
-            let purchaseUpdateSubscription: any = null;
-            let purchaseErrorSubscription: any = null;
+        let isMounted = true;
 
-            const initializeIAP = async () => {
-                await initConnection();
+        const initializeIAP = async () => {
+            if (!products.length || hasListenerInitializedRef.current) return;
+            hasListenerInitializedRef.current = true;
 
-                // initConnection().then(async () => {
-                // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
+            await initConnection();
 
-                const subscriptionItemLists = products
-                    .filter(p => p.type === ProductType.SUBSCRIPTION)
-                    .map(p => p.productId);
+            const subscriptionItemLists = products
+                .filter(p => p.type === ProductType.SUBSCRIPTION)
+                .map(p => p.productId);
 
-                const storeSItems = await IAPGetSubscriptions({
-                    skus: subscriptionItemLists
+            const storeSItems = await IAPGetSubscriptions({ skus: subscriptionItemLists });
+            if (isMounted) {
+                setSubscriptionItems(storeSItems);
+            }
+
+            const addListeners = () => {
+                console.log('✅ listener 등록됨');
+
+                purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
+                    const receipt = purchase.transactionReceipt;
+                    const product = products.find(({ productId }) => productId === purchase.productId);
+                    if (!product || !receipt) return;
+
+                    const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                    const parsedReceipt =
+                        Platform.OS === 'android' ? { subscription: isSubscription, ...JSON.parse(receipt) } : receipt;
+
+                    await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
+                    await finishTransaction({ purchase, isConsumable: !isSubscription });
                 });
 
-                // setPurchaseItems(storeItems)
-                setSubscriptionItems(storeSItems);
-
-                const addListeners = () => {
-                    purchaseUpdateSubscription = purchaseUpdatedListener(
-                        async (purchase: SubscriptionPurchase | ProductPurchase) => {
-                            const receipt = purchase.transactionReceipt;
-
-                            const product = products.find(({ productId }) => productId === purchase.productId);
-                            if (!product) {
-                                return;
-                            }
-                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                            if (!receipt) {
-                                return;
-                            }
-                            if (Platform.OS === 'android') {
-                                await purchaseProduct({
-                                    _id: product._id,
-                                    receipt: { subscription: isSubscription, ...JSON.parse(receipt) }
-                                });
-                            } else {
-                                await purchaseProduct({ _id: product._id, receipt });
-                            }
-                            await finishTransaction({ purchase, isConsumable: !isSubscription });
-                        }
-                    );
-
-                    purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
-                        console.error('purchaseErrorListener', error);
-                    });
-                };
-                // we make sure that "ghost" pending payment are removed
-                // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
-                if (Platform.OS === 'android') {
-                    flushFailedPurchasesCachedAsPendingAndroid()
-                        .then(addListeners)
-                        .catch(() => {});
-                } else {
-                    addListeners();
-                }
+                purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
+                    console.error('purchaseErrorListener', error);
+                });
             };
 
-            initializeIAP();
-            return () => {
-                if (purchaseUpdateSubscription) {
-                    purchaseUpdateSubscription.remove();
-                    purchaseUpdateSubscription = null;
-                }
+            if (Platform.OS === 'android') {
+                await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {});
+            }
 
-                if (purchaseErrorSubscription) {
-                    purchaseErrorSubscription.remove();
-                    purchaseErrorSubscription = null;
-                }
-            };
-        }
+            addListeners();
+        };
+
+        initializeIAP();
+
+        return () => {
+            isMounted = false;
+            console.log('🧹 IAP listener 정리');
+
+            purchaseUpdateRef.current?.remove?.();
+            purchaseErrorRef.current?.remove?.();
+
+            purchaseUpdateRef.current = null;
+            purchaseErrorRef.current = null;
+            hasListenerInitializedRef.current = false;
+        };
     }, [products]);
 
     return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
