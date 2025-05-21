@@ -17,13 +17,5 @@
     },
     "submit": {
         "production": {}
-    },
-    "update": {
-        "develop": {
-            "channel": "develop"
-        },
-        "production": {
-            "channel": "production"
-        }
     }
 }
