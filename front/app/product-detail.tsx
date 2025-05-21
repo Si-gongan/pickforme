@@ -60,6 +60,7 @@ import Request from '../components/BottomSheet/Request';
 import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
 import { membershipModalTypeAtom } from '../stores/auth/atoms';
+import { logEvent } from '@/services/firebase';
 
 interface ProductDetailScreenProps {}
 
@@ -230,6 +231,13 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             setIsShowNonSubscriberManagerModal(true);
             return;
         }
+        logEvent('question_send', {
+            screen: 'ProductDetailScreen',
+            item_id: productUrl,
+            item_name: productDetail?.product?.name,
+            question: question,
+            category: 'product_detail'
+        });
 
         try {
             await getProductAIAnswer(question);
