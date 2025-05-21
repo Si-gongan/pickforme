@@ -20,12 +20,19 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
 
     const label = useMemo(
         function () {
-            const mainLabel = `${data.name ?? ''} ${getNumberComma(data.price ?? 0)}원`;
+            // 상품명 → 가격 → 할인율 → 리뷰개수 → 평점 순서로 접근성 레이블 구성
+            let mainLabel = `${data.name ?? ''} ${getNumberComma(data.price ?? 0)}원`;
 
             if (isBase) {
-                return `${mainLabel} ${(data.discount_rate ?? 0) !== 0 ? `할인률 ${data.discount_rate}%` : ''} 리뷰 ${
-                    data.reviews
-                }개 평점 ${Math.floor((data.ratings / 20) * 10) / 10}점`;
+                // 할인율 정보 추가
+                if ((data.discount_rate ?? 0) !== 0) {
+                    mainLabel += ` 할인률 ${data.discount_rate}%`;
+                }
+
+                // 리뷰 개수와 평점 추가
+                if (data.reviews > 0 && data.ratings > 0) {
+                    mainLabel += ` 리뷰 ${data.reviews}개 평점 ${Math.floor((data.ratings / 20) * 10) / 10}점`;
+                }
             }
 
             return mainLabel;
@@ -48,56 +55,61 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
         >
             <View style={[styles.ProductCardContent, isBase && styles.ProductCardContentColumn]}>
                 {isBase ? (
-                    <View style={styles.ProductCardContentRow}>
-                        <View style={styles.ProductCardTitleColumn}>
-                            {data.reviews > 0 && data.ratings > 0 && (
+                    <View style={styles.ProductCardContentColumn}>
+                        {/* 상품명 1행 */}
+                        <Text numberOfLines={1} style={styles.ProductCardName} accessible>
+                            {data.name}
+                        </Text>
+
+                        {/* 리뷰개수, 평점, 할인율, 가격 정보 2행 */}
+                        <View style={styles.ProductCardContentRow}>
+                            <View style={styles.ProductCardTitleColumn}>
                                 <Text
                                     style={[styles.ProductCardReviews, { color: 'black', fontWeight: '400' }]}
                                     accessible
                                 >
-                                    리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
+                                    리뷰 {data.reviews || 0}개 평점 {Math.floor(((data.ratings || 0) / 20) * 10) / 10}점
                                 </Text>
-                            )}
-                            <Text numberOfLines={1} style={styles.ProductCardName} accessible>
-                                {data.name}
-                            </Text>
-                        </View>
-                        <View
-                            style={{
-                                width: '30%',
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'flex-end',
-                                justifyContent: 'flex-end'
-                            }}
-                        >
-                            {data.discount_rate > 0 && (
-                                <Text style={styles.ProductCardDiscount} accessible>
-                                    {data.discount_rate}%
-                                </Text>
-                            )}
-                            <View style={{ marginLeft: 5 }}>
-                                <Text style={styles.ProductCardPrice} accessible>
-                                    {getNumberComma(data.price ?? 0)}원
-                                </Text>
+                            </View>
+                            <View
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'flex-end',
+                                    justifyContent: 'flex-end'
+                                }}
+                            >
+                                {data.discount_rate > 0 && (
+                                    <Text style={styles.ProductCardDiscount} accessible>
+                                        {data.discount_rate}%
+                                    </Text>
+                                )}
+                                <View style={{ marginLeft: 5 }}>
+                                    <Text style={styles.ProductCardPrice} accessible>
+                                        {getNumberComma(data.price ?? 0)}원
+                                    </Text>
+                                </View>
                             </View>
                         </View>
                     </View>
                 ) : (
-                    <View style={styles.ProductCardContentRow}>
-                        <View style={styles.ProductCardTitleColumn}>
-                            {data.reviews > 0 && data.ratings > 0 && (
+                    <View style={styles.ProductCardContentColumn}>
+                        {/* 상품명 1행 */}
+                        <Text numberOfLines={1} style={styles.ProductCardName} accessible>
+                            {data.name}
+                        </Text>
+
+                        {/* 나머지 정보 2행 */}
+                        <View style={styles.ProductCardContentRow}>
+                            <View style={styles.ProductCardTitleColumn}>
                                 <Text style={styles.ProductCardReviews} accessible>
-                                    리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
+                                    리뷰 {data.reviews || 0}개 평점 {Math.floor(((data.ratings || 0) / 20) * 10) / 10}점
                                 </Text>
-                            )}
-                            <Text style={styles.ProductCardName} accessible>
-                                {data.name}
+                            </View>
+                            <Text style={styles.ProductCardPrice} accessible>
+                                {getNumberComma(data.price ?? 0)}원
                             </Text>
                         </View>
-                        <Text style={styles.ProductCardPrice} accessible>
-                            {getNumberComma(data.price ?? 0)}원
-                        </Text>
                     </View>
                 )}
             </View>

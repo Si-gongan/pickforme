@@ -33,7 +33,8 @@ import {
     setProductReviewAtom,
     loadingStatusAtom,
     setScrapedProductDetailAtom,
-    scrapedProductDetailAtom
+    scrapedProductDetailAtom,
+    LoadingStatus
 } from '../stores/product/atoms';
 import { Product } from '../stores/product/types';
 import { sendLogAtom } from '../stores/log/atoms';
@@ -58,6 +59,7 @@ import Modal from 'react-native-modal';
 import Request from '../components/BottomSheet/Request';
 import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
+import { membershipModalTypeAtom } from '../stores/auth/atoms';
 
 interface ProductDetailScreenProps {}
 
@@ -65,6 +67,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { productUrl: productUrlBase, url: urlBase } = useLocalSearchParams();
     const productUrl = decodeURIComponent((productUrlBase || urlBase)?.toString() ?? '');
     const userData = useAtomValue(userAtom);
+    const setMembershipModalType = useSetAtom(membershipModalTypeAtom);
 
     // 쿠팡 링크가 아닌 경우 처리
     if (!productUrl.includes('coupang')) {
@@ -93,9 +96,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const searchResult = useAtomValue(searchResultAtom);
     const [wishlist, setWishlist] = useAtom(wishProductsAtom);
     const requests = useAtomValue(requestsAtom);
-    const request = requests
-        .filter(req => req.product)
-        .find(req => decodeURIComponent(req.product!.url) === productUrl);
+    // 현재 상품에 대한 모든 request를 필터링하고 최신순(updatedAt 기준)으로 정렬
+    const productRequests = requests
+        .filter(req => req.product && decodeURIComponent(req.product.url) === productUrl)
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    // 이전 코드와의 호환성을 위해 첫 번째 request도 유지 (필요한 경우 사용)
+    const request = productRequests.length > 0 ? productRequests[0] : undefined;
     const already = wishlist.find(wishProduct => decodeURIComponent(wishProduct.url) === productUrl);
 
     const isLocal =
@@ -106,7 +112,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const [tab, setTab] = useState<TABS>(TABS.CAPTION);
     const [question, setQuestion] = useState('');
-
+    const [tabPressed, setTabPressed] = useState(false); // 탭 변경 여부를 추적하는 상태 추가
     const loadingStatus = useAtomValue(loadingStatusAtom);
 
     const managerResponseRef = useRef<RNView>(null);
@@ -191,54 +197,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     }, [productUrl]);
 
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(reportRef.current);
-            if (loadingStatus.report === 2 && tab === TABS.REPORT && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.report, tab]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(reviewRef.current);
-            if (loadingStatus.review === 2 && tab === TABS.REVIEW && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.review, tab]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(questionRef.current);
-            if (loadingStatus.question === 2 && tab === TABS.QUESTION && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.question, tab]);
-
-    useEffect(() => {
-        const moveFocus = () => {
-            const node = findNodeHandle(captionRef.current);
-            if (loadingStatus.caption === 2 && tab === TABS.CAPTION && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    }, [loadingStatus.caption, tab]);
-
     const handleClickBuy = async () => {
         sendLog({ product: { url: productUrl }, action: 'link', metaData: {} });
         await WebBrowser.openBrowserAsync(product.url);
     };
 
     // TODO
-    // const setIsShowNonSubscribedModal = useSetAtom(isShowNonSubscribedModalAtom);
-    const handleClickSend = async () => {
+    const setIsShowNonSubscriberManagerModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
+    const handleClickSend = useCheckLogin(async () => {
         if (!question) {
             Alert.alert('질문을 입력해주세요.');
             return;
@@ -246,6 +212,22 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         if (!productDetail?.product?.detail_images || !productDetail?.product?.thumbnail || !productReview.reviews) {
             Alert.alert('상품 정보를 불러오고 있어요.');
+            return;
+        }
+
+        // AI 질문을 위한 모달 타입 설정
+        setMembershipModalType('AI');
+
+        // 구독 및 AI 포인트 체크
+        await getSubscription();
+        if (
+            !subscription ||
+            subscription.isExpired ||
+            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
+        ) {
+            console.log('AI 질문 - 멤버십 필요');
+            // 모달 표시
+            setIsShowNonSubscriberManagerModal(true);
             return;
         }
 
@@ -261,7 +243,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 config: error.config
             });
         }
-    };
+    });
 
     const handleClickWish = async () => {
         if (already) {
@@ -302,51 +284,73 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     };
 
-    const handleClickRequest = useCheckLogin(async (message: string) => {
-        // setRequestBottomSheet(product);
-        // setIsShowSubscriptionModal(false);
-        // setTimeout(() => {
-        //     setIsShowSubscriptionModal(true);
-        // }, 300);
-
+    const handleClickRequest = useCheckLogin(async () => {
         await getSubscription();
-        console.log('subscription:', JSON.stringify(subscription));
-        console.log('userData:', userData.point);
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        if (userData.point && parseInt(userData.point.toString()) < 1) {
-            console.log('setIsShowNonSubscriberManageModal');
-            // 모달 표시
+        setMembershipModalType('MANAGER');
+        if (
+            !subscription ||
+            subscription.isExpired ||
+            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
+        ) {
             setIsShowNonSubscriberManageModal(true);
         } else {
-            console.log('setRequestBottomSheet');
             setRequestBottomSheet(product);
             setIsShowSubscriptionModal(true);
         }
     });
 
-    const handlePressAIQuestionTab = useCheckLogin(() => {
-        setTab(TABS.QUESTION);
-    });
-
-    const moveFocusToProductDetail = (nextTab: TABS) => {
-        const moveFocus = () => {
-            const node = findNodeHandle(refs[nextTab].current);
-            if (loadingStatus[nextTab] === 2 && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }
-        };
-        setTimeout(moveFocus, 500);
-    };
+    const handlePressAIQuestionTab = () => setTab(TABS.QUESTION);
 
     const handlePressTab = (nextTab: TABS) => {
         if (nextTab === TABS.QUESTION) {
-            handlePressAIQuestionTab('');
+            handlePressAIQuestionTab();
         }
-
+        console.log('handlePressTab 호출됨:', { nextTab });
         setTab(nextTab);
-        moveFocusToProductDetail(nextTab);
+        setTabPressed(true);
     };
+
+    useEffect(() => {
+        if (loadingStatus.report === LoadingStatus.FINISH && tab === TABS.REPORT) {
+            const node = findNodeHandle(refs.report?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.report}`);
+            }
+        }
+    }, [loadingStatus.report, tab]);
+
+    useEffect(() => {
+        if (loadingStatus.question === LoadingStatus.FINISH && tab === TABS.QUESTION) {
+            const node = findNodeHandle(refs.question?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.question}`);
+            }
+        }
+    }, [loadingStatus.question, tab]);
+
+    useEffect(() => {
+        if (loadingStatus.review === LoadingStatus.FINISH && tab === TABS.REVIEW) {
+            const node = findNodeHandle(refs.review?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.review}`);
+            }
+        }
+    }, [loadingStatus.review, tab]);
+
+    useEffect(() => {
+        if (tabPressed && loadingStatus.caption === LoadingStatus.FINISH && tab === TABS.CAPTION) {
+            const node = findNodeHandle(refs.caption?.current);
+            if (node) {
+                AccessibilityInfo.setAccessibilityFocus(node);
+                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.caption}`);
+            }
+        }
+    }, [loadingStatus.caption, tab, tabPressed]);
 
     const handleRegenerate = () => {
         console.log('handleRegenerate 호출됨:', { tab });
@@ -470,6 +474,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             setQuestion={setQuestion}
                             handleClickSend={handleClickSend}
                             request={request}
+                            productRequests={productRequests}
                             loadingMessages={loadingMessages}
                             loadingStatus={loadingStatus}
                             handleRegenerate={handleRegenerate}
@@ -519,6 +524,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
                         size="medium"
                         color={tab === TAB ? 'primary' : 'tertiary'}
                         onPress={() => handlePressTab(TAB)}
+                        accessible
                         accessibilityLabel={`${tabName[TAB]} 탭`}
                         selected={tab === TAB}
                     />

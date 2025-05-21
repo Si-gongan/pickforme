@@ -218,7 +218,9 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 style={styles.productButton}
                                                 title="멤버십 시작하기"
                                                 size="small"
-                                                onPress={() => router.replace('/subscription')}
+                                                onPress={() =>
+                                                    handleClickSub(product.productId, subscriptionOffer.offerToken)
+                                                }
                                             />
                                         </View>
                                     );
@@ -233,7 +235,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                             title="멤버십 시작하기"
                                             size="small"
                                             textStyle={{ color: Colors[colorScheme].text.secondary }}
-                                            onPress={() => router.replace('/subscription')}
+                                            onPress={() => handleClickSub(product.productId)}
                                         />
                                     </View>
                                 );

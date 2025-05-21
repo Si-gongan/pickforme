@@ -1,11 +1,11 @@
 // back/src/utils/logger/transports.ts
 import winston from 'winston';
 import path from 'path';
-import { LogLevel, CustomLogInfo, colors, LogSeverity } from './types';
+import { LogLevel, CustomLogInfo, colors, LogSeverity, LogContext } from './types';
 import slackClient from '../slack';
 import { config } from './config';
 
-const { logDir, isProduction, slackChannelId } = config;
+const { logDir, isProduction, slackChannelId, isStagingServer } = config;
 
 // 공통 포맷 함수
 const createLogFormat = (useColors: boolean = false) => {
@@ -62,19 +62,64 @@ const createFileTransports = () => {
     
     // Slack으로도 알림 (실패해도 무시)
     if (isProduction) {
-      sendToSlack(`🚨 파일 로깅 설정 실패\n에러: ${error}`).catch(() => {
-      });
+      sendToSlack({
+        context: LogContext.SERVER,
+        message: `파일 로깅 설정 실패: ${error}`,
+        severity: LogSeverity.HIGH
+      }).catch(() => {});
     }
     
     return [createConsoleTransport()];
   }
 };
 
+interface SlackErrorPayload {
+  context: LogContext;
+  message: string;
+  severity: LogSeverity;
+  stack?: string;
+  meta?: Record<string, any>;
+}
+
+// severity를 텍스트로 변환하는 함수
+const getSeverityText = (severity: LogSeverity): string => {
+  switch (severity) {
+    case LogSeverity.CRITICAL:
+      return '🔴 CRITICAL';
+    case LogSeverity.HIGH:
+      return '🟠 HIGH';
+    case LogSeverity.MEDIUM:
+      return '🟡 MEDIUM';
+    case LogSeverity.LOW:
+      return '🟢 LOW';
+    default:
+      return '⚪ UNKNOWN';
+  }
+};
+
 // 슬랙 전송 함수
-export const sendToSlack = async (message: string) => {
-  try {    
+export const sendToSlack = async (payload: SlackErrorPayload) => {
+  try {
+    const { context, message, severity, stack, meta } = payload;
+    let formattedMessage = '';
+
+    // 서버 환경에 따른 제목 설정
+    const serverEnv = isStagingServer ? 'development' : 'production';
+    formattedMessage = `🚨 *[${serverEnv}] backend server에서 ERROR 발생*\n\n`;
+    formattedMessage += `*Context / Message / Severity*\n\`\`\`\nContext: ${context}\nMessage: ${message}\nSeverity: ${getSeverityText(severity)}\n\`\`\`\n\n`;
+
+    // 스택 트레이스가 있으면 코드 블록으로 포맷팅
+    if (stack) {
+      formattedMessage += `*Stack Trace*\n\`\`\`\n${stack}\n\`\`\`\n\n`;
+    }
+
+    // 나머지 메타데이터가 있으면 추가
+    if (meta && Object.keys(meta).length > 0) {
+      formattedMessage += `*Additional Info*\n\`\`\`${JSON.stringify(meta, null, 2)}\n\`\`\``;
+    }
+
     await slackClient.post('/chat.postMessage', {
-      text: message,
+      text: formattedMessage,
       channel: slackChannelId,
     });
   } catch (error) {
@@ -92,7 +137,11 @@ export const getTransports = () => {
     
     // Slack으로도 알림 (실패해도 무시)
     if (isProduction) {
-      sendToSlack(`🚨 로거 설정 실패\n에러: ${error}`)
+      sendToSlack({
+        context: LogContext.SERVER,
+        message: `로거 설정 실패: ${error}`,
+        severity: LogSeverity.HIGH
+      }).catch(() => {});
     }
     
     return [createConsoleTransport()];

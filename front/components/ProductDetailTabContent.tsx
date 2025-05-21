@@ -18,9 +18,6 @@ import { Request } from '../stores/request/types';
 import { ProductDetailState } from '../stores/product/types';
 import { LoadingStatus } from '../stores/product/atoms';
 import { ScrapedProductDetail } from '../stores/product/types';
-import { useAtomValue } from 'jotai';
-import { productReviewAtom } from '../stores/product/atoms';
-import { useState } from 'react';
 
 import type { ColorScheme } from '@hooks';
 
@@ -32,6 +29,7 @@ interface TabContentProps {
     setQuestion: React.Dispatch<React.SetStateAction<string>>;
     handleClickSend: (params: any) => void;
     request: Request | undefined;
+    productRequests: Request[]; // 추가된 현재 상품에 대한 모든 요청 배열
     loadingMessages: Record<TABS | 'manager', string>;
     loadingStatus: { [key in TABS]: LoadingStatus };
     handleRegenerate: () => void;
@@ -47,6 +45,7 @@ const TabContent: React.FC<TabContentProps> = ({
     setQuestion,
     handleClickSend,
     request,
+    productRequests,
     loadingMessages,
     loadingStatus,
     handleRegenerate,
@@ -76,6 +75,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 setQuestion={setQuestion}
                 handleClickSend={handleClickSend}
                 request={request}
+                productRequests={productRequests}
                 refs={refs}
                 loadingMessages={loadingMessages}
                 loadingStatus={loadingStatus}
@@ -116,7 +116,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }
 
         return (
-            <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel={`${tab} 내용`}>
+            <View style={styles.detailWrap} ref={refs[tab]} accessibilityLabel={`${tab} 내용`}>
                 <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
             </View>
         );
@@ -141,12 +141,13 @@ const TabContent: React.FC<TabContentProps> = ({
 interface QuestionTabProps {
     styles: ReturnType<typeof useStyles>;
     question: string;
-    setQuestion: React.Dispatch<React.SetStateAction<string>>;
-    handleClickSend: (parmas: any) => void;
-    request: Request | undefined;
+    setQuestion: (text: string) => void;
+    handleClickSend: any;
+    request: any; // 기존 호환성을 위해 유지
+    productRequests: any[]; // 추가된 현재 상품에 대한 모든 요청 배열
     refs: Record<string, React.RefObject<RNView>>;
-    loadingMessages: Record<TABS | 'manager', string>;
-    loadingStatus: { [key in TABS]: LoadingStatus };
+    loadingMessages: any;
+    loadingStatus: any;
     tab: TABS;
     markdownStyles: any;
     productDetail: ProductDetailState | void;
@@ -159,6 +160,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     setQuestion,
     handleClickSend,
     request,
+    productRequests,
     refs,
     loadingMessages,
     loadingStatus,
@@ -212,31 +214,53 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             </View>
         ) : null}
 
-        {request ? (
-            request.answer?.text ? (
-                <>
-                    <View style={styles.seperator}></View>
-                    <View
-                        ref={refs.manager}
-                        accessible={true}
-                        accessibilityLabel="다음은 질문에 대한 매니저의 답변이에요."
-                    >
-                        <Text style={styles.boldText}>다음은 질문에 대한 매니저의 답변이에요.</Text>
+        {/* 전처리된 매니저 질문 응답 목록 표시 (최신순) */}
+        {productRequests && productRequests.length > 0 ? (
+            // 응답이 있는 질문들 표시
+            <>
+                <View style={styles.seperator}></View>
+                <View ref={refs.manager} accessible={true} accessibilityLabel="매니저 답변">
+                    <Text style={styles.boldText}>매니저 답변</Text>
+                </View>
+
+                <View style={styles.seperator}></View>
+                {/* 최신순으로 정렬된 모든 질문과 답변 표시 */}
+                {productRequests.map((req, index) => (
+                    <View key={req._id || index} style={index > 0 ? { marginTop: 20 } : {}}>
+                        {/* 날짜 - 스크린리더 순서 1 */}
+                        <Text
+                            style={{ color: Colors[colorScheme].text.primary, marginBottom: 5 }}
+                            accessible={true}
+                            accessibilityLabel={`질문 날짜: ${formatDate(req?.updatedAt)} ${formatTime(
+                                req?.updatedAt
+                            )}`}
+                        >
+                            {`${formatDate(req?.updatedAt)} ${formatTime(req?.updatedAt)}`}
+                        </Text>
+
+                        {/* 질문 - 스크린리더 순서 2 */}
+                        <View accessible={true} accessibilityLabel={`나의 질문: ${req?.text || ''}`}>
+                            <Markdown>{`**나의 질문:** ${req?.text || ''}`}</Markdown>
+                        </View>
+
+                        {/* 답변 표시 - 스크린리더 순서 3 */}
+                        {req.answer?.text ? (
+                            <View
+                                accessible={true}
+                                accessibilityLabel={`픽포미 매니저 답변: ${req?.answer?.text || ''}`}
+                            >
+                                <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${
+                                    req?.answer?.text || ''
+                                }`}</Markdown>
+                            </View>
+                        ) : (
+                            <View accessible={true} accessibilityLabel={loadingMessages.manager}>
+                                <Text style={styles.loadingMessageText}>{loadingMessages.manager}</Text>
+                            </View>
+                        )}
                     </View>
-                    <Markdown>{`**나의 질문:** ${request?.text}`}</Markdown>
-                    <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${request?.answer?.text}`}</Markdown>
-                    <Text style={{ color: Colors[colorScheme].text.primary }}>{`${formatDate(
-                        request?.updatedAt
-                    )} ${formatTime(request?.updatedAt)}`}</Text>
-                </>
-            ) : (
-                <>
-                    <View style={styles.seperator}></View>
-                    <View ref={refs.manager} accessible={true} accessibilityLabel={loadingMessages.manager}>
-                        <Text style={styles.loadingMessageText}>{loadingMessages.manager}</Text>
-                    </View>
-                </>
-            )
+                ))}
+            </>
         ) : null}
     </View>
 );
@@ -276,7 +300,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (
-                <View style={styles.detailWrap} ref={refs[tab]} accessible={true} accessibilityLabel="긍정적인 리뷰">
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel={`긍정적인 리뷰: ${review?.pros.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
+                >
                     <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
                         {review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
@@ -284,7 +313,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.cons?.length !== 0 && (
-                <View style={styles.detailWrap}>
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel={`부정적인 리뷰: ${review?.cons.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
+                >
                     <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
                     <Markdown style={markdownStyles}>
                         {review?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
@@ -292,7 +326,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.bests?.length !== 0 && (
-                <View style={styles.detailWrap}>
+                <View
+                    style={styles.detailWrap}
+                    ref={refs[tab]}
+                    accessible={true}
+                    accessibilityLabel={`베스트 리뷰: ${review?.bests.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
+                >
                     <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
                     {review?.bests.map((row: string, i: number) => (
                         <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
@@ -301,7 +340,12 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                     ))}
                 </View>
             )}
-            <TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+            <TouchableOpacity
+                onPress={handleLoadMore}
+                style={styles.loadMoreButton}
+                accessible
+                accessibilityLabel="더 많은 리뷰 불러오기"
+            >
                 <Text style={styles.loadMoreText}>더 많은 리뷰 불러오기</Text>
             </TouchableOpacity>
         </>

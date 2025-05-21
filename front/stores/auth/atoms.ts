@@ -116,3 +116,4 @@ export const isShowNonSubscriberManagerModalAtom = atom(false);
 export const isShowExpireModalAtom = atom(false);
 export const isShowUnsubscribeModalAtom = atom(false);
 export const isShowUpdateAlartModalAtom = atom(false);
+export const membershipModalTypeAtom = atom<'AI' | 'MANAGER'>('MANAGER');

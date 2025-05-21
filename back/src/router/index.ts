@@ -31,6 +31,10 @@ const router = new Router();
   router.use(subrouter.routes());
 });
 
+router.get('/error-test', async (ctx) => {
+  throw new Error('test');
+});
+
 router.get("/logger-test", async (ctx) => {
   
   try {

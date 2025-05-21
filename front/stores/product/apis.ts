@@ -30,12 +30,10 @@ export const GetProductReportAPI = (params: GetProductDetailRequest) =>
         .post<GetProductDetailResponse>(`/discover/product/detail/report`, params)
         .catch(error => handleApiError(error, 'GetMainProducts'));
 
-export const GetProductCaptionAPI = (params: GetProductDetailRequest) => {
-    console.log('GetProductCaptionAPI 호출');
-    return client
+export const GetProductCaptionAPI = (params: GetProductDetailRequest) =>
+    client
         .post<GetProductDetailResponse>(`/discover/product/detail/caption`, params)
         .catch(error => handleApiError(error, 'GetMainProducts'));
-};
 
 export const GetProductAIAnswerAPI = (params: GetProductDetailRequest) =>
     client

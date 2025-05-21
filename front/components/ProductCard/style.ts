@@ -24,20 +24,24 @@ export default function useStyle() {
         ProductCardContentColumn: {
             flexDirection: 'column',
             alignItems: 'flex-start',
-            gap: 0
+            gap: 0,
+            width: '100%'
         },
         ProductCardContentRow: {
             flexDirection: 'row',
             gap: 10,
-            marginBottom: 6,
-            backgroundColor: theme.background.productCard
+            backgroundColor: theme.background.productCard,
+            width: '100%',
+            justifyContent: 'space-between'
         },
         ProductCardName: {
             fontSize: 12,
             color: theme.text.primary,
             fontWeight: '500',
             lineHeight: 20,
-            flex: 1
+            flex: 1,
+            width: '100%',
+            marginBottom: 8
         },
         ProductCardPrice: {
             fontSize: 12,
@@ -53,7 +57,7 @@ export default function useStyle() {
             marginLeft: 5
         },
         ProductCardReviews: {
-            fontSize: 10,
+            fontSize: 12,
             lineHeight: 12,
             color: theme.text.primary,
             fontWeight: '400',
