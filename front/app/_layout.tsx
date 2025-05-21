@@ -15,6 +15,7 @@ import { GetPopupAPI } from '../stores/auth';
 import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
+import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -109,6 +110,7 @@ export default function RootLayout() {
                     <NonSubscriberManagerBottomSheet />
                     <LoginBottomSheet />
                     <SubscriptionBottomSheet />
+                    <UnsubscribeBottomSheet />
                 </JotaiProvider>
             </QueryClientProvider>
         </Suspense>

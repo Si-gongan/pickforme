@@ -94,6 +94,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
     const colorScheme = useColorScheme();
     const currentSubscription = useAtomValue(subscriptionAtom);
     const styles = useStyles(colorScheme);
+    const setIsShowUnsubscribeModal = useSetAtom(isShowUnsubscribeModalAtom);
 
     const getCurrentSubscription = useSetAtom(getSubscriptionAtom);
 
@@ -143,19 +144,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
         }
     };
 
-    const handleClickUnsubscribe = async () => {
-        try {
-            if (Platform.OS === 'android') {
-                // Android의 경우 구글 플레이 스토어로 이동
-                await Linking.openURL('https://play.google.com/store/account/subscriptions');
-            } else {
-                // iOS의 경우 앱스토어 설정으로 이동
-                await Linking.openURL('https://apps.apple.com/account/subscriptions');
-            }
-        } catch (error) {
-            console.error('구독 해지 처리 중 에러 발생:', error);
-            Alert.alert('구독 해지 처리 중 오류가 발생했습니다.');
-        }
+    const handleClickUnsubscribe = () => {
+        setIsShowUnsubscribeModal(true);
     };
 
     useEffect(() => {
@@ -190,7 +180,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                 style={styles.unSubscribeButton}
                                 title="멤버십 해지하기"
                                 size="small"
-                                textStyle={styles.unSubscribeButton}
+                                textStyle={styles.unSubscribeButtonText}
                                 onPress={handleClickUnsubscribe}
                             />
                         </>
