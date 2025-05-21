@@ -1,76 +1,40 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Platform, Alert } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import Markdown from 'react-native-markdown-display';
+import React, { useEffect, useState } from 'react';
+import { Alert, Platform, ScrollView, StyleSheet } from 'react-native';
 import {
-    initConnection,
-    purchaseErrorListener,
-    purchaseUpdatedListener,
-    ProductPurchase,
-    PurchaseError,
-    flushFailedPurchasesCachedAsPendingAndroid,
-    SubscriptionPurchase,
-    requestSubscription,
-    getProducts as IAPGetProducts,
     getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
-    SubscriptionAndroid,
-    finishTransaction,
-    useIAP,
-    withIAPContext,
+    ProductPurchase,
+    PurchaseError,
     RequestSubscriptionAndroid,
-    clearProductsIOS,
-    getReceiptIOS,
-    getAvailablePurchases,
-    clearTransactionIOS
+    SubscriptionAndroid,
+    SubscriptionPurchase,
+    clearTransactionIOS,
+    finishTransaction,
+    flushFailedPurchasesCachedAsPendingAndroid,
+    initConnection,
+    purchaseErrorListener,
+    purchaseUpdatedListener,
+    requestSubscription,
+    withIAPContext
 } from 'react-native-iap';
+import Markdown from 'react-native-markdown-display';
 
-import {
-    subscriptionAtom,
-    getProductsAtom,
-    purchaseProductAtom,
-    productsAtom,
-    getSubscriptionAtom
-} from '../stores/purchase/atoms';
-import { Product, ProductType } from '../stores/purchase/types';
-import { userAtom, isShowSubscriptionModalAtom } from '@stores';
+import { BackHeader, Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
+import { isShowSubscriptionModalAtom } from '@stores';
 import useColorScheme from '../hooks/useColorScheme';
-import { Text, View, Button_old as Button, BackHeader } from '@components';
-import { initializeIAP } from '../services/IAPservice';
-import { attempt } from '../utils/axios';
+import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '../stores/purchase/atoms';
+import { Product, ProductType } from '../stores/purchase/types';
 
 // 2024
-import { GetPurchaseSubCheckAPI, GetSubscriptionAPI } from '../stores/purchase/apis';
+import { GetSubscriptionAPI } from '../stores/purchase/apis';
 
 import type { ColorScheme } from '@hooks';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
-
-const TERM = `
-- 이용방법: 픽은 '픽포미 추천'과 '픽포미 분석'에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
-- 이용기간: 픽은 결제일로부터 30일 동안 이용할 수 있습니다.
-- 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 구글 플레이 또는 앱스토어에 등록된 계정으로 요금이 부과됩니다.
-- 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 사용 중인 픽은 만료 시까지 이용 가능하며, 다음달 구독부터 결제 및 사용이 자동 해지됩니다.
-`;
-
-const checkSubscriptionStatus = async () => {
-    try {
-        const purchaseHistory = await getAvailablePurchases();
-        purchaseHistory.forEach(purchase => {
-            if (purchase.productId === 'pickforme_basic') {
-                // 구독이 유효한지 확인 후 처리
-                console.log('구독 활성화 상태');
-            }
-        });
-    } catch (error) {
-        console.warn(error);
-    }
-};
 
 const PurchaseWrapper = () => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
@@ -174,12 +138,8 @@ interface Props {
     subscriptionItems: IAPSubscription[];
 }
 export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
-    const router = useRouter();
-    const currentSubscription = useAtomValue(subscriptionAtom);
-    const userData = useAtomValue(userAtom);
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
-    const { connected, currentPurchase, currentPurchaseError } = useIAP();
     const [subscriptionLoading, setSubscriptionLoading] = useState<boolean>(false);
     const markdownStyles = StyleSheet.create({
         text: {
