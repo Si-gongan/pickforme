@@ -52,7 +52,7 @@ export default function useStyle() {
         ProductCardDiscount: {
             fontSize: 11,
             lineHeight: 14,
-            color: theme.text.primary,
+            color: theme.text.discount,
             fontWeight: '500',
             marginLeft: 5
         },

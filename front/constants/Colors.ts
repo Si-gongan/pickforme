@@ -24,7 +24,8 @@ export default {
             primary: palette.darkGray,
             secondary: palette.white,
             third: palette.lightGray,
-            placeholder: palette.placeholderGray
+            placeholder: palette.placeholderGray,
+            discount: palette.darkPrimary
         },
         background: {
             primary: palette.white,
@@ -63,7 +64,8 @@ export default {
             primary: palette.darkText,
             secondary: palette.darkText,
             third: palette.darkText,
-            placeholder: palette.placeholderGrayDark
+            placeholder: palette.placeholderGrayDark,
+            discount: palette.darkPrimary
         },
         background: {
             primary: palette.darkNavyBlue,

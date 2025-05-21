@@ -260,7 +260,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 AccessibilityInfo.announceForAccessibility('위시리스트에서 제거되었습니다.');
             }, 300);
         } else {
-            setWishlist([...wishlist, product]);
+            // product 객체에 productDetail의 reviews와 ratings 정보 추가
+            const enrichedProduct = {
+                ...product,
+                reviews: productDetail?.product?.reviews ?? product.reviews ?? 0,
+                ratings: productDetail?.product?.ratings ?? product.ratings ?? 0
+            };
+
+            setWishlist([...wishlist, enrichedProduct]);
             sendLog({ product: { url: productUrl }, action: 'like', metaData: {} });
             setTimeout(() => {
                 AccessibilityInfo.announceForAccessibility('위시리스트에 추가되었습니다.');

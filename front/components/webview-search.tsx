@@ -1,3 +1,10 @@
+// 목적: 상품 검색 결과를 가져오기 위한 웹뷰입니다.
+// 기능:
+// 검색 키워드를 받아 쿠팡 모바일 검색 페이지를 숨겨진 웹뷰로 불러옵니다.
+// 검색 결과 페이지에서 상품 목록을 추출하여 각 상품의 이름, 썸네일, 가격, 원가, 할인율, 평점, 리뷰 수, URL 등의 정보를 추출합니다.
+// 추출된 상품 목록은 Product[] 배열로 변환되어 onMessage 콜백을 통해 부모 컴포넌트로 전달됩니다.
+// 특징: 검색 결과 페이지에서 상품 요소를 찾지 못할 경우 최대 5번까지 재시도하는 로직이 포함되어 있습니다.
+
 import React, { useRef, useState, useEffect } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { View } from 'react-native';

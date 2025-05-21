@@ -18,39 +18,39 @@ export const GetMainProductsAPI = (id: string) =>
 export const GetProductAPI = (url: string) =>
     client
         .post<GetProductResponse>(`/discover/product`, { url })
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'GetProductAPI'));
 
 export const GetProductReviewAPI = (params: GetProductDetailRequest) =>
     client
         .post<GetProductDetailResponse>(`/discover/product/detail/review`, params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'GetProductReviewAPI'));
 
 export const GetProductReportAPI = (params: GetProductDetailRequest) =>
     client
         .post<GetProductDetailResponse>(`/discover/product/detail/report`, params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'GetProductReportAPI'));
 
 export const GetProductCaptionAPI = (params: GetProductDetailRequest) =>
     client
         .post<GetProductDetailResponse>(`/discover/product/detail/caption`, params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'GetProductCaptionAPI'));
 
 export const GetProductAIAnswerAPI = (params: GetProductDetailRequest) =>
     client
         .post<GetProductDetailResponse>(`/discover/product/detail/ai-answer`, params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'GetProductAIAnswerAPI'));
 
 export const SearchProductsAPI = (params: SearchProductsRequest) =>
     client
         .post<SearchProductsResponse>('/discover/search', params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'SearchProductsAPI'));
 
 export const ParseProductUrlAPI = (params: ParseProductUrlAPIRequest) =>
     client
         .post<ParseProductUrlAPIResponse>('/discover/platform', params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'ParseProductUrlAPI'));
 
 export const UpdateProductAPI = (params: GetProductDetailRequest) =>
     client
         .put<GetProductResponse>('/discover/product', params)
-        .catch(error => handleApiError(error, 'GetMainProducts'));
+        .catch(error => handleApiError(error, 'UpdateProductAPI'));

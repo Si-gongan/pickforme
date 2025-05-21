@@ -2,13 +2,21 @@
     "expo": {
         "owner": "sigongan",
         "name": "픽포미",
-        "slug": "pickforme",
-        "version": "3.1.2",
+        "slug": "pickformeapp",
+        "version": "3.2.0",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "myapp",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
+        "extra": {
+            "eas": {
+                "projectId": "fc30c083-8843-43b4-9abc-5754cd747988"
+            },
+            "router": {
+                "origin": false
+            }
+        },
         "ios": {
             "supportsTablet": true,
             "bundleIdentifier": "com.sigonggan.pickforme",
