@@ -35,7 +35,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
       })();`;
 
     const convertUrl = (url: string) => {
-        console.log('url:', url);
+        console.log('convertUrl url:', url);
 
         let convertedUrl = '';
 
@@ -46,6 +46,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             // 쿠팡 앱 링크 처리 (link.coupang.com)
             if (url.includes('link.coupang.com')) {
                 resolveRedirectUrl(url).then(redirectUrl => {
+                    console.log('resolveRedirectUrl redirectUrl:', redirectUrl);
                     convertUrl(redirectUrl);
                 });
                 return;

@@ -283,7 +283,7 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
     }
 
     const response = result.value;
-    console.log('GetProductReviewAPI response: 리뷰 데이터 함께 전송', reviews.length, '개', response.data);
+
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
     if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
