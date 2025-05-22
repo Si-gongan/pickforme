@@ -57,8 +57,6 @@ const PurchaseWrapper = () => {
     }, [getSubscription]);
 
     useEffect(() => {
-        let isMounted = true;
-
         const initializeIAP = async () => {
             if (!products.length || hasListenerInitializedRef.current) return;
             hasListenerInitializedRef.current = true;
@@ -70,9 +68,7 @@ const PurchaseWrapper = () => {
                 .map(p => p.productId);
 
             const storeSItems = await IAPGetSubscriptions({ skus: subscriptionItemLists });
-            if (isMounted) {
-                setSubscriptionItems(storeSItems);
-            }
+            setSubscriptionItems(storeSItems);
 
             const addListeners = () => {
                 console.log('✅ listener 등록됨');
@@ -105,7 +101,6 @@ const PurchaseWrapper = () => {
         initializeIAP();
 
         return () => {
-            isMounted = false;
             console.log('🧹 IAP listener 정리');
 
             purchaseUpdateRef.current?.remove?.();
