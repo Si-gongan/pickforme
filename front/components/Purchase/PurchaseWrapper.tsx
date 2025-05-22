@@ -30,7 +30,7 @@ interface PurchaseWrapperProps {
 
 const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
-    const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
+    const [purchaseItems] = useState<IAPProduct[]>([]);
     const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
     const getProducts = useSetAtom(getProductsAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
@@ -38,7 +38,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
     const purchaseUpdateRef = useRef<any>(null);
     const purchaseErrorRef = useRef<any>(null);
-    const hasListenerInitializedRef = useRef(false);
+    const isInitializingRef = useRef(false);
 
     useEffect(() => {
         getProducts({ platform: Platform.OS });
@@ -49,62 +49,80 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     }, [getSubscription]);
 
     useEffect(() => {
-        if (!products.length) return;
+        if (!products.length || isInitializingRef.current) return;
 
         const initializeIAP = async () => {
-            if (hasListenerInitializedRef.current) return;
-            hasListenerInitializedRef.current = true;
+            try {
+                isInitializingRef.current = true;
 
-            await initConnection();
+                await initConnection();
 
-            const subscriptionItemLists = products
-                .filter(p => p.type === ProductType.SUBSCRIPTION)
-                .map(p => p.productId);
+                const subscriptionItemLists = products
+                    .filter(p => p.type === ProductType.SUBSCRIPTION)
+                    .map(p => p.productId);
 
-            const storeSItems = await IAPGetSubscriptions({ skus: subscriptionItemLists });
-            setSubscriptionItems(storeSItems);
+                const storeSItems = await IAPGetSubscriptions({ skus: subscriptionItemLists });
+                setSubscriptionItems(storeSItems);
 
-            const addListeners = () => {
-                console.log('✅ listener 등록됨');
+                const addListeners = () => {
+                    console.log('✅ listener 등록됨');
 
-                purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
-                    const receipt = purchase.transactionReceipt;
-                    const product = products.find(({ productId }) => productId === purchase.productId);
-                    if (!product || !receipt) return;
+                    if (purchaseUpdateRef.current) {
+                        purchaseUpdateRef.current.remove();
+                    }
+                    if (purchaseErrorRef.current) {
+                        purchaseErrorRef.current.remove();
+                    }
 
-                    const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                    const parsedReceipt =
-                        Platform.OS === 'android' ? { subscription: isSubscription, ...JSON.parse(receipt) } : receipt;
+                    purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
+                        const receipt = purchase.transactionReceipt;
+                        const product = products.find(({ productId }) => productId === purchase.productId);
+                        if (!product || !receipt) return;
 
-                    await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
-                    await finishTransaction({ purchase, isConsumable: !isSubscription });
-                });
+                        const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                        const parsedReceipt =
+                            Platform.OS === 'android'
+                                ? { subscription: isSubscription, ...JSON.parse(receipt) }
+                                : receipt;
 
-                purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
-                    console.error('purchaseErrorListener', error);
-                });
-            };
+                        await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
+                        await finishTransaction({ purchase, isConsumable: !isSubscription });
+                    });
 
-            if (Platform.OS === 'android') {
-                await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {});
+                    purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
+                        console.error('purchaseErrorListener', error);
+                    });
+                };
+
+                if (Platform.OS === 'android') {
+                    await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {});
+                }
+
+                addListeners();
+            } catch (error) {
+                console.error('initializeIAP error', error);
             }
-
-            addListeners();
         };
 
         initializeIAP();
+    }, [products, purchaseProduct]);
 
+    useEffect(() => {
         return () => {
             console.log('🧹 IAP listener 정리');
+            isInitializingRef.current = false;
 
-            purchaseUpdateRef.current?.remove?.();
-            purchaseErrorRef.current?.remove?.();
+            if (purchaseUpdateRef.current) {
+                purchaseUpdateRef.current.remove();
+                purchaseUpdateRef.current = null;
+            }
 
-            purchaseUpdateRef.current = null;
-            purchaseErrorRef.current = null;
-            hasListenerInitializedRef.current = false;
+            if (purchaseErrorRef.current) {
+                purchaseErrorRef.current.remove();
+                purchaseErrorRef.current = null;
+            }
         };
-    }, [products, purchaseProduct]);
+    }, []);
 
     return <>{children({ products, purchaseItems, subscriptionItems })}</>;
 };
