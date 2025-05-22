@@ -3,6 +3,14 @@
         "version": ">= 3.13.3"
     },
     "build": {
+        "development-simulator": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "ios": {
+                "projectRoot": "front",
+                "simulator": true
+            }
+        },
         "development": {
             "developmentClient": true,
             "distribution": "internal"
