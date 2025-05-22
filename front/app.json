@@ -71,6 +71,10 @@
         ],
         "experiments": {
             "typedRoutes": true
+        },
+        "runtimeVersion": "1.0.0",
+        "updates": {
+            "url": "https://u.expo.dev/fc30c083-8843-43b4-9abc-5754cd747988"
         }
     }
 }

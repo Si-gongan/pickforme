@@ -57,7 +57,7 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                 {isBase ? (
                     <View style={styles.ProductCardContentColumn}>
                         {/* 상품명 1행 */}
-                        <Text numberOfLines={1} style={styles.ProductCardName} accessible>
+                        <Text numberOfLines={1} style={styles.ProductCardName} ellipsizeMode="tail" accessible>
                             {data.name}
                         </Text>
 
@@ -102,11 +102,14 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                         {/* 나머지 정보 2행 */}
                         <View style={styles.ProductCardContentRow}>
                             <View style={styles.ProductCardTitleColumn}>
-                                {data.reviews !== null && data.reviews > -1 && data.ratings !== null && data.ratings > -1 && (
-                                    <Text style={styles.ProductCardReviews} accessible>
-                                        리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
-                                    </Text>
-                                )}
+                                {data.reviews !== null &&
+                                    data.reviews > -1 &&
+                                    data.ratings !== null &&
+                                    data.ratings > -1 && (
+                                        <Text style={styles.ProductCardReviews} accessible>
+                                            리뷰 {data.reviews}개 평점 {Math.floor((data.ratings / 20) * 10) / 10}점
+                                        </Text>
+                                    )}
                             </View>
                             <Text style={styles.ProductCardPrice} accessible>
                                 {getNumberComma(data.price ?? 0)}원
