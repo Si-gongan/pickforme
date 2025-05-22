@@ -3,11 +3,10 @@
  */
 import React from 'react';
 import { useRef, useEffect } from 'react';
-import { findNodeHandle, AccessibilityInfo, StyleSheet } from 'react-native';
+import { findNodeHandle, AccessibilityInfo, StyleSheet, Platform, Linking, Alert, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
-import { deepLinkToSubscriptions } from 'react-native-iap';
 
 import { isShowUnsubscribeModalAtom, settingAtom } from '@stores';
 import { View, Text, Button_old as Button } from '@components';
@@ -16,6 +15,8 @@ import { Colors } from '@constants';
 import { Props, styles } from '../Base';
 
 import type { ColorScheme } from '@hooks';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Membership
 const UnsubscribeBottomSheet: React.FC<Props> = () => {
@@ -33,16 +34,20 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
     const handleClickYes = () => {
         onClose();
     };
-    const handleClickNo = () => {
+
+    const handleClickNo = async () => {
         onClose();
         try {
-            // SKU 값과 필요한 옵션을 추가
-            deepLinkToSubscriptions({
-                sku: 'pickforme_basic', // 실제 구독 상품 SKU
-                isAmazonDevice: false // Amazon 장치가 아닌 경우 false로 설정
-            });
-        } catch (err) {
-            console.error('구독 관리 페이지로 이동하는 중 오류 발생:', err);
+            if (Platform.OS === 'android') {
+                // Android의 경우 구글 플레이 스토어로 이동
+                await Linking.openURL('https://play.google.com/store/account/subscriptions');
+            } else {
+                // iOS의 경우 앱스토어 설정으로 이동
+                await Linking.openURL('https://apps.apple.com/account/subscriptions');
+            }
+        } catch (error) {
+            console.error('구독 해지 처리 중 에러 발생:', error);
+            Alert.alert('구독 해지 처리 중 오류가 발생했습니다.');
         }
     };
 
@@ -57,10 +62,23 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
     }, [visible]);
 
     return (
-        <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
+        <BottomSheet
+            isVisible={visible}
+            onBackButtonPress={onClose}
+            onBackdropPress={onClose}
+            backdropOpacity={0.5}
+            useNativeDriver
+            hideModalContentWhileAnimating
+            deviceHeight={SCREEN_HEIGHT}
+            style={{
+                margin: 0,
+                width: SCREEN_WIDTH,
+                justifyContent: 'flex-end'
+            }}
+        >
             <View style={[styles.bottomSheet, localStyles.root]}>
                 <Text style={[styles.title, localStyles.title]} ref={headerTitleRef}>
-                    {setting.name}님 잠시만요!
+                    픽포미 멤버십 해지
                 </Text>
                 <Text style={[styles.desc, localStyles.desc]}>
                     {
@@ -73,6 +91,7 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
                             title="멤버십 유지하기"
                             onPress={handleClickYes}
                             style={[localStyles.button1]}
+                            textStyle={{ color: Colors[colorScheme].button.primary.text }}
                             size="small"
                         />
                     </View>
@@ -113,7 +132,8 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             flex: 1
         },
         button1: {
-            minHeight: 50
+            minHeight: 50,
+            backgroundColor: Colors[colorScheme].button.primary.background
         },
         button2: {
             minHeight: 50,

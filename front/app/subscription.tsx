@@ -1,76 +1,40 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Platform, Alert } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import Markdown from 'react-native-markdown-display';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Platform, ScrollView, StyleSheet } from 'react-native';
 import {
-    initConnection,
-    purchaseErrorListener,
-    purchaseUpdatedListener,
-    ProductPurchase,
-    PurchaseError,
-    flushFailedPurchasesCachedAsPendingAndroid,
-    SubscriptionPurchase,
-    requestSubscription,
-    getProducts as IAPGetProducts,
     getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
-    SubscriptionAndroid,
-    finishTransaction,
-    useIAP,
-    withIAPContext,
+    ProductPurchase,
+    PurchaseError,
     RequestSubscriptionAndroid,
-    clearProductsIOS,
-    getReceiptIOS,
-    getAvailablePurchases,
-    clearTransactionIOS
+    SubscriptionAndroid,
+    SubscriptionPurchase,
+    clearTransactionIOS,
+    finishTransaction,
+    flushFailedPurchasesCachedAsPendingAndroid,
+    initConnection,
+    purchaseErrorListener,
+    purchaseUpdatedListener,
+    requestSubscription,
+    withIAPContext
 } from 'react-native-iap';
+import Markdown from 'react-native-markdown-display';
 
-import {
-    subscriptionAtom,
-    getProductsAtom,
-    purchaseProductAtom,
-    productsAtom,
-    getSubscriptionAtom
-} from '../stores/purchase/atoms';
-import { Product, ProductType } from '../stores/purchase/types';
-import { userAtom, isShowSubscriptionModalAtom } from '@stores';
+import { BackHeader, Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
+import { isShowSubscriptionModalAtom } from '@stores';
 import useColorScheme from '../hooks/useColorScheme';
-import { Text, View, Button_old as Button, BackHeader } from '@components';
-import { initializeIAP } from '../services/IAPservice';
-import { attempt } from '../utils/axios';
+import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '../stores/purchase/atoms';
+import { Product, ProductType } from '../stores/purchase/types';
 
 // 2024
-import { GetPurchaseSubCheckAPI } from '../stores/purchase/apis';
+import { GetSubscriptionAPI } from '../stores/purchase/apis';
 
 import type { ColorScheme } from '@hooks';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
-
-const TERM = `
-- 이용방법: 픽은 ‘픽포미 추천’과 ‘픽포미 분석’에서 유료 이용권으로 사용할 수 있습니다. 이용자는 제3자에게 픽을 양도, 대여, 매매할 수 없습니다.
-- 이용기간: 픽은 결제일로부터 30일 동안 이용할 수 있습니다.
-- 자동결제: 픽포미 멤버십 구독은 매달 만료일에 다음달 이용료가 자동으로 결제됩니다. 구글 플레이 또는 앱스토어에 등록된 계정으로 요금이 부과됩니다.
-- 멤버십 해지: 픽포미 멤버십은 언제든지 스토어 구독 정보에서 해지 가능합니다. 해지 시 사용 중인 픽은 만료 시까지 이용 가능하며, 다음달 구독부터 결제 및 사용이 자동 해지됩니다.
-`;
-
-const checkSubscriptionStatus = async () => {
-    try {
-        const purchaseHistory = await getAvailablePurchases();
-        purchaseHistory.forEach(purchase => {
-            if (purchase.productId === 'pickforme_basic') {
-                // 구독이 유효한지 확인 후 처리
-                console.log('구독 활성화 상태');
-            }
-        });
-    } catch (error) {
-        console.warn(error);
-    }
-};
 
 const PurchaseWrapper = () => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
@@ -79,6 +43,10 @@ const PurchaseWrapper = () => {
     const getProducts = useSetAtom(getProductsAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const products = useAtomValue(productsAtom);
+
+    const purchaseUpdateRef = useRef<any>(null);
+    const purchaseErrorRef = useRef<any>(null);
+    const hasListenerInitializedRef = useRef(false);
 
     useEffect(() => {
         getProducts({ platform: Platform.OS });
@@ -89,85 +57,59 @@ const PurchaseWrapper = () => {
     }, [getSubscription]);
 
     useEffect(() => {
-        console.log('products', products);
-        if (products.length) {
-            let purchaseUpdateSubscription: any = null;
-            let purchaseErrorSubscription: any = null;
+        const initializeIAP = async () => {
+            if (!products.length || hasListenerInitializedRef.current) return;
+            hasListenerInitializedRef.current = true;
 
-            const initializeIAP = async () => {
-                await initConnection();
+            await initConnection();
 
-                // initConnection().then(async () => {
-                // const storeItems = await IAPGetProducts({ skus: products.filter(p => p.type === ProductType.PURCHASE).map((p) => p.productId) }); // 단건
+            const subscriptionItemLists = products
+                .filter(p => p.type === ProductType.SUBSCRIPTION)
+                .map(p => p.productId);
 
-                const subscriptionItemLists = products
-                    .filter(p => p.type === ProductType.SUBSCRIPTION)
-                    .map(p => p.productId);
-                // const subscriptionItemLists = ['pickforme__plus'];
-                console.log('subscriptionItemLists', subscriptionItemLists);
+            const storeSItems = await IAPGetSubscriptions({ skus: subscriptionItemLists });
+            setSubscriptionItems(storeSItems);
 
-                const storeSItems = await IAPGetSubscriptions({
-                    skus: subscriptionItemLists
+            const addListeners = () => {
+                console.log('✅ listener 등록됨');
+
+                purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
+                    const receipt = purchase.transactionReceipt;
+                    const product = products.find(({ productId }) => productId === purchase.productId);
+                    if (!product || !receipt) return;
+
+                    const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                    const parsedReceipt =
+                        Platform.OS === 'android' ? { subscription: isSubscription, ...JSON.parse(receipt) } : receipt;
+
+                    await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
+                    await finishTransaction({ purchase, isConsumable: !isSubscription });
                 });
 
-                console.log('storeSItems', storeSItems);
-
-                // setPurchaseItems(storeItems)
-                setSubscriptionItems(storeSItems);
-
-                const addListeners = () => {
-                    purchaseUpdateSubscription = purchaseUpdatedListener(
-                        async (purchase: SubscriptionPurchase | ProductPurchase) => {
-                            const receipt = purchase.transactionReceipt;
-
-                            const product = products.find(({ productId }) => productId === purchase.productId);
-                            if (!product) {
-                                return;
-                            }
-                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                            if (!receipt) {
-                                return;
-                            }
-                            if (Platform.OS === 'android') {
-                                await purchaseProduct({
-                                    _id: product._id,
-                                    receipt: { subscription: isSubscription, ...JSON.parse(receipt) }
-                                });
-                            } else {
-                                await purchaseProduct({ _id: product._id, receipt });
-                            }
-                            await finishTransaction({ purchase, isConsumable: !isSubscription });
-                        }
-                    );
-
-                    purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
-                        console.error('purchaseErrorListener', error);
-                    });
-                };
-                // we make sure that "ghost" pending payment are removed
-                // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
-                if (Platform.OS === 'android') {
-                    flushFailedPurchasesCachedAsPendingAndroid()
-                        .then(addListeners)
-                        .catch(() => {});
-                } else {
-                    addListeners();
-                }
+                purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
+                    console.error('purchaseErrorListener', error);
+                });
             };
 
-            initializeIAP();
-            return () => {
-                if (purchaseUpdateSubscription) {
-                    purchaseUpdateSubscription.remove();
-                    purchaseUpdateSubscription = null;
-                }
+            if (Platform.OS === 'android') {
+                await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {});
+            }
 
-                if (purchaseErrorSubscription) {
-                    purchaseErrorSubscription.remove();
-                    purchaseErrorSubscription = null;
-                }
-            };
-        }
+            addListeners();
+        };
+
+        initializeIAP();
+
+        return () => {
+            console.log('🧹 IAP listener 정리');
+
+            purchaseUpdateRef.current?.remove?.();
+            purchaseErrorRef.current?.remove?.();
+
+            purchaseUpdateRef.current = null;
+            purchaseErrorRef.current = null;
+            hasListenerInitializedRef.current = false;
+        };
     }, [products]);
 
     return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
@@ -179,12 +121,9 @@ interface Props {
     subscriptionItems: IAPSubscription[];
 }
 export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
-    const router = useRouter();
-    const currentSubscription = useAtomValue(subscriptionAtom);
-    const userData = useAtomValue(userAtom);
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
-    const { connected, currentPurchase, currentPurchaseError } = useIAP();
+    const [subscriptionLoading, setSubscriptionLoading] = useState<boolean>(false);
     const markdownStyles = StyleSheet.create({
         text: {
             fontSize: 14,
@@ -210,55 +149,67 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     }, [isSubscription]);
 
     const handleClickSub = async (sku: string, offerToken?: string | null) => {
-        const subCheck = await attempt(() => GetPurchaseSubCheckAPI());
+        try {
+            if (subscriptionLoading) {
+                return;
+            }
 
-        if (!subCheck.ok) {
-            Alert.alert('구독 체크 실패', '구독 체크에 실패하였습니다.');
-            return;
-        }
+            setSubscriptionLoading(true);
 
-        if (subCheck.value?.data.activate) {
-            Alert.alert('이미 구독중입니다.');
-            return;
-        }
-        if (offerToken) {
-            const subscriptionRequest: RequestSubscriptionAndroid = {
-                subscriptionOffers: [
-                    {
-                        sku,
-                        offerToken
-                    }
-                ]
-            };
-            await requestSubscription(subscriptionRequest);
-            setIsSubscription(true); // 구독 완료 바텀시트
-        } else {
-            // ios
-            await clearTransactionIOS();
-            await requestSubscription({
-                sku,
-                andDangerouslyFinishTransactionAutomaticallyIOS: false
-            });
-            setIsSubscription(true); // 구독 완료 바텀시트
+            const subCheck = await GetSubscriptionAPI();
+            const { activate } = subCheck.data;
+
+            if (activate) {
+                Alert.alert('이미 픽포미 플러스를 구독중이에요!');
+                return;
+            }
+
+            if (offerToken) {
+                const subscriptionRequest: RequestSubscriptionAndroid = {
+                    subscriptionOffers: [
+                        {
+                            sku,
+                            offerToken
+                        }
+                    ]
+                };
+                await requestSubscription(subscriptionRequest);
+                setIsSubscription(true);
+            } else {
+                // ios
+                await clearTransactionIOS();
+                await requestSubscription({
+                    sku,
+                    andDangerouslyFinishTransactionAutomaticallyIOS: false
+                });
+                setIsSubscription(true);
+            }
+        } catch (error) {
+            console.error('구독 처리 중 에러 발생:', error);
+            Alert.alert('구독 처리 중 오류가 발생했습니다.');
+            // 필요한 경우 에러 상태 처리
+            setIsSubscription(false);
+        } finally {
+            setSubscriptionLoading(false);
         }
     };
 
     const getFilteredProducts = () => {
         let filteredTmp = products.reduce(
             (obj, product) => {
-                console.log('filteredProducts product : ', product);
+                // console.log('filteredProducts product : ', product);
                 if (product.type === ProductType.PURCHASE) {
                     // 단건 로직
                     const item = purchaseItems.find(({ productId }) => {
-                        console.log('productId in purchaseItems', productId, product.productId);
+                        // console.log('productId in purchaseItems', productId, product.productId);
                         return product.productId === productId;
                     });
                     if (item) {
-                        console.log('purchaseItems item found:', item);
+                        // console.log('purchaseItems item found:', item);
                         obj.purchasableProducts.push({ ...item, ...product });
                     }
                 } else {
-                    console.log('subscriptionItems type:', typeof subscriptionItems[0], subscriptionItems);
+                    // console.log('subscriptionItems type:', typeof subscriptionItems[0], subscriptionItems);
 
                     // subscriptionItems가 문자열 배열인 경우
                     if (
@@ -268,7 +219,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     ) {
                         const stringItems = subscriptionItems as unknown as string[];
                         if (stringItems.includes(product.productId)) {
-                            console.log('String array match found for:', product.productId);
+                            // console.log('String array match found for:', product.productId);
                             // 문자열 배열에서 일치하는 항목 찾음
                             const dummyItem = {
                                 productId: product.productId,
@@ -280,11 +231,11 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     } else {
                         // 객체 배열인 경우 (원래 코드)
                         const item = subscriptionItems.find(({ productId }) => {
-                            console.log('productId in subscriptionItems', productId, product.productId);
+                            // console.log('productId in subscriptionItems', productId, product.productId);
                             return product.productId === productId;
                         });
                         if (item) {
-                            console.log('subscriptionItems item found:', item);
+                            // console.log('subscriptionItems item found:', item);
                             obj.subscriptionProducts.push({ ...item, ...product });
                         }
                     }
@@ -296,11 +247,13 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                 purchasableProducts: [] as (IAPProduct & Product)[]
             }
         );
-        console.log('filteredTmp : ', filteredTmp);
+        // console.log('filteredTmp : ', filteredTmp);
         setFilteredProducts(filteredTmp);
     };
 
     useEffect(() => {
+        // console.log('products가 들어왔음', products);
+
         getFilteredProducts();
     }, [products, purchaseItems, subscriptionItems]);
 
@@ -321,7 +274,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     </View>
 
                     {filteredProducts.subscriptionProducts.map(product => {
-                        console.log('product : ', product);
+                        // console.log('product : ', product);
                         if (product.platform === 'android') {
                             const subscriptionOffer = (product as unknown as SubscriptionAndroid)
                                 .subscriptionOfferDetails[0];
@@ -346,8 +299,8 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                             );
                         }
 
-                        console.log('멤버십 product : ', product);
-                        console.log('product.platform:', product?.platform);
+                        // console.log('멤버십 product : ', product);
+                        // console.log('product.platform:', product?.platform);
 
                         return (
                             <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
