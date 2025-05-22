@@ -173,7 +173,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const DetailWebView = useWebViewDetail({
         productUrl,
-        onMessage: data => setProduct(data)
+        onMessage: data => {
+            console.log(
+                'DetailWebView에서 받은 상품 정보:',
+                JSON.stringify({
+                    name: data.name,
+                    reviews: data.reviews,
+                    ratings: data.ratings
+                })
+            );
+            setProduct(data);
+        }
     });
 
     const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
@@ -194,9 +204,25 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     useEffect(() => {
         if (product) {
             sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
+            console.log('getProductDetail 호출 전 product 정보:', {
+                name: product.name,
+                reviews: product.reviews,
+                ratings: product.ratings
+            });
             getProductDetail(product);
         }
     }, [productUrl]);
+
+    // 3. productDetailAtom 값이 변경될 때 로그 추가
+    useEffect(() => {
+        if (productDetail?.product) {
+            console.log('productDetail 업데이트됨. 리뷰 정보:', {
+                reviews: productDetail.product.reviews,
+                ratings: productDetail.product.ratings,
+                출처: '서버 API 또는 WebView에서 수신'
+            });
+        }
+    }, [productDetail?.product]);
 
     const handleClickBuy = async () => {
         sendLog({ product: { url: productUrl }, action: 'link', metaData: {} });
