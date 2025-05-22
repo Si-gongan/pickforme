@@ -52,8 +52,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
 
     const filteredProducts = products.reduce(
         (obj, product) => {
-            console.log('Product:', product);
-            console.log('SubscriptionItems:', subscriptionItems);
+            // console.log('Product:', product);
+            // console.log('SubscriptionItems:', subscriptionItems);
             if (product.type === ProductType.PURCHASE) {
                 // 단건 로직
                 const item = purchaseItems.find(({ productId }) => product.productId === productId);
@@ -62,7 +62,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                 }
             } else {
                 const item = subscriptionItems.find(({ productId }) => product.productId === productId);
-                console.log('Found subscription item:', item);
+                // console.log('Found subscription item:', item);
                 if (item) {
                     obj.subscriptionProducts.push({ ...item, ...product });
                 }
