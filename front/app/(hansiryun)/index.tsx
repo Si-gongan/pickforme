@@ -33,26 +33,6 @@ export default function InterviewScreen() {
     // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
 
-    useEffect(() => {
-        if (!user.token) {
-            router.replace('/(onboarding)');
-        }
-
-        setClientToken(user.token);
-
-        if (user?._id) {
-            attempt(() => GetPopupAPI()).then(res => {
-                if (!res.ok) {
-                    console.error('팝업 설정 실패 in hansiryun:', res.error);
-                    return;
-                }
-
-                const isHansiryunPopup = res?.value?.data?.find(p => p.popup_id === 'event_hansiryun');
-                if (!isHansiryunPopup) router.replace('/(tabs)');
-            });
-        }
-    }, [user]);
-
     // 신청하기 버튼 처리
     const handleSubmit = async () => {
         // fot test
