@@ -6,6 +6,7 @@ import { useAtomValue } from 'jotai';
 import { userAtom, settingAtom } from '@stores';
 import { setClientToken } from '../utils/axios';
 import { GetPopupAPI } from '../stores/auth';
+import { PopupService } from '@/services/popup';
 
 export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const user = useAtomValue(userAtom);
@@ -52,13 +53,9 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
         // 토큰 설정
         setClientToken(user.token);
 
-        GetPopupAPI()
-            .then(res => {
-                const flag = res.data?.find(p => p.popup_id === 'event_hansiryun');
-                if (flag) setIsHansiryunPopup(true);
-            })
-            .catch(error => {
-                console.error('팝업 데이터 로딩 실패:', error);
+        PopupService.checkHansiryunPopup()
+            .then(hasPopup => {
+                setIsHansiryunPopup(hasPopup);
             })
             .finally(() => {
                 setIsPopupLoading(false);
