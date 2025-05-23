@@ -1,0 +1,96 @@
+import { useState, useEffect, useRef } from 'react';
+import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SplashScreen from 'expo-splash-screen';
+import { useAtomValue } from 'jotai';
+import { userAtom, settingAtom } from '@stores';
+import { setClientToken } from '../utils/axios';
+import { GetPopupAPI } from '../stores/auth';
+
+export const useInitializationAndRouting = (fontLoaded: boolean) => {
+    const user = useAtomValue(userAtom);
+    const setting = useAtomValue(settingAtom);
+    const [isUserLoading, setIsUserLoading] = useState(true);
+    const [isPopupLoading, setIsPopupLoading] = useState(true);
+    const [isSettingLoading, setIsSettingLoading] = useState(true);
+    const [isHansiryunPopup, setIsHansiryunPopup] = useState(false);
+    const isInitialized = useRef(false);
+
+    // 유저 데이터 로딩
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                await AsyncStorage.getItem('user');
+            } finally {
+                setIsUserLoading(false);
+            }
+        };
+        checkUser();
+    }, []);
+
+    // 설정 데이터 로딩
+    useEffect(() => {
+        const checkSetting = async () => {
+            try {
+                await AsyncStorage.getItem('setting');
+            } finally {
+                setIsSettingLoading(false);
+            }
+        };
+        checkSetting();
+    }, []);
+
+    // 팝업 데이터 로딩
+    useEffect(() => {
+        if (isUserLoading) return;
+
+        if (!user?.token || !user?._id) {
+            setIsPopupLoading(false);
+            return;
+        }
+
+        // 토큰 설정
+        setClientToken(user.token);
+
+        GetPopupAPI()
+            .then(res => {
+                const flag = res.data?.find(p => p.popup_id === 'event_hansiryun');
+                if (flag) setIsHansiryunPopup(true);
+            })
+            .catch(error => {
+                console.error('팝업 데이터 로딩 실패:', error);
+            })
+            .finally(() => {
+                setIsPopupLoading(false);
+            });
+    }, [user, isUserLoading]);
+
+    // 초기화 및 라우팅 처리
+    useEffect(() => {
+        if (fontLoaded && !isUserLoading && !isPopupLoading && !isSettingLoading && !isInitialized.current) {
+            isInitialized.current = true;
+
+            // 스플래시 스크린 숨기기
+            SplashScreen.hideAsync();
+
+            // 라우팅 처리
+            if (!user?.token) {
+                router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
+            } else if (isHansiryunPopup) {
+                router.push('/(hansiryun)');
+            } else {
+                router.push('/(tabs)');
+            }
+        }
+    }, [fontLoaded, isUserLoading, isPopupLoading, isSettingLoading, user, setting, isHansiryunPopup]);
+
+    const isTotalLoading = isUserLoading || isPopupLoading || isSettingLoading || !fontLoaded;
+
+    return {
+        isUserLoading,
+        isPopupLoading,
+        isSettingLoading,
+        isHansiryunPopup,
+        isTotalLoading
+    };
+};
