@@ -14,14 +14,19 @@ import { useServiceLogin } from '@services';
 import useColorScheme from '../../hooks/useColorScheme';
 import { KakaoImage, GoogleImage } from '@assets';
 import useStyle from './style';
+import { GetPopupAPI } from '@/stores';
+import { PopupService } from '@/services/popup';
 
 export default function LoginForm() {
     const style = useStyle();
     const colorScheme = useColorScheme();
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
-        onSuccess: () => {
-            router.replace('/(tabs)');
+        onSuccess: async () => {
+            PopupService.checkHansiryunPopup().then(hasPopup => {
+                if (hasPopup) router.replace('/(hansiryun)');
+                else router.replace('/(tabs)');
+            });
         }
     });
 

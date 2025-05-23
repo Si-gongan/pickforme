@@ -1,3 +1,3 @@
 export interface IServiceProps {
-  onSuccess?(data: unknown): void;
+    onSuccess?(): void;
 }
