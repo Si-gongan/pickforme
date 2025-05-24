@@ -3,5 +3,4 @@ dump-*/
 todo.md
 node_modules
 package-lock.json
-package.json
 .DS_Store

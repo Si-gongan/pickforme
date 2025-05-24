@@ -24,16 +24,6 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
 
-    const currentUrlInjectionCode = `(function() {
-        try {
-          const currentUrl = window.location.href;
-          const payload = JSON.stringify({ url: currentUrl });
-            window.ReactNativeWebView.postMessage(payload);
-        } catch (e) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-        }
-      })();`;
-
     const convertUrl = (url: string) => {
         console.log('convertUrl url:', url);
 
@@ -197,31 +187,28 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
         }
     };
 
+    const handleRetry = () => {
+        if (retryCount < maxRetries) {
+            setRetryCount(retryCount + 1);
+            setTimeout(() => runJavaScript(getProductDetailInjectionCode()), 1000);
+        } else {
+            onError?.();
+        }
+    };
+
     const handleMessage = (event: WebViewMessageEvent) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
-            // console.log('WebView message in webview-detail:', data);
 
             if (data.error) {
-                // console.error('WebView error:', data.error);
-                if (retryCount < maxRetries) {
-                    setRetryCount(retryCount + 1);
-                    setTimeout(
-                        () => runJavaScript(url ? getProductDetailInjectionCode() : currentUrlInjectionCode),
-                        1000
-                    );
-                }
+                handleRetry();
                 return;
             }
 
-            if (data.url && !url) {
-                convertUrl(data.url);
-                setTimeout(() => runJavaScript(getProductDetailInjectionCode()), 500);
-            } else if (data.content && data.content.name && data.content.detail_images.length > 0) {
+            if (data.content?.name && data.content?.detail_images?.length > 0) {
                 onMessage({ ...data.content, url: productUrl });
-            } else if (retryCount < maxRetries) {
-                setRetryCount(retryCount + 1);
-                setTimeout(() => runJavaScript(getProductDetailInjectionCode()), 1000);
+            } else {
+                handleRetry();
             }
         } catch (error) {
             console.error('Failed to parse WebView message:', error);
@@ -230,7 +217,17 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
 
     const handleError = (event: any) => {
         console.warn('WebView error:', event.nativeEvent);
-        onError?.();
+
+        if (retryCount < maxRetries) {
+            setRetryCount(prev => prev + 1);
+            setTimeout(() => {
+                if (webViewRef.current) {
+                    webViewRef.current.reload();
+                }
+            }, 1000 * retryCount); // 점진적으로 대기 시간 증가
+        } else {
+            onError?.();
+        }
     };
 
     useEffect(() => {
@@ -244,7 +241,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             ref={webViewRef}
             source={{ uri: url }}
             onMessage={handleMessage}
-            onLoadEnd={() => runJavaScript(currentUrlInjectionCode)}
+            onLoadEnd={() => runJavaScript(getProductDetailInjectionCode())}
             onError={handleError}
             style={{ opacity: 0, height: 0 }}
             cacheEnabled={false}

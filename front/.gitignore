@@ -48,4 +48,3 @@ prebuild
 
 .windsurfrules
 log
-!package.json

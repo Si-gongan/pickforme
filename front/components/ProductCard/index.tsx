@@ -57,7 +57,13 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                 {isBase ? (
                     <View style={styles.ProductCardContentColumn}>
                         {/* 상품명 1행 */}
-                        <Text numberOfLines={1} style={styles.ProductCardName} ellipsizeMode="tail" accessible>
+                        <Text
+                            numberOfLines={1}
+                            style={styles.ProductCardName}
+                            ellipsizeMode="tail"
+                            accessible
+                            accessibilityLabel={`상품: ${data.name}, 가격: ${getNumberComma(data.price ?? 0)}원`}
+                        >
                             {data.name}
                         </Text>
 
@@ -95,7 +101,13 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                 ) : (
                     <View style={styles.ProductCardContentColumn}>
                         {/* 상품명 1행 */}
-                        <Text numberOfLines={1} style={styles.ProductCardName} accessible>
+                        <Text
+                            numberOfLines={1}
+                            style={styles.ProductCardName}
+                            ellipsizeMode="tail"
+                            accessible
+                            accessibilityLabel={`상품: ${data.name}, 가격: ${getNumberComma(data.price ?? 0)}원`}
+                        >
                             {data.name}
                         </Text>
 
