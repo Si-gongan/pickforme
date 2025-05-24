@@ -23,10 +23,14 @@ export default function LoginForm() {
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
         onSuccess: async () => {
-            PopupService.checkHansiryunPopup().then(hasPopup => {
-                if (hasPopup) router.replace('/(hansiryun)');
-                else router.replace('/(tabs)');
-            });
+            PopupService.checkHansiryunPopup()
+                .then(hasPopup => {
+                    if (hasPopup) router.replace('/(hansiryun)');
+                    else router.replace('/(tabs)');
+                })
+                .catch(error => {
+                    router.replace('/(tabs)');
+                });
         }
     });
 

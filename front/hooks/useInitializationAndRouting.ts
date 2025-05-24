@@ -57,6 +57,9 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
             .then(hasPopup => {
                 setIsHansiryunPopup(hasPopup);
             })
+            .catch(error => {
+                console.error('팝업 체크 에러:', error);
+            })
             .finally(() => {
                 setIsPopupLoading(false);
             });
