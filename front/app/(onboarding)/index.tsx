@@ -16,12 +16,6 @@ export default function OnBoardingInfoScreen() {
     const router = useRouter();
     const user = useAtomValue(userAtom);
 
-    useEffect(() => {
-        if (user && user.token && user.token.length > 0) {
-            router.replace('/(hansiryun)');
-        }
-    }, [user]);
-
     const handleStart = () => {
         router.push('/login');
     };

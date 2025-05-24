@@ -37,11 +37,11 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
             console.log('서버 API 호출 시작:', payload);
             return client.post<ILogin>('/auth/kakao', payload);
         },
-        onSuccess: function (response) {
+        onSuccess: async function (response) {
             console.log('서버 응답 성공:', response);
             if (response.status === 200) {
                 console.log('로그인 데이터:', response.data);
-                onLogin(response.data);
+                await onLogin(response.data);
                 onSuccess?.();
             }
         },
@@ -55,9 +55,9 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         mutationFn: function (payload: IAppleAuthPayload) {
             return client.post<ILogin>('/auth/apple', payload);
         },
-        onSuccess: function (response) {
+        onSuccess: async function (response) {
             if (response.status === 200) {
-                onLogin(response.data);
+                await onLogin(response.data);
                 onSuccess?.();
             }
         },
@@ -71,9 +71,9 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         mutationFn: function (payload: IBaseAuthPayload) {
             return client.post<ILogin>('/auth/google', payload);
         },
-        onSuccess: function (response) {
+        onSuccess: async function (response) {
             if (response.status === 200) {
-                onLogin(response.data);
+                await onLogin(response.data);
                 onSuccess?.();
             }
         },
