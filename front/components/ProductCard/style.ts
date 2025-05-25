@@ -25,7 +25,8 @@ export default function useStyle() {
             flexDirection: 'column',
             alignItems: 'flex-start',
             gap: 0,
-            width: '100%'
+            width: '100%',
+            maxWidth: '100%'
         },
         ProductCardContentRow: {
             flexDirection: 'row',
