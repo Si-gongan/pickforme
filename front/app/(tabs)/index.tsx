@@ -104,6 +104,10 @@ export default function HomeScreen() {
 
     // 검색 핸들러
     const handleClickSend = (sort: string) => {
+        if (text === '' || text === query) {
+            return;
+        }
+
         searchProducts({
             query: text,
             page: 1,
