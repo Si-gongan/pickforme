@@ -35,6 +35,13 @@ export const formatTime = (date: string | Date) => {
     return (today.getHours() % 12) + '시 ' + today.getMinutes() + '분';
 };
 
+export const checkIsExpired = (date: string | null) => {
+    if (!date) return false;
+    const today = new Date();
+    const targetDate = new Date(date);
+    return targetDate.getTime() < today.getTime();
+};
+
 // 2024
 export enum TABS {
     CAPTION = 'caption',

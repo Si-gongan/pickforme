@@ -49,7 +49,7 @@ import { useWebViewDetail } from '../components/webview-detail';
 
 import TabContent from '../components/ProductDetailTabContent';
 
-import { TABS, loadingMessages, tabName, numComma } from '../utils/common';
+import { TABS, loadingMessages, tabName, numComma, checkIsExpired } from '../utils/common';
 import { subscriptionAtom, getSubscriptionAtom } from '../stores/purchase/atoms';
 
 import type { ColorScheme } from '@hooks';
@@ -252,7 +252,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         await getSubscription();
         if (
             !subscription ||
-            subscription.isExpired ||
+            checkIsExpired(subscription.expiresAt) ||
             (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
         ) {
             console.log('AI 질문 - 멤버십 필요');
@@ -319,7 +319,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         await getSubscription();
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
-        if (!subscription || subscription.isExpired) {
+        if (!subscription || checkIsExpired(subscription.expiresAt)) {
             // 모달 표시
             setIsShowNonSubscriberManageModal(true);
         } else {
@@ -335,7 +335,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         setMembershipModalType('MANAGER');
         if (
             !subscription ||
-            subscription.isExpired ||
+            checkIsExpired(subscription.expiresAt) ||
             (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
         ) {
             setIsShowNonSubscriberManageModal(true);
