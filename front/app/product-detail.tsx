@@ -182,7 +182,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 JSON.stringify({
                     name: data.name,
                     reviews: data.reviews,
-                    ratings: data.ratings
+                    ratings: data.ratings,
+                    price: data.price
                 })
             );
             setProduct(data);

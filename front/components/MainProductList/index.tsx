@@ -47,18 +47,19 @@ export default function MainProductList({ data, category }: MainProductListProps
                 products.map(item => {
                     if (item.url === updatedProduct.url) {
                         // 기존 이름 깊은 복사로 보존
-                        const originalName = JSON.parse(JSON.stringify(item.name));
+                        // const originalName = JSON.parse(JSON.stringify(item.name));
 
                         // 업데이트된 아이템 생성
                         const updatedItem = {
                             ...item,
                             reviews: updatedProduct.reviews || item.reviews || null,
                             ratings: updatedProduct.ratings || item.ratings || null,
-                            discount_rate: updatedProduct.discount_rate || item.discount_rate || null
+                            discount_rate: updatedProduct.discount_rate || item.discount_rate || null,
+                            price: updatedProduct.price || item.price || 0 // null 대신 0으로 기본값 설정
                         };
 
                         // 이름 다시 설정ㄱ
-                        updatedItem.name = originalName;
+                        // updatedItem.name = originalName;
 
                         return updatedItem;
                     }
