@@ -17,9 +17,9 @@ interface WebViewProps {
 
 export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     const webViewRef = useRef<WebView>(null);
-    const [url, setUrl] = useState<string>(`https://m.coupang.com/nm/search?q=${keyword}&page=1`);
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
+    const url = `https://m.coupang.com/nm/search?q=${keyword}&page=1`;
 
     const searchProductInjectionCode = `(function() {
     try {
@@ -27,7 +27,6 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
       // throw new Error(productElements.length);
 
       if (productElements.length === 0) {
-        throw new Error(window.location.href);
         throw new Error('Failed to find products');
       }
       
@@ -70,6 +69,7 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     } catch (e) {
       window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
     }
+    return true;
   })();`;
 
     const runJavaScript = (code: string) => {
@@ -106,30 +106,47 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     };
 
     const handleError = (event: any) => {
-        // console.warn('WebView error:', event.nativeEvent);
+        console.error('WebView error:', event.nativeEvent);
+
+        if (event.nativeEvent.code === -1005 && retryCount < maxRetries) {
+            console.log('network error occurred. reloading...', retryCount);
+
+            setRetryCount(retryCount + 1);
+            setTimeout(() => {
+                if (webViewRef.current) {
+                    webViewRef.current.reload();
+                    setTimeout(() => {
+                        runJavaScript(searchProductInjectionCode);
+                    }, 1000);
+                }
+            }, 1000);
+        }
     };
 
     useEffect(() => {
         setRetryCount(0);
-        setUrl(`https://m.coupang.com/nm/search?q=${keyword}&page=1`);
-        setTimeout(() => {
-            runJavaScript(searchProductInjectionCode);
-        }, 500);
+        if (keyword)
+            setTimeout(() => {
+                console.log('injecting javascript to url', url);
+                runJavaScript(searchProductInjectionCode);
+            }, 500);
     }, [keyword]);
 
     return (
-        <View style={{ width: '100%', height: 1 }}>
-            <WebView
-                ref={webViewRef}
-                source={{ uri: url }}
-                onMessage={handleMessage}
-                onLoadEnd={() => runJavaScript(searchProductInjectionCode)}
-                onError={handleError}
-                style={{ opacity: 0, height: 0 }}
-                cacheEnabled={false}
-                cacheMode="LOAD_NO_CACHE"
-                renderToHardwareTextureAndroid={true}
-            />
-        </View>
+        keyword && (
+            <View style={{ width: '100%', height: 1 }}>
+                <WebView
+                    ref={webViewRef}
+                    source={{ uri: url }}
+                    onMessage={handleMessage}
+                    onLoadEnd={() => runJavaScript(searchProductInjectionCode)}
+                    onError={handleError}
+                    style={{ opacity: 0, height: 0 }}
+                    cacheEnabled={false}
+                    cacheMode="LOAD_NO_CACHE"
+                    renderToHardwareTextureAndroid={true}
+                />
+            </View>
+        )
     );
 };

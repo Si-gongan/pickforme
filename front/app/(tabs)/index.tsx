@@ -50,6 +50,7 @@ export default function HomeScreen() {
 
     // Jotai atoms
     const getMainProducts = useSetAtom(getMainProductsAtom);
+
     const setScrapedProducts = useSetAtom(setScrapedProductsAtom);
     const searchProducts = useSetAtom(searchProductsAtom);
     const searchResult = useAtomValue(searchResultAtom);
@@ -59,11 +60,6 @@ export default function HomeScreen() {
     // 검색 관련 레퍼런스
     const searchLoadingRef = useRef(null);
     const searchResultRef = useRef(null);
-
-    useEffect(() => {
-        console.log('searchResult', searchResult);
-        console.log('searchSorter', searchSorter);
-    }, [searchResult, searchSorter]);
 
     useFocusEffect(
         useCallback(() => {
@@ -108,6 +104,10 @@ export default function HomeScreen() {
 
     // 검색 핸들러
     const handleClickSend = (sort: string) => {
+        if (text === '' || text === query) {
+            return;
+        }
+
         searchProducts({
             query: text,
             page: 1,
@@ -117,8 +117,14 @@ export default function HomeScreen() {
         });
     };
 
+    const handleChangeText = (text: string) => {
+        console.log('handleChangeText', text);
+        setScrapedProducts([], '');
+        setText(text);
+    };
+
     const handleClickReset = () => {
-        setText('');
+        handleChangeText('');
     };
 
     return (
@@ -149,7 +155,7 @@ export default function HomeScreen() {
                             onSubmitEditing={() => handleClickSend(searchSorter)}
                             accessible
                             accessibilityLabel="검색어 입력창"
-                            onChangeText={text => setText(text)}
+                            onChangeText={handleChangeText}
                             placeholder="찾고 싶은 상품 키워드 또는 링크를 입력해 보세요"
                             placeholderTextColor={Colors[colorScheme].text.placeholder}
                         />
@@ -235,7 +241,7 @@ export default function HomeScreen() {
                                 scrollEnabled={false}
                                 contentContainerStyle={style.searchList}
                                 data={searchResult.products}
-                                keyExtractor={product => `search-${product.url}`}
+                                keyExtractor={(product, index) => `search-${product.url}-${index}`}
                                 renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
                                 ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
                             />
