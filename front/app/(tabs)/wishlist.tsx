@@ -256,7 +256,8 @@ export default function WishListScreen() {
                         reviews: updatedProduct.reviews || currentWishProducts[productIndex].reviews || null,
                         ratings: updatedProduct.ratings || currentWishProducts[productIndex].ratings || null,
                         discount_rate:
-                            updatedProduct.discount_rate || currentWishProducts[productIndex].discount_rate || null
+                            updatedProduct.discount_rate || currentWishProducts[productIndex].discount_rate || null,
+                        price: updatedProduct.price || currentWishProducts[productIndex].price || 0
                     };
 
                     updatedItem.name = originalName;
@@ -296,7 +297,8 @@ export default function WishListScreen() {
                         // 새로 업데이트된 정보 반영
                         reviews: updatedProduct.reviews || request.product!.reviews || null,
                         ratings: updatedProduct.ratings || request.product!.ratings || null,
-                        discount_rate: updatedProduct.discount_rate || request.product!.discount_rate || null
+                        discount_rate: updatedProduct.discount_rate || request.product!.discount_rate || null,
+                        price: updatedProduct.price || request.product!.price || 0
                     };
 
                     // 새 요청 객체 생성
