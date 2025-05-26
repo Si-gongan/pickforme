@@ -17,9 +17,9 @@ interface WebViewProps {
 
 export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     const webViewRef = useRef<WebView>(null);
-    const [url, setUrl] = useState<string>(`https://m.coupang.com/nm/search?q=${keyword}&page=1`);
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
+    const url = `https://m.coupang.com/nm/search?q=${keyword}&page=1`;
 
     const searchProductInjectionCode = `(function() {
     try {
@@ -106,30 +106,33 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     };
 
     const handleError = (event: any) => {
-        // console.warn('WebView error:', event.nativeEvent);
+        console.error('WebView error:', event.nativeEvent);
     };
 
     useEffect(() => {
         setRetryCount(0);
-        setUrl(`https://m.coupang.com/nm/search?q=${keyword}&page=1`);
-        setTimeout(() => {
-            runJavaScript(searchProductInjectionCode);
-        }, 500);
+        if (keyword)
+            setTimeout(() => {
+                console.log('injecting javascript to url', url);
+                runJavaScript(searchProductInjectionCode);
+            }, 500);
     }, [keyword]);
 
     return (
-        <View style={{ width: '100%', height: 1 }}>
-            <WebView
-                ref={webViewRef}
-                source={{ uri: url }}
-                onMessage={handleMessage}
-                onLoadEnd={() => runJavaScript(searchProductInjectionCode)}
-                onError={handleError}
-                style={{ opacity: 0, height: 0 }}
-                cacheEnabled={false}
-                cacheMode="LOAD_NO_CACHE"
-                renderToHardwareTextureAndroid={true}
-            />
-        </View>
+        keyword && (
+            <View style={{ width: '100%', height: 1 }}>
+                <WebView
+                    ref={webViewRef}
+                    source={{ uri: url }}
+                    onMessage={handleMessage}
+                    onLoadEnd={() => runJavaScript(searchProductInjectionCode)}
+                    onError={handleError}
+                    style={{ opacity: 0, height: 0 }}
+                    cacheEnabled={false}
+                    cacheMode="LOAD_NO_CACHE"
+                    renderToHardwareTextureAndroid={true}
+                />
+            </View>
+        )
     );
 };
