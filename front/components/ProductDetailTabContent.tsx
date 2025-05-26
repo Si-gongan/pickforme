@@ -340,14 +340,14 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                     ))}
                 </View>
             )}
-            <TouchableOpacity
+            {/* <TouchableOpacity
                 onPress={handleLoadMore}
                 style={styles.loadMoreButton}
                 accessible
                 accessibilityLabel="더 많은 리뷰 불러오기"
             >
                 <Text style={styles.loadMoreText}>더 많은 리뷰 불러오기</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </>
     );
 };
