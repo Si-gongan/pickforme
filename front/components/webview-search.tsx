@@ -27,7 +27,6 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
       // throw new Error(productElements.length);
 
       if (productElements.length === 0) {
-        throw new Error(window.location.href);
         throw new Error('Failed to find products');
       }
       
@@ -70,6 +69,7 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     } catch (e) {
       window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
     }
+    return true;
   })();`;
 
     const runJavaScript = (code: string) => {
@@ -107,6 +107,20 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
 
     const handleError = (event: any) => {
         console.error('WebView error:', event.nativeEvent);
+
+        if (event.nativeEvent.code === -1005 && retryCount < maxRetries) {
+            console.log('network error occurred. reloading...', retryCount);
+
+            setRetryCount(retryCount + 1);
+            setTimeout(() => {
+                if (webViewRef.current) {
+                    webViewRef.current.reload();
+                    setTimeout(() => {
+                        runJavaScript(searchProductInjectionCode);
+                    }, 1000);
+                }
+            }, 1000);
+        }
     };
 
     useEffect(() => {
