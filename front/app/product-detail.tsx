@@ -235,6 +235,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // TODO
     const setIsShowNonSubscriberManagerModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
     const handleClickSend = useCheckLogin(async () => {
+        // AI포미에게 질문하는 함수
         if (!question) {
             Alert.alert('질문을 입력해주세요.');
             return;
@@ -329,6 +330,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     const handleClickRequest = useCheckLogin(async () => {
+        // 매니저에게 질문하기 함수
         await getSubscription();
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
@@ -336,7 +338,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (
             !subscription ||
             checkIsExpired(subscription.expiresAt) ||
-            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
+            (userData && userData.point !== undefined && userData.point <= 0)
         ) {
             setIsShowNonSubscriberManageModal(true);
         } else {
