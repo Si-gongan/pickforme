@@ -1,34 +1,25 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Alert, Linking } from 'react-native';
 import { useAtomValue, useSetAtom } from 'jotai';
+import React, { useEffect } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 
-import useColorScheme from '../hooks/useColorScheme';
+import { Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
-import { Text, View, Button_old as Button } from '@components';
-import { isShowUnsubscribeModalAtom, userAtom } from '@stores';
-import {
-    subscriptionAtom,
-    getSubscriptionAtom,
-    subscriptionListAtom,
-    getSubscriptionListAtom,
-    productsAtom
-} from '../stores/purchase/atoms';
-import { Platform } from 'react-native';
-import { getProductsAtom, purchaseProductAtom } from '../stores/purchase/atoms';
+import type { ColorScheme } from '@hooks';
+import { isShowUnsubscribeModalAtom } from '@stores';
 import {
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
-    SubscriptionAndroid,
     RequestSubscriptionAndroid,
-    requestSubscription,
-    withIAPContext
+    SubscriptionAndroid,
+    requestSubscription
 } from 'react-native-iap';
-import { Product, ProductType } from '../stores/purchase/types';
-import { initializeIAP } from '../services/IAPservice';
 import { BackHeader } from '../components';
-import { formatDate, formatMonthDay } from '../utils/common';
-import type { ColorScheme } from '@hooks';
+import PurchaseWrapper from '../components/Purchase/PurchaseWrapper';
+import useColorScheme from '../hooks/useColorScheme';
+import { getSubscriptionAtom, subscriptionAtom } from '../stores/purchase/atoms';
+import { Product, ProductType } from '../stores/purchase/types';
+import { formatMonthDay } from '../utils/common';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -36,56 +27,17 @@ type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
 const ANDROID_UPDATE_URL = 'https://play.google.com/store/apps/details?id=com.sigonggan.pickforme';
 const IOS_UPDATE_URL = 'https://apps.apple.com/kr/app/%ED%94%BD%ED%8F%AC%EB%AF%B8/id6450741514';
 
-const PurchaseHistoryWrapper = () => {
-    const purchaseProduct = useSetAtom(purchaseProductAtom);
-    const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
-    const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
-    const getProducts = useSetAtom(getProductsAtom);
-    const getSubscription = useSetAtom(getSubscriptionAtom);
-    const products = useAtomValue(productsAtom);
-
-    useEffect(() => {
-        getProducts({ platform: Platform.OS });
-    }, [getProducts]);
-
-    useEffect(() => {
-        getSubscription();
-    }, [getSubscription]);
-
-    useEffect(() => {
-        if (products?.length) {
-            let purchaseUpdateSubscription: any = null;
-            let purchaseErrorSubscription: any = null;
-
-            (async () => {
-                try {
-                    const items = await initializeIAP(
-                        products,
-                        purchaseUpdateSubscription,
-                        purchaseErrorSubscription,
-                        purchaseProduct
-                    );
-                    setSubscriptionItems(items);
-                } catch (error) {
-                    console.error('Failed to initialize IAP:', error);
-                }
-            })();
-
-            return () => {
-                if (purchaseUpdateSubscription) {
-                    purchaseUpdateSubscription.remove();
-                    purchaseUpdateSubscription = null;
-                }
-
-                if (purchaseErrorSubscription) {
-                    purchaseErrorSubscription.remove();
-                    purchaseErrorSubscription = null;
-                }
-            };
-        }
-    }, [products, purchaseProduct]);
+const SubscriptionHistoryScreen = () => {
     return (
-        <PointHistoryScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />
+        <PurchaseWrapper>
+            {({ products, purchaseItems, subscriptionItems }) => (
+                <PointHistoryScreen
+                    products={products}
+                    purchaseItems={purchaseItems}
+                    subscriptionItems={subscriptionItems}
+                />
+            )}
+        </PurchaseWrapper>
     );
 };
 
@@ -100,8 +52,8 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
 
     const filteredProducts = products.reduce(
         (obj, product) => {
-            console.log('Product:', product);
-            console.log('SubscriptionItems:', subscriptionItems);
+            // console.log('Product:', product);
+            // console.log('SubscriptionItems:', subscriptionItems);
             if (product.type === ProductType.PURCHASE) {
                 // 단건 로직
                 const item = purchaseItems.find(({ productId }) => product.productId === productId);
@@ -110,7 +62,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                 }
             } else {
                 const item = subscriptionItems.find(({ productId }) => product.productId === productId);
-                console.log('Found subscription item:', item);
+                // console.log('Found subscription item:', item);
                 if (item) {
                     obj.subscriptionProducts.push({ ...item, ...product });
                 }
@@ -247,6 +199,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
         </View>
     );
 };
+
 interface Props {
     products: Product[];
     purchaseItems: IAPProduct[];
@@ -387,4 +340,4 @@ const useStyles = (colorScheme: ColorScheme) =>
         }
     });
 
-export default withIAPContext(PurchaseHistoryWrapper);
+export default SubscriptionHistoryScreen;

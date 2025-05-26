@@ -1,23 +1,13 @@
-import { useAtomValue, useSetAtom } from 'jotai';
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet } from 'react-native';
+import { useSetAtom } from 'jotai';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import {
-    getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
-    ProductPurchase,
-    PurchaseError,
     RequestSubscriptionAndroid,
     SubscriptionAndroid,
-    SubscriptionPurchase,
     clearTransactionIOS,
-    finishTransaction,
-    flushFailedPurchasesCachedAsPendingAndroid,
-    initConnection,
-    purchaseErrorListener,
-    purchaseUpdatedListener,
-    requestSubscription,
-    withIAPContext
+    requestSubscription
 } from 'react-native-iap';
 import Markdown from 'react-native-markdown-display';
 
@@ -25,101 +15,33 @@ import { BackHeader, Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
 import { isShowSubscriptionModalAtom } from '@stores';
 import useColorScheme from '../hooks/useColorScheme';
-import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '../stores/purchase/atoms';
 import { Product, ProductType } from '../stores/purchase/types';
 
 // 2024
 import { GetSubscriptionAPI } from '../stores/purchase/apis';
 
 import type { ColorScheme } from '@hooks';
+import PurchaseWrapper from '../components/Purchase/PurchaseWrapper';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
-
-const PurchaseWrapper = () => {
-    const purchaseProduct = useSetAtom(purchaseProductAtom);
-    const [purchaseItems, setPurchaseItems] = useState<IAPProduct[]>([]);
-    const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
-    const getProducts = useSetAtom(getProductsAtom);
-    const getSubscription = useSetAtom(getSubscriptionAtom);
-    const products = useAtomValue(productsAtom);
-
-    const purchaseUpdateRef = useRef<any>(null);
-    const purchaseErrorRef = useRef<any>(null);
-    const hasListenerInitializedRef = useRef(false);
-
-    useEffect(() => {
-        getProducts({ platform: Platform.OS });
-    }, [getProducts]);
-
-    useEffect(() => {
-        getSubscription();
-    }, [getSubscription]);
-
-    useEffect(() => {
-        const initializeIAP = async () => {
-            if (!products.length || hasListenerInitializedRef.current) return;
-            hasListenerInitializedRef.current = true;
-
-            await initConnection();
-
-            const subscriptionItemLists = products
-                .filter(p => p.type === ProductType.SUBSCRIPTION)
-                .map(p => p.productId);
-
-            const storeSItems = await IAPGetSubscriptions({ skus: subscriptionItemLists });
-            setSubscriptionItems(storeSItems);
-
-            const addListeners = () => {
-                console.log('✅ listener 등록됨');
-
-                purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
-                    const receipt = purchase.transactionReceipt;
-                    const product = products.find(({ productId }) => productId === purchase.productId);
-                    if (!product || !receipt) return;
-
-                    const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                    const parsedReceipt =
-                        Platform.OS === 'android' ? { subscription: isSubscription, ...JSON.parse(receipt) } : receipt;
-
-                    await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
-                    await finishTransaction({ purchase, isConsumable: !isSubscription });
-                });
-
-                purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
-                    console.error('purchaseErrorListener', error);
-                });
-            };
-
-            if (Platform.OS === 'android') {
-                await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {});
-            }
-
-            addListeners();
-        };
-
-        initializeIAP();
-
-        return () => {
-            console.log('🧹 IAP listener 정리');
-
-            purchaseUpdateRef.current?.remove?.();
-            purchaseErrorRef.current?.remove?.();
-
-            purchaseUpdateRef.current = null;
-            purchaseErrorRef.current = null;
-            hasListenerInitializedRef.current = false;
-        };
-    }, [products]);
-
-    return <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />;
-};
 
 interface Props {
     products: Product[];
     purchaseItems: IAPProduct[];
     subscriptionItems: IAPSubscription[];
 }
+
+const SubscriptionScreen = () => {
+    return (
+        <PurchaseWrapper>
+            {({ products, purchaseItems, subscriptionItems }) => (
+                <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />
+            )}
+        </PurchaseWrapper>
+    );
+};
+
 export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -413,4 +335,5 @@ const useStyles = (colorScheme: ColorScheme) =>
             marginTop: 100
         }
     });
-export default withIAPContext(PurchaseWrapper);
+
+export default SubscriptionScreen;

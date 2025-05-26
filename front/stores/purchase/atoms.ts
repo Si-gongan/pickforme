@@ -27,13 +27,13 @@ import axios from 'axios';
 export const productsAtom = atom<Product[]>([]);
 
 export const getProductsAtom = atom(null, async (get, set, params: GetProductsParams) => {
-    console.log('GetProductsAPI 호출');
+    // console.log('GetProductsAPI 호출');
     const result = await attempt(() => GetProductsAPI(params));
     if (!result.ok) {
         console.error('상품 정보 가져오기 실패:', result.error);
         return;
     }
-    console.log('GetProductsAPI 결과 :', result.value.data);
+    // console.log('GetProductsAPI 결과 :', result.value.data);
     set(productsAtom, result.value.data);
 });
 

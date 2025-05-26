@@ -24,9 +24,9 @@ const SubscriptionBottomSheet: React.FC<Props> = () => {
     const localStyles = useLocalStyles(colorScheme);
 
     const handlePress = () => {
-        // @ts-ignore - Expo Router 4 type issues
-        router.push('/');
         onClose();
+
+        router.replace('/');
     };
 
     return (
