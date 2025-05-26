@@ -42,8 +42,7 @@
             [
                 "@react-native-seoul/kakao-login",
                 {
-                    "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
-                    "kotlinVersion": "1.9.0"
+                    "kakaoAppKey": "a48d1b07defd794b769579746e2bb995"
                 }
             ],
             "expo-router",
@@ -61,13 +60,15 @@
                 "expo-build-properties",
                 {
                     "android": {
-                        "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+                        "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"],
+                        "kotlinVersion": "1.7.20"
                     },
                     "ios": {
                         "useFrameworks": "static"
                     }
                 }
-            ]
+            ],
+            "expo-font"
         ],
         "experiments": {
             "typedRoutes": true

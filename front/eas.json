@@ -5,7 +5,14 @@
     "build": {
         "development": {
             "developmentClient": true,
-            "distribution": "internal"
+            "distribution": "internal",
+            "android": {
+                "buildType": "apk",
+                "gradleCommand": ":app:assembleDebug",
+                "env": {
+                    "ANDROID_HOME": "/Users/shareemotion/Library/Android/sdk"
+                }
+            }
         },
         "preview": {
             "distribution": "internal"
