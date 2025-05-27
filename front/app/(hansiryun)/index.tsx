@@ -22,6 +22,7 @@ import Colors from '../../constants/Colors';
 import useColorScheme from '../../hooks/useColorScheme';
 import { attempt } from '../../utils/axios';
 import { AxiosError } from 'axios';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function InterviewScreen() {
     const router = useRouter();
@@ -32,6 +33,8 @@ export default function InterviewScreen() {
     const [isDuplicate, setIsDuplicate] = useState(false);
     // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
+
+    useAuthRedirect(true);
 
     // 신청하기 버튼 처리
     const handleSubmit = async () => {
