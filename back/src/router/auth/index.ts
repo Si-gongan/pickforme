@@ -27,8 +27,8 @@ const subscriptionCheck = async (userId: string): Promise<boolean> => {
 
   if (subscriptions) {
     const purchaseData = await iapValidator.validate(
-      subscriptions.purchase.receipt,
-      subscriptions.purchase.product.productId,
+      subscriptions.receipt,
+      subscriptions.product.productId
     );
     if (!purchaseData) {
       subscriptions.isExpired = true;
