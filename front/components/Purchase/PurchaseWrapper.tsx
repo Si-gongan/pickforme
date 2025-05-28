@@ -112,8 +112,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 setSubscriptionItems(storeSItems);
 
                 const addListeners = () => {
-                    console.log('✅ listener 등록됨');
-
                     if (purchaseUpdateRef.current) {
                         purchaseUpdateRef.current.remove();
                     }
@@ -165,7 +163,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
     useEffect(() => {
         return () => {
-            console.log('🧹 IAP listener 정리');
             isInitializingRef.current = false;
 
             if (purchaseUpdateRef.current) {
