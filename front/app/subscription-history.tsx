@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
 import type { ColorScheme } from '@hooks';
-import { isShowUnsubscribeModalAtom } from '@stores';
+import { isShowSubscriptionModalAtom, isShowUnsubscribeModalAtom } from '@stores';
 import {
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
@@ -30,25 +30,45 @@ const IOS_UPDATE_URL = 'https://apps.apple.com/kr/app/%ED%94%BD%ED%8F%AC%EB%AF%B
 const SubscriptionHistoryScreen = () => {
     return (
         <PurchaseWrapper>
-            {({ products, purchaseItems, subscriptionItems }) => (
+            {({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading }) => (
                 <PointHistoryScreen
                     products={products}
                     purchaseItems={purchaseItems}
                     subscriptionItems={subscriptionItems}
+                    handleSubscription={handleSubscription}
+                    subscriptionLoading={subscriptionLoading}
                 />
             )}
         </PurchaseWrapper>
     );
 };
 
-export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
-    const router = useRouter();
+export const PointHistoryScreen: React.FC<Props> = ({
+    products,
+    purchaseItems,
+    subscriptionItems,
+    handleSubscription,
+    subscriptionLoading
+}) => {
     const colorScheme = useColorScheme();
     const currentSubscription = useAtomValue(subscriptionAtom);
     const styles = useStyles(colorScheme);
     const setIsShowUnsubscribeModal = useSetAtom(isShowUnsubscribeModalAtom);
-
     const getCurrentSubscription = useSetAtom(getSubscriptionAtom);
+    const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
+
+    const onSubClick = async (sku: string, offerToken?: string) => {
+        const success = await handleSubscription(sku, offerToken);
+        if (success) {
+            setIsShowSubscriptionModalAtomModal(true);
+
+            getCurrentSubscription();
+        }
+    };
+
+    const handleClickUnsubscribe = () => {
+        setIsShowUnsubscribeModal(true);
+    };
 
     const filteredProducts = products.reduce(
         (obj, product) => {
@@ -74,31 +94,6 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
             purchasableProducts: [] as (IAPProduct & Product)[]
         }
     );
-
-    const handleClickSub = async (sku: string, offerToken?: string) => {
-        try {
-            if (offerToken) {
-                const subscriptionRequest: RequestSubscriptionAndroid = {
-                    subscriptionOffers: [
-                        {
-                            sku,
-                            offerToken
-                        }
-                    ]
-                };
-                await requestSubscription(subscriptionRequest);
-            } else {
-                await requestSubscription({ sku });
-            }
-        } catch (err: any) {
-            console.log('error!');
-            console.warn(err.code, err.message);
-        }
-    };
-
-    const handleClickUnsubscribe = () => {
-        setIsShowUnsubscribeModal(true);
-    };
 
     useEffect(() => {
         getCurrentSubscription();
@@ -171,7 +166,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                                 title="멤버십 시작하기"
                                                 size="small"
                                                 onPress={() =>
-                                                    handleClickSub(product.productId, subscriptionOffer.offerToken)
+                                                    onSubClick(product.productId, subscriptionOffer.offerToken)
                                                 }
                                             />
                                         </View>
@@ -187,7 +182,7 @@ export const PointHistoryScreen: React.FC<Props> = ({ products, purchaseItems, s
                                             title="멤버십 시작하기"
                                             size="small"
                                             textStyle={{ color: Colors[colorScheme].text.secondary }}
-                                            onPress={() => handleClickSub(product.productId)}
+                                            onPress={() => onSubClick(product.productId)}
                                         />
                                     </View>
                                 );
@@ -204,6 +199,8 @@ interface Props {
     products: Product[];
     purchaseItems: IAPProduct[];
     subscriptionItems: IAPSubscription[];
+    handleSubscription: (sku: string, offerToken?: string) => Promise<boolean>;
+    subscriptionLoading: boolean;
 }
 
 const useStyles = (colorScheme: ColorScheme) =>

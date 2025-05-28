@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import {
     getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
@@ -11,11 +11,15 @@ import {
     initConnection,
     purchaseErrorListener,
     purchaseUpdatedListener,
-    withIAPContext
+    withIAPContext,
+    RequestSubscriptionAndroid,
+    SubscriptionAndroid,
+    requestSubscription
 } from 'react-native-iap';
 
-import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '../../stores/purchase/atoms';
-import { Product, ProductType } from '../../stores/purchase/types';
+import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '@/stores/purchase/atoms';
+import { GetSubscriptionAPI } from '@/stores/purchase/apis';
+import { Product, ProductType } from '@/stores/purchase/types';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -25,6 +29,8 @@ interface PurchaseWrapperProps {
         products: Product[];
         purchaseItems: IAPProduct[];
         subscriptionItems: IAPSubscription[];
+        handleSubscription: (sku: string, offerToken?: string | null) => Promise<boolean>;
+        subscriptionLoading: boolean;
     }) => React.ReactNode;
 }
 
@@ -35,6 +41,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const getProducts = useSetAtom(getProductsAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const products = useAtomValue(productsAtom);
+    const [subscriptionLoading, setSubscriptionLoading] = useState<boolean>(false);
 
     const purchaseUpdateRef = useRef<any>(null);
     const purchaseErrorRef = useRef<any>(null);
@@ -47,6 +54,45 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     useEffect(() => {
         getSubscription();
     }, [getSubscription]);
+
+    const handleSubscription = async (sku: string, offerToken?: string | null) => {
+        try {
+            if (subscriptionLoading) {
+                return false;
+            }
+
+            setSubscriptionLoading(true);
+            // 문제는. 여기서 다시 호출할 수도 있다.
+            const subCheck = await GetSubscriptionAPI();
+            const { activate } = subCheck.data;
+
+            if (activate) {
+                Alert.alert('이미 픽포미 플러스를 구독중이에요!');
+                return false;
+            }
+
+            if (offerToken) {
+                const subscriptionRequest: RequestSubscriptionAndroid = {
+                    subscriptionOffers: [
+                        {
+                            sku,
+                            offerToken
+                        }
+                    ]
+                };
+                await requestSubscription(subscriptionRequest);
+            } else {
+                await requestSubscription({ sku });
+            }
+            return true;
+        } catch (error) {
+            console.error('구독 처리 중 에러 발생:', error);
+            Alert.alert('구독 처리 중 오류가 발생했습니다.');
+            return false;
+        } finally {
+            setSubscriptionLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!products.length || isInitializingRef.current) return;
@@ -124,7 +170,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         };
     }, []);
 
-    return <>{children({ products, purchaseItems, subscriptionItems })}</>;
+    return <>{children({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading })}</>;
 };
 
 export default withIAPContext(PurchaseWrapper);
