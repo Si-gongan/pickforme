@@ -28,47 +28,46 @@ const checkSubscriptions = async () => {
       );
 
       // 구독이 유효한 경우
+      // 현재 아래 코드는 타입 에러가 발생하고, 어떤 케이스에 해당 로직을 실행하는지가 명확하지 않아 주석처리 해둔 상황입니다.
       if (purchaseData) {
-        if (purchaseData.transactionId !== purchase.purchase.transactionId) {
-          purchase.purchase = purchaseData;
-          await purchase.save();
-          const user = await db.User.findById(purchase.userId);
-          const product = await db.Product.findOne({
-            productId: purchase.product.productId,
-          });
-          if (!user || !product) {
-            log.error(LogContext.SCHEDULER, 'user or product not found', LogSeverity.HIGH, {
-              scheduler: SCHEDULER_NAME,
-              purchaseId: purchase._id,
-            });
-            continue;
-          }
-          // 포인트 업데이트
-          await user.applyPurchaseRewards(product.getRewards());
-          log.info(
-            LogContext.SCHEDULER,
-            `포인트 업데이트 완료 - userId: ${user._id}`,
-            LogSeverity.LOW,
-            {
-              scheduler: SCHEDULER_NAME,
-              userId: user._id,
-            }
-          );
-
-          // 소켓으로 포인트 업데이트 알림
-          const session = await db.Session.findOne({ userId: user._id });
-          if (session) {
-            socket.emit(session.connectionId, 'point', user.point);
-          }
-
-          // 푸시 알림
-          if (user.pushToken) {
-            sendPush({
-              to: user.pushToken,
-              body: '멤버십 픽이 충전되었습니다',
-            });
-          }
-        }
+        // if (purchaseData.transactionId !== purchase.purchase.transactionId) {
+        //   purchase.purchase = purchaseData;
+        //   await purchase.save();
+        //   const user = await db.User.findById(purchase.userId);
+        //   const product = await db.Product.findOne({
+        //     productId: purchase.product.productId,
+        //   });
+        //   if (!user || !product) {
+        //     log.error(LogContext.SCHEDULER, 'user or product not found', LogSeverity.HIGH, {
+        //       scheduler: SCHEDULER_NAME,
+        //       purchaseId: purchase._id,
+        //     });
+        //     continue;
+        //   }
+        //   // 포인트 업데이트
+        //   await user.applyPurchaseRewards(product.getRewards());
+        //   log.info(
+        //     LogContext.SCHEDULER,
+        //     `포인트 업데이트 완료 - userId: ${user._id}`,
+        //     LogSeverity.LOW,
+        //     {
+        //       scheduler: SCHEDULER_NAME,
+        //       userId: user._id,
+        //     }
+        //   );
+        //   // 소켓으로 포인트 업데이트 알림
+        //   const session = await db.Session.findOne({ userId: user._id });
+        //   if (session) {
+        //     socket.emit(session.connectionId, 'point', user.point);
+        //   }
+        //   // 푸시 알림
+        //   if (user.pushToken) {
+        //     sendPush({
+        //       to: user.pushToken,
+        //       body: '멤버십 픽이 충전되었습니다',
+        //     });
+        //   }
+        // }
       } else {
         // 구독이 환불/만료된 경우
         purchase.updateExpiration();
