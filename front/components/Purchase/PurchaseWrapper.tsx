@@ -58,16 +58,18 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const handleSubscription = async (sku: string, offerToken?: string | null) => {
         try {
             if (subscriptionLoading) {
+                Alert.alert('구독 처리가 진행 중입니다. 잠시만 기다려주세요.');
                 return false;
             }
 
             setSubscriptionLoading(true);
-            // 문제는. 여기서 다시 호출할 수도 있다.
+
             const subCheck = await GetSubscriptionAPI();
             const { activate } = subCheck.data;
 
             if (activate) {
                 Alert.alert('이미 픽포미 플러스를 구독중이에요!');
+                setSubscriptionLoading(false);
                 return false;
             }
 
@@ -88,9 +90,8 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         } catch (error) {
             console.error('구독 처리 중 에러 발생:', error);
             Alert.alert('구독 처리 중 오류가 발생했습니다.');
-            return false;
-        } finally {
             setSubscriptionLoading(false);
+            return false;
         }
     };
 
@@ -121,22 +122,31 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                     }
 
                     purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
-                        const receipt = purchase.transactionReceipt;
-                        const product = products.find(({ productId }) => productId === purchase.productId);
-                        if (!product || !receipt) return;
+                        try {
+                            const receipt = purchase.transactionReceipt;
+                            const product = products.find(({ productId }) => productId === purchase.productId);
+                            if (!product || !receipt) return;
 
-                        const isSubscription = product.type === ProductType.SUBSCRIPTION;
-                        const parsedReceipt =
-                            Platform.OS === 'android'
-                                ? { subscription: isSubscription, ...JSON.parse(receipt) }
-                                : receipt;
+                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                            const parsedReceipt =
+                                Platform.OS === 'android'
+                                    ? { subscription: isSubscription, ...JSON.parse(receipt) }
+                                    : receipt;
 
-                        await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
-                        await finishTransaction({ purchase, isConsumable: !isSubscription });
+                            await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
+                            await finishTransaction({ purchase, isConsumable: !isSubscription });
+                            getSubscription();
+                        } catch (error) {
+                            console.error('구매 처리 중 에러 발생:', error);
+                            Alert.alert('구독 완료 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                        } finally {
+                            setSubscriptionLoading(false);
+                        }
                     });
 
                     purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
                         console.error('purchaseErrorListener', error);
+                        setSubscriptionLoading(false);
                     });
                 };
 
