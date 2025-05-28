@@ -30,22 +30,30 @@ interface Props {
     products: Product[];
     purchaseItems: IAPProduct[];
     subscriptionItems: IAPSubscription[];
+    handleSubscription: (sku: string, offerToken?: string | null) => Promise<boolean>;
+    subscriptionLoading: boolean;
 }
 
 const SubscriptionScreen = () => {
     return (
         <PurchaseWrapper>
-            {({ products, purchaseItems, subscriptionItems }) => (
-                <PointScreen products={products} purchaseItems={purchaseItems} subscriptionItems={subscriptionItems} />
+            {({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading }) => (
+                <PointScreen
+                    products={products}
+                    purchaseItems={purchaseItems}
+                    subscriptionItems={subscriptionItems}
+                    handleSubscription={handleSubscription}
+                    subscriptionLoading={subscriptionLoading}
+                />
             )}
         </PurchaseWrapper>
     );
 };
 
-export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems }) => {
+export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems, handleSubscription }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
-    const [subscriptionLoading, setSubscriptionLoading] = useState<boolean>(false);
+    const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
     const markdownStyles = StyleSheet.create({
         text: {
             fontSize: 14,
@@ -54,8 +62,6 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
         }
     });
 
-    const [isSubscription, setIsSubscription] = useState<boolean>(false);
-    const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
     const [filteredProducts, setFilteredProducts] = useState<{
         subscriptionProducts: (IAPSubscription & Product)[];
         purchasableProducts: (IAPProduct & Product)[];
@@ -64,55 +70,10 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
         purchasableProducts: []
     });
 
-    useEffect(() => {
-        if (isSubscription) {
+    const onSubClick = async (sku: string, offerToken?: string | null) => {
+        const success = await handleSubscription(sku, offerToken);
+        if (success) {
             setIsShowSubscriptionModalAtomModal(true);
-        }
-    }, [isSubscription]);
-
-    const handleClickSub = async (sku: string, offerToken?: string | null) => {
-        try {
-            if (subscriptionLoading) {
-                return;
-            }
-
-            setSubscriptionLoading(true);
-
-            const subCheck = await GetSubscriptionAPI();
-            const { activate } = subCheck.data;
-
-            if (activate) {
-                Alert.alert('이미 픽포미 플러스를 구독중이에요!');
-                return;
-            }
-
-            if (offerToken) {
-                const subscriptionRequest: RequestSubscriptionAndroid = {
-                    subscriptionOffers: [
-                        {
-                            sku,
-                            offerToken
-                        }
-                    ]
-                };
-                await requestSubscription(subscriptionRequest);
-                setIsSubscription(true);
-            } else {
-                // ios
-                await clearTransactionIOS();
-                await requestSubscription({
-                    sku,
-                    andDangerouslyFinishTransactionAutomaticallyIOS: false
-                });
-                setIsSubscription(true);
-            }
-        } catch (error) {
-            console.error('구독 처리 중 에러 발생:', error);
-            Alert.alert('구독 처리 중 오류가 발생했습니다.');
-            // 필요한 경우 에러 상태 처리
-            setIsSubscription(false);
-        } finally {
-            setSubscriptionLoading(false);
         }
     };
 
@@ -196,7 +157,6 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                     </View>
 
                     {filteredProducts.subscriptionProducts.map(product => {
-                        // console.log('product : ', product);
                         if (product.platform === 'android') {
                             const subscriptionOffer = (product as unknown as SubscriptionAndroid)
                                 .subscriptionOfferDetails[0];
@@ -215,14 +175,11 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                                         textStyle={{ color: Colors[colorScheme].text.secondary }}
                                         title="멤버십 시작하기"
                                         size="small"
-                                        onPress={() => handleClickSub(product.productId, subscriptionOffer.offerToken)}
+                                        onPress={() => onSubClick(product.productId, subscriptionOffer.offerToken)}
                                     />
                                 </View>
                             );
                         }
-
-                        // console.log('멤버십 product : ', product);
-                        // console.log('product.platform:', product?.platform);
 
                         return (
                             <View key={`Point-Product-${product.productId}`} style={styles.productWrap}>
@@ -234,7 +191,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                                     textStyle={{ color: Colors[colorScheme].text.secondary }}
                                     title="멤버십 시작하기"
                                     size="small"
-                                    onPress={() => handleClickSub(product.productId, null)}
+                                    onPress={() => onSubClick(product.productId, null)}
                                 />
                             </View>
                         );
