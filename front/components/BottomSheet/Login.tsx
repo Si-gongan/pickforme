@@ -1,9 +1,10 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Pressable, Text, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
 
 import { isShowLoginModalAtom } from '@stores';
+import { BackImage } from '@assets';
 import { Props, styles } from './Base';
 import LoginForm from '../LoginForm';
 import useColorScheme from '@/hooks/useColorScheme';
@@ -20,14 +21,41 @@ const LoginBottomSheet: React.FC<Props> = () => {
             flex: 0,
             paddingHorizontal: 20,
             backgroundColor: Colors[colorScheme].background.primary
+        },
+        backButton: {
+            padding: 10,
+            marginBottom: 10,
+            alignSelf: 'flex-start'
+        },
+        backButtonImage: {
+            width: 24,
+            height: 24,
+            resizeMode: 'contain'
         }
     });
 
     const onClose = () => setVisible(false);
 
     return (
-        <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
+        <BottomSheet 
+            style={styles.base} 
+            isVisible={visible} 
+            onBackButtonPress={onClose} 
+            onBackdropPress={onClose}
+            onAccessibilityEscape={onClose}
+        >
             <View style={[styles.bottomSheet, localStyles.bottomSheet]}>
+                <Pressable
+                    style={localStyles.backButton}
+                    onPress={onClose}
+                    accessible={true}
+                    accessibilityLabel="뒤로가기"
+                    accessibilityHint="로그인 화면을 닫습니다"
+                    accessibilityRole="button"
+                    onAccessibilityEscape={onClose}
+                >
+                    <Image style={localStyles.backButtonImage} source={BackImage} />
+                </Pressable>
                 <LoginForm />
             </View>
         </BottomSheet>
