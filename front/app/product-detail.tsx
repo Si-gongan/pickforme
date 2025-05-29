@@ -252,11 +252,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         // 구독 및 AI 포인트 체크
         await getSubscription();
-        if (
-            !subscription ||
-            checkIsExpired(subscription.expiresAt) ||
-            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
-        ) {
+        if (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0) {
             console.log('AI 질문 - 멤버십 필요');
             // 모달 표시
             setIsShowNonSubscriberManagerModal(true);
@@ -336,11 +332,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
         setMembershipModalType('MANAGER');
-        if (
-            !subscription ||
-            checkIsExpired(subscription.expiresAt) ||
-            (userData && userData.point !== undefined && userData.point <= 0)
-        ) {
+        if (userData && userData.point !== undefined && userData.point <= 0) {
             setIsShowNonSubscriberManageModal(true);
         } else {
             setRequestBottomSheet(product);
