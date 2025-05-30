@@ -358,50 +358,18 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (nextTab === TABS.QUESTION) {
             handlePressAIQuestionTab();
         }
-        console.log('handlePressTab 호출됨:', { nextTab });
         setTab(nextTab);
         setTabPressed(true);
+
+        setTimeout(() => {
+            if (refs[nextTab]?.current) {
+                const node = findNodeHandle(refs[nextTab].current);
+                if (node) {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }
+            }
+        }, 500);
     };
-
-    useEffect(() => {
-        if (loadingStatus.report === LoadingStatus.FINISH && tab === TABS.REPORT) {
-            const node = findNodeHandle(refs.report?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.report}`);
-            }
-        }
-    }, [loadingStatus.report, tab]);
-
-    useEffect(() => {
-        if (loadingStatus.question === LoadingStatus.FINISH && tab === TABS.QUESTION) {
-            const node = findNodeHandle(refs.question?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.question}`);
-            }
-        }
-    }, [loadingStatus.question, tab]);
-
-    useEffect(() => {
-        if (loadingStatus.review === LoadingStatus.FINISH && tab === TABS.REVIEW) {
-            const node = findNodeHandle(refs.review?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.review}`);
-            }
-        }
-    }, [loadingStatus.review, tab]);
-
-    useEffect(() => {
-        if (tabPressed && loadingStatus.caption === LoadingStatus.FINISH && tab === TABS.CAPTION) {
-            const node = findNodeHandle(refs.caption?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.caption}`);
-            }
-        }
-    }, [loadingStatus.caption, tab, tabPressed]);
 
     const handleRegenerate = () => {
         console.log('handleRegenerate 호출됨:', { tab });
