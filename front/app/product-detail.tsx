@@ -42,7 +42,11 @@ import { requestBottomSheetAtom, requestsAtom } from '../stores/request/atoms';
 
 import { Text, View, Button_old as Button } from '@components';
 import useColorScheme from '../hooks/useColorScheme';
-import { isShowNonSubscriberManagerModalAtom, isShowSubscriptionModalAtom } from '../stores/auth/atoms';
+import {
+    isShowNonSubscriberManagerModalAtom,
+    isShowSubscriptionModalAtom,
+    isShowRequestModalAtom
+} from '../stores/auth/atoms';
 // import { useWebView } from '../components/webview-util';
 import { useWebViewReviews } from '../components/webview-reviews';
 import { useWebViewDetail } from '../components/webview-detail';
@@ -306,11 +310,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const subscription = useAtomValue(subscriptionAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const setIsShowNonSubscriberManageModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
+    const setIsShowRequestModal = useSetAtom(isShowRequestModalAtom);
     const setIsShowSubscriptionModal = useSetAtom(isShowSubscriptionModalAtom);
-    const isShowSubscriptionModal = useAtomValue(isShowSubscriptionModalAtom);
+    const isShowRequestModal = useAtomValue(isShowRequestModalAtom);
 
-    const toggleSubscriptionModal = () => {
-        setIsShowSubscriptionModal(!isShowSubscriptionModal);
+    const toggleRequestModal = () => {
+        setIsShowRequestModal(!isShowRequestModal);
     };
 
     const handleClickContact = async () => {
@@ -333,10 +338,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
         setMembershipModalType('MANAGER');
         if (userData && userData.point !== undefined && userData.point <= 0) {
+            // 픽포미 멤버십 첫 구매 팝업
             setIsShowNonSubscriberManageModal(true);
+
+            // 픽포미 멤버십 구독이 완료됬어요 팝업
+            // 구독 히스토리에 대한 로직 확인 필요
+            // setIsShowSubscriptionModal(true);
         } else {
+            console.log('userData handleClickRequest', userData);
             setRequestBottomSheet(product);
-            setIsShowSubscriptionModal(true);
+
+            setIsShowRequestModal(true);
         }
     });
 
@@ -429,9 +441,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             </View>
 
             <Modal
-                isVisible={isShowSubscriptionModal}
-                onBackButtonPress={toggleSubscriptionModal}
-                onBackdropPress={toggleSubscriptionModal}
+                isVisible={isShowRequestModal}
+                onBackButtonPress={toggleRequestModal}
+                onBackdropPress={toggleRequestModal}
                 animationIn="slideInUp" // 기본값, 아래에서 위로 올라옴
                 animationInTiming={300} // 애니메이션 속도(ms)
                 style={{
