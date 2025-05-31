@@ -24,17 +24,17 @@ export interface User extends LocalRegisterPayload {
   originEmail?: string;
   MembershipAt: Date | null;
   lastMembershipAt: Date | null;
-  phone:string;
-  event:number;
-  hide: string[] | null;
+  phone?: string;
+  event?: number;
+  hide?: string[];
 }
 
 export interface UserDocument extends User, Document {
   generateToken: () => Promise<string>;
   generateRefreshToken: () => Promise<string>; //리프레시 토큰 생성 메서드 추가
   clearRefreshToken: () => Promise<void>; //
-  usePoint(payload: number): () => Promise<number>;
-  useAiPoint(payload: number): () => Promise<number>;
+  usePoint(payload: number): Promise<number>;
+  useAiPoint(payload: number): Promise<number>;
   processExpiredMembership: (options?: { session?: ClientSession }) => Promise<void>;
   initMonthPoint: () => Promise<void>;
   applyPurchaseRewards: (rewards: ProductReward, session?: ClientSession) => Promise<void>;
