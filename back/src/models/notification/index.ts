@@ -1,16 +1,19 @@
 import mongoose from 'mongoose';
 
-const NotificationSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'can\'t be null'],
+const NotificationSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: [true, "can't be null"],
+    },
+    body: {
+      type: String,
+    },
   },
-  body: {
-    type: String,
-  },
-}, {
-  timestamps: true,
-});
+  {
+    timestamps: true,
+  }
+);
 
 const model = mongoose.models.Notifications || mongoose.model('Notifications', NotificationSchema);
 

@@ -30,18 +30,19 @@ const ProductSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-ProductSchema.methods.getRewards = function(): ProductReward {
+ProductSchema.methods.getRewards = function (): ProductReward {
   return {
     point: this.point,
     aiPoint: this.aiPoint,
   };
 };
 
-const model = mongoose.models.Products as ProductModel || mongoose.model<IProduct, ProductModel>('Products', ProductSchema);
-
+const model =
+  (mongoose.models.Products as ProductModel) ||
+  mongoose.model<IProduct, ProductModel>('Products', ProductSchema);
 
 // 초기 데이터 삽입
 // model.find({}).then((products) => {

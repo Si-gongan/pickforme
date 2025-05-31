@@ -3,9 +3,7 @@ import axios from 'axios';
 import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
-import {
-  PushSetting,
-} from 'models/user/types';
+import { PushSetting } from 'models/user/types';
 
 const router = new Router({
   prefix: '/auth',
@@ -27,13 +25,12 @@ const handleLogin = async (email: string) => {
       point: 0,
       aiPoint: 15,
     });
-    
+
     const usedEmail = await db.User.findOne({
       originEmail: email,
     });
     if (!usedEmail) {
       // 과거 회원 기록이 없는 경우
-      
     } else {
       // 과거 회원 기록이 있는 경우
       // const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
@@ -55,7 +52,7 @@ const handleLogin = async (email: string) => {
 
   const token = await user.generateToken();
   // const refreshToken = await user.generateRefreshToken();
-  
+
   return {
     user: {
       ...user.toObject(),
@@ -68,19 +65,13 @@ const handleLogin = async (email: string) => {
 };
 
 router.post('/google', async (ctx) => {
-  const {
-    accessToken,
-  } = <{ accessToken: string }>ctx.request.body;
-  const {
-    data,
-  } = await axios.get<{ email: string; verified_email: boolean }>(
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
+  const { data } = await axios.get<{ email: string; verified_email: boolean }>(
     `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
-  `,
+  `
   );
-  
-  const {
-    email, verified_email,
-  } = data;
+
+  const { email, verified_email } = data;
   if (!verified_email || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
@@ -92,18 +83,14 @@ router.post('/google', async (ctx) => {
 });
 
 router.post('/kakao', async (ctx) => {
-  const {
-    accessToken,
-  } = <{ accessToken: string }>ctx.request.body;
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
   const data = await axios.get('https://kapi.kakao.com/v2/user/me', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  
-  const {
-    is_email_verified, is_email_valid, email,
-  } = data?.data?.kakao_account || {};
+
+  const { is_email_verified, is_email_valid, email } = data?.data?.kakao_account || {};
   if (!is_email_valid || !is_email_verified || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
@@ -115,12 +102,8 @@ router.post('/kakao', async (ctx) => {
 });
 
 router.post('/apple', async (ctx) => {
-  const {
-    identityToken,
-  } = <{ identityToken: string }>ctx.request.body;
-  const {
-    email_verified, email,
-  } = await verifyAppleToken({
+  const { identityToken } = <{ identityToken: string }>ctx.request.body;
+  const { email_verified, email } = await verifyAppleToken({
     idToken: identityToken,
     clientId: 'com.sigonggan.pickforme',
   });
@@ -137,9 +120,7 @@ router.post('/apple', async (ctx) => {
 router.post('/pushtoken', requireAuth, async (ctx) => {
   const user = await db.User.findById(ctx.state.user._id);
   if (user) {
-    const {
-      token,
-    } = <{ token: string }>ctx.request.body;
+    const { token } = <{ token: string }>ctx.request.body;
     user.pushToken = token;
     await user.save();
     ctx.status = 200;

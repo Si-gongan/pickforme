@@ -6,9 +6,7 @@ import client from 'utils/axios';
 import slack from 'utils/slack';
 import sendPush from 'utils/push';
 import socket from 'socket';
-import {
-  RequestType,
-} from 'models/request';
+import { RequestType } from 'models/request';
 
 const router = new Router({
   prefix: '/request',
@@ -75,13 +73,10 @@ router.post('/', requireAuth, async (ctx) => {
     });
   } else {
     // slack ai 응답 생성
-    const purchase = await db.Purchase.findOne({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .lean();
+    const purchase = await db.Purchase.findOne({ userId: user._id }).sort({ createdAt: -1 }).lean();
 
     if (purchase) {
       // 이 부분 로직은 스케쥴러에서 처리하도록 변경했습니다. feat/membership-scheduler
-
       // const today = new Date();
       // const oneMonthLater = new Date(purchase.createdAt);
       // oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
@@ -95,10 +90,7 @@ router.post('/', requireAuth, async (ctx) => {
       const lastRequest = await db.Request.findOne({ userId: user._id })
         .sort({ createdAt: -1 })
         .lean();
-      if (
-        lastRequest &&
-        lastRequest.createdAt.getMonth() !== today.getMonth()
-      ) {
+      if (lastRequest && lastRequest.createdAt.getMonth() !== today.getMonth()) {
         await user.initMonthPoint();
       }
     }
@@ -126,8 +118,6 @@ router.post('/', requireAuth, async (ctx) => {
     });
   }
 });
-
-  
 
 router.get('/', requireAuth, async (ctx) => {
   const requests = await db.Request.find({

@@ -64,19 +64,24 @@ class SubscriptionService {
         throw new Error('결제가 정상적으로 처리되지 않았습니다.');
       }
 
-      const purchaseData = await db.Purchase.create([{
-        userId,
-        product,
-        purchase,
-        receipt,
-        isExpired: false,
-      }], { session });
+      const purchaseData = await db.Purchase.create(
+        [
+          {
+            userId,
+            product,
+            purchase,
+            receipt,
+            isExpired: false,
+          },
+        ],
+        { session }
+      );
 
       await user.applyPurchaseRewards(product.getRewards(), session);
 
       await session.commitTransaction();
-      
-      return purchaseData[0]
+
+      return purchaseData[0];
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -97,7 +102,7 @@ class SubscriptionService {
         leftDays: 0,
         expiresAt: null,
         createdAt: null,
-        msg: "유저정보가 없습니다.",
+        msg: '유저정보가 없습니다.',
       };
     }
 
@@ -105,15 +110,15 @@ class SubscriptionService {
     if (user.event === 1 && user.MembershipAt) {
       const membershipAt = new Date(user.MembershipAt);
       membershipAt.setHours(0, 0, 0, 0);
-    
+
       // 6개월 뒤 날짜 계산
       const expiredDate = new Date(membershipAt);
       expiredDate.setMonth(expiredDate.getMonth() + 6);
-    
+
       // 남은 일수 계산
       const timeDifference = expiredDate.getTime() - currentDate.getTime();
       const leftDays = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-    
+
       if (leftDays > 0) {
         return {
           subscription: null,
@@ -130,9 +135,11 @@ class SubscriptionService {
       userId,
       isExpired: false,
       'product.type': ProductType.SUBSCRIPTION,
-    }).sort({
-      createdAt: -1,
-    }).lean();
+    })
+      .sort({
+        createdAt: -1,
+      })
+      .lean();
 
     if (!subscription) {
       return {
@@ -190,8 +197,11 @@ class SubscriptionService {
 
     const membershipProduct = subscription.product;
     const { DEFAULT_AI_POINT, DEFAULT_POINT } = POINTS;
-    
-    if (user.aiPoint < membershipProduct.aiPoint - DEFAULT_AI_POINT || user.point < membershipProduct.point - DEFAULT_POINT) {
+
+    if (
+      user.aiPoint < membershipProduct.aiPoint - DEFAULT_AI_POINT ||
+      user.point < membershipProduct.point - DEFAULT_POINT
+    ) {
       return {
         isRefundable: false,
         msg: '구독 후 서비스 이용 고객으로 구독 환불 불가 대상입니다.',
@@ -216,11 +226,7 @@ class SubscriptionService {
       }
 
       // 구독 정보 조회
-      const subscription = await db.Purchase.findOne(
-        { _id: subscriptionId },
-        null,
-        { session }
-      );
+      const subscription = await db.Purchase.findOne({ _id: subscriptionId }, null, { session });
 
       if (!subscription) {
         throw new Error('구독 정보를 찾을 수 없습니다.');
@@ -230,7 +236,7 @@ class SubscriptionService {
       await this.expireSubscription(subscription, session);
 
       await session.commitTransaction();
-      
+
       return {
         msg: '구독 환불을 완료하였습니다.',
         refundSuccess: true,
@@ -244,15 +250,20 @@ class SubscriptionService {
   }
 
   public async expireSubscription(
-    subscription: (mongoose.Document<unknown, {}, IPurchase> & Omit<IPurchase & {
-      _id: mongoose.Types.ObjectId;
-  }, "updateExpiration"> & IPurchaseMethods),
+    subscription: mongoose.Document<unknown, {}, IPurchase> &
+      Omit<
+        IPurchase & {
+          _id: mongoose.Types.ObjectId;
+        },
+        'updateExpiration'
+      > &
+      IPurchaseMethods,
     session?: mongoose.ClientSession
   ) {
     const options = session ? { session } : {};
-    
+
     await subscription.updateExpiration(options);
-    
+
     const user = await db.User.findById(subscription.userId);
     if (user) {
       await user.processExpiredMembership(options);

@@ -8,7 +8,7 @@ const router = new Router({
   prefix: '/purchase',
 });
 
-// 구독 구매 
+// 구독 구매
 router.post('/', requireAuth, async (ctx) => {
   try {
     const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
@@ -27,7 +27,6 @@ router.post('/', requireAuth, async (ctx) => {
 
     ctx.status = 200;
     ctx.body = purchaseData;
-
   } catch (error) {
     log.error(LogContext.PURCHASE, '결제 처리 중 에러 발생:', LogSeverity.HIGH, {
       error: {
@@ -37,15 +36,18 @@ router.post('/', requireAuth, async (ctx) => {
       },
       endPoint: '/purchase',
       method: 'POST',
-      userId: ctx.state.user._id, 
+      userId: ctx.state.user._id,
     });
 
     ctx.status = 400;
-    ctx.body = error instanceof Error ? error.message : '결제 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.';
+    ctx.body =
+      error instanceof Error
+        ? error.message
+        : '결제 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.';
   }
 });
 
-// 구독 상품 목록 조회 
+// 구독 상품 목록 조회
 router.get('/products/:platform', async (ctx) => {
   const { platform } = ctx.params;
 
@@ -56,12 +58,12 @@ router.get('/products/:platform', async (ctx) => {
   }
 
   const products = await subscriptionService.getSubscriptionProductsByPlatform(platform);
-  
+
   ctx.body = products;
   ctx.status = 200;
 });
 
-// 유저 구독 목록 조회 
+// 유저 구독 목록 조회
 router.get('/subscriptions', requireAuth, async (ctx) => {
   const subscriptions = await subscriptionService.getUserSubscriptions(ctx.state.user._id);
   ctx.body = subscriptions;

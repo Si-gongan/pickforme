@@ -6,9 +6,7 @@ const router = new Router({
 });
 
 router.get('/detail/:noticeId', async (ctx) => {
-  const {
-    noticeId,
-  } = ctx.params;
+  const { noticeId } = ctx.params;
   const notice = await db.Notice.findById(noticeId);
   ctx.body = notice;
 });
