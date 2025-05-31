@@ -6,9 +6,8 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
 import useColorScheme from '../../hooks/useColorScheme';
 import { requestBottomSheetAtom, addRequestAtom } from '../../stores/request/atoms';
-import { isShowSubscriptionModalAtom, isShowNonSubscriberManagerModalAtom, membershipModalTypeAtom } from '@stores';
+import { isShowRequestModalAtom, membershipModalTypeAtom } from '@stores';
 import { scrapedProductDetailAtom } from '../../stores/product/atoms';
-import { sendLogAtom } from '../../stores/log/atoms';
 
 import { QuestionRequestParams, RequestType } from '../../stores/request/types';
 import { Colors } from '@constants';
@@ -22,9 +21,6 @@ import useCheckLogin from '../../hooks/useCheckLogin';
 export default function RequestBottomSheet() {
     const headerTitleRef = useRef(null);
 
-    const isShowNonSubscribedModalVisible = useAtomValue(isShowNonSubscriberManagerModalAtom);
-    const isShowSubscriptionModalVisible = useAtomValue(isShowSubscriptionModalAtom);
-
     const addRequest = useSetAtom(addRequestAtom);
     const colorScheme = useColorScheme();
     const localStyles = useLocalStyles(colorScheme);
@@ -32,7 +28,7 @@ export default function RequestBottomSheet() {
 
     const scrapedProductDetail = useAtomValue(scrapedProductDetailAtom);
 
-    const sendLog = useSetAtom(sendLogAtom);
+    const setIsShowRequestModal = useSetAtom(isShowRequestModalAtom);
 
     const [data, setData] = useState<Omit<QuestionRequestParams, 'product'>>({
         type: RequestType.QUESTION,
@@ -59,11 +55,7 @@ export default function RequestBottomSheet() {
         } as QuestionRequestParams;
         onClose();
         checkPoint(params);
-        sendLog({
-            product: { url: product?.url },
-            action: 'request',
-            metaData: {}
-        });
+        setIsShowRequestModal(false);
     });
     const disabled = !data.text;
     const [product, setProduct] = useAtom(requestBottomSheetAtom);

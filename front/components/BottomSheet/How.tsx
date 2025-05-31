@@ -35,7 +35,9 @@ function LackBottomSheet({ isHomeButton = true }: { isHomeButton?: boolean }) {
         <View style={baseStyles.base}>
             <View style={[baseStyles.bottomSheet, { backgroundColor: theme.background.primary }]}>
                 <View style={dynamicStyles.section} ref={headerTitleRef}>
-                    <Text style={dynamicStyles.title}>픽포미, 이렇게 사용해 보세요!</Text>
+                    <Text style={dynamicStyles.title} accessible={true} accessibilityRole="header">
+                        픽포미, 이렇게 사용해 보세요!
+                    </Text>
                 </View>
                 <View style={dynamicStyles.section}>
                     <Text style={dynamicStyles.subtitle}>1. 상품 검색하기</Text>
