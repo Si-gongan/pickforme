@@ -12,9 +12,7 @@ source 'https://github.com/expo/expo.git'
 source 'https://cdn.cocoapods.org/'
 
 
-# platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 platform :ios, '15.1'
-
 install! 'cocoapods',
   :deterministic_uuids => false
 
