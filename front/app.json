@@ -30,7 +30,8 @@
                 "backgroundColor": "#ffffff"
             },
             "package": "com.anonymous.pickforme",
-            "googleServicesFile": "./google-services.json"
+            "googleServicesFile": "./google-services.json",
+            "versionCode": 104
         },
         "web": {
             "bundler": "metro",
