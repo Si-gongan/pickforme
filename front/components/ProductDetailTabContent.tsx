@@ -300,43 +300,53 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (
-                <View
-                    style={styles.detailWrap}
-                    ref={refs[tab]}
-                    accessible={true}
-                    accessibilityLabel={`긍정적인 리뷰: ${review?.pros.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
-                >
-                    <Text style={styles.reviewListTitle}>긍정적인 리뷰</Text>
-                    <Markdown style={markdownStyles}>
-                        {review?.pros.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
-                    </Markdown>
+                <View style={styles.detailWrap} ref={refs[tab]}>
+                    <Text
+                        style={styles.reviewListTitle}
+                        accessible={true}
+                        accessibilityRole="header"
+                        accessibilityLabel="긍정적인 리뷰"
+                    >
+                        긍정적인 리뷰
+                    </Text>
+                    {review?.pros.map((row: string, i: number) => (
+                        <View key={`positive-review-${i}`} accessible={true} accessibilityLabel={`${i + 1}. ${row}`}>
+                            <Markdown style={markdownStyles}>{`${i + 1}. ${row}`}</Markdown>
+                        </View>
+                    ))}
                 </View>
             )}
             {review?.cons?.length !== 0 && (
-                <View
-                    style={styles.detailWrap}
-                    ref={refs[tab]}
-                    accessible={true}
-                    accessibilityLabel={`부정적인 리뷰: ${review?.cons.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
-                >
-                    <Text style={styles.reviewListTitle}>부정적인 리뷰</Text>
-                    <Markdown style={markdownStyles}>
-                        {review?.cons.map((row: string, i: number) => `${i + 1}. ${row}`).join('\n')}
-                    </Markdown>
+                <View style={styles.detailWrap} ref={refs[tab]}>
+                    <Text
+                        style={styles.reviewListTitle}
+                        accessible={true}
+                        accessibilityRole="header"
+                        accessibilityLabel="부정적인 리뷰"
+                    >
+                        부정적인 리뷰
+                    </Text>
+                    {review?.cons.map((row: string, i: number) => (
+                        <View key={`negative-review-${i}`} accessible={true} accessibilityLabel={`${i + 1}. ${row}`}>
+                            <Markdown style={markdownStyles}>{`${i + 1}. ${row}`}</Markdown>
+                        </View>
+                    ))}
                 </View>
             )}
             {review?.bests?.length !== 0 && (
-                <View
-                    style={styles.detailWrap}
-                    ref={refs[tab]}
-                    accessible={true}
-                    accessibilityLabel={`베스트 리뷰: ${review?.bests.map((row, i) => `${i + 1}. ${row}`).join(', ')}`}
-                >
-                    <Text style={styles.reviewListTitle}>베스트 리뷰</Text>
+                <View style={styles.detailWrap} ref={refs[tab]}>
+                    <Text
+                        style={styles.reviewListTitle}
+                        accessible={true}
+                        accessibilityRole="header"
+                        accessibilityLabel="베스트 리뷰"
+                    >
+                        베스트 리뷰
+                    </Text>
                     {review?.bests.map((row: string, i: number) => (
-                        <Markdown style={markdownStyles} key={`product-detail-${tab}-bests-row-${i}`}>
-                            {`**리뷰 ${i + 1}:** ${row}`}
-                        </Markdown>
+                        <View key={`best-review-${i}`} accessible={true} accessibilityLabel={`리뷰 ${i + 1}: ${row}`}>
+                            <Markdown style={markdownStyles}>{`**리뷰 ${i + 1}:** ${row}`}</Markdown>
+                        </View>
                     ))}
                 </View>
             )}

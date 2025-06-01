@@ -36,12 +36,12 @@ const handleLogin = async (email: string) => {
       
     } else {
       // 과거 회원 기록이 있는 경우
-      const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
+      // const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
     }
     isRegister = true;
   } else {
     // 기존 회원
-    const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
+    // const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
 
     // 한시련 이벤트 처리 관련 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/events.ts
 

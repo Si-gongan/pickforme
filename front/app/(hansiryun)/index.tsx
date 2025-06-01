@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { CheckBox } from '@components';
+import { CheckBox, BackHeader } from '@components';
 import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI, GetPopupAPI } from '../../stores/auth/apis';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
@@ -22,6 +22,7 @@ import Colors from '../../constants/Colors';
 import useColorScheme from '../../hooks/useColorScheme';
 import { attempt } from '../../utils/axios';
 import { AxiosError } from 'axios';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function InterviewScreen() {
     const router = useRouter();
@@ -32,6 +33,8 @@ export default function InterviewScreen() {
     const [isDuplicate, setIsDuplicate] = useState(false);
     // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
+
+    useAuthRedirect(true);
 
     // 신청하기 버튼 처리
     const handleSubmit = async () => {
@@ -145,6 +148,7 @@ export default function InterviewScreen() {
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <BackHeader />
             <ScrollView
                 style={[
                     styles.container,
@@ -215,7 +219,15 @@ export default function InterviewScreen() {
                     </View>
 
                     <View style={styles.checkboxContainer}>
-                        <TouchableOpacity style={styles.checkboxWrapper} onPress={() => setIsChecked(!isChecked)}>
+                        <TouchableOpacity
+                            style={styles.checkboxWrapper}
+                            onPress={() => setIsChecked(!isChecked)}
+                            accessible={true}
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: isChecked }}
+                            accessibilityLabel="개인 정보 수집과 이용에 동의합니다."
+                            accessibilityHint="체크하면 개인 정보 수집과 이용에 동의하게 됩니다."
+                        >
                             <CheckBox checked={isChecked} onPress={() => setIsChecked(!isChecked)} />
                             <Text
                                 style={[
@@ -240,6 +252,10 @@ export default function InterviewScreen() {
                                 }
                             ]}
                             onPress={handleSubmit}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel="신청하기"
+                            accessibilityHint="인터뷰 신청을 제출합니다"
                         >
                             <Text
                                 style={[
@@ -265,6 +281,10 @@ export default function InterviewScreen() {
                                 }
                             ]}
                             onPress={handleDontShowAgain}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel="앞으로 보지 않기"
+                            accessibilityHint="이 안내 화면을 다시 표시하지 않습니다"
                         >
                             <Text
                                 style={[
@@ -290,7 +310,7 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: 40,
-        paddingTop: 80
+        paddingTop: 10
     },
     title: {
         fontSize: 18,
@@ -375,5 +395,15 @@ const styles = StyleSheet.create({
         width: 16,
         height: 16,
         marginRight: 6
+    },
+    backButton: {
+        padding: 10,
+        marginBottom: 10,
+        alignSelf: 'flex-start'
+    },
+    backButtonImage: {
+        width: 24,
+        height: 24,
+        resizeMode: 'contain'
     }
 });

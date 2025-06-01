@@ -9,12 +9,15 @@ import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
 
 import { InfoForm, Footer, Button } from '@components';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function OnBoardingInfoScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
     const router = useRouter();
     const user = useAtomValue(userAtom);
+
+    useAuthRedirect(false);
 
     const handleStart = () => {
         router.push('/login');

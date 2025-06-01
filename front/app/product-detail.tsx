@@ -41,7 +41,11 @@ import { requestBottomSheetAtom, requestsAtom } from '../stores/request/atoms';
 
 import { Text, View, Button_old as Button } from '@components';
 import useColorScheme from '../hooks/useColorScheme';
-import { isShowNonSubscriberManagerModalAtom, isShowSubscriptionModalAtom } from '../stores/auth/atoms';
+import {
+    isShowNonSubscriberManagerModalAtom,
+    isShowSubscriptionModalAtom,
+    isShowRequestModalAtom
+} from '../stores/auth/atoms';
 // import { useWebView } from '../components/webview-util';
 import { useWebViewReviews } from '../components/webview-reviews';
 import { useWebViewDetail } from '../components/webview-detail';
@@ -243,11 +247,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         // 구독 및 AI 포인트 체크
         await getSubscription();
-        if (
-            !subscription ||
-            checkIsExpired(subscription.expiresAt) ||
-            (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0)
-        ) {
+        if (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0) {
             console.log('AI 질문 - 멤버십 필요');
             // 모달 표시
             setIsShowNonSubscriberManagerModal(true);
@@ -299,11 +299,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const subscription = useAtomValue(subscriptionAtom);
     const getSubscription = useSetAtom(getSubscriptionAtom);
     const setIsShowNonSubscriberManageModal = useSetAtom(isShowNonSubscriberManagerModalAtom);
+    const setIsShowRequestModal = useSetAtom(isShowRequestModalAtom);
     const setIsShowSubscriptionModal = useSetAtom(isShowSubscriptionModalAtom);
-    const isShowSubscriptionModal = useAtomValue(isShowSubscriptionModalAtom);
+    const isShowRequestModal = useAtomValue(isShowRequestModalAtom);
 
-    const toggleSubscriptionModal = () => {
-        setIsShowSubscriptionModal(!isShowSubscriptionModal);
+    const toggleRequestModal = () => {
+        setIsShowRequestModal(!isShowRequestModal);
     };
 
     const handleClickContact = async () => {
@@ -325,15 +326,18 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         // 구독 정보가 없거나 구독이 만료되었을 때 콜백 호출
         setMembershipModalType('MANAGER');
-        if (
-            !subscription ||
-            checkIsExpired(subscription.expiresAt) ||
-            (userData && userData.point !== undefined && userData.point <= 0)
-        ) {
+        if (userData && userData.point !== undefined && userData.point <= 0) {
+            // 픽포미 멤버십 첫 구매 팝업
             setIsShowNonSubscriberManageModal(true);
+
+            // 픽포미 멤버십 구독이 완료됬어요 팝업
+            // 구독 히스토리에 대한 로직 확인 필요
+            // setIsShowSubscriptionModal(true);
         } else {
+            console.log('userData handleClickRequest', userData);
             setRequestBottomSheet(product);
-            setIsShowSubscriptionModal(true);
+
+            setIsShowRequestModal(true);
         }
     });
 
@@ -343,50 +347,18 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (nextTab === TABS.QUESTION) {
             handlePressAIQuestionTab();
         }
-        console.log('handlePressTab 호출됨:', { nextTab });
         setTab(nextTab);
         setTabPressed(true);
+
+        setTimeout(() => {
+            if (refs[nextTab]?.current) {
+                const node = findNodeHandle(refs[nextTab].current);
+                if (node) {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }
+            }
+        }, 500);
     };
-
-    useEffect(() => {
-        if (loadingStatus.report === LoadingStatus.FINISH && tab === TABS.REPORT) {
-            const node = findNodeHandle(refs.report?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.report}`);
-            }
-        }
-    }, [loadingStatus.report, tab]);
-
-    useEffect(() => {
-        if (loadingStatus.question === LoadingStatus.FINISH && tab === TABS.QUESTION) {
-            const node = findNodeHandle(refs.question?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.question}`);
-            }
-        }
-    }, [loadingStatus.question, tab]);
-
-    useEffect(() => {
-        if (loadingStatus.review === LoadingStatus.FINISH && tab === TABS.REVIEW) {
-            const node = findNodeHandle(refs.review?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.review}`);
-            }
-        }
-    }, [loadingStatus.review, tab]);
-
-    useEffect(() => {
-        if (tabPressed && loadingStatus.caption === LoadingStatus.FINISH && tab === TABS.CAPTION) {
-            const node = findNodeHandle(refs.caption?.current);
-            if (node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
-                AccessibilityInfo.announceForAccessibility(`${tab} 내용입니다. ${productDetail?.caption}`);
-            }
-        }
-    }, [loadingStatus.caption, tab, tabPressed]);
 
     const handleRegenerate = () => {
         console.log('handleRegenerate 호출됨:', { tab });
@@ -426,9 +398,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             </View>
 
             <Modal
-                isVisible={isShowSubscriptionModal}
-                onBackButtonPress={toggleSubscriptionModal}
-                onBackdropPress={toggleSubscriptionModal}
+                isVisible={isShowRequestModal}
+                onBackButtonPress={toggleRequestModal}
+                onBackdropPress={toggleRequestModal}
                 animationIn="slideInUp" // 기본값, 아래에서 위로 올라옴
                 animationInTiming={300} // 애니메이션 속도(ms)
                 style={{
