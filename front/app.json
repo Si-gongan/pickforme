@@ -31,7 +31,7 @@
             },
             "package": "com.anonymous.pickforme",
             "googleServicesFile": "./google-services.json",
-            "versionCode": 104
+            "versionCode": 106
         },
         "web": {
             "bundler": "metro",
