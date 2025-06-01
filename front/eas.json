@@ -17,7 +17,9 @@
         "preview": {
             "distribution": "internal"
         },
-        "production": {},
+        "production": {
+            "credentialsSource": "local"
+        },
         "develop": {
             "distribution": "store"
         }
