@@ -281,7 +281,7 @@ describe('Scheduler Integration Tests', () => {
         productId: 'pickforme__plus',
         type: 1,
         point: 100,
-        aiPoint:1000,
+        aiPoint: 1000,
         displayName: '픽포미 플러스',
         platform: 'ios',
       });
@@ -295,7 +295,7 @@ describe('Scheduler Integration Tests', () => {
       expect(updated?.lastMembershipAt).toBe(null);
     });
 
-    it("MembershipAt만 들어가 있는 기존 이벤트 유저의 경우 이벤트 갱신 시에 (한달뒤) MembershipAt은 바뀌지 않고 lastMembershipAt만 바뀐다", async () => {
+    it('MembershipAt만 들어가 있는 기존 이벤트 유저의 경우 이벤트 갱신 시에 (한달뒤) MembershipAt은 바뀌지 않고 lastMembershipAt만 바뀐다', async () => {
       const user = await db.User.create({
         email: 'junseok!@#!@#@!#@!@example.com',
         event: 1,
@@ -308,7 +308,7 @@ describe('Scheduler Integration Tests', () => {
         productId: 'pickforme__plus',
         type: 1,
         point: 100,
-        aiPoint:1000,
+        aiPoint: 1000,
         displayName: '픽포미 플러스',
         platform: 'ios',
       });
@@ -317,8 +317,8 @@ describe('Scheduler Integration Tests', () => {
 
       const updated = await db.User.findById(user._id);
       expect(updated?.point).toBe(100);
-      expect(updated?.aiPoint).toBe(1000);      
-      expect(updated?.MembershipAt).toEqual(new Date('2022-12-29T15:00:00.000Z'))
+      expect(updated?.aiPoint).toBe(1000);
+      expect(updated?.MembershipAt).toEqual(new Date('2022-12-29T15:00:00.000Z'));
       expect(updated?.lastMembershipAt).not.toBe(null);
       expect(updated?.lastMembershipAt).not.toEqual(updated?.MembershipAt);
     });

@@ -13,13 +13,12 @@ const { POINTS } = constants;
 jest.mock('utils/iap', () => ({
   __esModule: true,
   default: {
-    validate: jest.fn()
-  }
+    validate: jest.fn(),
+  },
 }));
 
 const RealDate = Date;
 const testDate = '2023-02-01T00:00:00+09:00';
-
 
 describe('Subscription Service Integration Tests', () => {
   beforeEach(async () => {
@@ -50,9 +49,9 @@ describe('Subscription Service Integration Tests', () => {
   describe('getSubscriptionStatus', () => {
     it('구독 정보가 없는 경우 null을 반환한다', async () => {
       const user = await db.User.create({ email: 'test@example.com' });
-      
+
       const result = await subscriptionService.getSubscriptionStatus(user._id);
-      
+
       expect(result.subscription).toBeNull();
       expect(result.activate).toBe(false);
       expect(result.leftDays).toBe(0);
@@ -80,7 +79,7 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       const result = await subscriptionService.getSubscriptionStatus(user._id);
-      
+
       expect(result.subscription).toBeNull();
       expect(result.activate).toBe(false);
       expect(result.leftDays).toBe(0);
@@ -107,7 +106,7 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       const result = await subscriptionService.getSubscriptionStatus(user._id);
-      
+
       expect(result.subscription).toBeDefined();
       expect(result.subscription?._id.toString()).toBe(purchase._id.toString());
       expect(result.activate).toBe(true);
@@ -136,7 +135,7 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       const result = await subscriptionService.getSubscriptionStatus(user._id);
-      
+
       expect(result.subscription).toBeDefined();
       expect(result.activate).toBe(false);
       expect(result.leftDays).toBe(0);
@@ -173,17 +172,17 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       const result = await subscriptionService.getSubscriptionStatus(user._id);
-      
+
       expect(result.subscription?._id.toString()).toBe(recentPurchase._id.toString());
       expect(result.activate).toBe(true);
     });
 
     it('이벤트 멤버십이 활성화된 유저는 구독 상태가 활성화된다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         event: 1,
-        MembershipAt: new Date('2023-01-15T00:00:00+09:00')
+        MembershipAt: new Date('2023-01-15T00:00:00+09:00'),
       });
 
       // When
@@ -198,10 +197,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('이벤트 멤버십이 만료된 유저는 구독 상태가 비활성화된다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         event: 1,
-        MembershipAt: new Date('2022-07-15T00:00:00+09:00') // 6개월 이상 지난 날짜
+        MembershipAt: new Date('2022-07-15T00:00:00+09:00'), // 6개월 이상 지난 날짜
       });
 
       // When
@@ -216,10 +215,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('이벤트 멤버십이 만료된 유저는 일반 구독 상태를 확인하고 구독이 있으면 활성화된 정보를 전달한다.', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         event: 1,
-        MembershipAt: new Date('2022-07-15T00:00:00+09:00') // 6개월 이상 지난 날짜
+        MembershipAt: new Date('2022-07-15T00:00:00+09:00'), // 6개월 이상 지난 날짜
       });
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -250,8 +249,12 @@ describe('Subscription Service Integration Tests', () => {
   });
 
   describe('createSubscription', () => {
-    const mockReceipt = { /* receipt 데이터 */ };
-    const mockPurchase = { /* purchase 데이터 */ };
+    const mockReceipt = {
+      /* receipt 데이터 */
+    };
+    const mockPurchase = {
+      /* purchase 데이터 */
+    };
 
     beforeEach(() => {
       (iapValidator.validate as jest.Mock).mockResolvedValue(mockPurchase);
@@ -275,7 +278,7 @@ describe('Subscription Service Integration Tests', () => {
         product._id.toString(),
         mockReceipt
       );
-      
+
       expect(result).toBeDefined();
       expect(result.userId.toString()).toBe(user._id.toString());
       expect(result.product.productId).toBe(product.productId);
@@ -425,10 +428,10 @@ describe('Subscription Service Integration Tests', () => {
   describe('expireSubscription', () => {
     it('구독을 성공적으로 만료 처리한다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: 100,
-        aiPoint: 1000
+        aiPoint: 1000,
       });
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -452,7 +455,7 @@ describe('Subscription Service Integration Tests', () => {
 
       // Then
       expect(result.isExpired).toBe(true);
-      
+
       // 유저 포인트가 초기화되었는지 확인
       const updatedUser = await db.User.findById(user._id);
       expect(updatedUser?.point).toBe(POINTS.DEFAULT_POINT);
@@ -461,10 +464,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('트랜잭션 내에서 구독 만료 처리가 성공한다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: 100,
-        aiPoint: 1000
+        aiPoint: 1000,
       });
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -493,7 +496,7 @@ describe('Subscription Service Integration Tests', () => {
 
         // Then
         expect(result.isExpired).toBe(true);
-        
+
         // 유저 포인트가 초기화되었는지 확인
         const updatedUser = await db.User.findById(user._id);
         expect(updatedUser?.point).toBe(POINTS.DEFAULT_POINT);
@@ -505,10 +508,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('트랜잭션 내에서 에러 발생 시 롤백된다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: 100,
-        aiPoint: 1000
+        aiPoint: 1000,
       });
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -536,11 +539,11 @@ describe('Subscription Service Integration Tests', () => {
         throw new Error('테스트 에러');
       } catch (error) {
         await session.abortTransaction();
-        
+
         // Then
         const updatedPurchase = await db.Purchase.findById(purchase._id);
         expect(updatedPurchase?.isExpired).toBe(false);
-        
+
         const updatedUser = await db.User.findById(user._id);
         expect(updatedUser?.point).toBe(100);
         expect(updatedUser?.aiPoint).toBe(1000);
@@ -551,10 +554,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('이미 만료된 구독을 만료 처리해도 에러가 발생하지 않는다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: 100,
-        aiPoint: 1000
+        aiPoint: 1000,
       });
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -578,7 +581,7 @@ describe('Subscription Service Integration Tests', () => {
 
       // Then
       expect(result.isExpired).toBe(true);
-      
+
       // 유저 포인트가 초기화되었는지 확인
       const updatedUser = await db.User.findById(user._id);
       expect(updatedUser?.point).toBe(POINTS.DEFAULT_POINT);
@@ -612,10 +615,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('서비스를 이용한 경우 환불 불가능하다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: 0,
-        aiPoint: 0
+        aiPoint: 0,
       });
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -644,10 +647,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('서비스를 이용하지 않은 경우 환불 가능하다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: POINTS.DEFAULT_POINT,
-        aiPoint: POINTS.DEFAULT_AI_POINT
+        aiPoint: POINTS.DEFAULT_AI_POINT,
       });
 
       const product = await db.Product.create({
@@ -687,10 +690,10 @@ describe('Subscription Service Integration Tests', () => {
   describe('processRefund', () => {
     it('환불 가능한 구독을 성공적으로 환불 처리한다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: POINTS.DEFAULT_POINT,
-        aiPoint: POINTS.DEFAULT_AI_POINT
+        aiPoint: POINTS.DEFAULT_AI_POINT,
       });
 
       const product = await db.Product.create({
@@ -711,20 +714,24 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      const subscription = await subscriptionService.createSubscription(user._id.toString(), product._id.toString(), {
-        transactionDate: new Date(),
-        transactionId: 'test_transaction_id',
-        productId: product._id.toString(),
-        price: 100,
-        currency: 'USD',
-      });
+      const subscription = await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        {
+          transactionDate: new Date(),
+          transactionId: 'test_transaction_id',
+          productId: product._id.toString(),
+          price: 100,
+          currency: 'USD',
+        }
+      );
 
       // When
       const result = await subscriptionService.processRefund(
         user._id.toString(),
         subscription._id.toString()
       );
-      
+
       // Then
       expect(result.refundSuccess).toBe(true);
       expect(result.msg).toBe('구독 환불을 완료하였습니다.');
@@ -742,10 +749,10 @@ describe('Subscription Service Integration Tests', () => {
     it('유저가 구독 후에 ai 포인트를 일정 이상 사용했다면 환불 처리할 수 없다', async () => {
       // Given
       let user;
-      user = await db.User.create({ 
+      user = await db.User.create({
         email: 'test@example.com',
         point: 0,
-        aiPoint: 0
+        aiPoint: 0,
       });
 
       const product = await db.Product.create({
@@ -766,13 +773,17 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      const subscription = await subscriptionService.createSubscription(user._id.toString(), product._id.toString(), {
-        transactionDate: new Date(),
-        transactionId: 'test_transaction_id',
-        productId: product._id.toString(),
-        price: 100,
-        currency: 'USD',
-      });
+      const subscription = await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        {
+          transactionDate: new Date(),
+          transactionId: 'test_transaction_id',
+          productId: product._id.toString(),
+          price: 100,
+          currency: 'USD',
+        }
+      );
 
       user = await db.User.findById(user._id);
 
@@ -781,14 +792,11 @@ describe('Subscription Service Integration Tests', () => {
       }
 
       // 그 유저가 기본지급 포인트 이상의 포인트를 사용했다면,
-      await user.useAiPoint(20)
-      
+      await user.useAiPoint(20);
+
       // When & Then
       await expect(
-        subscriptionService.processRefund(
-          user._id.toString(),
-          subscription._id.toString()
-        )
+        subscriptionService.processRefund(user._id.toString(), subscription._id.toString())
       ).rejects.toThrow();
 
       //
@@ -799,10 +807,10 @@ describe('Subscription Service Integration Tests', () => {
     it('유저가 구독 후에 포인트를 일정 이상 사용했다면 환불 처리할 수 없다', async () => {
       // Given
       let user;
-      user = await db.User.create({ 
+      user = await db.User.create({
         email: 'test@example.com',
         point: 0,
-        aiPoint: 0
+        aiPoint: 0,
       });
 
       const product = await db.Product.create({
@@ -813,7 +821,7 @@ describe('Subscription Service Integration Tests', () => {
         aiPoint: 1000,
         platform: 'ios',
       });
-      
+
       (iapValidator.validate as jest.Mock).mockResolvedValue({
         purchase: {
           productId: product._id.toString(),
@@ -823,13 +831,17 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      const subscription = await subscriptionService.createSubscription(user._id.toString(), product._id.toString(), {
-        transactionDate: new Date(),
-        transactionId: 'test_transaction_id',
-        productId: product._id.toString(),
-        price: 100,
-        currency: 'USD',
-      });
+      const subscription = await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        {
+          transactionDate: new Date(),
+          transactionId: 'test_transaction_id',
+          productId: product._id.toString(),
+          price: 100,
+          currency: 'USD',
+        }
+      );
 
       user = await db.User.findById(user._id);
 
@@ -838,14 +850,11 @@ describe('Subscription Service Integration Tests', () => {
       }
 
       // 그 유저가 기본지급 포인트 이상의 포인트를 사용했다면,
-      await user.usePoint(20) 
+      await user.usePoint(20);
 
       // When & Then
       await expect(
-        subscriptionService.processRefund(
-          user._id.toString(),
-          subscription._id.toString()
-        )
+        subscriptionService.processRefund(user._id.toString(), subscription._id.toString())
       ).rejects.toThrow();
 
       // 구독이 만료되지 않았는지 확인
@@ -855,10 +864,10 @@ describe('Subscription Service Integration Tests', () => {
 
     it('존재하지 않는 구독은 환불 처리할 수 없다', async () => {
       // Given
-      const user = await db.User.create({ 
+      const user = await db.User.create({
         email: 'test@example.com',
         point: POINTS.DEFAULT_POINT,
-        aiPoint: POINTS.DEFAULT_AI_POINT
+        aiPoint: POINTS.DEFAULT_AI_POINT,
       });
 
       const product = await db.Product.create({
@@ -920,7 +929,9 @@ describe('Subscription Service Integration Tests', () => {
 
       // When
       const iosProducts = await subscriptionService.getSubscriptionProductsByPlatform('ios');
-      const androidProducts = await subscriptionService.getSubscriptionProductsByPlatform('android');
+      const androidProducts = await subscriptionService.getSubscriptionProductsByPlatform(
+        'android'
+      );
 
       // Then
       expect(iosProducts).toHaveLength(1);
@@ -1064,4 +1075,4 @@ describe('Subscription Service Integration Tests', () => {
       expect(subscriptions).toHaveLength(0);
     });
   });
-}); 
+});

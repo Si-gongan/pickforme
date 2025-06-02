@@ -13,13 +13,7 @@ const router = new Router({
 });
 
 // router.use(requireAuth, requireAdmin);
-[
-  requestRouter,
-  notificationRouter,
-  noticeRouter,
-  userRouter,
-  logRouter,
-].forEach((subrouter) => {
+[requestRouter, notificationRouter, noticeRouter, userRouter, logRouter].forEach((subrouter) => {
   router.use(subrouter.routes());
 });
 

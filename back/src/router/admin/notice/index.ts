@@ -6,17 +6,13 @@ const router = new Router({
 });
 
 router.get('/detail/:noticeId', async (ctx) => {
-  const {
-    noticeId,
-  } = ctx.params;
+  const { noticeId } = ctx.params;
   const notice = await db.Notice.findById(noticeId);
   ctx.body = notice;
 });
 
 router.delete('/detail/:noticeId', async (ctx) => {
-  const {
-    noticeId,
-  } = ctx.params;
+  const { noticeId } = ctx.params;
   const notice = await db.Notice.deleteOne({
     _id: noticeId,
   });
@@ -31,9 +27,7 @@ router.get('/', async (ctx) => {
 });
 
 router.put('/', async (ctx) => {
-  const {
-    body,
-  } = <any>ctx.request;
+  const { body } = <any>ctx.request;
   const notice = await db.Notice.findById(body._id);
   notice.title = body.title;
   notice.text = body.text;
@@ -42,9 +36,7 @@ router.put('/', async (ctx) => {
 });
 
 router.post('/', async (ctx) => {
-  const {
-    body,
-  } = <any>ctx.request;
+  const { body } = <any>ctx.request;
   const notice = await db.Notice.create(body);
   ctx.body = notice;
 });

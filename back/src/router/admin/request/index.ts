@@ -17,9 +17,7 @@ router.post('/answer', async (ctx) => {
   }
 
   if (request!.answer) {
-    const deeplink = `/product-detail?productUrl=${encodeURIComponent(
-      request!.product.url
-    )}`;
+    const deeplink = `/product-detail?productUrl=${encodeURIComponent(request!.product.url)}`;
     // const chat = await db.Chat.create({
     //   userId: request.userId,
     //   requestId: request._id,
@@ -47,10 +45,7 @@ router.post('/answer', async (ctx) => {
         to: user.pushToken,
         body:
           request!.type === RequestType.QUESTION
-            ? `'${request!.product.name.slice(
-                0,
-                13
-              )}...' 상품에 대한 매니저 답변이 도착했습니다.`
+            ? `'${request!.product.name.slice(0, 13)}...' 상품에 대한 매니저 답변이 도착했습니다.`
             : '매니저 답변이 도착했습니다.',
         data: { url: deeplink },
       });
@@ -186,9 +181,7 @@ router.get('/request-stats', async (ctx) => {
     ctx.body = stats.map((stat) => ({
       type: stat._id,
       totalReviews: stat.totalReviews,
-      averageRating: stat.averageRating
-        ? parseFloat(stat.averageRating.toFixed(2))
-        : 0, // 소수점 둘째 자리까지 반올림
+      averageRating: stat.averageRating ? parseFloat(stat.averageRating.toFixed(2)) : 0, // 소수점 둘째 자리까지 반올림
       reviewTexts: stat.reviewTexts, // review.text의 문자열 리스트
     }));
   } catch (error) {

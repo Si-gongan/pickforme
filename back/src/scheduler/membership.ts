@@ -42,7 +42,6 @@ const checkSubscriptionExpirations = async () => {
           );
         }
       }
-
     }
   } catch (error) {
     if (error instanceof Error)

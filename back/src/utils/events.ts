@@ -12,15 +12,14 @@ dotenv.config();
  * env를 production용 .env로 교체한다음에
  * (노션 픽포미 개발문서 > .env의 production env로 교체.)
  * npm run membership-events 로 실행해주세요.
- * 
+ *
  * 주의! 만약 한시련 이벤트 번호가 1번에서 바뀌게 되거나, 지급하게 되는 포인트가 30, 9999 에서 바뀌게 되면,
  * 이 스크립트에서 지급하는 포인트도 바꿔줘야 합니다. EVENT_PRODUCT_REWARDS 객체의 값을 바꿔주세요.
- * 
+ *
  * 주의! 스크립트 실행 이후에는 다시 local용 .env로 변경해주세요!
  */
 
-
-// 원래는 product.getRewards() 함수를 통해서 가져오는 값이지만, 
+// 원래는 product.getRewards() 함수를 통해서 가져오는 값이지만,
 // 현재 product 모델에서는 event 필드가 따로 없기 때문에 임시로 이렇게 rewards 객체를 직접 만들어서 이벤트를 처리합니다.
 // 추후에 product 모델에 event 필드를 추가하고, 이 스크립트에서도 product.getRewards() 함수를 통해서 가져오는 값으로 변경해주세요.
 const EVENT_PRODUCT_REWARDS: ProductReward = {
@@ -28,7 +27,7 @@ const EVENT_PRODUCT_REWARDS: ProductReward = {
   aiPoint: 9999,
   // 한시련 이벤트는 이벤트 멤버쉽 타입이 1입니다.
   event: 1,
-}
+};
 
 // 구글 API 인증 설정
 const auth = new google.auth.GoogleAuth({
@@ -45,25 +44,26 @@ interface FormResponse {
 
 async function processUser(response: FormResponse): Promise<void> {
   try {
-
     const normalizedPhoneNumber = response.phoneNumber.replace(/-/g, '');
 
-    const user = await db.User.findOne({
-      $or: [
-        { phone: normalizedPhoneNumber },
-        { email: response.email }
-      ]
-    }, {
-      event: 1,
-      MembershipAt: 1,
-      point: 1,
-      aiPoint: 1,
-      email: 1,
-      phone: 1,
-    });
+    const user = await db.User.findOne(
+      {
+        $or: [{ phone: normalizedPhoneNumber }, { email: response.email }],
+      },
+      {
+        event: 1,
+        MembershipAt: 1,
+        point: 1,
+        aiPoint: 1,
+        email: 1,
+        phone: 1,
+      }
+    );
 
     if (!user) {
-      console.log(`User ${response.name} not found for phone: ${normalizedPhoneNumber} or email: ${response.email}`);
+      console.log(
+        `User ${response.name} not found for phone: ${normalizedPhoneNumber} or email: ${response.email}`
+      );
       return;
     }
 
@@ -74,7 +74,9 @@ async function processUser(response: FormResponse): Promise<void> {
 
     await user.applyPurchaseRewards(EVENT_PRODUCT_REWARDS);
 
-    console.log(`new event membership for User ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt}`);
+    console.log(
+      `new event membership for User ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt}`
+    );
   } catch (error) {
     console.error(`Error processing user ${response.email}:`, error);
     throw error;
@@ -85,14 +87,14 @@ async function main() {
   try {
     // MongoDB 연결
     const uri = process.env.MONGO_URI;
-    
+
     if (!uri) {
       throw new Error('MONGO_URI environment variable is required');
     }
 
     // Google Sheets API 초기화
     const sheets = google.sheets({ version: 'v4', auth });
-    
+
     // 스프레드시트 ID와 범위 설정
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
     const range = process.env.GOOGLE_SHEET_RANGE || "'설문지 응답 시트1'!A:H";
@@ -102,7 +104,7 @@ async function main() {
     }
 
     // 스프레드시트 데이터 가져오기
-    console.log("getting data from google sheet");
+    console.log('getting data from google sheet');
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -136,6 +138,6 @@ async function main() {
   }
 }
 
-if (require.main === module) {    
+if (require.main === module) {
   main();
 }

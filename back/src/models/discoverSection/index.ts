@@ -30,8 +30,7 @@ const DiscoverSectionSchema = new mongoose.Schema(
 );
 
 const model =
-  mongoose.models.DiscoverSections ||
-  mongoose.model('DiscoverSections', DiscoverSectionSchema);
+  mongoose.models.DiscoverSections || mongoose.model('DiscoverSections', DiscoverSectionSchema);
 /*
 model.insertMany([
 {

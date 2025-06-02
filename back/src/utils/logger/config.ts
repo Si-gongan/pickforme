@@ -1,4 +1,4 @@
-import { LogSeverity } from "./types";
+import { LogSeverity } from './types';
 
 const logDir = process.cwd() + '/logs';
 
@@ -7,9 +7,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const isStagingServer = isProduction && process.env.MODE === 'dev';
 
-const slackTransportSeverityThreshold = LogSeverity.HIGH
+const slackTransportSeverityThreshold = LogSeverity.HIGH;
 
-const slackChannelId = process.env.SLACK_ERROR_CHANNEL_ID
+const slackChannelId = process.env.SLACK_ERROR_CHANNEL_ID;
 
 export const config = {
   logDir,
@@ -17,4 +17,4 @@ export const config = {
   slackTransportSeverityThreshold,
   slackChannelId,
   isStagingServer,
-};  
+};
