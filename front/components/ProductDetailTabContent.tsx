@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -24,7 +24,7 @@ import type { ColorScheme } from '@hooks';
 interface TabContentProps {
     tab: TABS;
     productDetail: ProductDetailState | void;
-    refs: Record<string, React.RefObject<RNView>>;
+    refs: Record<string, React.RefObject<RNView | null>>;
     question: string;
     setQuestion: React.Dispatch<React.SetStateAction<string>>;
     handleClickSend: (params: any) => void;
@@ -35,6 +35,7 @@ interface TabContentProps {
     handleRegenerate: () => void;
     scrapedProductDetail: ScrapedProductDetail;
     handleLoadMore: () => void;
+    onRefSet?: (tabName: string, refValue: RNView | null) => void; // ref 설정 콜백 추가
 }
 
 const TabContent: React.FC<TabContentProps> = ({
@@ -50,7 +51,8 @@ const TabContent: React.FC<TabContentProps> = ({
     loadingStatus,
     handleRegenerate,
     scrapedProductDetail,
-    handleLoadMore
+    handleLoadMore,
+    onRefSet
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -83,6 +85,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 markdownStyles={markdownStyles}
                 productDetail={productDetail}
                 colorScheme={colorScheme}
+                onRefSet={onRefSet}
             />
         );
     }
@@ -111,15 +114,31 @@ const TabContent: React.FC<TabContentProps> = ({
                     tab={tab}
                     handleLoadMore={handleLoadMore}
                     colorScheme={colorScheme}
+                    onRefSet={onRefSet}
                 />
             );
         }
 
-        return (
-            <View style={styles.detailWrap} ref={refs[tab]} accessibilityLabel={`${tab} 내용`}>
-                <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
-            </View>
-        );
+        // 기본 탭에 대한 컴포넌트 (product, spec 등)
+        const DefaultTabContent = () => {
+            // 로컬 ref 생성
+            const contentRef = useRef<RNView>(null);
+
+            // ref가 설정되면 부모에게 알림
+            useEffect(() => {
+                if (contentRef.current && onRefSet) {
+                    onRefSet(tab, contentRef.current);
+                }
+            }, [tab, onRefSet]);
+
+            return (
+                <View style={styles.detailWrap} ref={contentRef} accessibilityLabel={`${tab} 내용`}>
+                    <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
+                </View>
+            );
+        };
+
+        return <DefaultTabContent />;
     }
 
     // 4. 실패 상태
@@ -145,13 +164,14 @@ interface QuestionTabProps {
     handleClickSend: any;
     request: any; // 기존 호환성을 위해 유지
     productRequests: any[]; // 추가된 현재 상품에 대한 모든 요청 배열
-    refs: Record<string, React.RefObject<RNView>>;
+    refs: Record<string, React.RefObject<RNView | null>>;
     loadingMessages: any;
     loadingStatus: any;
     tab: TABS;
     markdownStyles: any;
     productDetail: ProductDetailState | void;
     colorScheme: ColorScheme;
+    onRefSet?: (tabName: string, refValue: RNView | null) => void; // ref 설정 콜백 추가
 }
 
 const QuestionTab: React.FC<QuestionTabProps> = ({
@@ -167,112 +187,125 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     tab,
     markdownStyles,
     productDetail,
-    colorScheme
-}) => (
-    <View style={styles.detailWrap}>
-        <View style={styles.inputWrap}>
-            <TextInput
-                style={styles.textArea}
-                underlineColorAndroid="transparent"
-                value={question}
-                returnKeyType="done"
-                onSubmitEditing={() => {
-                    console.log('onSubmitEditing - 질문 전송:', question);
-                    handleClickSend(question);
-                }}
-                accessible
-                accessibilityLabel="질문 입력창"
-                onChangeText={text => {
-                    console.log('onChangeText - 입력값:', text);
-                    setQuestion(text);
-                }}
-                placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요."
-                placeholderTextColor={colorScheme === 'dark' ? '#aaaaaa' : '#888888'}
-            />
+    colorScheme,
+    onRefSet
+}) => {
+    // 질문 탭의 메인 컨테이너에 대한 ref
+    const contentRef = useRef<RNView>(null);
 
-            <Pressable
-                onPress={() => {
-                    console.log('Pressable - 질문 전송:', question);
-                    handleClickSend(question);
-                }}
-                accessible
-                accessibilityLabel="질문하기"
-                accessibilityRole="button"
-            >
-                <Image style={styles.sendIcon} source={require('../assets/images/discover/downSquareArrow.png')} />
-            </Pressable>
-        </View>
+    // ref가 설정되면 부모에게 알림
+    useEffect(() => {
+        if (contentRef.current && onRefSet) {
+            onRefSet(tab, contentRef.current);
+        }
+    }, [tab, onRefSet]);
 
-        {loadingStatus[tab] === 1 ? (
-            <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
-                <ActivityIndicator />
-                <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
+    return (
+        <View style={styles.detailWrap} ref={contentRef}>
+            <View style={styles.inputWrap}>
+                <TextInput
+                    style={styles.textArea}
+                    underlineColorAndroid="transparent"
+                    value={question}
+                    returnKeyType="done"
+                    onSubmitEditing={() => {
+                        handleClickSend(question);
+                    }}
+                    accessible
+                    accessibilityLabel="질문 입력창"
+                    onChangeText={text => {
+                        setQuestion(text);
+                    }}
+                    placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요."
+                    placeholderTextColor={colorScheme === 'dark' ? '#aaaaaa' : '#888888'}
+                />
+
+                <Pressable
+                    onPress={() => {
+                        handleClickSend(question);
+                    }}
+                    accessible
+                    accessibilityLabel="질문하기"
+                    accessibilityRole="button"
+                >
+                    <Image style={styles.sendIcon} source={require('../assets/images/discover/downSquareArrow.png')} />
+                </Pressable>
             </View>
-        ) : loadingStatus[tab] === 2 ? (
-            <View ref={refs[tab]} accessible={true} accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}>
-                <Markdown style={markdownStyles}>{`**AI 포미:** ${productDetail && productDetail.answer}`}</Markdown>
-            </View>
-        ) : null}
 
-        {/* 전처리된 매니저 질문 응답 목록 표시 (최신순) */}
-        {productRequests && productRequests.length > 0 ? (
-            // 응답이 있는 질문들 표시
-            <>
-                <View style={styles.seperator}></View>
-                <View ref={refs.manager} accessible={true} accessibilityLabel="매니저 답변">
-                    <Text style={styles.boldText}>매니저 답변</Text>
+            {loadingStatus[tab] === 1 ? (
+                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+                    <ActivityIndicator />
+                    <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
                 </View>
+            ) : loadingStatus[tab] === 2 ? (
+                <View accessible={true} accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}>
+                    <Markdown style={markdownStyles}>{`**AI 포미:** ${
+                        productDetail && productDetail.answer
+                    }`}</Markdown>
+                </View>
+            ) : null}
 
-                <View style={styles.seperator}></View>
-                {/* 최신순으로 정렬된 모든 질문과 답변 표시 */}
-                {productRequests.map((req, index) => (
-                    <View key={req._id || index} style={index > 0 ? { marginTop: 20 } : {}}>
-                        {/* 날짜 - 스크린리더 순서 1 */}
-                        <Text
-                            style={{ color: Colors[colorScheme].text.primary, marginBottom: 5 }}
-                            accessible={true}
-                            accessibilityLabel={`질문 날짜: ${formatDate(req?.updatedAt)} ${formatTime(
-                                req?.updatedAt
-                            )}`}
-                        >
-                            {`${formatDate(req?.updatedAt)} ${formatTime(req?.updatedAt)}`}
-                        </Text>
-
-                        {/* 질문 - 스크린리더 순서 2 */}
-                        <View accessible={true} accessibilityLabel={`나의 질문: ${req?.text || ''}`}>
-                            <Markdown>{`**나의 질문:** ${req?.text || ''}`}</Markdown>
-                        </View>
-
-                        {/* 답변 표시 - 스크린리더 순서 3 */}
-                        {req.answer?.text ? (
-                            <View
-                                accessible={true}
-                                accessibilityLabel={`픽포미 매니저 답변: ${req?.answer?.text || ''}`}
-                            >
-                                <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${
-                                    req?.answer?.text || ''
-                                }`}</Markdown>
-                            </View>
-                        ) : (
-                            <View accessible={true} accessibilityLabel={loadingMessages.manager}>
-                                <Text style={styles.loadingMessageText}>{loadingMessages.manager}</Text>
-                            </View>
-                        )}
+            {/* 전처리된 매니저 질문 응답 목록 표시 (최신순) */}
+            {productRequests && productRequests.length > 0 ? (
+                // 응답이 있는 질문들 표시
+                <>
+                    <View style={styles.seperator}></View>
+                    <View accessible={true} accessibilityLabel="매니저 답변">
+                        <Text style={styles.boldText}>매니저 답변</Text>
                     </View>
-                ))}
-            </>
-        ) : null}
-    </View>
-);
+
+                    <View style={styles.seperator}></View>
+                    {/* 최신순으로 정렬된 모든 질문과 답변 표시 */}
+                    {productRequests.map((req, index) => (
+                        <View key={req._id || index} style={index > 0 ? { marginTop: 20 } : {}}>
+                            {/* 날짜 - 스크린리더 순서 1 */}
+                            <Text
+                                style={{ color: Colors[colorScheme].text.primary, marginBottom: 5 }}
+                                accessible={true}
+                                accessibilityLabel={`질문 날짜: ${formatDate(req?.updatedAt)} ${formatTime(
+                                    req?.updatedAt
+                                )}`}
+                            >
+                                {`${formatDate(req?.updatedAt)} ${formatTime(req?.updatedAt)}`}
+                            </Text>
+
+                            {/* 질문 - 스크린리더 순서 2 */}
+                            <View accessible={true} accessibilityLabel={`나의 질문: ${req?.text || ''}`}>
+                                <Markdown>{`**나의 질문:** ${req?.text || ''}`}</Markdown>
+                            </View>
+
+                            {/* 답변 표시 - 스크린리더 순서 3 */}
+                            {req.answer?.text ? (
+                                <View
+                                    accessible={true}
+                                    accessibilityLabel={`픽포미 매니저 답변: ${req?.answer?.text || ''}`}
+                                >
+                                    <Markdown style={markdownStyles}>{`**픽포미 매니저:** ${
+                                        req?.answer?.text || ''
+                                    }`}</Markdown>
+                                </View>
+                            ) : (
+                                <View accessible={true} accessibilityLabel={loadingMessages.manager}>
+                                    <Text style={styles.loadingMessageText}>{loadingMessages.manager}</Text>
+                                </View>
+                            )}
+                        </View>
+                    ))}
+                </>
+            ) : null}
+        </View>
+    );
+};
 
 interface ReviewTabProps {
     styles: ReturnType<typeof useStyles>;
     productDetail: ProductDetailState;
     tab: TABS;
-    refs: Record<string, React.RefObject<RNView>>;
+    refs: Record<string, React.RefObject<RNView | null>>;
     markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
     handleLoadMore: () => void;
     colorScheme: ColorScheme;
+    onRefSet?: (tabName: string, refValue: RNView | null) => void; // ref 설정 콜백 추가
 }
 
 const ReviewTab: React.FC<ReviewTabProps> = ({
@@ -282,8 +315,21 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
     refs,
     markdownStyles,
     handleLoadMore,
-    colorScheme
+    colorScheme,
+    onRefSet
 }) => {
+    // 리뷰 탭의 메인 컨테이너에 대한 ref
+    const contentRef = useRef<RNView>(null);
+
+    // ref가 설정되면 부모에게 알림
+    useEffect(() => {
+        if (contentRef.current && onRefSet) {
+            onRefSet(tab, contentRef.current);
+        }
+        return () => {
+            // 컴포넌트 언마운트 시 cleanup 필요 시 여기에 추가
+        };
+    }, [tab, onRefSet]);
     const review =
         productDetail && (productDetail[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined);
 
@@ -292,7 +338,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
             {!review?.pros?.length && !review?.cons?.length ? (
                 <View
                     style={styles.detailWrap}
-                    ref={refs[tab]}
+                    ref={contentRef}
                     accessible={true}
                     accessibilityLabel="리뷰 정보를 찾을 수 없습니다."
                 >
@@ -300,7 +346,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (
-                <View style={styles.detailWrap} ref={refs[tab]}>
+                <View style={styles.detailWrap} ref={contentRef}>
                     <Text
                         style={styles.reviewListTitle}
                         accessible={true}
@@ -317,7 +363,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.cons?.length !== 0 && (
-                <View style={styles.detailWrap} ref={refs[tab]}>
+                <View style={styles.detailWrap} ref={contentRef}>
                     <Text
                         style={styles.reviewListTitle}
                         accessible={true}
@@ -334,7 +380,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.bests?.length !== 0 && (
-                <View style={styles.detailWrap} ref={refs[tab]}>
+                <View style={styles.detailWrap} ref={contentRef}>
                     <Text
                         style={styles.reviewListTitle}
                         accessible={true}
