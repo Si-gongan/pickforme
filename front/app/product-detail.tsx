@@ -360,16 +360,25 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
         setTab(nextTab);
         setTabPressed(true);
-
-        setTimeout(() => {
-            if (refs[nextTab]?.current) {
-                const node = findNodeHandle(refs[nextTab].current);
-                if (node) {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }
-            }
-        }, 500);
     };
+
+    // useEffect로 변경한 코드
+    useEffect(() => {
+        // 탭이 명시적으로 변경된 경우에만 실행 (초기 로딩 시에는 실행되지 않음)
+        if (tabPressed) {
+            const timer = setTimeout(() => {
+                console.log('handlePressTab 호출됨:', { tab, refs });
+                if (refs[tab]?.current) {
+                    const node = findNodeHandle(refs[tab].current);
+                    if (node) {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }
+                }
+            }, 500);
+
+            return () => clearTimeout(timer);
+        }
+    }, [tab, tabPressed, refs]);
 
     const handleRegenerate = () => {
         console.log('handleRegenerate 호출됨:', { tab });
