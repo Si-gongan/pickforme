@@ -16,8 +16,6 @@ platform :ios, '15.1'
 install! 'cocoapods',
   :deterministic_uuids => false
 
-use_modular_headers!
-
 pod 'GoogleUtilities', :modular_headers => true
 pod 'FirebaseCoreInternal', :modular_headers => true
 pod 'FirebaseCore', :modular_headers => true
