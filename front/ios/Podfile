@@ -21,7 +21,6 @@ pod 'FirebaseCoreInternal', :modular_headers => true
 pod 'FirebaseCore', :modular_headers => true
 pod 'FirebaseInstallations', :modular_headers => true
 pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false
-pod 'React-Core', :modular_headers => true
 
   
 
@@ -49,15 +48,25 @@ target 'app' do
 
   config = use_native_modules!(config_command)
 
-  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
-  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
+  # 프레임워크 사용 옵션 수정
+  if podfile_properties['ios.useFrameworks']
+    use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym
+  elsif ENV['USE_FRAMEWORKS']
+    use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym
+  else
+    # Expo와 React Native의 호환성을 위해 정적 링크 사용
+    use_frameworks! :linkage => :static
+  end
+  
+  # React Native와 Swift 호환성을 위한 설정
+  ENV['RCT_USE_WAITTING_MODE_FOR_SWIFT'] = '1'
 
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
-    :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
+    :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false'
   )
 
   post_install do |installer|
@@ -67,6 +76,69 @@ target 'app' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
+
+    # React Native 관련 설정 개선
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # 모든 타겟에 기본 헤더 경로 설정
+        config.build_settings['HEADER_SEARCH_PATHS'] ||= '$(inherited)'
+        
+        # C++ 표준 버전 업데이트 - C++20으로 변경
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+        
+        # 추가 C++ 오류 해결을 위한 컴파일러 플래그
+        config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= '$(inherited)'
+        config.build_settings['OTHER_CPLUSPLUSFLAGS'] << ' -std=c++20'
+        
+        # 추가 헤더 경로 설정
+        additional_paths = [
+          "${PODS_ROOT}/Headers/Public/React-Core", 
+          "${PODS_ROOT}/Headers/Public/React",
+          "${PODS_ROOT}/Headers/Public/React-debug",
+          "${PODS_ROOT}/Headers/Public/ReactCommon",
+          "${PODS_ROOT}/Headers/Public/React-utils",
+          "${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React_Core.framework/Headers",
+          "${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers",
+          "${PODS_TARGET_SRCROOT}/../.."
+        ]
+        
+        # 헤더 경로 추가
+        additional_paths.each do |path|
+          config.build_settings['HEADER_SEARCH_PATHS'] << " #{path}"
+        end
+        
+        # React-Core 모듈 관련 설정
+        if ['React-Core', 'React-RCTActionSheet', 'React-RCTAnimation', 'React-RCTBlob', 'React-RCTImage', 'React-RCTLinking', 'React-RCTNetwork', 'React-RCTSettings', 'React-RCTText', 'React-RCTVibration'].include? target.name
+          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          config.build_settings['SWIFT_OBJC_BRIDGING_HEADER'] = '"${PODS_ROOT}/Headers/Public/React-Core/React/RCTBridgeModule.h"'
+        end
+
+        # 필요에 따라 특정 타겟에 추가 설정
+        if ['React-utils', 'ReactCommon', 'React-debug'].include? target.name
+          # C++ 요구사항 및 헤더 가시성
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_METRO_PORT=${RCT_METRO_PORT}'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_NO_CONFIG=1 FOLLY_MOBILE=1 FOLLY_USE_LIBCPP=1'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] = '$(inherited) -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1'
+        end
+        
+        # React-utils에서 react_native_assert.h 파일을 찾지 못하는 문제 해결
+        if target.name == 'React-utils'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'REACT_NATIVE_DEBUG=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_FOLLY_REACTNATIVE_ASSERT=1'
+          
+          # react_native_assert.h 파일을 찾지 못하는 문제 해결을 위한 커스텀 플래그 추가
+          config.build_settings['OTHER_CFLAGS'] ||= '$(inherited)'
+          config.build_settings['OTHER_CFLAGS'] << ' -Wno-error=implicit-function-declaration -Wno-error=quoted-include-in-framework-header'
+        end
+      end
+    end
+    
+    # 누락된 react_native_assert.h 파일에 대한 패치
+    system("mkdir -p ${PODS_ROOT}/Headers/Public/React-debug/react/debug")
+    system("echo '#pragma once\n#include <cassert>\n#define react_native_assert(x) assert(x)' > ${PODS_ROOT}/Headers/Public/React-debug/react/debug/react_native_assert.h")
 
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
