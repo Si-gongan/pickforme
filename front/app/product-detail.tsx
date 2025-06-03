@@ -37,7 +37,6 @@ import {
     LoadingStatus
 } from '../stores/product/atoms';
 import { Product } from '../stores/product/types';
-import { sendLogAtom } from '../stores/log/atoms';
 import { requestBottomSheetAtom, requestsAtom } from '../stores/request/atoms';
 
 import { Text, View, Button_old as Button } from '@components';
@@ -93,7 +92,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const setRequestBottomSheet = useSetAtom(requestBottomSheetAtom);
     const setProductReview = useSetAtom(setProductReviewAtom);
     const setProduct = useSetAtom(setProductAtom);
-    const sendLog = useSetAtom(sendLogAtom);
 
     const productDetail = useAtomValue(productDetailAtom);
     const productReview = useAtomValue(productReviewAtom);
@@ -200,10 +198,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [initProductDetail]);
 
     useEffect(() => {
-        if (product) {
-            sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
-            getProductDetail(product);
-        }
+        if (product) getProductDetail(product);
     }, [productUrl]);
 
     // 3. productDetailAtom 값이 변경될 때 로그 추가
@@ -214,7 +209,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [productDetail?.product]);
 
     const handleClickBuy = async () => {
-        sendLog({ product: { url: productUrl }, action: 'link', metaData: {} });
         await WebBrowser.openBrowserAsync(product.url);
     };
 
@@ -252,7 +246,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         try {
             await getProductAIAnswer(question);
             setQuestion('');
-            sendLog({ product: { url: productUrl }, action: 'question', metaData: {} });
         } catch (error: any) {
             console.error('API 호출 실패:', {
                 message: error.message,
@@ -278,7 +271,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             };
 
             setWishlist([...wishlist, enrichedProduct]);
-            sendLog({ product: { url: productUrl }, action: 'like', metaData: {} });
             setTimeout(() => {
                 AccessibilityInfo.announceForAccessibility('위시리스트에 추가되었습니다.');
             }, 300);
