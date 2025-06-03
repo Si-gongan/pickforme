@@ -20,6 +20,9 @@ pod 'GoogleUtilities', :modular_headers => true
 pod 'FirebaseCoreInternal', :modular_headers => true
 pod 'FirebaseCore', :modular_headers => true
 pod 'FirebaseInstallations', :modular_headers => true
+pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false
+pod 'React-Core', :modular_headers => true
+
   
 
 prepare_react_native_project!
@@ -27,7 +30,7 @@ prepare_react_native_project!
 target 'app' do
   use_expo_modules!
 
-  use_frameworks! :linkage => :static
+  # use_frameworks! :linkage => :static
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
