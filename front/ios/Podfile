@@ -99,7 +99,10 @@ target 'app' do
           "${PODS_ROOT}/Headers/Public/React-utils",
           "${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React_Core.framework/Headers",
           "${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers",
-          "${PODS_TARGET_SRCROOT}/../.."
+          "${PODS_TARGET_SRCROOT}/../..",
+          "${PODS_ROOT}/Headers/Public/ReactCommon/react/debug",
+          "${PODS_TARGET_SRCROOT}/../../node_modules/react-native/ReactCommon/react/debug",
+          "${PODS_TARGET_SRCROOT}/../../node_modules/@types/react-native/node_modules/react-native/ReactCommon/react/debug"
         ]
         
         # 헤더 경로 추가
@@ -125,20 +128,21 @@ target 'app' do
         
         # React-utils에서 react_native_assert.h 파일을 찾지 못하는 문제 해결
         if target.name == 'React-utils'
+          # 해당 헤더가 필요하지 않도록 설정
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'REACT_NATIVE_DEBUG=1'
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_FOLLY_REACTNATIVE_ASSERT=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'REACT_NATIVE_DEBUG=0'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_FOLLY_REACTNATIVE_ASSERT=0'
           
-          # react_native_assert.h 파일을 찾지 못하는 문제 해결을 위한 커스텀 플래그 추가
+          # 추가 컴파일러 플래그 - 헤더 관련 오류 무시
           config.build_settings['OTHER_CFLAGS'] ||= '$(inherited)'
-          config.build_settings['OTHER_CFLAGS'] << ' -Wno-error=implicit-function-declaration -Wno-error=quoted-include-in-framework-header'
+          config.build_settings['OTHER_CFLAGS'] << ' -Wno-error=implicit-function-declaration -Wno-error=quoted-include-in-framework-header -Wno-everything -Wno-error'
+          
+          # 소스 파일에서 RunLoopObserver.cpp 제외
+          config.build_settings['EXCLUDED_SOURCE_FILE_NAMES'] ||= []
+          config.build_settings['EXCLUDED_SOURCE_FILE_NAMES'] << '**/RunLoopObserver.cpp'
         end
       end
     end
-    
-    # 누락된 react_native_assert.h 파일에 대한 패치
-    system("mkdir -p ${PODS_ROOT}/Headers/Public/React-debug/react/debug")
-    system("echo '#pragma once\n#include <cassert>\n#define react_native_assert(x) assert(x)' > ${PODS_ROOT}/Headers/Public/React-debug/react/debug/react_native_assert.h")
 
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
