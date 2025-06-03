@@ -9,7 +9,6 @@ import {
     GetProductDetailResponse,
     ProductReview
 } from './types';
-import { productGroupAtom } from '../log/atoms';
 import { userAtom } from '@stores';
 import { atomWithStorage } from '../utils';
 import * as Haptics from 'expo-haptics';
@@ -84,7 +83,7 @@ export const searchProductsAtom = atom(
                     return;
                 }
 
-                set(productGroupAtom, 'link');
+                // 로그 관련 코드 제거
                 onLink(`/product-detail?productUrl=${encodeURIComponent(productUrl)}`);
 
                 const maxTries = 5;
@@ -350,11 +349,11 @@ export const getProductAIAnswerAtom = atom(null, async (get, set, question: stri
     // ai 답변 생성 후 aiPoint 차감
     const userData = await get(userAtom);
     console.log('check userData', userData);
-    if (!userData || userData.aiPoint < 1) {
+    if (!userData || typeof userData.aiPoint === 'undefined' || userData.aiPoint < 1) {
         Alert.alert('AI 질문권 개수가 부족해요.');
         return;
     }
-    set(userAtom, { ...userData!, aiPoint: userData!.aiPoint - 1 });
+    set(userAtom, { ...userData, aiPoint: userData.aiPoint - 1 });
 
     set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.LOADING });
 
