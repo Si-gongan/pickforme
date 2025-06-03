@@ -10,7 +10,10 @@
         "preview": {
             "distribution": "internal"
         },
-        "production": {},
+        "production": {
+            "credentialsSource": "remote",
+            "distribution": "store"
+        },
         "develop": {
             "distribution": "store"
         }

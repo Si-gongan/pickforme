@@ -140,7 +140,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // const ReviewWebView = useWebViewReviews({
     //     productUrl,
     //     onMessage: data => {
-    //         console.log('ReviewWebView 데이터 수신:', data.length);
     //         setProductReview(data);
     //     }
     // });
@@ -181,15 +180,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             Alert.alert('상품 정보를 불러오는 데 실패했습니다.');
         },
         onMessage: data => {
-            console.log(
-                'DetailWebView에서 받은 상품 정보:',
-                JSON.stringify({
-                    name: data.name,
-                    reviews: data.reviews,
-                    ratings: data.ratings,
-                    price: data.price
-                })
-            );
             setProduct(data);
         }
     });
@@ -212,11 +202,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     useEffect(() => {
         if (product) {
             sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
-            console.log('getProductDetail 호출 전 product 정보:', {
-                name: product.name,
-                reviews: product.reviews,
-                ratings: product.ratings
-            });
             getProductDetail(product);
         }
     }, [productUrl]);
@@ -224,11 +209,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // 3. productDetailAtom 값이 변경될 때 로그 추가
     useEffect(() => {
         if (productDetail?.product) {
-            console.log('productDetail 업데이트됨. 리뷰 정보:', {
-                reviews: productDetail.product.reviews,
-                ratings: productDetail.product.ratings,
-                출처: '서버 API 또는 WebView에서 수신'
-            });
+            getProductReview();
         }
     }, [productDetail?.product]);
 
@@ -257,8 +238,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         // 구독 및 AI 포인트 체크
         await getSubscription();
         if (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0) {
-            console.log('AI 질문 - 멤버십 필요');
-            // 모달 표시
             setIsShowNonSubscriberManagerModal(true);
             return;
         }
@@ -345,9 +324,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             // 구독 히스토리에 대한 로직 확인 필요
             // setIsShowSubscriptionModal(true);
         } else {
-            console.log('userData handleClickRequest', userData);
             setRequestBottomSheet(product);
-
             setIsShowRequestModal(true);
         }
     });
@@ -362,16 +339,32 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         setTabPressed(true);
     };
 
+    // Tab 컴포넌트에서 설정된 ref를 처리하는 콜백 함수
+    const handleRefSet = (tabName: string, refValue: RNView | null) => {
+        // 여기서는 직접적으로 refs를 수정하지 않고, refs[tabName]의 current 값에 접근하여 사용합니다.
+        // refs는 useMemo로 생성되어 변경할 수 없기 때문입니다.
+        // 대신 AccessibilityInfo.setAccessibilityFocus를 활용합니다.
+        if (refValue) {
+            const node = findNodeHandle(refValue);
+            if (node && tabPressed) {
+                // 현재 선택된 탭의 ref가 설정된 경우 포커스 부여
+                if (tabName === tab) {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }
+            }
+        }
+    };
+
     // useEffect로 변경한 코드
     useEffect(() => {
         // 탭이 명시적으로 변경된 경우에만 실행 (초기 로딩 시에는 실행되지 않음)
         if (tabPressed) {
             const timer = setTimeout(() => {
-                console.log('handlePressTab 호출됨:', { tab, refs });
                 if (refs[tab]?.current) {
                     const node = findNodeHandle(refs[tab].current);
                     if (node) {
                         AccessibilityInfo.setAccessibilityFocus(node);
+                        setTabPressed(false);
                     }
                 }
             }, 500);
@@ -381,7 +374,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     }, [tab, tabPressed, refs]);
 
     const handleRegenerate = () => {
-        console.log('handleRegenerate 호출됨:', { tab });
         if (tab === TABS.REPORT) getProductReport();
         if (tab === TABS.REVIEW) getProductReview();
         if (tab === TABS.CAPTION) getProductCaption();
@@ -391,11 +383,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { component: reviewsComponent, scrollDown } = useWebViewReviews({
         productUrl: product?.url || '',
         onMessage: data => {
-            console.log('받은 리뷰 데이터:', data.length);
-
             // 리뷰가 있을 때만 요약(캡션) 생성 API 호출
             if (data && data.length > 0) {
-                console.log('리뷰 데이터 있음, 요약 생성 API 호출');
                 // 리뷰 데이터 설정
                 setProductReview(data);
                 getProductReview(); // 리뷰 요약 요청
@@ -404,7 +393,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     });
 
     const handleLoadMore = () => {
-        console.log('handleLoadMore');
         scrollDown();
     };
 
@@ -508,6 +496,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             handleRegenerate={handleRegenerate}
                             scrapedProductDetail={scrapedProductDetail}
                             handleLoadMore={handleLoadMore}
+                            onRefSet={handleRefSet}
                         />
                     </View>
                 ) : (
