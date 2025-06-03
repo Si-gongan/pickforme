@@ -1,6 +1,5 @@
 // hooks/useTabData.ts
 import { useSetAtom } from 'jotai';
-import { sendLogAtom } from '@/stores/log/atoms';
 import { getProductCaptionAtom, getProductReportAtom, getProductReviewAtom } from '@/stores/product/atoms';
 import { TABS } from '@/utils/common';
 import { ProductDetailState, ProductReview } from '@/stores/product/types';
@@ -24,7 +23,6 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
     const getProductCaption = useSetAtom(getProductCaptionAtom);
     const getProductReport = useSetAtom(getProductReportAtom);
     const getProductReview = useSetAtom(getProductReviewAtom);
-    const sendLog = useSetAtom(sendLogAtom);
 
     // 각 탭별로 필요한 데이터를 체크하는 함수
     const checkRequiredData = (tab: TABS, productDetail: ProductDetailState | void): boolean => {
@@ -93,15 +91,12 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
 
         switch (tab) {
             case TABS.CAPTION:
-                sendLog({ product: { url: productUrl }, action: 'caption', metaData: {} });
                 getProductCaption();
                 break;
             case TABS.REPORT:
-                sendLog({ product: { url: productUrl }, action: 'report', metaData: {} });
                 getProductReport();
                 break;
             case TABS.REVIEW:
-                sendLog({ product: { url: productUrl }, action: 'review', metaData: {} });
                 getProductReview();
                 break;
         }
