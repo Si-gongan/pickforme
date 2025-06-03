@@ -91,51 +91,59 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     const getProductDetailInjectionCode = () => {
         if (platform === 'coupang') {
             return `(function() {
-        try {
-          const url = window.location.href;
-          const thumbnail = document.querySelector('.rds-img img')?.src || '';
-          const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
-          const price = parseInt((document.querySelector('.PriceInfo_finalPrice__qniie')?.innerText || '').replace(/[^0-9]/g, ''));
-          
-          const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
-          const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
-          
-          const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
-          const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
+                try {
+                    const getImageSrc = (img) => {
+                        return img?.getAttribute('data-src') || 
+                               img?.getAttribute('srcset') || 
+                               img?.src || '';
+                    };
 
-          // length of rds-rating-item__left, rds-rating-item__right classes
-          const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
-          const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length * 10 : 0;
+                    const url = window.location.href;
+                    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
+                    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
+                    const price = parseInt((document.querySelector('.PriceInfo_finalPrice__qniie')?.innerText || '').replace(/[^0-9]/g, ''));
+                    
+                    const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
+                    const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
+                    
+                    const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
+                    const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
 
-          const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
-          const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
+                    const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
+                    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length * 10 : 0;
 
-          const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
-          const detail_images = [];
-          elements.forEach(element => {
-            const imgElement = element.querySelector('img');
-            if (imgElement && imgElement.src) {
-              detail_images.push(imgElement.src);
-            }
-          });
+                    const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
+                    const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
 
-          const payload = JSON.stringify({
-            content: {
-              thumbnail, 
-              name, 
-              price, 
-              origin_price, 
-              discount_rate, 
-              ratings, 
-              reviews,
-              detail_images
-        }
-          });
-          window.ReactNativeWebView.postMessage(payload);
-        } catch (e) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-        }
-      })();`;
+                    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
+                    const detail_images = [];
+                    elements.forEach(element => {
+                        const imgElement = element.querySelector('img');
+                        if (imgElement) {
+                            const src = getImageSrc(imgElement);
+                            if (src) {
+                                detail_images.push(src);
+                            }
+                        }
+                    });
+
+                    const payload = JSON.stringify({
+                        content: {
+                            thumbnail, 
+                            name, 
+                            price, 
+                            origin_price, 
+                            discount_rate, 
+                            ratings, 
+                            reviews,
+                            detail_images
+                        }
+                    });
+                    window.ReactNativeWebView.postMessage(payload);
+                } catch (e) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
+                }
+            })();`;
         } else {
             return `(function() {
         try {
