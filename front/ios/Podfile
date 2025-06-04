@@ -103,6 +103,12 @@ target 'app' do
           "${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers",
           "${PODS_TARGET_SRCROOT}/../..",
           "${PODS_ROOT}/Headers/Public/React-debug/react/debug",
+          "${PODS_ROOT}/Headers/Public/React-utils/react/utils",
+          "${PODS_ROOT}/Headers/Public/React-rendererdebug/react/renderer/debug",
+          "${PODS_ROOT}/Headers/Public/React-rendererdebug/react/renderer/debug/react/renderer/debug",
+          "${PODS_ROOT}/Headers/Private/React-rendererdebug/react/renderer/debug/react/renderer/debug",
+          "${PODS_ROOT}/Headers/Private/React-featureflags/react/featureflags/react/featureflags",
+          "${PODS_ROOT}/Headers/Public/React-featureflags/react/featureflags/react/featureflags"
         ]
         
         # 헤더 경로 추가
