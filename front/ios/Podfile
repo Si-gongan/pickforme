@@ -23,7 +23,7 @@ pod 'FirebaseCoreInternal', :modular_headers => true
 pod 'FirebaseCore', :modular_headers => true
 pod 'FirebaseInstallations', :modular_headers => true
 pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false  
-
+pod 'ExpoModulesCore', :path => '../node_modules/expo-modules-core', :modular_headers => true
 
 
 prepare_react_native_project!
@@ -50,22 +50,7 @@ target 'app' do
 
   config = use_native_modules!(config_command)
 
-  # 프레임워크 사용 옵션 수정
-  if podfile_properties['ios.useFrameworks']
-    use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym
-  elsif ENV['USE_FRAMEWORKS']
-    use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym
-  else
-    # Expo와 React Native의 호환성을 위해 정적 링크 사용
-    use_frameworks! :linkage => :static
-  end
   
-  # React Native와 Swift 호환성을 위한 설정
-  ENV['RCT_USE_WAITTING_MODE_FOR_SWIFT'] = '1'
-  
-  # 아키텍처 플래그 설정 - 시뮤레이터 사용 시 x86_64로 지정
-  # ENV['ARCHFLAGS'] = '-arch x86_64'
-
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
@@ -337,13 +322,6 @@ target 'app' do
         # 한 번에 헤더 경로 전체 설정
         config.build_settings['HEADER_SEARCH_PATHS'] = ['$(inherited)'] + additional_paths
         
-        # 디맹글링 관련 오류 해결을 위한 매크로 추가
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_LIBGMALLOC=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << '_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
-        
         # C++ 라이브러리 및 표준 설정
         config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
         config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
@@ -392,66 +370,16 @@ target 'app' do
           # expo-dev-client 관련 타겟에 대한 특별 설정
           config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
           config.build_settings['VALID_ARCHS'] = 'x86_64 arm64'
-        end
-
-        # ExpoModulesCore를 위한 특별 설정 - 모듈맵 방식 지원
-        if target.name == 'ExpoModulesCore'
-          config.build_settings['DEFINES_MODULE'] = 'YES'
-          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
-          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-          config.build_settings['PRODUCT_MODULE_NAME'] = 'ExpoModulesCore'
-          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
-          config.build_settings['VALID_ARCHS'] = 'x86_64 arm64'
-          config.build_settings['MODULEMAP_FILE'] = "${PODS_ROOT}/Target Support Files/ExpoModulesCore/ExpoModulesCore.modulemap"
-          config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SDKROOT)/usr/lib/swift', '$(PLATFORM_DIR)/Developer/Library/Frameworks', '$(inherited)']
-          
-          # 모듈 임포트 경로 지정
-          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
-          config.build_settings['SWIFT_INCLUDE_PATHS'] << "${PODS_ROOT}/Target Support Files/ExpoModulesCore"
-          config.build_settings['SWIFT_INCLUDE_PATHS'] << "${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/"
-          
-          # 헤더 경로 지정
-          if config.build_settings['HEADER_SEARCH_PATHS']
-            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_ROOT}/Headers/Public/ExpoModulesCore"
-            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_ROOT}/ExpoModulesCore"
-            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_ROOT}/Target Support Files/ExpoModulesCore"
-            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/ExpoModulesCore.framework/Headers"
-          else
-            config.build_settings['HEADER_SEARCH_PATHS'] = ['$(inherited)', '${PODS_ROOT}/Headers/Public/ExpoModulesCore', '${PODS_ROOT}/ExpoModulesCore', '${PODS_ROOT}/Target Support Files/ExpoModulesCore', '${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/ExpoModulesCore.framework/Headers']
-          end
-          
-          # Swift 모듈 직접 가져오기 설정
-          config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
-        end
+        end        
         
         # app 타겟을 위한 특별 설정
         if target.name == 'app'
-          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
-          config.build_settings['SWIFT_INCLUDE_PATHS'] << '${PODS_ROOT}/Target Support Files/ExpoModulesCore'
-          config.build_settings['SWIFT_INCLUDE_PATHS'] << '${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore'
-          config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
-          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore'
+          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']         
           
           # 모듈 맵 경로 설정
           config.build_settings['SWIFT_PRECOMPILE_BRIDGING_HEADER'] = 'YES'
           config.build_settings['SWIFT_OBJC_INTERFACE_HEADER_NAME'] = 'app-Swift.h'
-          config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SDKROOT)/usr/lib/swift', '$(PLATFORM_DIR)/Developer/Library/Frameworks', '$(inherited)']
-          
-          # 명시적으로 모든 모듈 import 활성화
-          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
-          config.build_settings['DEFINES_MODULE'] = 'YES'
-          config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
-        end
-        
-        # 모듈 설정 최적화
-        config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
-        config.build_settings['CLANG_MODULES_DISABLE_PRIVATE_WARNING'] = 'YES'
-        
-        # 아키텍처 제한 - 시뮤레이터는 x86_64만 사용
-        if config.build_settings['SDKROOT'] == 'iphonesimulator'
-          config.build_settings['ARCHS'] = 'x86_64'
-        else
-          config.build_settings['ARCHS'] = 'arm64'
+          config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SDKROOT)/usr/lib/swift', '$(PLATFORM_DIR)/Developer/Library/Frameworks', '$(inherited)']        
         end
         
         # 헤더 검색 경로에 사용자 정의 헤더 폴더 추가
@@ -463,16 +391,6 @@ target 'app' do
         
         # SocketRocket 타겟을 위한 특별 설정
         if target.name == 'SocketRocket-framework' || target.name == 'SocketRocket'
-          # 커스텀 타입 정의 파일 적용
-          config.build_settings['GCC_PREFIX_HEADER'] = "${PROJECT_DIR}/../SystemTypeDefs.h"
-          config.build_settings['GCC_PRECOMPILE_PREFIX_HEADER'] = 'YES'
-          
-          # 시스템타입 헤더를 희짱향향 포스 인클루드
-          custom_header = "#import \"SystemTypeDefs.h\""
-          prefix_header_path = "#{Dir.pwd}/SystemTypeDefs-SocketRocket-Prefix.pch"
-          File.write(prefix_header_path, custom_header)
-          config.build_settings['GCC_PREFIX_HEADER'] = prefix_header_path
-          
           # C++ 라이브러리 및 표준 설정
           config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
           config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
@@ -481,29 +399,12 @@ target 'app' do
           config.build_settings['DEFINES_MODULE'] = 'NO'
           config.build_settings['CLANG_ENABLE_MODULES'] = 'NO'
           
-          # 아키텍처 호환성 설정 - 하나의 아키텍처만 사용
-          if config.build_settings['SDKROOT'] == 'iphonesimulator'
-            config.build_settings['ARCHS'] = 'x86_64'
-            config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
-            config.build_settings['VALID_ARCHS'] = 'x86_64'
-          else
-            config.build_settings['ARCHS'] = 'arm64'
-            config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
-            config.build_settings['VALID_ARCHS'] = 'arm64'
-          end
-          
           # 시스템 헤더 경로 및 설정
           config.build_settings['SYSTEM_HEADER_SEARCH_PATHS'] = system_paths
           
           # 헤더 검색 경로 추가
           # 시스템 헤더 경로가 먼저 오도록 설정
-          config.build_settings['HEADER_SEARCH_PATHS'] = system_paths + ['$(inherited)', '${PODS_ROOT}/../', '${PROJECT_DIR}/../']
-          
-          # 추가적인 C++ 전처리기 정의
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << '_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES=1'
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HAVE_INTTYPES_H=1'
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HAVE_STDINT_H=1'
+          config.build_settings['HEADER_SEARCH_PATHS'] = system_paths + ['$(inherited)', '${PODS_ROOT}/../', '${PROJECT_DIR}/../']          
           
           # 중요: OTHER_CPLUSPLUSFLAGS 설정으로 컴파일러에게 시스템 헤더 순서 강제
           config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
@@ -517,7 +418,7 @@ target 'app' do
         end
         
         # React-Core 모듈 관련 설정
-        if ['React-Core', 'React-RCTActionSheet', 'React-RCTAnimation', 'React-RCTBlob', 'React-RCTImage', 'React-RCTLinking', 'React-RCTNetwork', 'React-RCTSettings', 'React-RCTText', 'React-RCTVibration', 'RCT-Folly'].include? target.name
+        if ['React-Core', 'React-RCTActionSheet', 'React-RCTAnimation', 'React-RCTBlob', 'React-RCTImage', 'React-RCTLinking', 'React-RCTNetwork', 'React-RCTSettings', 'React-RCTText', 'React-RCTVibration', 'RCT-Folly', 'React-NativeModulesApple-library', 'React-RCTFabric-library', 'ReactCodegen-library', 'RCTTypeSafety-library'].include? target.name
           config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
           config.build_settings['DEFINES_MODULE'] = 'YES'
           config.build_settings['SWIFT_OBJC_BRIDGING_HEADER'] = '"${PODS_ROOT}/Headers/Public/React-Core/React/RCTBridgeModule.h"'
@@ -569,6 +470,26 @@ target 'app' do
           # 소스 파일에서 RunLoopObserver.cpp 제외
           config.build_settings['EXCLUDED_SOURCE_FILE_NAMES'] ||= []
           config.build_settings['EXCLUDED_SOURCE_FILE_NAMES'] << '**/RunLoopObserver.cpp'
+        end
+
+
+        target_names = ['React-NativeModulesApple', 'React-RCTFabric', 'ReactCodegen', 'RCTTypeSafety']
+    
+        if target_names.include?(target.name)
+          puts "Applying modular headers to #{target.name}"
+          target.build_configurations.each do |config|
+            config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+            config.build_settings['DEFINES_MODULE'] = 'YES'
+            config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+            
+            # 헤더 검색 경로 설정 보존하면서 모듈러 헤더 적용
+            config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+            config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
+            
+            # 모듈 설정 최적화
+            config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
+            config.build_settings['CLANG_MODULES_DISABLE_PRIVATE_WARNING'] = 'YES'
+          end
         end
       end
     end
