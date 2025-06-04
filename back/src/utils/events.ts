@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import db from 'models';
 import { ProductReward } from 'models/product';
+import { EVENT_IDS } from 'constants/events';
 
 dotenv.config();
 
@@ -13,21 +14,11 @@ dotenv.config();
  * (노션 픽포미 개발문서 > .env의 production env로 교체.)
  * npm run membership-events 로 실행해주세요.
  *
- * 주의! 만약 한시련 이벤트 번호가 1번에서 바뀌게 되거나, 지급하게 되는 포인트가 30, 9999 에서 바뀌게 되면,
- * 이 스크립트에서 지급하는 포인트도 바꿔줘야 합니다. EVENT_PRODUCT_REWARDS 객체의 값을 바꿔주세요.
+ * 여기서 지급하게 되는 포인트는 DB에 저장된 한시련 이벤트 멤버쉽 상품 (productId: pickforme_hansiryun_event_membership)의 포인트 값입니다.
+ * 만약 해당 상품이 없으면 에러가 발생합니다.
  *
  * 주의! 스크립트 실행 이후에는 다시 local용 .env로 변경해주세요!
  */
-
-// 원래는 product.getRewards() 함수를 통해서 가져오는 값이지만,
-// 현재 product 모델에서는 event 필드가 따로 없기 때문에 임시로 이렇게 rewards 객체를 직접 만들어서 이벤트를 처리합니다.
-// 추후에 product 모델에 event 필드를 추가하고, 이 스크립트에서도 product.getRewards() 함수를 통해서 가져오는 값으로 변경해주세요.
-const EVENT_PRODUCT_REWARDS: ProductReward = {
-  point: 30,
-  aiPoint: 9999,
-  // 한시련 이벤트는 이벤트 멤버쉽 타입이 1입니다.
-  event: 1,
-};
 
 // 구글 API 인증 설정
 const auth = new google.auth.GoogleAuth({
@@ -42,7 +33,7 @@ interface FormResponse {
   email: string;
 }
 
-async function processUser(response: FormResponse): Promise<void> {
+async function processUser(response: FormResponse, eventRewards: ProductReward): Promise<void> {
   try {
     const normalizedPhoneNumber = response.phoneNumber.replace(/-/g, '');
 
@@ -72,7 +63,7 @@ async function processUser(response: FormResponse): Promise<void> {
       return;
     }
 
-    await user.applyPurchaseRewards(EVENT_PRODUCT_REWARDS);
+    await user.applyEventRewards(eventRewards, EVENT_IDS.HANSIRYUN);
 
     console.log(
       `new event membership for User ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt}`
@@ -105,12 +96,12 @@ async function main() {
 
     // 스프레드시트 데이터 가져오기
     console.log('getting data from google sheet');
-    const response = await sheets.spreadsheets.values.get({
+    const resp = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
     });
 
-    const rows = response.data.values;
+    const rows = resp.data.values;
     if (!rows || rows.length === 0) {
       console.log('No data found.');
       return;
@@ -124,9 +115,20 @@ async function main() {
       phoneNumber: row[3],
     }));
 
+    const eventProducts = await db.Product.findOne({
+      eventId: EVENT_IDS.HANSIRYUN,
+    });
+
+    if (!eventProducts) {
+      console.log('No event products found');
+      return;
+    }
+
+    const eventRewards = eventProducts.getRewards();
+
     // 각 응답 처리
     for (const response of formResponses) {
-      await processUser(response);
+      await processUser(response, eventRewards);
     }
 
     console.log('Processing completed successfully');
@@ -139,5 +141,8 @@ async function main() {
 }
 
 if (require.main === module) {
-  main();
+  main().catch((error) => {
+    console.error('Error in main process:', error);
+    process.exit(1);
+  });
 }

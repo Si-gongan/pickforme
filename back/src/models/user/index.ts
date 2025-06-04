@@ -1,4 +1,4 @@
-import mongoose, { ClientSession, Schema, Types } from 'mongoose';
+import mongoose, { ClientSession } from 'mongoose';
 import jwt from 'utils/jwt';
 
 import { UserDocument, UserModel, LocalRegisterPayload, PushService } from './types';
@@ -142,11 +142,16 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(
 
   this.lastMembershipAt = new Date();
 
-  // 만약 이벤트 멤버쉽 구매인 경우, event 필드에 이벤트 멤버쉽 타입을 저장.
-  if (rewards.event) {
-    this.event = rewards.event;
-  }
+  await this.save({ session });
+};
 
+UserSchema.methods.applyEventRewards = async function applyEventRewards(
+  rewards: ProductReward,
+  eventType: number,
+  session?: mongoose.ClientSession
+) {
+  await this.applyPurchaseRewards(rewards, session);
+  this.event = eventType;
   await this.save({ session });
 };
 
