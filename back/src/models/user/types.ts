@@ -25,7 +25,7 @@ export interface User extends LocalRegisterPayload {
   MembershipAt: Date | null;
   lastMembershipAt: Date | null;
   phone?: string;
-  event?: number;
+  event?: number | null;
   hide?: string[];
 }
 
