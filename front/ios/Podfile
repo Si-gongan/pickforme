@@ -22,9 +22,9 @@ pod 'GoogleUtilities', :modular_headers => true
 pod 'FirebaseCoreInternal', :modular_headers => true
 pod 'FirebaseCore', :modular_headers => true
 pod 'FirebaseInstallations', :modular_headers => true
-pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false
+pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false  
 
-  
+
 
 prepare_react_native_project!
 
@@ -62,6 +62,9 @@ target 'app' do
   
   # React Native와 Swift 호환성을 위한 설정
   ENV['RCT_USE_WAITTING_MODE_FOR_SWIFT'] = '1'
+  
+  # 아키텍처 플래그 설정 - 시뮤레이터 사용 시 x86_64로 지정
+  # ENV['ARCHFLAGS'] = '-arch x86_64'
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -78,7 +81,7 @@ target 'app' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
-
+    
     # React Native 관련 설정 개선
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
@@ -108,23 +111,443 @@ target 'app' do
           "${PODS_ROOT}/Headers/Public/React-rendererdebug/react/renderer/debug/react/renderer/debug",
           "${PODS_ROOT}/Headers/Private/React-rendererdebug/react/renderer/debug/react/renderer/debug",
           "${PODS_ROOT}/Headers/Private/React-featureflags/react/featureflags/react/featureflags",
-          "${PODS_ROOT}/Headers/Public/React-featureflags/react/featureflags/react/featureflags"
+          "${PODS_ROOT}/Headers/Public/React-featureflags/react/featureflags/react/featureflags",
+          "${PODS_ROOT}/Headers/Private/React-featureflags/react",
+          "${PODS_ROOT}/Headers/Public/React-featureflags/react"          
         ]
         
-        # 헤더 경로 추가
-        additional_paths.each do |path|
-          config.build_settings['HEADER_SEARCH_PATHS'] << " #{path}"
+        # 헤더 경로 추가 - 전체 경로를 한 번에 설정
+        # homebrew 경로 추가 (config.h 파일을 찾지 못하는 문제 해결)
+        additional_paths += [
+          "$(PODS_ROOT)/fast_float/include/fast_float",
+          "$(PODS_ROOT)/KakaoSDKAuth/Sources/KakaoSDKAuth",
+          "$(PODS_ROOT)/DoubleConversion/double-conversion",
+          "$(PODS_ROOT)/FirebaseCore/FirebaseCore/Extension",
+          "$(PODS_ROOT)/FirebaseCore/FirebaseCore/Sources",
+          "$(PODS_ROOT)/FirebaseCore/FirebaseCore/Sources/Public/FirebaseCore",
+          "$(PODS_ROOT)/PromisesObjC/Sources/FBLPromises/include",
+          "$(PODS_ROOT)/RCT-Folly/folly",
+          "$(PODS_ROOT)/RCT-Folly/folly/net",
+          "$(PODS_ROOT)/RCT-Folly/folly/net/detail",
+          "$(PODS_ROOT)/RCT-Folly/folly/memory",
+          "$(PODS_ROOT)/RCT-Folly/folly/memory/detail",
+          "$(PODS_ROOT)/RCT-Folly/folly/synchronization",
+          "$(PODS_ROOT)/RCT-Folly/folly/chrono",
+          "$(PODS_ROOT)/RCT-Folly/folly/hash",
+          "$(PODS_ROOT)/RCT-Folly/folly/algorithm/simd",
+          "$(PODS_ROOT)/RCT-Folly/folly/algorithm/simd/detail",
+          "$(PODS_ROOT)/RCT-Folly/folly/lang",
+          "$(PODS_ROOT)/RCT-Folly/folly/container",
+          "$(PODS_ROOT)/RCT-Folly/folly/container/detail",
+          "$(PODS_ROOT)/RCT-Folly/folly/concurrency",
+          "$(PODS_ROOT)/RCT-Folly/folly/system",
+          "$(PODS_ROOT)/RCT-Folly/folly/detail",
+          "$(PODS_ROOT)/RCT-Folly/folly/json",
+          "$(PODS_ROOT)/RCT-Folly/folly/portability",
+          "$(PODS_ROOT)/RCT-Folly/folly/functional",
+          "$(PODS_ROOT)/KakaoSDKUser/Sources/KakaoSDKUser",
+          "$(PODS_ROOT)/boost/boost",
+          "$(PODS_ROOT)/boost/boost/predef",
+          "$(PODS_ROOT)/boost/boost/predef/hardware",
+          "$(PODS_ROOT)/boost/boost/predef/hardware/simd",
+          "$(PODS_ROOT)/boost/boost/predef/hardware/simd/x86_amd",
+          "$(PODS_ROOT)/boost/boost/predef/hardware/simd/ppc",
+          "$(PODS_ROOT)/boost/boost/predef/hardware/simd/x86",
+          "$(PODS_ROOT)/boost/boost/predef/hardware/simd/arm",
+          "$(PODS_ROOT)/boost/boost/predef/platform",
+          "$(PODS_ROOT)/boost/boost/predef/other",
+          "$(PODS_ROOT)/boost/boost/predef/library",
+          "$(PODS_ROOT)/boost/boost/predef/library/std",
+          "$(PODS_ROOT)/boost/boost/predef/library/c",
+          "$(PODS_ROOT)/boost/boost/predef/language",
+          "$(PODS_ROOT)/boost/boost/predef/architecture",
+          "$(PODS_ROOT)/boost/boost/predef/architecture/x86",
+          "$(PODS_ROOT)/boost/boost/predef/detail",
+          "$(PODS_ROOT)/boost/boost/predef/os",
+          "$(PODS_ROOT)/boost/boost/predef/os/bsd",
+          "$(PODS_ROOT)/boost/boost/predef/compiler",
+          "$(PODS_ROOT)/fmt/include/fmt",
+          "$(PODS_ROOT)/glog/src",
+          "$(PODS_ROOT)/glog/src/glog",
+          "$(PODS_ROOT)/glog/src/base",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal/Proxy",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal/RunLoop",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal/Security",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal/Delegate",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal/Utilities",
+          "$(PODS_ROOT)/SocketRocket/SocketRocket/Internal/IOConsumer",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseCore/Extension",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/InstallationsAPI",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/Public/FirebaseInstallations",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/Private",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/InstallationsIDController",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/Errors",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/InstallationsStore",
+          "$(PODS_ROOT)/FirebaseInstallations/FirebaseInstallations/Source/Library/IIDMigration",
+          "$(PODS_ROOT)/Firebase/CoreOnly/Sources",
+          "$(PODS_ROOT)/Headers/Public/React-callinvoker/ReactCommon",
+          "$(PODS_ROOT)/Headers/Public/React-debug/react/debug/react/debug",
+          "$(PODS_ROOT)/Headers/Public/fast_float/fast_float",
+          "$(PODS_ROOT)/Headers/Public/React_featureflags",
+          "$(PODS_ROOT)/Headers/Public/DoubleConversion",
+          "$(PODS_ROOT)/Headers/Public/DoubleConversion/double-conversion",
+          "$(PODS_ROOT)/Headers/Public/Yoga",
+          "$(PODS_ROOT)/Headers/Public/Yoga/yoga",
+          "$(PODS_ROOT)/Headers/Public/React-Core/React",
+          "$(PODS_ROOT)/Headers/Public/FirebaseCore",
+          "$(PODS_ROOT)/Headers/Public/RNFBApp",
+          "$(PODS_ROOT)/Headers/Public/React-logger/logger",
+          "$(PODS_ROOT)/Headers/Public/PromisesObjC",
+          "$(PODS_ROOT)/Headers/Public/React-rendererconsistency/react/renderer/consistency/react/renderer/consistency",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/net",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/net/detail",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/memory",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/memory/detail",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/chrono",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/hash",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/algorithm/simd",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/algorithm/simd/detail",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/lang",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/container",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/container/detail",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/system",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/detail",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/json",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/portability",
+          "$(PODS_ROOT)/Headers/Public/RCT-Folly/folly/functional",
+          "$(PODS_ROOT)/Headers/Public/RCTDeprecation",
+          "$(PODS_ROOT)/Headers/Public/FBLazyVector/FBLazyVector",
+          "$(PODS_ROOT)/Headers/Public/fmt/fmt",
+          "$(PODS_ROOT)/Headers/Public/React-runtimescheduler/react/renderer/runtimescheduler/react/renderer/runtimescheduler",
+          "$(PODS_ROOT)/Headers/Public/React-jsi/jsi",
+          "$(PODS_ROOT)/Headers/Public/glog",
+          "$(PODS_ROOT)/Headers/Public/glog/glog",
+          "$(PODS_ROOT)/Headers/Public/React_debug",
+          "$(PODS_ROOT)/Headers/Public/SocketRocket",
+          "$(PODS_ROOT)/Headers/Public/FirebaseInstallations",
+          "$(PODS_ROOT)/Headers/Public/React-cxxreact/cxxreact",
+          "$(PODS_ROOT)/Headers/Public/jsi",
+          "$(PODS_ROOT)/Headers/Public/jsinspector_modern",
+          "$(PODS_ROOT)/Headers/Public/RCTRequired/RCTRequired",
+          "$(PODS_ROOT)/Headers/Public/React-runtimeexecutor/ReactCommon",
+          "$(PODS_ROOT)/Headers/Public/React-timing/react/timing",
+          "$(PODS_ROOT)/Headers/Public/FirebaseCoreInternal",
+          "$(PODS_ROOT)/Headers/Public/React-utils/react/utils/react/utils",
+          "$(PODS_ROOT)/Headers/Public/Firebase",
+          "$(PODS_ROOT)/Headers/Public/React-performancetimeline/react/performance/timeline/react/performance/timeline",
+          "$(PODS_ROOT)/Headers/Public/React-perflogger/reactperflogger",
+          "$(PODS_ROOT)/Headers/Public/React_utils",
+          "$(PODS_ROOT)/Headers/Public/React_jsc",
+          "$(PODS_ROOT)/Headers/Public/React-featureflags/react/featureflags/react/featureflags",
+          "$(PODS_ROOT)/Headers/Public/React-jsc",
+          "$(PODS_ROOT)/Headers/Public/React-rendererdebug/react/renderer/debug/react/renderer/debug",
+          "$(PODS_ROOT)/Headers/Public/GoogleUtilities",
+          "$(PODS_ROOT)/Headers/Public/React-jsinspector/jsinspector-modern",
+          "$(PODS_ROOT)/Headers/Public/React-jsiexecutor/jsireact",
+          "$(PODS_ROOT)/Headers/Public/FBLPromises",
+          "$(PODS_ROOT)/Headers/Public/React",
+          "$(PODS_ROOT)/Headers/Public/React_rendererdebug",
+          "$(PODS_ROOT)/Headers/Public/folly",
+          "$(PODS_ROOT)/Headers/Private/React-callinvoker/ReactCommon",
+          "$(PODS_ROOT)/Headers/Private/React-debug/react/debug/react/debug",
+          "$(PODS_ROOT)/Headers/Private/fast_float/fast_float",
+          "$(PODS_ROOT)/Headers/Private/DoubleConversion/double-conversion",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/config",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/enums",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/style",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/algorithm",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/numeric",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/node",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/event",
+          "$(PODS_ROOT)/Headers/Private/Yoga/yoga/debug",
+          "$(PODS_ROOT)/Headers/Private/React-Core/React",
+          "$(PODS_ROOT)/Headers/Private/FirebaseCore",
+          "$(PODS_ROOT)/Headers/Private/RNFBApp",
+          "$(PODS_ROOT)/Headers/Private/React-logger/logger",
+          "$(PODS_ROOT)/Headers/Private/PromisesObjC",
+          "$(PODS_ROOT)/Headers/Private/React-rendererconsistency/react/renderer/consistency/react/renderer/consistency",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/net",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/net/detail",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/memory",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/memory/detail",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/chrono",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/hash",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/algorithm/simd",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/algorithm/simd/detail",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/lang",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/container",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/container/detail",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/system",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/detail",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/json",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/portability",
+          "$(PODS_ROOT)/Headers/Private/RCT-Folly/folly/functional",
+          "$(PODS_ROOT)/Headers/Private/RCTDeprecation",
+          "$(PODS_ROOT)/Headers/Private/FBLazyVector/FBLazyVector",
+          "$(PODS_ROOT)/Headers/Private/fmt/fmt",
+          "$(PODS_ROOT)/Headers/Private/React-runtimescheduler/react/renderer/runtimescheduler/react/renderer/runtimescheduler",
+          "$(PODS_ROOT)/Headers/Private/React-jsi/jsi",
+          "$(PODS_ROOT)/Headers/Private/glog/glog",
+          "$(PODS_ROOT)/Headers/Private/SocketRocket",
+          "$(PODS_ROOT)/Headers/Private/FirebaseInstallations",
+          "$(PODS_ROOT)/Headers/Private/React-cxxreact/cxxreact",
+          "$(PODS_ROOT)/Headers/Private/RCTRequired/RCTRequired",
+          "$(PODS_ROOT)/Headers/Private/React-runtimeexecutor/ReactCommon",
+          "$(PODS_ROOT)/Headers/Private/React-timing/react/timing",
+          "$(PODS_ROOT)/Headers/Private/React-utils/react/utils/react/utils",
+          "$(PODS_ROOT)/Headers/Private/Firebase",
+          "$(PODS_ROOT)/Headers/Private/React-performancetimeline/react/performance/timeline/react/performance/timeline",
+          "$(PODS_ROOT)/Headers/Private/React-perflogger/reactperflogger",
+          "$(PODS_ROOT)/Headers/Private/React-featureflags/react/featureflags/react/featureflags",
+          "$(PODS_ROOT)/Headers/Private/React-jsc",
+          "$(PODS_ROOT)/Headers/Private/React-rendererdebug/react/renderer/debug/react/renderer/debug",
+          "$(PODS_ROOT)/Headers/Private/GoogleUtilities",
+          "$(PODS_ROOT)/Headers/Private/React-jsinspector/jsinspector-modern",
+          "$(PODS_ROOT)/Headers/Private/React-jsiexecutor/jsireact",
+          "$(PODS_ROOT)/FirebaseAnalytics/Frameworks/FirebaseAnalytics.xcframework/tvos-arm64/FirebaseAnalytics.framework/Headers",
+          "$(PODS_ROOT)/FirebaseAnalytics/Frameworks/FirebaseAnalytics.xcframework/tvos-arm64_x86_64-simulator/FirebaseAnalytics.framework/Headers",
+          "$(PODS_ROOT)/FirebaseAnalytics/Frameworks/FirebaseAnalytics.xcframework/macos-arm64_x86_64/FirebaseAnalytics.framework/Versions/A/Headers",
+          "$(PODS_ROOT)/FirebaseAnalytics/Frameworks/FirebaseAnalytics.xcframework/ios-arm64_x86_64-simulator/FirebaseAnalytics.framework/Headers",
+          "$(PODS_ROOT)/FirebaseAnalytics/Frameworks/FirebaseAnalytics.xcframework/ios-arm64_x86_64-maccatalyst/FirebaseAnalytics.framework/Versions/A/Headers",
+          "$(PODS_ROOT)/FirebaseAnalytics/Frameworks/FirebaseAnalytics.xcframework/ios-arm64/FirebaseAnalytics.framework/Headers",
+          "$(PODS_ROOT)/GoogleUtilities/third_party/IsAppEncrypted/Public",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/UserDefaults/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/MethodSwizzler/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Logger/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Network",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Network/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Common",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Reachability",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Reachability/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/AppDelegateSwizzler/Internal",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/AppDelegateSwizzler/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/Environment/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/SwizzlerTestHelpers",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/SwizzlerTestHelpers/Public/GoogleUtilities",
+          "$(PODS_ROOT)/GoogleUtilities/GoogleUtilities/NSData+zlib/Public/GoogleUtilities",
+          "$(PODS_ROOT)/nanopb",
+        ]
+        
+        # 한 번에 헤더 경로 전체 설정
+        config.build_settings['HEADER_SEARCH_PATHS'] = ['$(inherited)'] + additional_paths
+        
+        # 디맹글링 관련 오류 해결을 위한 매크로 추가
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_LIBGMALLOC=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << '_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
+        
+        # C++ 라이브러리 및 표준 설정
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+        config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+        
+        # 시스템 헤더 경로 추가 (C++ 표준 라이브러리를 먼저 찾도록)
+        # 일반 헤더 경로
+        standard_paths = [
+          # iOS 기기용 C++ 표준 헤더
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/c++/v1',
+          # iOS 시뮤레이터용 C++ 표준 헤더 (중요!)
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/c++/v1',
+          # macOS용 C++ 표준 헤더 (추가 호환성)
+          '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1',
+          # Homebrew/LLVM의 C++ 표준 헤더
+          '/opt/homebrew/Cellar/llvm/19.1.7/include/c++/v1',
+          # 시스템 헤더
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include' # 표준 헤더 추가
+        ]
+        
+        # 시스템 타입 관련 헤더
+        darwin_header_paths = [
+          # iOS용 시스템 타입 헤더
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/sys',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/machine',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/arm',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach',
+          # iOS 시뮤레이터용 시스템 타입 헤더 (아키텍처 호환성 개선)
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.2.sdk/usr/include',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.2.sdk/usr/include/sys',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.2.sdk/usr/include/machine',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.2.sdk/usr/include/arm',
+          '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.2.sdk/usr/include/mach',
+          # 추가 헤더 경로
+          '/opt/homebrew/Cellar/llvm/19.1.7/include'
+        ]
+        
+        # 모든 헤더 경로 합치기
+        system_paths = standard_paths + darwin_header_paths
+        
+        config.build_settings['SYSTEM_HEADER_SEARCH_PATHS'] ||= []
+        config.build_settings['SYSTEM_HEADER_SEARCH_PATHS'] += system_paths        
+        
+        if target.name == 'EXDevMenu' || target.name == 'expo-dev-client' || target.name.include?('ExpoModules')
+          # expo-dev-client 관련 타겟에 대한 특별 설정
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+          config.build_settings['VALID_ARCHS'] = 'x86_64 arm64'
+        end
+
+        # ExpoModulesCore를 위한 특별 설정 - 모듈맵 방식 지원
+        if target.name == 'ExpoModulesCore'
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+          config.build_settings['PRODUCT_MODULE_NAME'] = 'ExpoModulesCore'
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+          config.build_settings['VALID_ARCHS'] = 'x86_64 arm64'
+          config.build_settings['MODULEMAP_FILE'] = "${PODS_ROOT}/Target Support Files/ExpoModulesCore/ExpoModulesCore.modulemap"
+          config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SDKROOT)/usr/lib/swift', '$(PLATFORM_DIR)/Developer/Library/Frameworks', '$(inherited)']
+          
+          # 모듈 임포트 경로 지정
+          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << "${PODS_ROOT}/Target Support Files/ExpoModulesCore"
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << "${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/"
+          
+          # 헤더 경로 지정
+          if config.build_settings['HEADER_SEARCH_PATHS']
+            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_ROOT}/Headers/Public/ExpoModulesCore"
+            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_ROOT}/ExpoModulesCore"
+            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_ROOT}/Target Support Files/ExpoModulesCore"
+            config.build_settings['HEADER_SEARCH_PATHS'] << "${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/ExpoModulesCore.framework/Headers"
+          else
+            config.build_settings['HEADER_SEARCH_PATHS'] = ['$(inherited)', '${PODS_ROOT}/Headers/Public/ExpoModulesCore', '${PODS_ROOT}/ExpoModulesCore', '${PODS_ROOT}/Target Support Files/ExpoModulesCore', '${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/ExpoModulesCore.framework/Headers']
+          end
+          
+          # Swift 모듈 직접 가져오기 설정
+          config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+        end
+        
+        # app 타겟을 위한 특별 설정
+        if target.name == 'app'
+          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << '${PODS_ROOT}/Target Support Files/ExpoModulesCore'
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << '${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore'
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore'
+          
+          # 모듈 맵 경로 설정
+          config.build_settings['SWIFT_PRECOMPILE_BRIDGING_HEADER'] = 'YES'
+          config.build_settings['SWIFT_OBJC_INTERFACE_HEADER_NAME'] = 'app-Swift.h'
+          config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SDKROOT)/usr/lib/swift', '$(PLATFORM_DIR)/Developer/Library/Frameworks', '$(inherited)']
+          
+          # 명시적으로 모든 모듈 import 활성화
+          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+        end
+        
+        # 모듈 설정 최적화
+        config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
+        config.build_settings['CLANG_MODULES_DISABLE_PRIVATE_WARNING'] = 'YES'
+        
+        # 아키텍처 제한 - 시뮤레이터는 x86_64만 사용
+        if config.build_settings['SDKROOT'] == 'iphonesimulator'
+          config.build_settings['ARCHS'] = 'x86_64'
+        else
+          config.build_settings['ARCHS'] = 'arm64'
+        end
+        
+        # 헤더 검색 경로에 사용자 정의 헤더 폴더 추가
+        if config.build_settings['HEADER_SEARCH_PATHS']
+          config.build_settings['HEADER_SEARCH_PATHS'] << '${PODS_ROOT}/../'
+        else
+          config.build_settings['HEADER_SEARCH_PATHS'] = ['$(inherited)', '${PODS_ROOT}/../']
+        end
+        
+        # SocketRocket 타겟을 위한 특별 설정
+        if target.name == 'SocketRocket-framework' || target.name == 'SocketRocket'
+          # 커스텀 타입 정의 파일 적용
+          config.build_settings['GCC_PREFIX_HEADER'] = "${PROJECT_DIR}/../SystemTypeDefs.h"
+          config.build_settings['GCC_PRECOMPILE_PREFIX_HEADER'] = 'YES'
+          
+          # 시스템타입 헤더를 희짱향향 포스 인클루드
+          custom_header = "#import \"SystemTypeDefs.h\""
+          prefix_header_path = "#{Dir.pwd}/SystemTypeDefs-SocketRocket-Prefix.pch"
+          File.write(prefix_header_path, custom_header)
+          config.build_settings['GCC_PREFIX_HEADER'] = prefix_header_path
+          
+          # C++ 라이브러리 및 표준 설정
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+          config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+          
+          # 모듈 관련 추가 설정
+          config.build_settings['DEFINES_MODULE'] = 'NO'
+          config.build_settings['CLANG_ENABLE_MODULES'] = 'NO'
+          
+          # 아키텍처 호환성 설정 - 하나의 아키텍처만 사용
+          if config.build_settings['SDKROOT'] == 'iphonesimulator'
+            config.build_settings['ARCHS'] = 'x86_64'
+            config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+            config.build_settings['VALID_ARCHS'] = 'x86_64'
+          else
+            config.build_settings['ARCHS'] = 'arm64'
+            config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+            config.build_settings['VALID_ARCHS'] = 'arm64'
+          end
+          
+          # 시스템 헤더 경로 및 설정
+          config.build_settings['SYSTEM_HEADER_SEARCH_PATHS'] = system_paths
+          
+          # 헤더 검색 경로 추가
+          # 시스템 헤더 경로가 먼저 오도록 설정
+          config.build_settings['HEADER_SEARCH_PATHS'] = system_paths + ['$(inherited)', '${PODS_ROOT}/../', '${PROJECT_DIR}/../']
+          
+          # 추가적인 C++ 전처리기 정의
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << '_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HAVE_INTTYPES_H=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HAVE_STDINT_H=1'
+          
+          # 중요: OTHER_CPLUSPLUSFLAGS 설정으로 컴파일러에게 시스템 헤더 순서 강제
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/c++/v1'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/sys'
+          
+          # 시뮤레이터 헤더도 포함
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/sys'
         end
         
         # React-Core 모듈 관련 설정
-        if ['React-Core', 'React-RCTActionSheet', 'React-RCTAnimation', 'React-RCTBlob', 'React-RCTImage', 'React-RCTLinking', 'React-RCTNetwork', 'React-RCTSettings', 'React-RCTText', 'React-RCTVibration'].include? target.name
+        if ['React-Core', 'React-RCTActionSheet', 'React-RCTAnimation', 'React-RCTBlob', 'React-RCTImage', 'React-RCTLinking', 'React-RCTNetwork', 'React-RCTSettings', 'React-RCTText', 'React-RCTVibration', 'RCT-Folly'].include? target.name
           config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
           config.build_settings['DEFINES_MODULE'] = 'YES'
           config.build_settings['SWIFT_OBJC_BRIDGING_HEADER'] = '"${PODS_ROOT}/Headers/Public/React-Core/React/RCTBridgeModule.h"'
         end
 
+        # nanopb 타겟에 대한 특별 설정
+        if target.name == 'nanopb'
+          # nanopb는 C 코드이미로 C++ 표준 헤더 관련 플래그 제거
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          # nanopb는 C 코드이므로 특수한 설정이 필요합니다
+          config.build_settings['CLANG_ENABLE_MODULES'] = 'NO'
+          config.build_settings['GCC_C_LANGUAGE_STANDARD'] = 'gnu99'  # C 표준을 설정 (C++ 아님)
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = nil   # C++ 표준 설정 제거
+          config.build_settings['CLANG_CXX_LIBRARY'] = nil            # C++ 라이브러리 설정 제거
+          config.build_settings['HEADER_SEARCH_PATHS'] = ['$(inherited)', "${PODS_ROOT}/nanopb", "$(SRCROOT)/../node_modules/react-native/third-party/glog-0.3.5/src"]
+        end
+        
+        # RCT-Folly 특수 설정 추가
+        if target.name == 'RCT-Folly'
+          config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['HEADER_SEARCH_PATHS'] << "$(PODS_ROOT)/RCT-Folly"
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_NO_CONFIG'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_MOBILE=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
+        end
+        
         # 필요에 따라 특정 타겟에 추가 설정
-        if ['React-utils', 'ReactCommon', 'React-debug'].include? target.name
+        if ['React-utils', 'ReactCommon', 'React-debug', 'React-featureflags'].include? target.name
           # C++ 요구사항 및 헤더 가시성
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_METRO_PORT=${RCT_METRO_PORT}'
