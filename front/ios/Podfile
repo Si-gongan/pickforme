@@ -102,9 +102,7 @@ target 'app' do
           "${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React_Core.framework/Headers",
           "${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers",
           "${PODS_TARGET_SRCROOT}/../..",
-          "${PODS_ROOT}/Headers/Public/ReactCommon/react/debug",
-          "${PODS_TARGET_SRCROOT}/../../node_modules/react-native/ReactCommon/react/debug",
-          "${PODS_TARGET_SRCROOT}/../../node_modules/@types/react-native/node_modules/react-native/ReactCommon/react/debug"
+          "${PODS_ROOT}/Headers/Public/React-debug/react/debug",
         ]
         
         # 헤더 경로 추가
