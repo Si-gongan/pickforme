@@ -1,4 +1,4 @@
-import mongoose, { ClientSession, Schema, Types } from 'mongoose';
+import mongoose, { ClientSession } from 'mongoose';
 import jwt from 'utils/jwt';
 
 import { UserDocument, UserModel, LocalRegisterPayload, PushService } from './types';
@@ -65,6 +65,7 @@ const UserSchema = new mongoose.Schema<UserDocument>(
     },
     event: {
       type: Number,
+      default: null,
     },
     hide: [
       {
@@ -142,11 +143,16 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(
 
   this.lastMembershipAt = new Date();
 
-  // 만약 이벤트 멤버쉽 구매인 경우, event 필드에 이벤트 멤버쉽 타입을 저장.
-  if (rewards.event) {
-    this.event = rewards.event;
-  }
+  await this.save({ session });
+};
 
+UserSchema.methods.applyEventRewards = async function applyEventRewards(
+  rewards: ProductReward,
+  eventType: number,
+  session?: mongoose.ClientSession
+) {
+  await this.applyPurchaseRewards(rewards, session);
+  this.event = eventType;
   await this.save({ session });
 };
 
@@ -160,7 +166,7 @@ UserSchema.methods.processExpiredMembership = async function processExpiredMembe
 
   // 멤버쉽 만료 시 이벤트도 초기화해줌.
   // 한시련 이벤트 종료 시 이벤트 초기화 로직을 여기서 처리해줌.
-  this.event = 0;
+  this.event = null;
   await this.save(options);
 };
 

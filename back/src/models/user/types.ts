@@ -1,5 +1,5 @@
 import { ProductReward } from 'models/product';
-import { Model, Document, Schema, ClientSession } from 'mongoose';
+import { Model, Document, ClientSession } from 'mongoose';
 
 export interface LocalRegisterPayload {
   email: string;
@@ -25,7 +25,7 @@ export interface User extends LocalRegisterPayload {
   MembershipAt: Date | null;
   lastMembershipAt: Date | null;
   phone?: string;
-  event?: number;
+  event?: number | null;
   hide?: string[];
 }
 
@@ -38,6 +38,11 @@ export interface UserDocument extends User, Document {
   processExpiredMembership: (options?: { session?: ClientSession }) => Promise<void>;
   initMonthPoint: () => Promise<void>;
   applyPurchaseRewards: (rewards: ProductReward, session?: ClientSession) => Promise<void>;
+  applyEventRewards: (
+    rewards: ProductReward,
+    eventType: number,
+    session?: ClientSession
+  ) => Promise<void>;
 }
 
 export interface UserModel extends Model<UserDocument> {

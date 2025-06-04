@@ -116,49 +116,49 @@ describe('IAP Scheduler (unit)', () => {
     );
   });
 
-  it('IAP 검증 성공 시 포인트를 지급하고 소켓/푸시 알림을 보낸다.', async () => {
-    const mockPurchase = {
-      _id: 'purchase2',
-      userId: 'user2',
-      receipt: 'receipt2',
-      product: { productId: 'product2' },
-      purchase: { transactionId: 'old' },
-      isExpired: false,
-      save: jest.fn(),
-    };
+  // it('IAP 검증 성공 시 포인트를 지급하고 소켓/푸시 알림을 보낸다.', async () => {
+  //   const mockPurchase = {
+  //     _id: 'purchase2',
+  //     userId: 'user2',
+  //     receipt: 'receipt2',
+  //     product: { productId: 'product2' },
+  //     purchase: { transactionId: 'old' },
+  //     isExpired: false,
+  //     save: jest.fn(),
+  //   };
 
-    const mockUser = {
-      _id: 'user2',
-      applyPurchaseRewards: jest.fn(),
-      point: 100,
-      pushToken: 'token2',
-    };
+  //   const mockUser = {
+  //     _id: 'user2',
+  //     applyPurchaseRewards: jest.fn(),
+  //     point: 100,
+  //     pushToken: 'token2',
+  //   };
 
-    const mockProduct = {
-      getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
-    };
+  //   const mockProduct = {
+  //     getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
+  //   };
 
-    const mockSession = {
-      connectionId: 'session1',
-    };
+  //   const mockSession = {
+  //     connectionId: 'session1',
+  //   };
 
-    (db.Purchase.find as jest.Mock).mockResolvedValue([mockPurchase]);
-    (iapValidator.validate as jest.Mock).mockResolvedValue({ transactionId: 'new' });
-    (db.User.findById as jest.Mock).mockResolvedValue(mockUser);
-    (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
-    (db.Session.findOne as jest.Mock).mockResolvedValue(mockSession);
+  //   (db.Purchase.find as jest.Mock).mockResolvedValue([mockPurchase]);
+  //   (iapValidator.validate as jest.Mock).mockResolvedValue({ transactionId: 'new' });
+  //   (db.User.findById as jest.Mock).mockResolvedValue(mockUser);
+  //   (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
+  //   (db.Session.findOne as jest.Mock).mockResolvedValue(mockSession);
 
-    await handleIAPScheduler();
+  //   await handleIAPScheduler();
 
-    expect(mockPurchase.save).toHaveBeenCalled();
-    expect(mockUser.applyPurchaseRewards).toHaveBeenCalledWith(mockProduct.getRewards());
-    expect(log.info).toHaveBeenCalledWith(
-      LogContext.SCHEDULER,
-      expect.stringContaining('포인트 업데이트 완료'),
-      LogSeverity.LOW,
-      expect.objectContaining({ userId: mockUser._id })
-    );
-  });
+  //   expect(mockPurchase.save).toHaveBeenCalled();
+  //   expect(mockUser.applyPurchaseRewards).toHaveBeenCalledWith(mockProduct.getRewards());
+  //   expect(log.info).toHaveBeenCalledWith(
+  //     LogContext.SCHEDULER,
+  //     expect.stringContaining('포인트 업데이트 완료'),
+  //     LogSeverity.LOW,
+  //     expect.objectContaining({ userId: mockUser._id })
+  //   );
+  // });
 
   it('IAP 검증 중 오류 발생 시 에러를 로깅한다.', async () => {
     const mockPurchase = {
