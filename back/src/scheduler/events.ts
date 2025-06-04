@@ -3,9 +3,9 @@ import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
 import { LogContext, LogSeverity } from 'utils/logger/types';
+import { EVENT_IDS } from '../constants/events';
 
 const SCHEDULER_NAME = 'events';
-const productIdToApply = 'pickforme__plus';
 
 /**
  * 한시련 이벤트 멤버십을 가진 유저들의 상태를 확인하고,
@@ -25,13 +25,13 @@ const processHansiryunEventMembership = async () => {
 
     const eventProduct = await db.Product.findOne({
       type: ProductType.SUBSCRIPTION,
-      productId: productIdToApply,
+      eventId: EVENT_IDS.HANSIRYUN,
     });
 
     if (!eventProduct) {
       log.error(LogContext.SCHEDULER, '이벤트 상품이 존재하지 않습니다.', LogSeverity.HIGH, {
         scheduler: SCHEDULER_NAME,
-        productId: productIdToApply,
+        eventId: EVENT_IDS.HANSIRYUN,
       });
       return;
     }
