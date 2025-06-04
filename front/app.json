@@ -22,7 +22,8 @@
             "bundleIdentifier": "com.sigonggan.pickforme",
             "jsEngine": "jsc",
             "icon": "./assets/images/pickforme_logo_200x200.png",
-            "googleServicesFile": "./GoogleService-Info.plist"
+            "googleServicesFile": "./GoogleService-Info.plist",
+            "buildNumber": "2"
         },
         "android": {
             "adaptiveIcon": {
