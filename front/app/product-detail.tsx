@@ -204,6 +204,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // 3. productDetailAtom 값이 변경될 때 로그 추가
     useEffect(() => {
         if (productDetail?.product) {
+            console.log('productDetail?.product', productDetail?.product);
             getProductReview();
         }
     }, [productDetail?.product]);
@@ -333,9 +334,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     // Tab 컴포넌트에서 설정된 ref를 처리하는 콜백 함수
     const handleRefSet = (tabName: string, refValue: RNView | null) => {
-        // 여기서는 직접적으로 refs를 수정하지 않고, refs[tabName]의 current 값에 접근하여 사용합니다.
-        // refs는 useMemo로 생성되어 변경할 수 없기 때문입니다.
-        // 대신 AccessibilityInfo.setAccessibilityFocus를 활용합니다.
         if (refValue) {
             const node = findNodeHandle(refValue);
             if (node && tabPressed) {
