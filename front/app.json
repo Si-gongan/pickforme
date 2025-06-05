@@ -45,7 +45,7 @@
                 "@react-native-seoul/kakao-login",
                 {
                     "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
-                    "kotlinVersion": "1.9.0"
+                    "kotlinVersion": "1.7.20"
                 }
             ],
             "expo-router",
