@@ -6,7 +6,12 @@
         "development": {
             "developmentClient": true,
             "distribution": "store",
-            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile"
+            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile",
+            "android": {
+                "env": {
+                    "STORE": "play"
+                }
+            }
         },
         "preview": {
             "distribution": "internal"
@@ -14,7 +19,12 @@
         "production": {
             "credentialsSource": "local",
             "distribution": "store",
-            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile"
+            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile",
+            "android": {
+                "env": {
+                    "STORE": "play"
+                }
+            }
         },
         "develop": {
             "distribution": "store"
