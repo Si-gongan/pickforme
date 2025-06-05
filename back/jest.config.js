@@ -49,7 +49,7 @@ module.exports = {
         '^socket/(.*)$': '<rootDir>/src/socket.ts',
         '^services$': '<rootDir>/src/services',
         '^services/(.*)$': '<rootDir>/src/services/$1',
-      }
-    }
-  ]
-}; 
+      },
+    },
+  ],
+};

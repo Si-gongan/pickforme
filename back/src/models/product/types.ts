@@ -23,6 +23,7 @@ export interface IProduct {
   platform: Platform;
   point: number;
   aiPoint: number;
+  eventId: number | null;
 }
 
 export interface ProductDocument extends IProduct, mongoose.Document {

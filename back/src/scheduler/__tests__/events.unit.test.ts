@@ -26,7 +26,6 @@ jest.mock('node-cron', () => ({
 
 import { registerEventScheduler, handleEventScheduler } from '../events';
 import db from 'models';
-import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
 import cron from 'node-cron';
 import { LogContext, LogSeverity } from 'utils/logger/types';

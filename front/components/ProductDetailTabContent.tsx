@@ -326,9 +326,6 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
         if (contentRef.current && onRefSet) {
             onRefSet(tab, contentRef.current);
         }
-        return () => {
-            // 컴포넌트 언마운트 시 cleanup 필요 시 여기에 추가
-        };
     }, [tab, onRefSet]);
     const review =
         productDetail && (productDetail[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined);
@@ -342,7 +339,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                     accessible={true}
                     accessibilityLabel="리뷰 정보를 찾을 수 없습니다."
                 >
-                    <Text style={{ color: Colors[colorScheme].text.primary }}>리뷰정보를 찾을 수 없습니다.</Text>
+                    <Text style={{ color: Colors[colorScheme].text.primary }}>리뷰 정보를 찾을 수 없습니다.</Text>
                 </View>
             ) : null}
             {review?.pros?.length !== 0 && (

@@ -20,10 +20,13 @@ export const GetProductAPI = (url: string) =>
         .post<GetProductResponse>(`/discover/product`, { url })
         .catch(error => handleApiError(error, 'GetProductAPI'));
 
-export const GetProductReviewAPI = (params: GetProductDetailRequest) =>
-    client
-        .post<GetProductDetailResponse>(`/discover/product/detail/review`, params)
+export const GetProductReviewAPI = (params: GetProductDetailRequest) => {
+    const product = params.product;
+    const reviews = params.reviews;
+    return client
+        .post<GetProductDetailResponse>(`/discover/product/detail/review`, { product, reviews })
         .catch(error => handleApiError(error, 'GetProductReviewAPI'));
+};
 
 export const GetProductReportAPI = (params: GetProductDetailRequest) =>
     client
