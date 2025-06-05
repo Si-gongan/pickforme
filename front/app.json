@@ -30,7 +30,7 @@
                 "foregroundImage": "./assets/images/pickforme_logo_200x200.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.anonymous.pickforme",
+            "package": "com.sigonggan.pickforme",
             "googleServicesFile": "./google-services.json",
             "versionCode": 108
         },
