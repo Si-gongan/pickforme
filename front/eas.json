@@ -6,22 +6,34 @@
         "development": {
             "developmentClient": true,
             "distribution": "store",
-            "ios": {
-                "simulator": true
-            }
+            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile"
         },
         "preview": {
             "distribution": "internal"
         },
         "production": {
             "credentialsSource": "remote",
-            "distribution": "store"
+            "distribution": "store",
+            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile"
         },
         "develop": {
             "distribution": "store"
         }
     },
     "submit": {
-        "production": {}
+        "production": {
+            "ios": {
+                "appleId": "seonggook.cho@gmail.com",
+                "ascAppId": "6450741514",
+                "companyName": "Sigongan"
+            }
+        },
+        "development": {
+            "ios": {
+                "appleId": "seonggook.cho@gmail.com",
+                "ascAppId": "6450741514",
+                "companyName": "Sigongan"
+            }
+        }
     }
 }
