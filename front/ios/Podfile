@@ -6,24 +6,26 @@ podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties
 
 ENV['RCT_NEW_ARCH_ENABLED'] = podfile_properties['newArchEnabled'] == 'true' ? '1' : '0'
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] = podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
+$RNFirebaseAnalyticsWithoutAdIdSupport = true
 
-
-source 'https://github.com/expo/expo.git'
-source 'https://cdn.cocoapods.org/'
-
-
+# iOS 플랫폼 버전 설정
 platform :ios, '15.1'
 install! 'cocoapods',
   :deterministic_uuids => false
 
-pod 'GoogleUtilities', :modular_headers => true
-pod 'FirebaseCoreInternal', :modular_headers => true
-
-
 prepare_react_native_project!
+
 
 target 'app' do
   use_expo_modules!
+
+  # Firebase 관련 모듈 설정
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'FirebaseInstallations', :modular_headers => true
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false
+
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
@@ -42,12 +44,11 @@ target 'app' do
 
   config = use_native_modules!(config_command)
 
-  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
-  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
+  # 전역 설정이 있으므로 이 설정은 제거
 
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
+    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
     :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
@@ -61,8 +62,31 @@ target 'app' do
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
 
-    # This is necessary for Xcode 14, because it signs resource bundles by default
-    # when building for devices.
+    # Swift 모듈 문제 해결을 위한 설정
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # 기본 설정
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+        
+        # Swift 버전 및 모듈 설정
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+        config.build_settings['DEFINES_MODULE'] = 'YES'
+        config.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'YES'
+        config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        
+        # 시뮬레이터 아키텍처 설정
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+        
+        # Firebase 관련 타겟 설정
+        if target.name.include?('Firebase') || target.name.include?('RNFBApp') || target.name.include?('RNFB')
+          config.build_settings['OTHER_LDFLAGS'] ||= '$(inherited)'
+          config.build_settings['VALIDATE_WORKSPACE'] = 'NO'
+        end
+      end
+    end
+    
+    # 리소스 번들 코드 서명 비활성화 설정
     installer.target_installation_results.pod_target_installation_results
       .each do |pod_name, target_installation_result|
       target_installation_result.resource_bundle_targets.each do |resource_bundle_target|
