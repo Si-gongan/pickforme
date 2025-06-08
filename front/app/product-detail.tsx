@@ -201,10 +201,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (product) getProductDetail(product);
     }, [productUrl]);
 
-    // 3. productDetailAtom 값이 변경될 때 로그 추가
     useEffect(() => {
         if (productDetail?.product) {
-            console.log('productDetail?.product', productDetail?.product);
             getProductReview();
         }
     }, [productDetail?.product]);
