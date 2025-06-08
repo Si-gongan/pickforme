@@ -64,7 +64,7 @@ export default function RequestBottomSheet() {
         setProduct(undefined);
     };
     return (
-        <View style={styles.base} accessible accessibilityLabel="매니저 질문하기">
+        <View style={styles.base}>
             <View style={[styles.bottomSheet, localStyles.root]}>
                 <Text
                     style={[styles.title, localStyles.title]}
@@ -85,6 +85,7 @@ export default function RequestBottomSheet() {
                         textAlignVertical="top"
                         returnKeyType="done"
                         onChangeText={text => setData({ ...data, text })}
+                        onSubmitEditing={handleSubmit}
                     />
                 </View>
                 <Button
