@@ -1,12 +1,13 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Image,
     Pressable,
     StyleSheet,
     TextInput,
-    TouchableOpacity,
-    View as RNView
+    View as RNView,
+    findNodeHandle,
+    AccessibilityInfo
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { formatDate, formatTime } from '../utils/common';
@@ -35,7 +36,6 @@ interface TabContentProps {
     handleRegenerate: () => void;
     scrapedProductDetail: ScrapedProductDetail;
     handleLoadMore: () => void;
-    onRefSet?: (tabName: string, refValue: RNView | null) => void; // ref 설정 콜백 추가
 }
 
 const TabContent: React.FC<TabContentProps> = ({
@@ -51,8 +51,7 @@ const TabContent: React.FC<TabContentProps> = ({
     loadingStatus,
     handleRegenerate,
     scrapedProductDetail,
-    handleLoadMore,
-    onRefSet
+    handleLoadMore
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -67,6 +66,13 @@ const TabContent: React.FC<TabContentProps> = ({
     // 상품 리뷰 데이터는 현재 productDetail에 포함되어 있음.
     // const productReview = useAtomValue(productReviewAtom);
     // const [regenerateCount, setRegenerateCount] = useState(0);
+    const [isTabPressed, setIsTabPressed] = useState(false);
+
+    useEffect(() => {
+        if (tab !== TABS.CAPTION) {
+            setIsTabPressed(true);
+        }
+    }, [tab]);
 
     // 1. Question 탭 처리
     if (tab === TABS.QUESTION) {
@@ -85,7 +91,6 @@ const TabContent: React.FC<TabContentProps> = ({
                 markdownStyles={markdownStyles}
                 productDetail={productDetail}
                 colorScheme={colorScheme}
-                onRefSet={onRefSet}
             />
         );
     }
@@ -114,22 +119,25 @@ const TabContent: React.FC<TabContentProps> = ({
                     tab={tab}
                     handleLoadMore={handleLoadMore}
                     colorScheme={colorScheme}
-                    onRefSet={onRefSet}
                 />
             );
         }
 
-        // 기본 탭에 대한 컴포넌트 (product, spec 등)
+        // CAPTION 탭
         const DefaultTabContent = () => {
             // 로컬 ref 생성
             const contentRef = useRef<RNView>(null);
 
-            // ref가 설정되면 부모에게 알림
             useEffect(() => {
-                if (contentRef.current && onRefSet) {
-                    onRefSet(tab, contentRef.current);
+                if (contentRef.current && isTabPressed) {
+                    const node = findNodeHandle(contentRef.current);
+                    if (node) {
+                        setTimeout(() => {
+                            AccessibilityInfo.setAccessibilityFocus(node);
+                        }, 1000);
+                    }
                 }
-            }, [tab, onRefSet]);
+            }, [tab, contentRef.current, isTabPressed]);
 
             return (
                 <View style={styles.detailWrap} ref={contentRef} accessibilityLabel={`${tab} 내용`}>
@@ -171,7 +179,6 @@ interface QuestionTabProps {
     markdownStyles: any;
     productDetail: ProductDetailState | void;
     colorScheme: ColorScheme;
-    onRefSet?: (tabName: string, refValue: RNView | null) => void; // ref 설정 콜백 추가
 }
 
 const QuestionTab: React.FC<QuestionTabProps> = ({
@@ -187,18 +194,22 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     tab,
     markdownStyles,
     productDetail,
-    colorScheme,
-    onRefSet
+    colorScheme
 }) => {
     // 질문 탭의 메인 컨테이너에 대한 ref
     const contentRef = useRef<RNView>(null);
 
     // ref가 설정되면 부모에게 알림
     useEffect(() => {
-        if (contentRef.current && onRefSet) {
-            onRefSet(tab, contentRef.current);
+        if (contentRef.current) {
+            const node = findNodeHandle(contentRef.current);
+            if (node) {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 1000);
+            }
         }
-    }, [tab, onRefSet]);
+    }, [tab, contentRef.current]);
 
     return (
         <View style={styles.detailWrap} ref={contentRef}>
@@ -305,7 +316,6 @@ interface ReviewTabProps {
     markdownStyles: any; // Replace 'any' with the correct type for markdownStyles
     handleLoadMore: () => void;
     colorScheme: ColorScheme;
-    onRefSet?: (tabName: string, refValue: RNView | null) => void; // ref 설정 콜백 추가
 }
 
 const ReviewTab: React.FC<ReviewTabProps> = ({
@@ -315,33 +325,39 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
     refs,
     markdownStyles,
     handleLoadMore,
-    colorScheme,
-    onRefSet
+    colorScheme
 }) => {
     // 리뷰 탭의 메인 컨테이너에 대한 ref
     const contentRef = useRef<RNView>(null);
 
-    // ref가 설정되면 부모에게 알림
     useEffect(() => {
-        if (contentRef.current && onRefSet) {
-            onRefSet(tab, contentRef.current);
+        if (contentRef.current) {
+            const node = findNodeHandle(contentRef.current);
+            if (node) {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 1000);
+            }
         }
-    }, [tab, onRefSet]);
+    }, [tab, contentRef.current]);
     const review =
         productDetail && (productDetail[tab] as { pros: string[]; cons: string[]; bests: string[] } | undefined);
 
     return (
         <>
-            {!review?.pros?.length && !review?.cons?.length ? (
+            {/* {!review?.pros?.length && !review?.cons?.length ? (
                 <View
-                    style={styles.detailWrap}
-                    ref={contentRef}
+                    style={[
+                        styles.detailWrap,
+                        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 8 }
+                    ]}
                     accessible={true}
-                    accessibilityLabel="리뷰 정보를 찾을 수 없습니다."
+                    accessibilityLabel="리뷰 로딩 중"
                 >
-                    <Text style={{ color: Colors[colorScheme].text.primary }}>리뷰 정보를 찾을 수 없습니다.</Text>
+                    <ActivityIndicator />
+                    <Text style={styles.loadingMessageText}>리뷰 요약 중 입니다.</Text>
                 </View>
-            ) : null}
+            ) : null} */}
             {review?.pros?.length !== 0 && (
                 <View style={styles.detailWrap} ref={contentRef}>
                     <Text
@@ -360,7 +376,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.cons?.length !== 0 && (
-                <View style={styles.detailWrap} ref={contentRef}>
+                <View style={styles.detailWrap}>
                     <Text
                         style={styles.reviewListTitle}
                         accessible={true}
@@ -377,7 +393,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             )}
             {review?.bests?.length !== 0 && (
-                <View style={styles.detailWrap} ref={contentRef}>
+                <View style={styles.detailWrap}>
                     <Text
                         style={styles.reviewListTitle}
                         accessible={true}
