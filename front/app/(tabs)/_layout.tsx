@@ -1,12 +1,12 @@
 import { Tabs } from 'expo-router';
 import React, { useRef, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import { useAtom } from 'jotai';
 
 import { HomeIcon, WishListIcon, MyIcon } from '@assets';
 import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
-import { How } from '@components';
+import { How, Survey } from '@components';
 import { isShowOnboardingModalAtom } from '@stores';
 
 import Modal from 'react-native-modal';
@@ -14,6 +14,8 @@ import Modal from 'react-native-modal';
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const [isModalVisible, setModalVisible] = useAtom(isShowOnboardingModalAtom);
+    const [isSurveyVisible, setSurveyVisible] = React.useState(true);
+
     useEffect(() => {
         setModalVisible(true);
     }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
@@ -22,21 +24,45 @@ export default function TabLayout() {
         setModalVisible(!isModalVisible);
     };
 
+    const handleSurveyClick = () => {
+        Linking.openURL('YOUR_SURVEY_URL_HERE');
+        setSurveyVisible(false);
+    };
+
+    const handleHelpClick = () => {
+        Linking.openURL('YOUR_HELP_URL_HERE');
+        setSurveyVisible(false);
+    };
+
+    const handleDontShowToday = () => {
+        // TODO: AsyncStorage에 오늘 날짜 저장
+        setSurveyVisible(false);
+    };
+
     return (
         <>
             <Modal
                 isVisible={isModalVisible}
                 onBackButtonPress={toggleModal}
                 onBackdropPress={toggleModal}
-                animationIn="slideInUp" // 기본값, 아래에서 위로 올라옴
-                animationInTiming={300} // 애니메이션 속도(ms)
+                animationIn="slideInUp"
+                animationInTiming={300}
                 style={{
-                    justifyContent: 'flex-end', // 화면 하단에 모달 위치
-                    margin: 0 // 마진 제거
+                    justifyContent: 'flex-end',
+                    margin: 0
                 }}
             >
                 <How />
             </Modal>
+
+            <Survey
+                visible={isSurveyVisible}
+                onClose={() => setSurveyVisible(false)}
+                onDontShowToday={handleDontShowToday}
+                onSurveyClick={handleSurveyClick}
+                onHelpClick={handleHelpClick}
+            />
+
             <Tabs
                 screenOptions={{
                     tabBarActiveTintColor: Colors?.[colorScheme]?.button.primary.text,
