@@ -13,6 +13,7 @@ import {
     AccessibilityInfo,
     findNodeHandle
 } from 'react-native';
+import SearchIcon from '../../assets/icons/SearchIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -170,6 +171,7 @@ export default function HomeScreen() {
                                     style={style.resetIcon}
                                     source={require('../../assets/images/discover/icReset.png')}
                                 />
+                                {/* reset 버튼 */}
                             </Pressable>
                         )}
                         <Pressable
@@ -178,10 +180,7 @@ export default function HomeScreen() {
                             accessibilityLabel="검색하기"
                             accessibilityRole="button"
                         >
-                            <Image
-                                style={style.sendIcon}
-                                source={require('../../assets/images/discover/icSearch.png')}
-                            />
+                            <SearchIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
                     </View>
                 </View>
