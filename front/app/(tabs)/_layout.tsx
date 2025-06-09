@@ -28,11 +28,11 @@ export default function TabLayout() {
                 isVisible={isModalVisible}
                 onBackButtonPress={toggleModal}
                 onBackdropPress={toggleModal}
-                animationIn="slideInUp" // 기본값, 아래에서 위로 올라옴
-                animationInTiming={300} // 애니메이션 속도(ms)
+                animationIn="slideInUp"
+                animationInTiming={300}
                 style={{
-                    justifyContent: 'flex-end', // 화면 하단에 모달 위치
-                    margin: 0 // 마진 제거
+                    justifyContent: 'flex-end',
+                    margin: 0
                 }}
             >
                 <How />
@@ -41,14 +41,23 @@ export default function TabLayout() {
                 screenOptions={{
                     tabBarActiveTintColor: Colors?.[colorScheme]?.button.primary.text,
                     headerShown: false,
+                    tabBarItemStyle: {
+                        paddingTop: 12
+                    },
                     tabBarStyle: Platform.select({
                         ios: {
                             position: 'absolute',
-                            backgroundColor: Colors?.[colorScheme]?.button.primary.background
+                            backgroundColor: Colors?.[colorScheme]?.button.primary.background,
+                            borderTopWidth: 0,
+                            elevation: 0,
+                            shadowOpacity: 0
                         },
                         default: {
                             height: 100,
-                            backgroundColor: Colors?.[colorScheme]?.button.primary.background
+                            backgroundColor: Colors?.[colorScheme]?.button.primary.background,
+                            borderTopWidth: 0,
+                            elevation: 0,
+                            shadowOpacity: 0
                         }
                     })
                 }}
