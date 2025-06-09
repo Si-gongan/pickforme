@@ -14,6 +14,7 @@ import {
     findNodeHandle
 } from 'react-native';
 import SearchIcon from '../../assets/icons/SearchIcon';
+import BackIcon from '../../assets/icons/BackIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -143,7 +144,7 @@ export default function HomeScreen() {
                             accessibilityLabel="뒤로가기"
                             accessible
                         >
-                            <Image style={style.backButton} source={require('../../assets/images/icBack.png')} />
+                            <BackIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
                     )}
                     <View style={style.inputWrap}>

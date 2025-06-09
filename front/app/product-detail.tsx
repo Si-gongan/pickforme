@@ -64,6 +64,9 @@ import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
 import { membershipModalTypeAtom } from '../stores/auth/atoms';
 import { logEvent } from '@/services/firebase';
+import BackIcon from '@/assets/icons/BackIcon';
+import HeartFilledIcon from '@/assets/icons/HeartFilledIcon';
+import HeartOutlineIcon from '@/assets/icons/HeartOutlineIcon';
 
 interface ProductDetailScreenProps {}
 
@@ -352,7 +355,20 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     return (
         <View style={styles.container}>
-            <BackHeader />
+            {/* 뒤로가기 버튼 */}
+            <View style={{ marginTop: 20, marginBottom: 10 }}>
+                <Pressable
+                    onPress={() => {
+                        router.back();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="뒤로가기"
+                    accessible
+                    style={styles.backButton}
+                >
+                    <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
+                </Pressable>
+            </View>
 
             <View accessible={false}>
                 {!isLocal && DetailWebView}
@@ -574,11 +590,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image
-                        style={styles.heartIcon}
-                        source={require('../assets/images/discover/icHeartFill.png')}
-                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
-                    />
+                    <HeartFilledIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
             ) : (
                 <Pressable
@@ -588,11 +600,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image
-                        style={styles.heartIcon}
-                        source={require('../assets/images/discover/icHeart.png')}
-                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
-                    />
+                    <HeartOutlineIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
             )}
         </View>
@@ -616,7 +624,9 @@ const useStyles = (colorScheme: ColorScheme) =>
             zIndex: 1
         },
         backButton: {
-            padding: 8
+            padding: 8,
+            marginTop: 12,
+            marginLeft: 12
         },
         backIcon: {
             width: 24,
