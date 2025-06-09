@@ -20,7 +20,12 @@ export default function OnBoardingInfoScreen() {
     useAuthRedirect(false);
 
     const handleStart = () => {
-        router.push('/login');
+        // 사용자가 로그인되어 있으면 탭 화면으로 이동, 아니면 로그인 화면으로 이동
+        if (user?._id) {
+            router.push('/(tabs)');
+        } else {
+            router.push('/login');
+        }
     };
 
     return (
