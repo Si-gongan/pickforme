@@ -32,14 +32,18 @@ export default function OnBoardingInfoScreen() {
         <View style={style.OnBoardingInfoContainer}>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-            <View style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary }]}>
-                <Text style={{ width: '100%', height: '20%' }}></Text>
-                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary }]}>안녕하세요.</Text>
-                <Text style={{ width: '100%', height: 60 }}></Text>
-                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary }]}>시각장애인을 위한</Text>
-                <Text style={{ width: '100%', height: 16 }}></Text>
-                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary }]}>쇼핑 서비스</Text>
-                <Text style={{ width: '100%', height: 34 }}></Text>
+            <View
+                style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary, marginBottom: 20 }]}
+            >
+                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 20 }]}>
+                    안녕하세요.
+                </Text>
+                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 20 }]}>
+                    시각장애인을 위한
+                </Text>
+                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 28 }]}>
+                    쇼핑 서비스
+                </Text>
                 <Text style={[styles.welcomeSubText, { color: Colors[colorScheme].text.primary }]}>
                     <Text style={[styles.boldSystemText, { color: Colors[colorScheme].text.primary }]}>픽포미</Text>에
                     오신것을 환영합니다!
