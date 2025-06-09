@@ -4,15 +4,18 @@ import { BackHeader } from '@components';
 import How from '../components/BottomSheet/How';
 import useColorScheme from '../hooks/useColorScheme';
 import Colors from '../constants/Colors';
+import { useState } from 'react';
 
 export default function HowScreen() {
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme];
-    
+
+    const [isVisible, setIsVisible] = useState(true);
+
     return (
         <View style={{ flex: 1, backgroundColor: theme.background.primary }}>
             <BackHeader />
-            <How isHomeButton={false} />
+            <How isHomeButton={false} visible={isVisible} onClose={() => setIsVisible(false)} />
         </View>
     );
 }

@@ -2,68 +2,64 @@ import { Tabs } from 'expo-router';
 import React, { useRef, useEffect } from 'react';
 import { Platform, Linking } from 'react-native';
 import { useAtom } from 'jotai';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { HomeIcon, WishListIcon, MyIcon } from '@assets';
 import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { How, Survey } from '@components';
-import { isShowOnboardingModalAtom } from '@stores';
-import { PopupService } from '@/services/popup';
+import { useSurveyPopup } from '@/hooks/useSurveyPopup';
 
 import Modal from 'react-native-modal';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
-    const [isModalVisible, setModalVisible] = useAtom(isShowOnboardingModalAtom);
-    const [isSurveyVisible, setSurveyVisible] = React.useState(false);
+    const [isModalVisible, setModalVisible] = React.useState(false);
+    const [isFirstLogin, setIsFirstLogin] = React.useState(false);
+
+    const { isSurveyVisible, handleSurveyClose, handleDontShowToday, handleSurveyClick, handleHelpClick } =
+        useSurveyPopup({
+            onSurveyClose: () => {
+                if (isFirstLogin) {
+                    setTimeout(() => {
+                        setModalVisible(true);
+                    }, 300);
+                }
+            }
+        });
 
     useEffect(() => {
-        const checkSurveyPopup = async () => {
+        const checkFirstLogin = async () => {
             try {
-                const hasSurvey = await PopupService.checkSurveyPopup();
-
-                if (hasSurvey) {
-                    setSurveyVisible(true);
+                const hasLoggedIn = await AsyncStorage.getItem('hasLoggedIn');
+                if (!hasLoggedIn) {
+                    setIsFirstLogin(true);
+                    await AsyncStorage.setItem('hasLoggedIn', 'true');
+                } else {
+                    setIsFirstLogin(false);
                 }
             } catch (error) {
-                console.error('설문조사 팝업 체크 에러:', error);
+                console.error('최초 로그인 체크 에러:', error);
             }
         };
 
-        checkSurveyPopup();
+        checkFirstLogin();
     }, []);
-
-    const toggleModal = () => {
-        setModalVisible(!isModalVisible);
-    };
-
-    const handleSurveyClick = () => {
-        Linking.openURL('https://forms.gle/mpVjgn7bCZ4iMvJD9');
-        setSurveyVisible(false);
-    };
-
-    const handleHelpClick = () => {
-        Linking.openURL('https://pf.kakao.com/_csbDxj');
-        setSurveyVisible(false);
-    };
-
-    const handleDontShowToday = async () => {
-        try {
-            await PopupService.setDontShowSurvey();
-            setSurveyVisible(false);
-        } catch (error) {
-            console.error('설문조사 팝업 설정 실패:', error);
-        } finally {
-            setSurveyVisible(false);
-        }
-    };
 
     return (
         <>
+            <Survey
+                visible={isSurveyVisible}
+                onClose={handleSurveyClose}
+                onDontShowToday={handleDontShowToday}
+                onSurveyClick={handleSurveyClick}
+                onHelpClick={handleHelpClick}
+            />
+
             <Modal
                 isVisible={isModalVisible}
-                onBackButtonPress={toggleModal}
-                onBackdropPress={toggleModal}
+                onBackButtonPress={() => setModalVisible(false)}
+                onBackdropPress={() => setModalVisible(false)}
                 animationIn="slideInUp"
                 animationInTiming={300}
                 style={{
@@ -73,14 +69,6 @@ export default function TabLayout() {
             >
                 <How />
             </Modal>
-
-            <Survey
-                visible={isSurveyVisible}
-                onClose={() => setSurveyVisible(false)}
-                onDontShowToday={handleDontShowToday}
-                onSurveyClick={handleSurveyClick}
-                onHelpClick={handleHelpClick}
-            />
 
             <Tabs
                 screenOptions={{
