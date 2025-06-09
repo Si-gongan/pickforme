@@ -282,7 +282,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
 
                             {/* 질문 - 스크린리더 순서 2 */}
                             <View accessible={true} accessibilityLabel={`나의 질문: ${req?.text || ''}`}>
-                                <Markdown>{`**나의 질문:** ${req?.text || ''}`}</Markdown>
+                                <Markdown style={markdownStyles}>{`**나의 질문:** ${req?.text || ''}`}</Markdown>
                             </View>
 
                             {/* 답변 표시 - 스크린리더 순서 3 */}
