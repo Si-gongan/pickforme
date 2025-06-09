@@ -18,13 +18,16 @@
         },
         "production": {
             "channel": "production",
-            "credentialsSource": "local",
             "distribution": "store",
             "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile",
             "android": {
+                "credentialsSource": "local",
                 "env": {
                     "STORE": "play"
                 }
+            },
+            "ios": {
+                "credentialsSource": "remote"
             }
         },
         "develop": {
