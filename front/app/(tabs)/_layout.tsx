@@ -50,14 +50,15 @@ export default function TabLayout() {
                             backgroundColor: Colors?.[colorScheme]?.button.primary.background,
                             borderTopWidth: 0,
                             elevation: 0,
-                            shadowOpacity: 0
+                            shadowOpacity: 0,
+                            height: 90,
+                            paddingBottom: 20
                         },
                         default: {
                             height: 100,
                             backgroundColor: Colors?.[colorScheme]?.button.primary.background,
                             borderTopWidth: 0,
-                            elevation: 0,
-                            shadowOpacity: 0
+                            elevation: 0
                         }
                     })
                 }}
