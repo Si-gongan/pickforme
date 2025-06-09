@@ -17,6 +17,7 @@
             "distribution": "internal"
         },
         "production": {
+            "channel": "production",
             "credentialsSource": "local",
             "distribution": "store",
             "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile",
