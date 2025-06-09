@@ -3,7 +3,7 @@
         "owner": "sigonggan",
         "name": "픽포미",
         "slug": "pickformeapp",
-        "version": "3.3.0",
+        "version": "3.3.1",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "myapp",
