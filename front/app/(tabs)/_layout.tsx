@@ -8,35 +8,54 @@ import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { How, Survey } from '@components';
 import { isShowOnboardingModalAtom } from '@stores';
+import { PopupService } from '@/services/popup';
 
 import Modal from 'react-native-modal';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const [isModalVisible, setModalVisible] = useAtom(isShowOnboardingModalAtom);
-    const [isSurveyVisible, setSurveyVisible] = React.useState(true);
+    const [isSurveyVisible, setSurveyVisible] = React.useState(false);
 
     useEffect(() => {
-        setModalVisible(true);
-    }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
+        const checkSurveyPopup = async () => {
+            try {
+                const hasSurvey = await PopupService.checkSurveyPopup();
+
+                if (hasSurvey) {
+                    setSurveyVisible(true);
+                }
+            } catch (error) {
+                console.error('설문조사 팝업 체크 에러:', error);
+            }
+        };
+
+        checkSurveyPopup();
+    }, []);
 
     const toggleModal = () => {
         setModalVisible(!isModalVisible);
     };
 
     const handleSurveyClick = () => {
-        Linking.openURL('YOUR_SURVEY_URL_HERE');
+        Linking.openURL('https://forms.gle/mpVjgn7bCZ4iMvJD9');
         setSurveyVisible(false);
     };
 
     const handleHelpClick = () => {
-        Linking.openURL('YOUR_HELP_URL_HERE');
+        Linking.openURL('https://pf.kakao.com/_csbDxj');
         setSurveyVisible(false);
     };
 
-    const handleDontShowToday = () => {
-        // TODO: AsyncStorage에 오늘 날짜 저장
-        setSurveyVisible(false);
+    const handleDontShowToday = async () => {
+        try {
+            await PopupService.setDontShowSurvey();
+            setSurveyVisible(false);
+        } catch (error) {
+            console.error('설문조사 팝업 설정 실패:', error);
+        } finally {
+            setSurveyVisible(false);
+        }
     };
 
     return (

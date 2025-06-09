@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useColorScheme from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import Modal from 'react-native-modal';
@@ -17,7 +16,6 @@ interface SurveyProps {
 const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSurveyClick, onHelpClick }) => {
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme];
-    const insets = useSafeAreaInsets();
 
     return (
         <Modal
@@ -82,10 +80,10 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                     onPress={onDontShowToday}
                     style={styles.dontShowButton}
                     accessible
-                    accessibilityLabel="오늘 하루 보지 않기"
+                    accessibilityLabel="앞으로 보지 않기"
                     accessibilityRole="button"
                 >
-                    <Text style={[styles.dontShowText, { color: '1E1E1E' }]}>오늘 하루 보지 않기</Text>
+                    <Text style={[styles.dontShowText, { color: '1E1E1E' }]}>앞으로 보지 않기</Text>
                 </Pressable>
             </View>
         </Modal>
