@@ -19,12 +19,13 @@ import { Request } from '../stores/request/types';
 import { ProductDetailState } from '../stores/product/types';
 import { LoadingStatus } from '../stores/product/atoms';
 import { ScrapedProductDetail } from '../stores/product/types';
+import { productDetailAtom } from '../stores/product/atoms';
+import { useAtomValue } from 'jotai';
 
 import type { ColorScheme } from '@hooks';
 
 interface TabContentProps {
     tab: TABS;
-    productDetail: ProductDetailState | void;
     refs: Record<string, React.RefObject<RNView | null>>;
     question: string;
     setQuestion: React.Dispatch<React.SetStateAction<string>>;
@@ -40,7 +41,6 @@ interface TabContentProps {
 
 const TabContent: React.FC<TabContentProps> = ({
     tab,
-    productDetail,
     refs,
     question,
     setQuestion,
@@ -63,6 +63,8 @@ const TabContent: React.FC<TabContentProps> = ({
             color: Colors[colorScheme].text.primary
         }
     });
+
+    const productDetail = useAtomValue(productDetailAtom);
     // 상품 리뷰 데이터는 현재 productDetail에 포함되어 있음.
     // const productReview = useAtomValue(productReviewAtom);
     // const [regenerateCount, setRegenerateCount] = useState(0);

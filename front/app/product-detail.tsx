@@ -454,7 +454,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
                         <TabContent
                             tab={tab}
-                            productDetail={productDetail}
                             refs={refs}
                             question={question}
                             setQuestion={setQuestion}
