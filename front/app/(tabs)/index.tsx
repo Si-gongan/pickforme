@@ -235,7 +235,12 @@ export default function HomeScreen() {
                         </View>
                     </View>
 
-                    <ScrollView style={style.scrollView}>
+                    <ScrollView
+                        style={style.scrollView}
+                        contentContainerStyle={{
+                            paddingBottom: insets.bottom + 80 // BottomTabBar 높이만큼 추가
+                        }}
+                    >
                         {!!searchResult?.products?.length && (
                             <FlatList
                                 scrollEnabled={false}
