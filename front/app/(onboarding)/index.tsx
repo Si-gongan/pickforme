@@ -20,7 +20,6 @@ export default function OnBoardingInfoScreen() {
     useAuthRedirect(false);
 
     const handleStart = () => {
-        // 사용자가 로그인되어 있으면 탭 화면으로 이동, 아니면 로그인 화면으로 이동
         if (user?._id) {
             router.push('/(tabs)');
         } else {
@@ -32,9 +31,7 @@ export default function OnBoardingInfoScreen() {
         <View style={style.OnBoardingInfoContainer}>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-            <View
-                style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary, marginBottom: 20 }]}
-            >
+            <View style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary, marginTop: 100 }]}>
                 <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 20 }]}>
                     안녕하세요.
                 </Text>
@@ -61,10 +58,11 @@ function useStyle(colorScheme: ColorScheme) {
     return StyleSheet.create({
         OnBoardingInfoContainer: {
             flex: 1,
-            backgroundColor: Colors[colorScheme].background.primary
-        },
-        OnBoardingInfoContent: {
-            flex: 1
+            backgroundColor: Colors[colorScheme].background.primary,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            paddingTop: 100
         }
     });
 }
@@ -114,7 +112,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     footer: {
-        flex: 0.1,
+        flex: 0.25,
         paddingBottom: 40,
         paddingHorizontal: 20,
         alignItems: 'center'
