@@ -1,7 +1,7 @@
 // back/src/utils/logger/transports.ts
 import winston from 'winston';
 import path from 'path';
-import { LogLevel, CustomLogInfo, colors, LogSeverity, LogContext } from './types';
+import { CustomLogInfo, colors, LogSeverity, LogContext } from './types';
 import slackClient from '../slack';
 import { config } from './config';
 
@@ -14,9 +14,9 @@ const createLogFormat = (useColors: boolean = false) => {
     winston.format.printf((info) => {
       const { timestamp, level, message, ...meta } = info as unknown as CustomLogInfo;
       const context = meta.context || 'unknown';
-      const severity = meta.severity || LogSeverity.MEDIUM;
+      const severity = meta.severity || 'MEDIUM';
 
-      const { context: _, severity: __, ...restMeta } = meta;
+      const { context: contextValue, severity: severityValue, ...restMeta } = meta;
       const additionalMeta = Object.keys(restMeta).length ? JSON.stringify(restMeta) : '';
 
       const logMessage = `[${timestamp}] [${level}] [${context}/${severity}] ${message}${
@@ -39,61 +39,16 @@ const createConsoleTransport = () =>
     format: createLogFormat(true), // 색상 적용
   });
 
-// 파일 전송 설정
-const createFileTransports = () => {
-  try {
-    return [
-      new winston.transports.File({
-        filename: path.join(logDir, 'error.log'),
-        level: LogLevel.ERROR,
-        format: createLogFormat(false), // 색상 미적용
-        // 파일 시스템 에러를 처리
-        handleExceptions: true,
-        handleRejections: true,
-      }),
-      new winston.transports.File({
-        filename: path.join(logDir, 'combined.log'),
-        format: createLogFormat(false), // 색상 미적용
-        // 파일 시스템 에러를 처리
-        handleExceptions: true,
-        handleRejections: true,
-      }),
-    ];
-  } catch (error) {
-    // 파일 시스템 에러 발생 시 콘솔로만 로깅
-    process.stderr.write(`파일 로깅 설정 실패: ${error}\n`);
-
-    // Slack으로도 알림 (실패해도 무시)
-    if (isProduction) {
-      sendToSlack({
-        context: LogContext.SERVER,
-        message: `파일 로깅 설정 실패: ${error}`,
-        severity: LogSeverity.HIGH,
-      }).catch(() => {});
-    }
-
-    return [createConsoleTransport()];
-  }
-};
-
-interface SlackErrorPayload {
-  context: LogContext;
-  message: string;
-  severity: LogSeverity;
-  stack?: string;
-  meta?: Record<string, any>;
-}
-
 // severity를 텍스트로 변환하는 함수
 const getSeverityText = (severity: LogSeverity): string => {
   switch (severity) {
-    case LogSeverity.CRITICAL:
+    case 'CRITICAL':
       return '🔴 CRITICAL';
-    case LogSeverity.HIGH:
+    case 'HIGH':
       return '🟠 HIGH';
-    case LogSeverity.MEDIUM:
+    case 'MEDIUM':
       return '🟡 MEDIUM';
-    case LogSeverity.LOW:
+    case 'LOW':
       return '🟢 LOW';
     default:
       return '⚪ UNKNOWN';
@@ -132,6 +87,51 @@ export const sendToSlack = async (payload: SlackErrorPayload) => {
   }
 };
 
+// 파일 전송 설정
+const createFileTransports = () => {
+  try {
+    return [
+      new winston.transports.File({
+        filename: path.join(logDir, 'error.log'),
+        level: 'error',
+        format: createLogFormat(false), // 색상 미적용
+        // 파일 시스템 에러를 처리
+        handleExceptions: true,
+        handleRejections: true,
+      }),
+      new winston.transports.File({
+        filename: path.join(logDir, 'combined.log'),
+        format: createLogFormat(false), // 색상 미적용
+        // 파일 시스템 에러를 처리
+        handleExceptions: true,
+        handleRejections: true,
+      }),
+    ];
+  } catch (error) {
+    // 파일 시스템 에러 발생 시 콘솔로만 로깅
+    process.stderr.write(`파일 로깅 설정 실패: ${error}\n`);
+
+    // Slack으로도 알림 (실패해도 무시)
+    if (isProduction) {
+      sendToSlack({
+        context: 'SYSTEM',
+        message: `파일 로깅 설정 실패: ${error}`,
+        severity: 'HIGH',
+      }).catch(() => {});
+    }
+
+    return [createConsoleTransport()];
+  }
+};
+
+interface SlackErrorPayload {
+  context: LogContext;
+  message: string;
+  severity: LogSeverity;
+  stack?: string;
+  meta?: Record<string, any>;
+}
+
 // 전체 transport 설정
 export const getTransports = () => {
   try {
@@ -143,9 +143,9 @@ export const getTransports = () => {
     // Slack으로도 알림 (실패해도 무시)
     if (isProduction) {
       sendToSlack({
-        context: LogContext.SERVER,
+        context: 'SYSTEM',
         message: `로거 설정 실패: ${error}`,
-        severity: LogSeverity.HIGH,
+        severity: 'HIGH',
       }).catch(() => {});
     }
 
