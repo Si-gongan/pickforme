@@ -101,7 +101,15 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
                     const url = window.location.href;
                     const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
                     const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
-                    const price = parseInt((document.querySelector('.PriceInfo_finalPrice__qniie')?.innerText || '').replace(/[^0-9]/g, ''));
+                    
+                    // 일반 가격이 있는지 먼저 확인
+                    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
+                    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
+                    
+                    // 일반 가격이 있으면 그것을 사용하고, 없으면 와우할인가 사용
+                    const price = regularPriceElement 
+                        ? parseInt(regularPriceElement.innerText.replace(/[^0-9]/g, ''))
+                        : parseInt((wowPriceElement?.innerText || '').replace(/[^0-9]/g, ''));
                     
                     const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
                     const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
