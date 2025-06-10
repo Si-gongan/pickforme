@@ -1,9 +1,4 @@
 import axios from 'axios';
-import dotenv from 'dotenv';
-
-dotenv.config({
-  path: `${__dirname}/../../.env`,
-});
 
 const API_HOST = 'https://slack.com/api';
 

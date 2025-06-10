@@ -2,7 +2,6 @@ import cron from 'node-cron';
 import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
-import { LogContext, LogSeverity } from 'utils/logger/types';
 import { EVENT_IDS } from '../constants/events';
 
 const SCHEDULER_NAME = 'events';
@@ -29,7 +28,7 @@ const processHansiryunEventMembership = async () => {
     });
 
     if (!eventProduct) {
-      log.error(LogContext.SCHEDULER, '이벤트 상품이 존재하지 않습니다.', LogSeverity.HIGH, {
+      void log.error('이벤트 상품이 존재하지 않습니다.', 'SCHEDULER', 'HIGH', {
         scheduler: SCHEDULER_NAME,
         eventId: EVENT_IDS.HANSIRYUN,
       });
@@ -51,35 +50,25 @@ const processHansiryunEventMembership = async () => {
       // 6개월이 지난 경우
       if (now >= sixMonthsLater) {
         await user.processExpiredMembership();
-        log.info(
-          LogContext.SCHEDULER,
-          `이벤트 멤버십 만료 처리 완료 - userId: ${user._id}`,
-          LogSeverity.LOW,
-          {
-            scheduler: SCHEDULER_NAME,
-            userId: user._id,
-          }
-        );
+        void log.info(`이벤트 멤버십 만료 처리 완료 - userId: ${user._id}`, 'SCHEDULER', 'LOW', {
+          scheduler: SCHEDULER_NAME,
+          userId: user._id,
+        });
         continue;
       }
 
       // 한달이 지난 경우
       if (now >= oneMonthLater) {
         await user.applyPurchaseRewards(eventProduct.getRewards());
-        log.info(
-          LogContext.SCHEDULER,
-          `이벤트 멤버십 포인트 충전 완료 - userId: ${user._id}`,
-          LogSeverity.LOW,
-          {
-            scheduler: SCHEDULER_NAME,
-            userId: user._id,
-          }
-        );
+        void log.info(`이벤트 멤버십 포인트 충전 완료 - userId: ${user._id}`, 'SCHEDULER', 'LOW', {
+          scheduler: SCHEDULER_NAME,
+          userId: user._id,
+        });
       }
     }
   } catch (error) {
     if (error instanceof Error)
-      log.error(LogContext.SCHEDULER, '이벤트 멤버십 처리 중 오류 발생', LogSeverity.HIGH, {
+      void log.error('이벤트 멤버십 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
         scheduler: SCHEDULER_NAME,
         message: error.message,
         stack: error.stack,
@@ -96,7 +85,7 @@ const processEventMembership = async () => {
 };
 
 export const handleEventScheduler = async () => {
-  log.info(LogContext.SCHEDULER, '이벤트 멤버십 스케줄러 실행됨', LogSeverity.LOW, {
+  log.info('이벤트 멤버십 스케줄러 실행됨', 'SCHEDULER', 'LOW', {
     scheduler: SCHEDULER_NAME,
   });
   await processEventMembership();

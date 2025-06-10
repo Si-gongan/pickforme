@@ -35,7 +35,6 @@ import { handleMembershipScheduler } from '../membership';
 import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
-import { LogContext, LogSeverity } from 'utils/logger/types';
 
 describe('Membership Scheduler (unit)', () => {
   const RealDate = Date;
@@ -83,9 +82,9 @@ describe('Membership Scheduler (unit)', () => {
     expect(mockPurchase.updateExpiration).toHaveBeenCalled();
     expect(mockUser.processExpiredMembership).toHaveBeenCalled();
     expect(log.info).toHaveBeenCalledWith(
-      LogContext.SCHEDULER,
       `멤버십 만료 처리 완료 - userId: ${mockUser._id}`,
-      LogSeverity.LOW,
+      'SCHEDULER',
+      'LOW',
       expect.any(Object)
     );
   });
@@ -145,9 +144,9 @@ describe('Membership Scheduler (unit)', () => {
     await handleMembershipScheduler();
 
     expect(log.error).toHaveBeenCalledWith(
-      LogContext.SCHEDULER,
       '멤버십 만료 처리 중 오류 발생',
-      LogSeverity.HIGH,
+      'SCHEDULER',
+      'HIGH',
       expect.any(Object)
     );
   });

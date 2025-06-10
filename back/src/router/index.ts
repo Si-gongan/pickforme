@@ -12,7 +12,7 @@ import logRouter from './log';
 import productRouter from './product';
 import popupRouter from './popup';
 import db from '../models';
-import { log, LogContext, LogSeverity } from 'utils/logger';
+import { log } from 'utils/logger';
 
 const router = new Router();
 
@@ -40,7 +40,7 @@ router.get('/logger-test', async (ctx) => {
     throw new Error('테스트용 에러입니다. 테스트 잘 되고 있나요??');
   } catch (error) {
     if (error instanceof Error) {
-      log.error(LogContext.SCHEDULER, error.message, LogSeverity.CRITICAL, {
+      void log.error(error.message, 'SYSTEM', 'HIGH', {
         endPoint: '/logger-test',
         method: 'GET',
         stack: error.stack,

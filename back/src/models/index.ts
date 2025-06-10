@@ -15,15 +15,22 @@ import Item from './item';
 import Popup from './popup';
 
 import dotenv from 'dotenv';
+import { log } from 'utils/logger';
 dotenv.config();
 
 const uri = process.env.MONGO_URI!;
 const isTest = process.env.NODE_ENV === 'test';
 
 if (!isTest) {
-  mongoose.connect(uri, {
-    dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme-production',
-  });
+  mongoose
+    .connect(uri, {
+      dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme-production',
+    })
+    .catch((err) => {
+      void log.error('MongoDB 연결 실패', 'SYSTEM', 'HIGH', {
+        error: err,
+      });
+    });
 }
 
 const db = {
