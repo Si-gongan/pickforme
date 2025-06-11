@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, StyleSheet, Text, findNodeHandle, AccessibilityInfo } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -7,6 +7,7 @@ import type { ColorScheme } from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
+import { View as RNView } from 'react-native';
 
 import { InfoForm, Footer, Button } from '@components';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
@@ -16,6 +17,8 @@ export default function OnBoardingInfoScreen() {
     const style = useStyle(colorScheme);
     const router = useRouter();
     const user = useAtomValue(userAtom);
+
+    const contentRef = useRef<RNView>(null);
 
     useAuthRedirect(false);
 
@@ -27,24 +30,44 @@ export default function OnBoardingInfoScreen() {
         }
     };
 
+    useEffect(() => {
+        if (contentRef.current) {
+            const node = findNodeHandle(contentRef.current);
+            if (node) {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 1000);
+            }
+        }
+    }, [contentRef.current]);
+
     return (
         <View style={style.OnBoardingInfoContainer}>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
 
-            <View style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary, marginTop: 100 }]}>
-                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 20 }]}>
-                    안녕하세요.
-                </Text>
-                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 20 }]}>
-                    시각장애인을 위한
-                </Text>
-                <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 28 }]}>
-                    쇼핑 서비스
-                </Text>
-                <Text style={[styles.welcomeSubText, { color: Colors[colorScheme].text.primary }]}>
-                    <Text style={[styles.boldSystemText, { color: Colors[colorScheme].text.primary }]}>픽포미</Text>에
-                    오신것을 환영합니다!
-                </Text>
+            <View
+                ref={contentRef}
+                style={[styles.content, { backgroundColor: Colors[colorScheme].background.primary, marginTop: 100 }]}
+            >
+                <View
+                    style={{ width: '80%' }}
+                    accessible
+                    accessibilityLabel="안녕하세요. 시각장애인을 위한 쇼핑 서비스 픽포미에 오신것을 환영합니다."
+                >
+                    <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 60 }]}>
+                        안녕하세요.
+                    </Text>
+                    <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 20 }]}>
+                        시각장애인을 위한
+                    </Text>
+                    <Text style={[styles.welcomeText, { color: Colors[colorScheme].text.primary, marginBottom: 40 }]}>
+                        쇼핑 서비스
+                    </Text>
+                    <Text style={[styles.welcomeSubText, { color: Colors[colorScheme].text.primary }]}>
+                        <Text style={[styles.boldSystemText, { color: Colors[colorScheme].text.primary }]}>픽포미</Text>
+                        에 오신것을 환영합니다!
+                    </Text>
+                </View>
             </View>
 
             <View style={styles.footer}>
@@ -76,7 +99,8 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingHorizontal: '4%'
+        paddingHorizontal: '4%',
+        marginTop: 100
     },
     logo: {
         width: 200,
