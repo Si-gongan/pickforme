@@ -11,7 +11,13 @@ import View from '../View';
 import Text from '../Text';
 import { styles as baseStyles } from './Base';
 
-function LackBottomSheet({ isHomeButton = true }: { isHomeButton?: boolean }) {
+interface HowProps {
+    isHomeButton?: boolean;
+    visible: boolean;
+    onClose: () => void;
+}
+
+function How({ isHomeButton = true, visible, onClose }: HowProps) {
     const router = useRouter();
     const headerTitleRef = useRef(null);
     const colorScheme = useColorScheme();
@@ -19,9 +25,6 @@ function LackBottomSheet({ isHomeButton = true }: { isHomeButton?: boolean }) {
 
     const dynamicStyles = useMemo(() => createStyles(colorScheme), [colorScheme]);
 
-    const [visible, setVisible] = useAtom(isShowOnboardingModalAtom);
-
-    const onClose = () => setVisible(false);
     useEffect(() => {
         const focusOnHeader = () => {
             const node = findNodeHandle(headerTitleRef.current);
@@ -31,6 +34,7 @@ function LackBottomSheet({ isHomeButton = true }: { isHomeButton?: boolean }) {
         };
         setTimeout(focusOnHeader, 500);
     }, [visible]);
+
     return (
         <View style={baseStyles.base}>
             <View style={[baseStyles.bottomSheet, { backgroundColor: theme.background.primary }]}>
@@ -163,4 +167,4 @@ const createStyles = (colorScheme: ColorScheme) => {
     });
 };
 
-export default LackBottomSheet;
+export default How;

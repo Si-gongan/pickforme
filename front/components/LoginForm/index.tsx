@@ -9,6 +9,7 @@ import {
     AppleAuthenticationScope,
     signInAsync as appleSignInAsync
 } from 'expo-apple-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useServiceLogin } from '@services';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -23,6 +24,8 @@ export default function LoginForm() {
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
         onSuccess: async () => {
+            await AsyncStorage.removeItem('hasLoggedIn');
+
             PopupService.checkHansiryunPopup()
                 .then(hasPopup => {
                     if (hasPopup) router.replace('/(hansiryun)');
