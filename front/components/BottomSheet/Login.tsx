@@ -54,7 +54,6 @@ const LoginBottomSheet: React.FC<Props> = () => {
                     accessibilityRole="button"
                     onAccessibilityEscape={onClose}
                 >
-                    {/* <Image style={localStyles.backButtonImage} source={BackImage} /> */}
                     <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
                 <LoginForm />
