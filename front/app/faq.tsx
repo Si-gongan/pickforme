@@ -11,7 +11,6 @@ import { FAQS } from '@constants';
 export default function FAQScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
-    const [tab, onTab] = useState<string>('AI');
 
     return (
         <View style={style.FAQScreenContainer}>
