@@ -235,30 +235,27 @@ export default function HomeScreen() {
                         </View>
                     </View>
 
-                    <ScrollView
-                        style={style.scrollView}
-                        contentContainerStyle={{
-                            paddingBottom: insets.bottom + 80 // BottomTabBar 높이만큼 추가
-                        }}
-                    >
-                        {!!searchResult?.products?.length && (
-                            <FlatList
-                                scrollEnabled={false}
-                                contentContainerStyle={style.searchList}
-                                data={searchResult.products}
-                                keyExtractor={(product, index) => `search-${product.url}-${index}`}
-                                renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
-                                ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
-                            />
-                        )}
-                        {!searchResult?.products?.length && (
-                            <DefaultText style={style.loading}>검색결과가 없습니다.</DefaultText>
-                        )}
-                    </ScrollView>
+                    <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                        <FlatList
+                            style={[style.scrollView]}
+                            contentContainerStyle={{
+                                ...style.searchList
+                            }}
+                            data={searchResult?.products || []}
+                            keyExtractor={(product, index) => `search-${product.url}-${index}`}
+                            renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
+                            ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
+                            ListEmptyComponent={() => (
+                                <DefaultText style={style.loading}>검색결과가 없습니다.</DefaultText>
+                            )}
+                        />
+                    </View>
                 </>
             ) : (
                 // 메인 상품 목록
-                <MainProductList data={mainProducts} category={currentCategory} />
+                <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                    <MainProductList data={mainProducts} category={currentCategory} />
+                </View>
             )}
         </View>
     );
@@ -355,12 +352,10 @@ function useStyle(colorScheme: ColorScheme) {
             color: theme.text.primary
         },
         scrollView: {
-            paddingVertical: 20,
-            flex: 1
+            paddingVertical: 20
         },
         searchList: {
-            paddingHorizontal: 20,
-            paddingBottom: 44
+            paddingHorizontal: 20
         },
         seperator: {
             height: 12,
