@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Platform, KeyboardAvoidingView, TextInput, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
-import BottomSheet from 'react-native-modal';
+import { TextInput, StyleSheet, AccessibilityInfo, findNodeHandle, InteractionManager } from 'react-native';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
@@ -63,8 +62,23 @@ export default function RequestBottomSheet() {
         setData({ ...data, text: '' });
         setProduct(undefined);
     };
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            if (headerTitleRef.current) {
+                const node = findNodeHandle(headerTitleRef.current);
+                if (node) {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 1000);
+                }
+            }
+        });
+        return () => task.cancel();
+    }, []); // 빈 배열로 최초 1회만 실행
+
     return (
-        <View style={styles.base} accessible accessibilityLabel="매니저 질문하기">
+        <View style={styles.base}>
             <View style={[styles.bottomSheet, localStyles.root]}>
                 <Text
                     style={[styles.title, localStyles.title]}
@@ -85,6 +99,7 @@ export default function RequestBottomSheet() {
                         textAlignVertical="top"
                         returnKeyType="done"
                         onChangeText={text => setData({ ...data, text })}
+                        onSubmitEditing={handleSubmit}
                     />
                 </View>
                 <Button

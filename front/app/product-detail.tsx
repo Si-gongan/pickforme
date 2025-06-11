@@ -64,6 +64,9 @@ import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
 import { membershipModalTypeAtom } from '../stores/auth/atoms';
 import { logEvent } from '@/services/firebase';
+import BackIcon from '@/assets/icons/BackIcon';
+import HeartFilledIcon from '@/assets/icons/HeartFilledIcon';
+import HeartOutlineIcon from '@/assets/icons/HeartOutlineIcon';
 
 interface ProductDetailScreenProps {}
 
@@ -115,7 +118,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const [tab, setTab] = useState<TABS>(TABS.CAPTION);
     const [question, setQuestion] = useState('');
-    const [tabPressed, setTabPressed] = useState(false); // 탭 변경 여부를 추적하는 상태 추가
     const loadingStatus = useAtomValue(loadingStatusAtom);
 
     const managerResponseRef = useRef<RNView>(null);
@@ -175,7 +177,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
-            Alert.alert('상품 정보를 불러오는 데 실패했습니다.');
+            console.error('상품 정보를 불러오는 데 실패했습니다.');
         },
         onMessage: data => {
             setProduct(data);
@@ -201,10 +203,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (product) getProductDetail(product);
     }, [productUrl]);
 
-    // 3. productDetailAtom 값이 변경될 때 로그 추가
     useEffect(() => {
         if (productDetail?.product) {
-            console.log('productDetail?.product', productDetail?.product);
             getProductReview();
         }
     }, [productDetail?.product]);
@@ -325,43 +325,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const handlePressAIQuestionTab = () => setTab(TABS.QUESTION);
 
     const handlePressTab = (nextTab: TABS) => {
-        if (nextTab === TABS.QUESTION) {
-            handlePressAIQuestionTab();
-        }
+        if (nextTab === TABS.QUESTION) handlePressAIQuestionTab();
+
         setTab(nextTab);
-        setTabPressed(true);
     };
-
-    // Tab 컴포넌트에서 설정된 ref를 처리하는 콜백 함수
-    const handleRefSet = (tabName: string, refValue: RNView | null) => {
-        if (refValue) {
-            const node = findNodeHandle(refValue);
-            if (node && tabPressed) {
-                // 현재 선택된 탭의 ref가 설정된 경우 포커스 부여
-                if (tabName === tab) {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }
-            }
-        }
-    };
-
-    // useEffect로 변경한 코드
-    useEffect(() => {
-        // 탭이 명시적으로 변경된 경우에만 실행 (초기 로딩 시에는 실행되지 않음)
-        if (tabPressed) {
-            const timer = setTimeout(() => {
-                if (refs[tab]?.current) {
-                    const node = findNodeHandle(refs[tab].current);
-                    if (node) {
-                        AccessibilityInfo.setAccessibilityFocus(node);
-                        setTabPressed(false);
-                    }
-                }
-            }, 500);
-
-            return () => clearTimeout(timer);
-        }
-    }, [tab, tabPressed, refs]);
 
     const handleRegenerate = () => {
         if (tab === TABS.REPORT) getProductReport();
@@ -388,7 +355,20 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     return (
         <View style={styles.container}>
-            <BackHeader />
+            {/* 뒤로가기 버튼 */}
+            <View style={{ marginTop: 20, marginBottom: 10 }}>
+                <Pressable
+                    onPress={() => {
+                        router.back();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="뒤로가기"
+                    accessible
+                    style={styles.backButton}
+                >
+                    <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
+                </Pressable>
+            </View>
 
             <View accessible={false}>
                 {!isLocal && DetailWebView}
@@ -474,7 +454,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
                         <TabContent
                             tab={tab}
-                            productDetail={productDetail}
                             refs={refs}
                             question={question}
                             setQuestion={setQuestion}
@@ -486,7 +465,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             handleRegenerate={handleRegenerate}
                             scrapedProductDetail={scrapedProductDetail}
                             handleLoadMore={handleLoadMore}
-                            onRefSet={handleRefSet}
                         />
                     </View>
                 ) : (
@@ -611,11 +589,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image
-                        style={styles.heartIcon}
-                        source={require('../assets/images/discover/icHeartFill.png')}
-                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
-                    />
+                    <HeartFilledIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
             ) : (
                 <Pressable
@@ -625,11 +599,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image
-                        style={styles.heartIcon}
-                        source={require('../assets/images/discover/icHeart.png')}
-                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
-                    />
+                    <HeartOutlineIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
             )}
         </View>
@@ -653,7 +623,9 @@ const useStyles = (colorScheme: ColorScheme) =>
             zIndex: 1
         },
         backButton: {
-            padding: 8
+            padding: 8,
+            marginTop: 12,
+            marginLeft: 12
         },
         backIcon: {
             width: 24,

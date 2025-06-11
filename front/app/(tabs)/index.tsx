@@ -13,6 +13,8 @@ import {
     AccessibilityInfo,
     findNodeHandle
 } from 'react-native';
+import SearchIcon from '../../assets/icons/SearchIcon';
+import BackIcon from '../../assets/icons/BackIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -142,7 +144,7 @@ export default function HomeScreen() {
                             accessibilityLabel="뒤로가기"
                             accessible
                         >
-                            <Image style={style.backButton} source={require('../../assets/images/icBack.png')} />
+                            <BackIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
                     )}
                     <View style={style.inputWrap}>
@@ -170,6 +172,7 @@ export default function HomeScreen() {
                                     style={style.resetIcon}
                                     source={require('../../assets/images/discover/icReset.png')}
                                 />
+                                {/* reset 버튼 */}
                             </Pressable>
                         )}
                         <Pressable
@@ -178,10 +181,7 @@ export default function HomeScreen() {
                             accessibilityLabel="검색하기"
                             accessibilityRole="button"
                         >
-                            <Image
-                                style={style.sendIcon}
-                                source={require('../../assets/images/discover/icSearch.png')}
-                            />
+                            <SearchIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
                     </View>
                 </View>
@@ -235,25 +235,27 @@ export default function HomeScreen() {
                         </View>
                     </View>
 
-                    <ScrollView style={style.scrollView}>
-                        {!!searchResult?.products?.length && (
-                            <FlatList
-                                scrollEnabled={false}
-                                contentContainerStyle={style.searchList}
-                                data={searchResult.products}
-                                keyExtractor={(product, index) => `search-${product.url}-${index}`}
-                                renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
-                                ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
-                            />
-                        )}
-                        {!searchResult?.products?.length && (
-                            <DefaultText style={style.loading}>검색결과가 없습니다.</DefaultText>
-                        )}
-                    </ScrollView>
+                    <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                        <FlatList
+                            style={[style.scrollView]}
+                            contentContainerStyle={{
+                                ...style.searchList
+                            }}
+                            data={searchResult?.products || []}
+                            keyExtractor={(product, index) => `search-${product.url}-${index}`}
+                            renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
+                            ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
+                            ListEmptyComponent={() => (
+                                <DefaultText style={style.loading}>검색결과가 없습니다.</DefaultText>
+                            )}
+                        />
+                    </View>
                 </>
             ) : (
                 // 메인 상품 목록
-                <MainProductList data={mainProducts} category={currentCategory} />
+                <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                    <MainProductList data={mainProducts} category={currentCategory} />
+                </View>
             )}
         </View>
     );
@@ -350,12 +352,10 @@ function useStyle(colorScheme: ColorScheme) {
             color: theme.text.primary
         },
         scrollView: {
-            paddingVertical: 20,
-            flex: 1
+            paddingVertical: 20
         },
         searchList: {
-            paddingHorizontal: 20,
-            paddingBottom: 44
+            paddingHorizontal: 20
         },
         seperator: {
             height: 12,

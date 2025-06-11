@@ -21,7 +21,8 @@ export default function useStyle() {
             fontWeight: '600',
             fontSize: 16,
             lineHeight: 19,
-            marginTop: 30
+            marginTop: 30,
+            color: theme.text.primary
         },
         LoginFormButtonContainer: {
             gap: 23,

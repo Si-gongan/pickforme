@@ -107,14 +107,24 @@ export default function TabLayout() {
                 screenOptions={{
                     tabBarActiveTintColor: Colors?.[colorScheme]?.button.primary.text,
                     headerShown: false,
+                    tabBarItemStyle: {
+                        paddingTop: 12
+                    },
                     tabBarStyle: Platform.select({
                         ios: {
                             position: 'absolute',
-                            backgroundColor: Colors?.[colorScheme]?.button.primary.background
+                            backgroundColor: Colors?.[colorScheme]?.button.primary.background,
+                            borderTopWidth: 0,
+                            elevation: 0,
+                            shadowOpacity: 0,
+                            height: 90,
+                            paddingBottom: 20
                         },
                         default: {
                             height: 100,
-                            backgroundColor: Colors?.[colorScheme]?.button.primary.background
+                            backgroundColor: Colors?.[colorScheme]?.button.primary.background,
+                            borderTopWidth: 0,
+                            elevation: 0
                         }
                     })
                 }}
@@ -126,7 +136,7 @@ export default function TabLayout() {
                         tabBarLabel: '홈',
                         tabBarAccessibilityLabel: '홈 탭',
                         tabBarIcon: function ({ color, focused }) {
-                            return <HomeIcon size={28} color={color} opacity={focused ? 1 : 0.5} />;
+                            return <HomeIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
                         }
                     }}
                 />
@@ -138,7 +148,7 @@ export default function TabLayout() {
                         tabBarLabel: '위시리스트',
                         tabBarAccessibilityLabel: '위시리스트 탭',
                         tabBarIcon: function ({ color, focused }) {
-                            return <WishListIcon size={28} color={color} opacity={focused ? 1 : 0.5} />;
+                            return <WishListIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
                         }
                     }}
                 />
@@ -150,7 +160,7 @@ export default function TabLayout() {
                         tabBarLabel: '마이페이지',
                         tabBarAccessibilityLabel: '마이페이지 탭',
                         tabBarIcon: function ({ color, focused }) {
-                            return <MyIcon size={28} color={color} opacity={focused ? 1 : 0.5} />;
+                            return <MyIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
                         }
                     }}
                 />
