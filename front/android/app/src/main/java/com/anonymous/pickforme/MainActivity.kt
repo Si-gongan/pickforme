@@ -1,4 +1,4 @@
-package com.sigonggan.pickforme
+package com.anonymous.pickforme
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

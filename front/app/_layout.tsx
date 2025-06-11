@@ -1,11 +1,17 @@
-import { Suspense } from 'react';
+import { useEffect, Suspense } from 'react';
+// import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as JotaiProvider } from 'jotai';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import useColorScheme from '../hooks/useColorScheme';
 import { useInitializationAndRouting } from '../hooks/useInitializationAndRouting';
+import { changeToken, setClientToken, attempt } from '../utils/axios';
+import { GetPopupAPI } from '../stores/auth';
 import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 import LoginBottomSheet from '../components/BottomSheet/Login';
 import { useScreenTracking } from '@/hooks/useScreenTracking';

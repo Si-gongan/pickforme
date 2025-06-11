@@ -1,4 +1,4 @@
-package com.sigonggan.pickforme
+package com.anonymous.pickforme
 
 import android.app.Application
 import android.content.res.Configuration

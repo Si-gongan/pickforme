@@ -5,49 +5,20 @@
     "build": {
         "development": {
             "developmentClient": true,
-            "distribution": "store",
-            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile",
-            "android": {
-                "env": {
-                    "STORE": "play"
-                }
-            }
+            "distribution": "store"
         },
         "preview": {
             "distribution": "internal"
         },
         "production": {
-            "channel": "production",
-            "distribution": "store",
-            "prebuildCommand": "echo \"$RNFirebaseAnalyticsWithoutAdIdSupport = true\" >> ios/Podfile",
-            "android": {
-                "credentialsSource": "local",
-                "env": {
-                    "STORE": "play"
-                }
-            },
-            "ios": {
-                "credentialsSource": "remote"
-            }
+            "credentialsSource": "remote",
+            "distribution": "store"
         },
         "develop": {
             "distribution": "store"
         }
     },
     "submit": {
-        "production": {
-            "ios": {
-                "appleId": "seonggook.cho@gmail.com",
-                "ascAppId": "6450741514",
-                "companyName": "Sigongan"
-            }
-        },
-        "development": {
-            "ios": {
-                "appleId": "seonggook.cho@gmail.com",
-                "ascAppId": "6450741514",
-                "companyName": "Sigongan"
-            }
-        }
+        "production": {}
     }
 }

@@ -90,13 +90,12 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             lineHeight: 20,
             fontWeight: '600',
             marginBottom: 20,
-            color: Colors[colorScheme].text.primary
+            color: '#1e1e1e'
         },
         desc: {
             fontSize: 14,
             lineHeight: 20,
-            marginBottom: 39,
-            color: Colors[colorScheme].text.primary
+            marginBottom: 39
         },
         buttonWrap: {},
         buttonOuter: {

@@ -9,7 +9,6 @@ import useColorScheme from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import { Text, View } from './Themed';
 import { settingAtom } from '../../stores/auth/atoms';
-import { ColorScheme } from '../../hooks';
 
 const translationMap = {
     default: '휴대폰 설정과 동일하게',
@@ -21,7 +20,6 @@ export default function ThemeScreen() {
     const { segment = '' } = useLocalSearchParams();
     const [setting, setSetting] = useAtom(settingAtom);
     const colorScheme = useColorScheme();
-    const styles = useStyles(colorScheme);
     const router = useRouter();
     const isSetting = segment.includes('settings');
     const [theme, setTheme] = React.useState<string>(setting.theme ?? 'default');
@@ -65,47 +63,38 @@ export default function ThemeScreen() {
     );
 }
 
-const useStyles = (colorScheme: ColorScheme) => {
-    const theme = Colors[colorScheme];
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: theme.background.primary
-        },
-        title: {
-            fontWeight: '600',
-            fontSize: 22,
-            lineHeight: 27,
-            marginBottom: 30,
-            color: theme.text.primary
-        },
-        content: {
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'transparent'
-        },
-        buttonWrap: {
-            width: '100%',
-            padding: 20,
-            backgroundColor: 'transparent'
-        },
-        row: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingLeft: 70,
-            paddingRight: 67,
-            paddingTop: 62,
-            backgroundColor: 'transparent'
-        },
-        label: {
-            flex: 1,
-            fontWeight: '700',
-            fontSize: 18,
-            lineHeight: 22,
-            color: theme.text.primary
-        }
-    });
-};
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    title: {
+        fontWeight: '600',
+        fontSize: 22,
+        lineHeight: 27,
+        marginBottom: 30
+    },
+    content: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    buttonWrap: {
+        width: '100%',
+        padding: 20
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 70,
+        paddingRight: 67,
+        paddingTop: 62
+    },
+    label: {
+        flex: 1,
+        fontWeight: '700',
+        fontSize: 18,
+        lineHeight: 22
+    }
+});

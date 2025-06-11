@@ -3,7 +3,7 @@
         "owner": "sigonggan",
         "name": "픽포미",
         "slug": "pickformeapp",
-        "version": "3.3.1",
+        "version": "3.3.0",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "myapp",
@@ -22,17 +22,15 @@
             "bundleIdentifier": "com.sigonggan.pickforme",
             "jsEngine": "jsc",
             "icon": "./assets/images/pickforme_logo_200x200.png",
-            "googleServicesFile": "./GoogleService-Info.plist",
-            "buildNumber": "2"
+            "googleServicesFile": "./GoogleService-Info.plist"
         },
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/pickforme_logo_200x200.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.sigonggan.pickforme",
-            "googleServicesFile": "./google-services.json",
-            "versionCode": 109
+            "package": "com.anonymous.pickforme",
+            "googleServicesFile": "./google-services.json"
         },
         "web": {
             "bundler": "metro",
@@ -44,7 +42,8 @@
             [
                 "@react-native-seoul/kakao-login",
                 {
-                    "kakaoAppKey": "a48d1b07defd794b769579746e2bb995"
+                    "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
+                    "kotlinVersion": "1.9.0"
                 }
             ],
             "expo-router",
@@ -62,8 +61,7 @@
                 "expo-build-properties",
                 {
                     "android": {
-                        "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"],
-                        "kotlinVersion": "1.9.25"
+                        "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
                     },
                     "ios": {
                         "useFrameworks": "dynamic"

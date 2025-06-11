@@ -2,7 +2,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import type { IIconProps } from '@types';
 
-export default function MyIcon({ size, color, opacity = 1 }: IIconProps) {
+export default function MyIcon({ size, color, opacity = 0.5 }: IIconProps) {
     return (
         <Svg width={size} height={size} viewBox="0 0 28 28" fill="none">
             <Circle

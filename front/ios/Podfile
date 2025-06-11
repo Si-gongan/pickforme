@@ -4,29 +4,26 @@ require File.join(File.dirname(`node --print "require.resolve('react-native/pack
 require 'json'
 podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
 
-$RNFirebaseAnalyticsWithoutAdIdSupport = true
-
 ENV['RCT_NEW_ARCH_ENABLED'] = podfile_properties['newArchEnabled'] == 'true' ? '1' : '0'
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] = podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
-$RNFirebaseAnalyticsWithoutAdIdSupport = true
 
-platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
+
+source 'https://github.com/expo/expo.git'
+source 'https://cdn.cocoapods.org/'
+
+
+platform :ios, '15.1'
 install! 'cocoapods',
   :deterministic_uuids => false
 
+pod 'GoogleUtilities', :modular_headers => true
+pod 'FirebaseCoreInternal', :modular_headers => true
+
+
 prepare_react_native_project!
-
-
 
 target 'app' do
   use_expo_modules!
-
-  # Firebase 관련 모듈에 대해서만 모듈러 헤더 적용
-  pod 'FirebaseCore', :modular_headers => true
-  pod 'FirebaseCoreInternal', :modular_headers => true
-  pod 'GoogleUtilities', :modular_headers => true
-  pod 'FirebaseInstallations', :modular_headers => true
-  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
@@ -45,9 +42,12 @@ target 'app' do
 
   config = use_native_modules!(config_command)
 
+  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
+  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
+
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil,
+    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
     :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
@@ -61,40 +61,8 @@ target 'app' do
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
 
-    # post_install 부분에 OTHER_LDFLAGS 설정 추가
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-        config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
-        
-        config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
-        config.build_settings['OTHER_LDFLAGS'] << '-ObjC' unless config.build_settings['OTHER_LDFLAGS'].include?('-ObjC')
-        # config.build_settings['SDKROOT'] = 'iphoneos'       
-
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'        
-      
-        # 모든 Swift 모듈에 대한 모듈 정의 강제
-        # Swift 모듈 정의 강제 (특정 모듈맵 파일 경로 지정 없이)
-        if target.respond_to?(:product_type) && target.product_type == "com.apple.product-type.framework"
-          config.build_settings['DEFINES_MODULE'] = 'YES'
-          config.build_settings['SWIFT_VERSION'] = '5.0'
-          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-          config.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'YES'
-          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
-          config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
-          
-          # ExpoModulesCore와 관련 모듈 특별 처리
-          if ['ExpoModulesCore', 'ExpoFileSystem', 'ExpoSplashScreen', 'FirebaseCoreInternal'].include?(target.name)
-            config.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'NO'
-          end
-        end
-
-        if target.name.include?('Firebase') || target.name.include?('RNFBApp') || target.name.include?('RNFB')
-          config.build_settings['VALIDATE_WORKSPACE'] = 'NO'
-        end
-      end
-    end
+    # This is necessary for Xcode 14, because it signs resource bundles by default
+    # when building for devices.
     installer.target_installation_results.pod_target_installation_results
       .each do |pod_name, target_installation_result|
       target_installation_result.resource_bundle_targets.each do |resource_bundle_target|

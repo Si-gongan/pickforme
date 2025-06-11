@@ -70,7 +70,10 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                         {/* 리뷰개수, 평점, 할인율, 가격 정보 2행 */}
                         <View style={styles.ProductCardContentRow}>
                             <View style={styles.ProductCardTitleColumn}>
-                                <Text style={[styles.ProductCardReviews, { fontWeight: '400' }]} accessible>
+                                <Text
+                                    style={[styles.ProductCardReviews, { color: 'black', fontWeight: '400' }]}
+                                    accessible
+                                >
                                     리뷰 {data.reviews || 0}개 평점 {Math.floor(((data.ratings || 0) / 20) * 10) / 10}점
                                 </Text>
                             </View>

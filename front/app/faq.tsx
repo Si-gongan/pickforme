@@ -11,6 +11,7 @@ import { FAQS } from '@constants';
 export default function FAQScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
+    const [tab, onTab] = useState<string>('AI');
 
     return (
         <View style={style.FAQScreenContainer}>
@@ -19,52 +20,16 @@ export default function FAQScreen() {
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={style.FAQScroll}>
                     <Text style={style.FAQTitle}>자주 묻는 질문</Text>
 
-                    <Text
-                        style={style.FAQHeader}
-                        accessible
-                        accessibilityLabel={FAQS['PICKFORME'].name}
-                        accessibilityRole="header"
-                    >
-                        {FAQS['PICKFORME'].name}
-                    </Text>
-                    <View style={style.FAQRows}>
-                        {FAQS['PICKFORME'].questions.map(function ({ question, answer }, index) {
-                            return (
-                                <View style={style.FAQItem} key={`faq-row-${index}`}>
-                                    <Text style={style.FAQQuestion}>{question}</Text>
-                                    <Text style={style.FAQAnswer}>{answer}</Text>
-                                </View>
-                            );
+                    <SelectButton
+                        value={tab}
+                        items={Object.entries(FAQS).map(function ([key, { name }]) {
+                            return { name, value: key as string };
                         })}
-                    </View>
-                    <Text
-                        style={[style.FAQHeader, { marginTop: 36 }]}
-                        accessible
-                        accessibilityLabel={FAQS['AI'].name}
-                        accessibilityRole="header"
-                    >
-                        {FAQS['AI'].name}
-                    </Text>
+                        onChange={onTab}
+                    />
+
                     <View style={style.FAQRows}>
-                        {FAQS['AI'].questions.map(function ({ question, answer }, index) {
-                            return (
-                                <View style={style.FAQItem} key={`faq-row-${index}`}>
-                                    <Text style={style.FAQQuestion}>{question}</Text>
-                                    <Text style={style.FAQAnswer}>{answer}</Text>
-                                </View>
-                            );
-                        })}
-                    </View>
-                    <Text
-                        style={[style.FAQHeader, { marginTop: 36 }]}
-                        accessible
-                        accessibilityLabel={FAQS['POINT'].name}
-                        accessibilityRole="header"
-                    >
-                        {FAQS['POINT'].name}
-                    </Text>
-                    <View style={style.FAQRows}>
-                        {FAQS['POINT'].questions.map(function ({ question, answer }, index) {
+                        {FAQS[tab].questions.map(function ({ question, answer }, index) {
                             return (
                                 <View style={style.FAQItem} key={`faq-row-${index}`}>
                                     <Text style={style.FAQQuestion}>{question}</Text>
@@ -100,13 +65,7 @@ function useStyle(colorScheme: ColorScheme) {
             fontWeight: '600',
             fontSize: 22,
             lineHeight: 34,
-            marginBottom: 48,
-            color: theme.text.primary
-        },
-        FAQHeader: {
-            fontWeight: '600',
-            fontSize: 24,
-            lineHeight: 34,
+            marginBottom: 36,
             color: theme.text.primary
         },
         FAQRows: {
@@ -120,8 +79,8 @@ function useStyle(colorScheme: ColorScheme) {
             gap: 8
         },
         FAQQuestion: {
-            fontSize: 16,
-            fontWeight: '800',
+            fontSize: 14,
+            fontWeight: '600',
             color: theme.text.primary
         },
         FAQAnswer: {
