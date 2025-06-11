@@ -41,7 +41,12 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                     </Pressable>
                 </View>
 
-                <Text style={[styles.content, { color: theme.text.primary }]}>
+                <Text
+                    style={[styles.content, { color: theme.text.primary }]}
+                    accessible
+                    accessibilityLabel="안녕하세요. 항상 픽포미 서비스를 애용해 주셔서 진심으로 감사드립니다. 현재 저희는 픽포미 유저분들의 소중한 경험과 의견을 듣고자 설문조사를 진행하고 있어요. 설문조사는 약 5분에서 10분 정도 소요되며, 참여해주신 모든 분께 커피 기프티콘을 보내드리고 있습니다. 자세한 내용은 아래 구글폼 링크를 통해 확인하실 수 있어요. 설문 참여가 어려우신 경우, 일대일 문의하기 채널을 통해 도움을 요청하실 수 있습니다. 시공간 운영진이 전화 연결을 통해 직접 설문 참여를 도와드립니다. 소중한 의견 전해주시면 감사하겠습니다. 픽포미 운영진 드림."
+                    accessibilityRole="text"
+                >
                     안녕하세요!{'\n\n'}
                     항상 픽포미 서비스를 애용해 주셔서 진심으로 감사드립니다.{'\n\n'}
                     현재 저희는 픽포미 유저분들의 소중한 경험과 의견을 듣고자 설문조사를 진행하고 있어요. 설문조사는 약
