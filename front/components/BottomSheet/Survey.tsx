@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import useColorScheme from '../../hooks/useColorScheme';
+import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import Modal from 'react-native-modal';
 import { Button_old as Button } from '@components';
@@ -17,6 +17,7 @@ interface SurveyProps {
 const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSurveyClick, onHelpClick }) => {
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme];
+    const styles = useStyle(colorScheme);
 
     return (
         <Modal
@@ -69,6 +70,7 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                             size="small"
                             textStyle={styles.buttonText}
                             accessibilityLabel="설문조사 바로가기"
+                            accessibilityRole="button"
                         />
                     </View>
                     <View style={styles.buttonOuter}>
@@ -80,6 +82,7 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                             size="small"
                             textStyle={styles.button2Text}
                             accessibilityLabel="1:1 무늬 바로가기"
+                            accessibilityRole="button"
                         />
                     </View>
                 </View>
@@ -97,91 +100,94 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
     );
 };
 
-const styles = StyleSheet.create({
-    base: {
-        justifyContent: 'flex-end',
-        margin: 0
-    },
-    bottomSheet: {
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 4,
-        padding: 20,
-        paddingTop: 20,
-        paddingBottom: 40
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-        marginTop: 10
-    },
-    headerLeft: {
-        width: 24,
-        height: 24
-    },
-    closeButton: {
-        width: 24,
-        height: 24,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    closeIcon: {
-        width: 24,
-        height: 24
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: '700',
-        textAlign: 'center',
-        height: 24,
-        lineHeight: 24
-    },
-    content: {
-        fontSize: 14,
-        lineHeight: 20,
-        marginBottom: 20
-    },
-    buttonWrap: {
-        gap: 16,
-        paddingTop: 15,
-        paddingBottom: 15,
-        alignContent: 'stretch',
-        alignItems: 'center',
-        flexDirection: 'row',
-        backgroundColor: Colors.light.background.primary
-    },
-    buttonOuter: {
-        flex: 1
-    },
-    button: {
-        borderRadius: 4,
-        height: 50,
-        backgroundColor: Colors.light.button.primary.background
-    },
-    buttonText: {
-        color: Colors.light.text.secondary,
-        fontSize: 14,
-        fontWeight: '700'
-    },
-    button2: {
-        backgroundColor: Colors.light.background.primary,
-        borderWidth: 1,
-        borderColor: Colors.light.button.primary.background
-    },
-    button2Text: {
-        color: Colors.light.text.primary,
-        fontSize: 14,
-        fontWeight: '700'
-    },
-    dontShowButton: {
-        alignItems: 'center',
-        padding: 10
-    },
-    dontShowText: {
-        fontSize: 14,
-        textDecorationLine: 'underline'
-    }
-});
+function useStyle(colorScheme: ColorScheme) {
+    const theme = Colors[colorScheme];
+    return StyleSheet.create({
+        base: {
+            justifyContent: 'flex-end',
+            margin: 0
+        },
+        bottomSheet: {
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            padding: 20,
+            paddingTop: 20,
+            paddingBottom: 40
+        },
+        header: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+            marginTop: 10
+        },
+        headerLeft: {
+            width: 24,
+            height: 24
+        },
+        closeButton: {
+            width: 24,
+            height: 24,
+            justifyContent: 'center',
+            alignItems: 'center'
+        },
+        closeIcon: {
+            width: 24,
+            height: 24
+        },
+        title: {
+            fontSize: 20,
+            fontWeight: '700',
+            textAlign: 'center',
+            height: 24,
+            lineHeight: 24
+        },
+        content: {
+            fontSize: 14,
+            lineHeight: 20,
+            marginBottom: 20
+        },
+        buttonWrap: {
+            gap: 16,
+            paddingTop: 15,
+            paddingBottom: 15,
+            alignContent: 'stretch',
+            alignItems: 'center',
+            flexDirection: 'row',
+            backgroundColor: theme.background.primary
+        },
+        buttonOuter: {
+            flex: 1
+        },
+        button: {
+            borderRadius: 4,
+            height: 50,
+            backgroundColor: theme.button.primary.background
+        },
+        buttonText: {
+            color: theme.text.secondary,
+            fontSize: 14,
+            fontWeight: '700'
+        },
+        button2: {
+            backgroundColor: theme.background.primary,
+            borderWidth: 1,
+            borderColor: theme.button.primary.background
+        },
+        button2Text: {
+            color: theme.text.primary,
+            fontSize: 14,
+            fontWeight: '700'
+        },
+        dontShowButton: {
+            alignItems: 'center',
+            padding: 10
+        },
+        dontShowText: {
+            fontSize: 14,
+            textDecorationLine: 'underline'
+        }
+    });
+}
 
 export default Survey;
