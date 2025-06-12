@@ -99,6 +99,7 @@ export default function TabLayout() {
                     justifyContent: 'flex-end',
                     margin: 0
                 }}
+                onAccessibilityEscape={handlePopupClose}
             >
                 <How visible={isHowModalVisible} onClose={handlePopupClose} />
             </Modal>

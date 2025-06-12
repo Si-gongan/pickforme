@@ -355,20 +355,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     return (
         <View style={styles.container}>
-            {/* 뒤로가기 버튼 */}
-            <View style={{ marginTop: 20, marginBottom: 10 }}>
-                <Pressable
-                    onPress={() => {
-                        router.back();
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel="뒤로가기"
-                    accessible
-                    style={styles.backButton}
-                >
-                    <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
-                </Pressable>
-            </View>
+            <BackHeader />
 
             <View accessible={false}>
                 {!isLocal && DetailWebView}

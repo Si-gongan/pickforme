@@ -16,6 +16,8 @@ import useCheckMembership from '../../hooks/useCheckMembership';
 import useCheckPoint from '../../hooks/useCheckPoint';
 import type { ColorScheme } from '@hooks';
 import useCheckLogin from '../../hooks/useCheckLogin';
+import { Pressable } from 'react-native';
+import CloseIcon from '@/assets/icons/CloseIcon';
 
 export default function RequestBottomSheet() {
     const headerTitleRef = useRef(null);
@@ -80,6 +82,26 @@ export default function RequestBottomSheet() {
     return (
         <View style={styles.base}>
             <View style={[styles.bottomSheet, localStyles.root]}>
+                <Pressable
+                    onPress={() => {
+                        setIsShowRequestModal(false);
+                    }}
+                    accessible
+                    accessibilityLabel="닫기"
+                    accessibilityRole="button"
+                    onAccessibilityEscape={() => {
+                        setIsShowRequestModal(false);
+                    }}
+                    style={{
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end',
+                        marginBottom: 20,
+                        marginTop: 20,
+                        paddingRight: 20
+                    }}
+                >
+                    <CloseIcon size={24} color={Colors[colorScheme].text.primary} />
+                </Pressable>
                 <Text
                     style={[styles.title, localStyles.title]}
                     ref={headerTitleRef}

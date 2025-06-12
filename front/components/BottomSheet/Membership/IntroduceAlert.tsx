@@ -45,7 +45,6 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
                     accessibilityRole="button"
                     onAccessibilityEscape={onClose}
                 >
-                    {/* <Image style={localStyles.backButtonImage} source={BackImage} /> */}
                     <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
                 <Text style={[styles.title, localStyles.title]}>{setting.name}님! 중요한 소식이 있어요.</Text>

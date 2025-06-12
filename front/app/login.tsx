@@ -33,6 +33,7 @@ export default function LoginScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="뒤로가기"
                 style={{ marginTop: 100, marginLeft: 20 }}
+                onAccessibilityEscape={() => router.push('/(tabs)')}
             >
                 <BackIcon size={48} color={Colors[colorScheme].text.primary} />
             </Pressable>
