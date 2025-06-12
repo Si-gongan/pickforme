@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -9,7 +9,9 @@ import {
     Image,
     Linking,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    AccessibilityInfo,
+    findNodeHandle
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -31,6 +33,7 @@ export default function InterviewScreen() {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isChecked, setIsChecked] = useState(false);
     const [isDuplicate, setIsDuplicate] = useState(false);
+    const phoneInputRef = useRef<TextInput>(null);
     // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
 
@@ -184,6 +187,7 @@ export default function InterviewScreen() {
                     <View style={styles.phoneInputContainer}>
                         <Text style={[styles.inputLabel, { color: Colors[colorScheme].text.primary }]}>전화번호</Text>
                         <TextInput
+                            ref={phoneInputRef}
                             style={[
                                 styles.input,
                                 isDuplicate && styles.inputError,
@@ -202,6 +206,12 @@ export default function InterviewScreen() {
                             returnKeyType="send"
                             onSubmitEditing={() => {
                                 setPhoneNumber(phoneNumber);
+                                setTimeout(() => {
+                                    const node = findNodeHandle(phoneInputRef.current);
+                                    if (node) {
+                                        AccessibilityInfo.setAccessibilityFocus(node);
+                                    }
+                                }, 100);
                             }}
                         />
                         {isDuplicate && (
