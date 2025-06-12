@@ -7,13 +7,15 @@ import Colors from '../constants/Colors';
 
 import { BackHeader, SelectButton } from '@components';
 import { FAQS } from '@constants';
+import { useRouter } from 'expo-router';
 
 export default function FAQScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
+    const router = useRouter();
 
     return (
-        <View style={style.FAQScreenContainer}>
+        <View style={style.FAQScreenContainer} onAccessibilityEscape={() => router.back()}>
             <BackHeader />
             <View style={style.FAQContent}>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={style.FAQScroll}>

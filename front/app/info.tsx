@@ -6,6 +6,7 @@ import { View, StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import useColorScheme from '../hooks/useColorScheme';
 import Colors from '../constants/Colors';
+import { useRouter } from 'expo-router';
 
 import { settingAtom } from '@stores';
 import { Button, InfoForm, BackHeader, Footer } from '@components';
@@ -16,6 +17,7 @@ export default function InfoScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
     const [setting, onSetting] = useAtom(settingAtom);
+    const router = useRouter();
 
     const [payload, onPayload] = useState<ISetting>(setting || {});
 
@@ -46,7 +48,7 @@ export default function InfoScreen() {
     );
 
     return (
-        <View style={style.InfoScreenContainer}>
+        <View style={style.InfoScreenContainer} onAccessibilityEscape={() => router.back()}>
             <BackHeader />
             <View style={style.InfoScreenContent}>
                 <InfoForm value={payload} onChange={onPayload} />

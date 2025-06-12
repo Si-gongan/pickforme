@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, Platform, findNodeHandle, AccessibilityInfo } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { login } from '@react-native-seoul/kakao-login';
 import {
     AppleAuthenticationButton,
@@ -23,6 +23,7 @@ export default function LoginForm() {
     const style = useStyle();
     const colorScheme = useColorScheme();
     const contentRef = useRef<Text>(null);
+    const router = useRouter();
     const [isShowLoginModal, setIsShowLoginModal] = useAtom(isShowLoginModalAtom);
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({

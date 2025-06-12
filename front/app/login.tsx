@@ -12,9 +12,9 @@ import BackIcon from '@/assets/icons/BackIcon';
 export default function LoginScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
+    const router = useRouter();
 
     const user = useAtomValue(userAtom);
-    const router = useRouter();
 
     useEffect(
         function () {
@@ -26,7 +26,7 @@ export default function LoginScreen() {
     );
 
     return (
-        <View style={style.LoginScreenContainer}>
+        <View style={style.LoginScreenContainer} onAccessibilityEscape={() => router.back()}>
             <Pressable
                 onPress={() => router.push('/(tabs)')}
                 accessible

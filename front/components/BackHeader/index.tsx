@@ -29,7 +29,6 @@ export default function BackHeader() {
                 accessible
                 accessibilityRole="button"
                 accessibilityLabel="뒤로가기"
-                onAccessibilityEscape={onPress}
             >
                 <BackIcon size={48} color={Colors[colorScheme].text.primary} />
             </TouchableOpacity>

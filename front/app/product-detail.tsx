@@ -354,7 +354,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
             <BackHeader />
 
             <View accessible={false}>
