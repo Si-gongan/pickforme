@@ -46,7 +46,7 @@ export const createStyles = (colorScheme: ColorScheme) => {
         bottomSheet: {
             borderTopLeftRadius: 4, // ASIS 20
             borderTopRightRadius: 4, // ASIS 20
-            paddingTop: 0, // ASIS 20
+            paddingTop: 20, // ASIS 20
             paddingBottom: 20,
             paddingHorizontal: 22, // ASIS 27
             backgroundColor: theme.background.primary
