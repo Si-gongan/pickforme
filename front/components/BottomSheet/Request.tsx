@@ -126,6 +126,7 @@ export default function RequestBottomSheet() {
                 </View>
                 <Button
                     accessible
+                    accessibilityRole="button"
                     accessibilityLabel="매니저에게 질문하기"
                     style={[
                         styles.button,

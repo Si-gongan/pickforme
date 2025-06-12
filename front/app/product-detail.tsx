@@ -498,6 +498,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
                         onPress={() => handlePressTab(TAB)}
                         accessible
                         accessibilityLabel={`${tabName[TAB]} 탭`}
+                        accessibilityRole="button"
                         selected={tab === TAB}
                     />
                 </View>

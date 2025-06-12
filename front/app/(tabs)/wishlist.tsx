@@ -381,6 +381,7 @@ export default function WishListScreen() {
                                 onPress={TAB === TABS.REQUEST ? handleClickRequest : handleProductTabClick}
                                 accessibilityLabel={`${tabName[TAB]} 탭`}
                                 selected={tab === TAB}
+                                accessibilityRole="button"
                             />
                         </View>
                     ))}

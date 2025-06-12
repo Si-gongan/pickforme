@@ -50,6 +50,7 @@ export default function ThemeScreen() {
                             <RadioButton.Android
                                 color={Colors[colorScheme].text.primary}
                                 value={key}
+                                accessibilityRole="button"
                                 accessibilityLabel={(key === theme ? '선택됨,' : '') + label}
                                 status={key === theme ? 'checked' : 'unchecked'}
                                 onPress={() => setTheme(key)}
