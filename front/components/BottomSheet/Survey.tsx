@@ -26,6 +26,7 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
             onBackdropPress={onClose}
             animationIn="slideInUp"
             animationInTiming={300}
+            onAccessibilityEscape={onClose}
         >
             <View style={[styles.bottomSheet, { backgroundColor: theme.background.primary }]}>
                 <View style={styles.header}>
