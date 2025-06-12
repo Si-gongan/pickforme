@@ -7,7 +7,8 @@ import {
     TextInput,
     View as RNView,
     findNodeHandle,
-    AccessibilityInfo
+    AccessibilityInfo,
+    Keyboard
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { formatDate, formatTime } from '../utils/common';
@@ -235,11 +236,21 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
 
                 <Pressable
                     onPress={() => {
-                        handleClickSend(question);
+                        console.log('press question to AI onPress');
+                        if (question.trim()) {
+                            handleClickSend(question);
+                        }
                     }}
                     accessible
                     accessibilityLabel="질문하기"
                     accessibilityRole="button"
+                    onAccessibilityTap={() => {
+                        console.log('VoiceOver focus detected - accessibility tap triggered');
+                        Keyboard.dismiss();
+                        if (question.trim()) {
+                            handleClickSend(question);
+                        }
+                    }}
                 >
                     <Image style={styles.sendIcon} source={require('../assets/images/discover/downSquareArrow.png')} />
                 </Pressable>
