@@ -28,12 +28,8 @@ router.post('/', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = purchaseData;
   } catch (error) {
-    log.error(LogContext.PURCHASE, '결제 처리 중 에러 발생:', LogSeverity.HIGH, {
-      error: {
-        name: error instanceof Error ? error.name : 'UnknownError',
-        message: error instanceof Error ? error.message : 'UnknownError',
-        stack: error instanceof Error ? error.stack : 'UnknownError',
-      },
+    void log.error(LogContext.PURCHASE, '결제 처리 중 에러 발생:', LogSeverity.HIGH, {
+      error: JSON.stringify(error, null, 2),
       endPoint: '/purchase',
       method: 'POST',
       userId: ctx.state.user._id,
@@ -77,12 +73,8 @@ router.get('/subscription/status', requireAuth, async (ctx) => {
     ctx.body = status;
     ctx.status = 200;
   } catch (error) {
-    log.error(LogContext.PURCHASE, '구독 상태 조회 중 에러:', LogSeverity.HIGH, {
-      error: {
-        name: error instanceof Error ? error.name : 'UnknownError',
-        message: error instanceof Error ? error.message : 'UnknownError',
-        stack: error instanceof Error ? error.stack : 'UnknownError',
-      },
+    void log.error(LogContext.PURCHASE, '구독 상태 조회 중 에러:', LogSeverity.HIGH, {
+      error: JSON.stringify(error, null, 2),
       endPoint: '/purchase/subscription/status',
       method: 'GET',
       userId: ctx.state.user._id,
@@ -105,12 +97,8 @@ router.get('/refund', requireAuth, async (ctx) => {
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
-    log.error(LogContext.PURCHASE, '환불대상 조회 중 에러 발생:', LogSeverity.HIGH, {
-      error: {
-        name: error instanceof Error ? error.name : 'UnknownError',
-        message: error instanceof Error ? error.message : 'UnknownError',
-        stack: error instanceof Error ? error.stack : 'UnknownError',
-      },
+    void log.error(LogContext.PURCHASE, '환불대상 조회 중 에러 발생:', LogSeverity.HIGH, {
+      error: JSON.stringify(error, null, 2),
       endPoint: '/purchase/refund',
       method: 'GET',
       userId: ctx.state.user._id,
@@ -134,12 +122,8 @@ router.post('/refund', requireAuth, async (ctx) => {
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
-    log.error(LogContext.PURCHASE, '환불 처리 중 에러 발생:', LogSeverity.HIGH, {
-      error: {
-        name: error instanceof Error ? error.name : 'UnknownError',
-        message: error instanceof Error ? error.message : 'UnknownError',
-        stack: error instanceof Error ? error.stack : 'UnknownError',
-      },
+    void log.error(LogContext.PURCHASE, '환불 처리 중 에러 발생:', LogSeverity.HIGH, {
+      error: JSON.stringify(error, null, 2),
       endPoint: '/purchase/refund',
       method: 'POST',
       userId: ctx.state.user._id,
