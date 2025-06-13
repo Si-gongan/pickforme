@@ -3,6 +3,7 @@ import { Receipt } from 'in-app-purchase';
 import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
+import PurchaseFailure from 'models/purchase/failure';
 
 const router = new Router({
   prefix: '/purchase',
@@ -10,34 +11,54 @@ const router = new Router({
 
 // 구독 구매
 router.post('/', requireAuth, async (ctx) => {
-  try {
-    const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
+  const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
+  const userId = ctx.state?.user?._id;
 
-    if (!receipt || !productId) {
-      ctx.status = 400;
-      ctx.body = '잘못된 요청입니다.';
-      return;
-    }
-
-    const purchaseData = await subscriptionService.createSubscription(
-      ctx.state.user._id,
+  if (!receipt || !productId || !userId) {
+    // 요청 자체가 잘못된 경우도 로깅
+    void log.error('구독 요청 파라미터 누락', 'PURCHASE', 'CRITICAL', {
+      receipt,
       productId,
-      receipt
-    );
+      userId,
+      endPoint: '/purchase',
+      method: 'POST',
+    });
+
+    ctx.status = 400;
+    ctx.body = '잘못된 요청입니다.';
+
+    return;
+  }
+
+  try {
+    const purchaseData = await subscriptionService.createSubscription(userId, productId, receipt);
 
     ctx.status = 200;
     ctx.body = purchaseData;
   } catch (error) {
-    void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
-      error: {
-        name: error instanceof Error ? error.name : 'UnknownError',
-        message: error instanceof Error ? error.message : 'UnknownError',
-        stack: error instanceof Error ? error.stack : 'UnknownError',
-      },
-      endPoint: '/purchase',
-      method: 'POST',
-      userId: ctx.state.user._id,
-    });
+    const errorMeta = {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message: error instanceof Error ? error.message : 'UnknownError',
+      stack: error instanceof Error ? error.stack : 'UnknownError',
+      error: JSON.stringify(error),
+    };
+
+    await Promise.all([
+      log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
+        error: errorMeta,
+        endPoint: '/purchase',
+        method: 'POST',
+        userId,
+      }),
+      PurchaseFailure.create({
+        userId,
+        receipt,
+        productId,
+        errorMessage: errorMeta.message,
+        errorStack: errorMeta.stack,
+        meta: errorMeta,
+      }),
+    ]);
 
     ctx.status = 400;
     ctx.body =
