@@ -28,7 +28,6 @@ import { registerEventScheduler, handleEventScheduler } from '../events';
 import db from 'models';
 import { log } from 'utils/logger/logger';
 import cron from 'node-cron';
-import { LogContext, LogSeverity } from 'utils/logger/types';
 
 describe('Event Scheduler', () => {
   const RealDate = Date;
@@ -77,9 +76,9 @@ describe('Event Scheduler', () => {
 
       expect(mockUser.processExpiredMembership).toHaveBeenCalled();
       expect(log.info).toHaveBeenCalledWith(
-        LogContext.SCHEDULER,
         expect.stringContaining('이벤트 멤버십 만료 처리 완료'),
-        LogSeverity.LOW,
+        'SCHEDULER',
+        'LOW',
         expect.objectContaining({
           scheduler: 'events',
           userId: mockUser._id,
@@ -108,9 +107,9 @@ describe('Event Scheduler', () => {
 
       expect(mockUser.applyPurchaseRewards).toHaveBeenCalledWith(mockProduct.getRewards());
       expect(log.info).toHaveBeenCalledWith(
-        LogContext.SCHEDULER,
         expect.stringContaining('이벤트 멤버십 포인트 충전 완료'),
-        LogSeverity.LOW,
+        'SCHEDULER',
+        'LOW',
         expect.objectContaining({
           scheduler: 'events',
           userId: mockUser._id,
@@ -139,9 +138,9 @@ describe('Event Scheduler', () => {
 
       expect(mockUser.applyPurchaseRewards).not.toHaveBeenCalled();
       expect(log.info).not.toHaveBeenCalledWith(
-        LogContext.SCHEDULER,
         expect.stringContaining('이벤트 멤버십 포인트 충전 완료'),
-        LogSeverity.LOW,
+        'SCHEDULER',
+        'LOW',
         expect.any(Object)
       );
     });
@@ -166,9 +165,9 @@ describe('Event Scheduler', () => {
       await handleEventScheduler();
 
       expect(log.error).toHaveBeenCalledWith(
-        LogContext.SCHEDULER,
         '이벤트 멤버십 처리 중 오류 발생',
-        LogSeverity.HIGH,
+        'SCHEDULER',
+        'HIGH',
         expect.objectContaining({
           scheduler: 'events',
           message: 'test error',

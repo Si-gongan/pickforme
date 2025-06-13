@@ -2,10 +2,7 @@
 import cron from 'node-cron';
 import db from 'models';
 import iapValidator from 'utils/iap';
-import socket from 'socket';
-import sendPush from 'utils/push';
 import { log } from 'utils/logger/logger';
-import { LogContext, LogSeverity } from 'utils/logger/types';
 
 const SCHEDULER_NAME = 'iap';
 
@@ -70,21 +67,17 @@ const checkSubscriptions = async () => {
         // }
       } else {
         // 구독이 환불/만료된 경우
-        purchase.updateExpiration();
+        await purchase.updateExpiration();
 
         try {
           await db.User.findOneAndUpdate({ _id: purchase.userId }, { point: 0, aiPoint: 0 });
-          log.info(
-            LogContext.SCHEDULER,
-            `구독 만료 처리 완료 - userId: ${purchase.userId}`,
-            LogSeverity.LOW,
-            {
-              scheduler: SCHEDULER_NAME,
-              userId: purchase.userId,
-            }
-          );
+
+          void log.info(`구독 만료 처리 완료 - userId: ${purchase.userId}`, 'SCHEDULER', 'LOW', {
+            scheduler: SCHEDULER_NAME,
+            userId: purchase.userId,
+          });
         } catch (error) {
-          log.error(LogContext.SCHEDULER, '구독 만료 처리 중 오류 발생', LogSeverity.HIGH, {
+          void log.error('구독 만료 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
             scheduler: SCHEDULER_NAME,
             error,
             userId: purchase.userId,
@@ -94,7 +87,7 @@ const checkSubscriptions = async () => {
     }
   } catch (error) {
     if (error instanceof Error)
-      log.error(LogContext.SCHEDULER, '구독 검증 중 오류 발생', LogSeverity.HIGH, {
+      void log.error('구독 검증 중 오류 발생', 'SCHEDULER', 'HIGH', {
         scheduler: SCHEDULER_NAME,
         message: error.name,
         stack: error.stack,
@@ -104,10 +97,10 @@ const checkSubscriptions = async () => {
 };
 
 export const handleIAPScheduler = async () => {
-  log.info(LogContext.SCHEDULER, 'IAP 스케줄러 실행됨', LogSeverity.LOW, {
+  await checkSubscriptions();
+  log.info('IAP 스케줄러 실행됨', 'SYSTEM', 'LOW', {
     scheduler: SCHEDULER_NAME,
   });
-  await checkSubscriptions();
 };
 
 export function registerIAPScheduler() {

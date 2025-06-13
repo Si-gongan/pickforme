@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 import { Receipt } from 'in-app-purchase';
 import requireAuth from 'middleware/jwt';
-import { log, LogContext, LogSeverity } from 'utils/logger';
+import { log } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
 
 const router = new Router({
@@ -28,8 +28,12 @@ router.post('/', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = purchaseData;
   } catch (error) {
-    void log.error(LogContext.PURCHASE, '결제 처리 중 에러 발생:', LogSeverity.HIGH, {
-      error: JSON.stringify(error, null, 2),
+    void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
       endPoint: '/purchase',
       method: 'POST',
       userId: ctx.state.user._id,
@@ -73,8 +77,12 @@ router.get('/subscription/status', requireAuth, async (ctx) => {
     ctx.body = status;
     ctx.status = 200;
   } catch (error) {
-    void log.error(LogContext.PURCHASE, '구독 상태 조회 중 에러:', LogSeverity.HIGH, {
-      error: JSON.stringify(error, null, 2),
+    void log.error('구독 상태 조회 중 에러:', 'PURCHASE', 'HIGH', {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
       endPoint: '/purchase/subscription/status',
       method: 'GET',
       userId: ctx.state.user._id,
@@ -97,8 +105,12 @@ router.get('/refund', requireAuth, async (ctx) => {
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
-    void log.error(LogContext.PURCHASE, '환불대상 조회 중 에러 발생:', LogSeverity.HIGH, {
-      error: JSON.stringify(error, null, 2),
+    void log.error('환불대상 조회 중 에러 발생:', 'PURCHASE', 'HIGH', {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
       endPoint: '/purchase/refund',
       method: 'GET',
       userId: ctx.state.user._id,
@@ -122,8 +134,12 @@ router.post('/refund', requireAuth, async (ctx) => {
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
-    void log.error(LogContext.PURCHASE, '환불 처리 중 에러 발생:', LogSeverity.HIGH, {
-      error: JSON.stringify(error, null, 2),
+    void log.error('환불 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
       endPoint: '/purchase/refund',
       method: 'POST',
       userId: ctx.state.user._id,
