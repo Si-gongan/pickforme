@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Platform } from 'react-native';
+import { Alert, Platform, ActivityIndicator, View, StyleSheet, AccessibilityInfo } from 'react-native';
 import {
     getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
@@ -48,6 +48,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const purchaseUpdateRef = useRef<any>(null);
     const purchaseErrorRef = useRef<any>(null);
     const isInitializingRef = useRef(false);
+    const loadingViewRef = useRef<View>(null);
 
     useEffect(() => {
         getProducts({ platform: Platform.OS });
@@ -183,7 +184,49 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         };
     }, []);
 
-    return <>{children({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading })}</>;
+    useEffect(() => {
+        if (subscriptionLoading) {
+            setTimeout(() => {
+                loadingViewRef.current?.setNativeProps({
+                    accessibilityViewIsModal: true
+                });
+                AccessibilityInfo.announceForAccessibility('구독 처리가 진행 중입니다. 잠시만 기다려주세요.');
+            }, 100);
+        }
+    }, [subscriptionLoading]);
+
+    return (
+        <>
+            {children({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading })}
+            {subscriptionLoading && (
+                <View
+                    ref={loadingViewRef}
+                    style={styles.loadingOverlay}
+                    accessible={true}
+                    accessibilityLabel="구독 처리 중"
+                    accessibilityHint="구독 처리가 진행 중입니다. 잠시만 기다려주세요."
+                    accessibilityRole="alert"
+                    importantForAccessibility="yes"
+                >
+                    <ActivityIndicator size="large" />
+                </View>
+            )}
+        </>
+    );
 };
+
+const styles = StyleSheet.create({
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999
+    }
+});
 
 export default withIAPContext(PurchaseWrapper);
