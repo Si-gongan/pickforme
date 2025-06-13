@@ -20,6 +20,7 @@ import {
 import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '@/stores/purchase/atoms';
 import { GetSubscriptionAPI } from '@/stores/purchase/apis';
 import { Product, ProductType } from '@/stores/purchase/types';
+import { isShowSubscriptionModalAtom } from '@/stores/auth';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -36,6 +37,7 @@ interface PurchaseWrapperProps {
 
 const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const purchaseProduct = useSetAtom(purchaseProductAtom);
+    const setIsShowSubscriptionModal = useSetAtom(isShowSubscriptionModalAtom);
     const [purchaseItems] = useState<IAPProduct[]>([]);
     const [subscriptionItems, setSubscriptionItems] = useState<IAPSubscription[]>([]);
     const getProducts = useSetAtom(getProductsAtom);
@@ -72,6 +74,8 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 setSubscriptionLoading(false);
                 return false;
             }
+
+            console.log('구독 요청중..');
 
             if (offerToken) {
                 const subscriptionRequest: RequestSubscriptionAndroid = {
@@ -133,7 +137,9 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
                             await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
                             await finishTransaction({ purchase, isConsumable: !isSubscription });
-                            getSubscription();
+                            await getSubscription();
+
+                            setIsShowSubscriptionModal(true);
                         } catch (error) {
                             console.error('구매 처리 중 에러 발생:', error);
                             Alert.alert('구독 완료 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
@@ -143,7 +149,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                     });
 
                     purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
-                        console.error('purchaseErrorListener', error);
+                        Alert.alert('구독 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
                         setSubscriptionLoading(false);
                     });
                 };
@@ -159,7 +165,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         };
 
         initializeIAP();
-    }, [products, purchaseProduct]);
+    }, [products, purchaseProduct, setIsShowSubscriptionModal]);
 
     useEffect(() => {
         return () => {
