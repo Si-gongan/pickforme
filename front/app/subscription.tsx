@@ -55,7 +55,6 @@ const SubscriptionScreen = () => {
 export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscriptionItems, handleSubscription }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
-    const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
     const markdownStyles = StyleSheet.create({
         text: {
             fontSize: 14,
@@ -73,10 +72,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     });
 
     const onSubClick = async (sku: string, offerToken?: string | null) => {
-        const success = await handleSubscription(sku, offerToken);
-        if (success) {
-            setIsShowSubscriptionModalAtomModal(true);
-        }
+        await handleSubscription(sku, offerToken);
     };
 
     const getFilteredProducts = () => {
@@ -132,13 +128,10 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
                 purchasableProducts: [] as (IAPProduct & Product)[]
             }
         );
-        // console.log('filteredTmp : ', filteredTmp);
         setFilteredProducts(filteredTmp);
     };
 
     useEffect(() => {
-        // console.log('products가 들어왔음', products);
-
         getFilteredProducts();
     }, [products, purchaseItems, subscriptionItems]);
 

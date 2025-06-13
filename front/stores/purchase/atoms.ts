@@ -38,64 +38,33 @@ export const getProductsAtom = atom(null, async (get, set, params: GetProductsPa
 });
 
 export const purchaseProductAtom = atom(null, async (get, set, params: PurchaseProductParams) => {
-    try {
-        const result = await PurchaseProductAPI(params);
-        const { data, status } = result;
+    const result = await PurchaseProductAPI(params);
+    const { data, status } = result;
 
-        const userData = await get(userAtom);
-
-        if (!userData) {
-            return;
-        }
-
-        if (typeof data === 'string') {
-            Alert.alert(data as string);
-            return;
-        }
-
-        if (status !== 200) {
-            return;
-        }
-
-        try {
-            const pointResult = await UserPointAPI({});
-            const pointResponse = pointResult;
-
-            if (!pointResponse || pointResponse.status !== 200) {
-                return;
-            }
-
-            const pointData = pointResponse.data as UserPoint;
-            set(userAtom, { ...userData, point: pointData.point, aiPoint: pointData.aiPoint });
-        } catch (pointError) {
-            console.error('포인트 정보 가져오기 실패:', pointError);
-            return;
-        }
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            if (error.response) {
-                // 서버가 응답을 반환한 경우
-                console.error('상품 구매 실패:', error.response.data);
-                Alert.alert(
-                    '구매 처리 중 오류가 발생했습니다.',
-                    error.response.data.message || '잠시 후 다시 시도해주세요.'
-                );
-            } else if (error.request) {
-                // 요청은 보냈지만 응답을 받지 못한 경우
-                console.error('상품 구매 실패: 서버 응답 없음');
-                Alert.alert('구매 처리 중 오류가 발생했습니다.', '서버와의 통신이 원활하지 않습니다.');
-            } else {
-                // 요청 설정 중 오류가 발생한 경우
-                console.error('상품 구매 실패:', error.message);
-                Alert.alert('구매 처리 중 오류가 발생했습니다.', '잠시 후 다시 시도해주세요.');
-            }
-        } else {
-            // Axios 에러가 아닌 경우
-            console.error('상품 구매 실패:', error);
-            Alert.alert('구매 처리 중 오류가 발생했습니다.', '잠시 후 다시 시도해주세요.');
-        }
-        return;
+    const userData = await get(userAtom);
+    if (!userData) {
+        throw new Error('유저 정보가 없습니다.');
     }
+
+    if (typeof data === 'string') {
+        throw new Error(data);
+    }
+
+    if (status !== 200) {
+        throw new Error('구매 처리에 실패했습니다.');
+    }
+
+    const pointResult = await UserPointAPI({});
+    const pointResponse = pointResult;
+
+    if (!pointResponse || pointResponse.status !== 200) {
+        throw new Error('포인트 정보를 가져오는데 실패했습니다.');
+    }
+
+    const pointData = pointResponse.data as UserPoint;
+    set(userAtom, { ...userData, point: pointData.point, aiPoint: pointData.aiPoint });
+
+    return true; // 성공 시 true 반환
 });
 
 export const subscriptionAtom = atom<GetSubscriptionResponse | null>(null);

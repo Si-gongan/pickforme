@@ -58,12 +58,7 @@ export const PointHistoryScreen: React.FC<Props> = ({
     const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
 
     const onSubClick = async (sku: string, offerToken?: string) => {
-        const success = await handleSubscription(sku, offerToken);
-        if (success) {
-            setIsShowSubscriptionModalAtomModal(true);
-
-            getCurrentSubscription();
-        }
+        await handleSubscription(sku, offerToken);
     };
 
     const handleClickUnsubscribe = () => {
