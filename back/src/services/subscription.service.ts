@@ -5,6 +5,7 @@ import { IPurchase, IPurchaseMethods } from 'models/purchase/types';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import constants from '../constants';
+import PurchaseFailure from 'models/purchase/failure';
 
 const { POINTS } = constants;
 
@@ -76,6 +77,12 @@ class SubscriptionService {
         ],
         { session }
       );
+
+      // 만약 이전에 실패했던 결제 이력이라면 해당 이력을 해결된것으로 처리한다.
+      const existingPurchaseFailure = await PurchaseFailure.findOne({ receipt });
+      if (existingPurchaseFailure) {
+        await PurchaseFailure.updateOne({ receipt }, { status: 'RESOLVED' }, { session });
+      }
 
       await user.applyPurchaseRewards(product.getRewards(), session);
 

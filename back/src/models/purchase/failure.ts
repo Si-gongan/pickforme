@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { Platform } from 'models/product';
+import { IPurchaseFailure, PurchaseFailureModel } from './types';
 
 const PurchaseFailureSchema = new mongoose.Schema(
   {
@@ -24,6 +25,11 @@ const PurchaseFailureSchema = new mongoose.Schema(
     errorStack: {
       type: String,
     },
+    status: {
+      type: String,
+      enum: ['FAILED', 'RESOLVED'],
+      default: 'FAILED',
+    },
     meta: {
       type: mongoose.Schema.Types.Mixed,
     },
@@ -33,5 +39,8 @@ const PurchaseFailureSchema = new mongoose.Schema(
   }
 );
 
-const PurchaseFailure = mongoose.model('PurchaseFailures', PurchaseFailureSchema);
+const PurchaseFailure = mongoose.model<IPurchaseFailure, PurchaseFailureModel>(
+  'PurchaseFailures',
+  PurchaseFailureSchema
+);
 export default PurchaseFailure;

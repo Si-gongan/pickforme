@@ -43,22 +43,24 @@ router.post('/', requireAuth, async (ctx) => {
       error: JSON.stringify(error),
     };
 
-    await Promise.all([
-      log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
-        error: errorMeta,
-        endPoint: '/purchase',
-        method: 'POST',
-        userId,
-      }),
-      PurchaseFailure.create({
+    const alreadyLogged = await PurchaseFailure.findOne({ receipt });
+    if (!alreadyLogged) {
+      await PurchaseFailure.create({
         userId,
         receipt,
         productId,
         errorMessage: errorMeta.message,
         errorStack: errorMeta.stack,
         meta: errorMeta,
-      }),
-    ]);
+      });
+    }
+
+    void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
+      error: errorMeta,
+      endPoint: '/purchase',
+      method: 'POST',
+      userId,
+    });
 
     ctx.status = 400;
     ctx.body =
@@ -217,6 +219,44 @@ router.get('/failures', requireAuth, async (ctx) => {
     ctx.status = 500;
     ctx.body = {
       msg: '결제 실패 이력 조회 중 서버 오류가 발생했습니다.',
+    };
+  }
+});
+
+// 결제 실패 재시도
+router.post('/retry', requireAuth, async (ctx) => {
+  const { userId, _id: productId, receipt } = <any>ctx.request.body;
+
+  if (!userId || !productId || !receipt) {
+    ctx.status = 400;
+    ctx.body = { error: '필수 항목이 누락되었습니다.' };
+    return;
+  }
+
+  try {
+    const result = await subscriptionService.createSubscription(userId, productId, receipt);
+    await PurchaseFailure.updateOne({ receipt }, { status: 'RESOLVED' });
+
+    ctx.status = 200;
+    ctx.body = result;
+  } catch (error) {
+    const errorMeta = {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message: error instanceof Error ? error.message : 'UnknownError',
+      stack: error instanceof Error ? error.stack : 'UnknownError',
+    };
+
+    void log.error('결제 재시도 처리 중 에러 발생', 'PURCHASE', 'HIGH', {
+      error: errorMeta,
+      userId,
+      productId,
+      endPoint: '/purchase/retry',
+      method: 'POST',
+    });
+
+    ctx.status = 500;
+    ctx.body = {
+      error: error instanceof Error ? error.message : '결제 재시도 중 오류가 발생했습니다.',
     };
   }
 });

@@ -1,8 +1,15 @@
-// pages/admin/purchase-failures.tsx
-
 import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
-import { Button, Table, Input, DatePicker, Form, Space, message } from "antd";
+import {
+  Button,
+  Table,
+  Input,
+  DatePicker,
+  Form,
+  Space,
+  message,
+  Tag,
+} from "antd";
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { format } from "date-fns";
 import axios from "@/utils/axios";
@@ -53,6 +60,8 @@ export default function PurchaseFailures() {
       messageApi.success(
         `재시도 성공: ${data?.product?.displayName || "Success"}`
       );
+      const filters = form.getFieldsValue();
+      onSearch(filters); // 기존 필터 조건 유지하며 갱신
     } catch (error: any) {
       console.error(error);
       messageApi.error(
@@ -82,6 +91,16 @@ export default function PurchaseFailures() {
       key: "errorMessage",
     },
     {
+      title: "상태",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => (
+        <Tag color={status === "RESOLVED" ? "green" : "red"}>
+          {status === "RESOLVED" ? "RESOLVED" : "FAILED"}
+        </Tag>
+      ),
+    },
+    {
       title: "발생 시각",
       dataIndex: "createdAt",
       key: "createdAt",
@@ -94,6 +113,7 @@ export default function PurchaseFailures() {
         <Button
           type="link"
           icon={<ReloadOutlined />}
+          disabled={record.status === "RESOLVED"}
           onClick={() => handleRetry(record)}
         >
           재시도
