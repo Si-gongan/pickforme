@@ -10,9 +10,9 @@ const router = new Router({
 
 // 구독 구매
 router.post('/', requireAuth, async (ctx) => {
-  try {
-    const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
+  const { receipt, _id: productId } = <{ _id: string; receipt: Receipt }>ctx.request.body;
 
+  try {
     if (!receipt || !productId) {
       ctx.status = 400;
       ctx.body = '잘못된 요청입니다.';
@@ -33,6 +33,8 @@ router.post('/', requireAuth, async (ctx) => {
       endPoint: '/purchase',
       method: 'POST',
       userId: ctx.state.user._id,
+      productId,
+      receipt,
     });
 
     ctx.status = 400;
