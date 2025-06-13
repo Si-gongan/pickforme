@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Platform, Linking } from 'react-native';
+import { Platform, Linking, TouchableOpacity, View, Text } from 'react-native';
 
 import { useCheckIsFirstLogin } from '@/hooks/useCheckIsFirstLogin';
 import { usePopupSystem } from '@/hooks/usePopupSystem';
@@ -9,8 +9,11 @@ import { How, Survey } from '@components';
 import { Colors } from '@constants';
 import useColorScheme from '../../hooks/useColorScheme';
 import { PopupService } from '@/services/popup';
-
+import { useAtom, useSetAtom } from 'jotai';
 import Modal from 'react-native-modal';
+import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
+import { getMainProductsAtom } from '../../stores/product/atoms';
+import { categoryName, CATEGORIES } from '@/constants/Categories';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
@@ -18,6 +21,12 @@ export default function TabLayout() {
     const [isSurveyVisible, setIsSurveyVisible] = React.useState(false);
     const { isFirstLogin } = useCheckIsFirstLogin();
     const { registerPopup, showNextPopup, handlePopupClose, isRegistered } = usePopupSystem();
+
+    const [searchText, setSearchText] = useAtom(searchTextAtom);
+    const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
+    const [scrollResetTrigger, setScrollResetTrigger] = useAtom(scrollResetTriggerAtom);
+    const getMainProducts = useSetAtom(getMainProductsAtom);
 
     // 팝업 등록
     useEffect(() => {
@@ -136,8 +145,61 @@ export default function TabLayout() {
                         title: 'Home',
                         tabBarLabel: '홈',
                         tabBarAccessibilityLabel: '홈 탭',
-                        tabBarIcon: function ({ color, focused }) {
-                            return <HomeIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
+                        // tabBarIcon: function ({ color, focused }) {
+
+                        //     return <HomeIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
+                        // }
+                        tabBarButton: props => {
+                            const safeProps = Object.fromEntries(
+                                Object.entries(props).map(([key, value]) => [key, value === null ? undefined : value])
+                            );
+
+                            const isSelected = props['aria-selected'] ?? false;
+
+                            return (
+                                <TouchableOpacity
+                                    {...safeProps}
+                                    onPress={e => {
+                                        console.log('홈 탭 클릭!', isSelected);
+                                        props.onPress?.(e);
+
+                                        // 홈탭을 눌렀을 때 검색 정보들을 초기화
+                                        if (searchText.length > 0 || searchQuery.length > 0) {
+                                            setSearchText('');
+                                            setSearchQuery('');
+                                        } else {
+                                            console.log('refresh home');
+                                            const randomCategoryId =
+                                                CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
+                                            setCurrentCategory(
+                                                categoryName[randomCategoryId as keyof typeof categoryName]
+                                            );
+                                            // 홈화면 데이터 새로고침
+                                            getMainProducts(randomCategoryId);
+                                            
+                                            // 스크롤 초기화 트리거 호출
+                                            setScrollResetTrigger(prev => prev + 1);
+                                        }
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                                        <HomeIcon
+                                            size={28}
+                                            color={Colors?.[colorScheme]?.button.primary.text}
+                                            opacity={isSelected ? 1 : 0.5}
+                                        />
+                                        <Text
+                                            style={{
+                                                color: Colors?.[colorScheme]?.button.primary.text,
+                                                fontSize: 11,
+                                                opacity: isSelected ? 1 : 0.5
+                                            }}
+                                        >
+                                            홈
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            );
                         }
                     }}
                 />

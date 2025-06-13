@@ -2,7 +2,7 @@
  * 홈 화면 메인 상품 노출
  * - 기본적으로 랜덤 카테고리 상품 노출
  */
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { ScrollView, FlatList, View, Text } from 'react-native';
 import { useSetAtom } from 'jotai';
 
@@ -21,7 +21,12 @@ interface MainProductListProps {
     category: string;
 }
 
-export default function MainProductList({ data, category }: MainProductListProps) {
+// ref를 통해 외부에서 접근할 수 있는 메서드 정의
+export interface MainProductListRef {
+    scrollToTop: () => void;
+}
+
+const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ data, category }, ref) => {
     const [randomCount, onRandomCount] = useState<number>(5);
     const [specialCount, onSpecialCount] = useState<number>(5);
     const [currentProductUrl, setCurrentProductUrl] = useState<string>('');
@@ -308,10 +313,24 @@ export default function MainProductList({ data, category }: MainProductListProps
         [data, randomCount, specialCount, startUpdateProcess]
     );
 
+    // 스크롤뷰 ref 추가
+    const scrollViewRef = useRef<ScrollView>(null);
+    
+    // ref를 통해 외부에서 접근할 수 있는 메서드 노출
+    useImperativeHandle(ref, () => ({
+        scrollToTop: () => {
+            if (scrollViewRef.current) {
+                scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+            }
+        }
+    }));
+    
     return (
         <>
             {currentProductUrl && DetailWebView}
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                ref={scrollViewRef} 
+                showsVerticalScrollIndicator={false}>
                 {data.local
                     .filter(function ({ order }) {
                         return order < 0;
@@ -406,4 +425,6 @@ export default function MainProductList({ data, category }: MainProductListProps
             </ScrollView>
         </>
     );
-}
+});
+
+export default MainProductList;

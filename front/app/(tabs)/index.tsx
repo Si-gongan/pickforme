@@ -20,6 +20,7 @@ import { useRouter } from 'expo-router';
 import useColorScheme from '../../hooks/useColorScheme';
 import type { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
+import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
 
 import {
     setScrapedProductsAtom,
@@ -32,7 +33,7 @@ import {
 } from '../../stores/product/atoms';
 
 import { CATEGORIES, categoryName } from '../../constants/Categories';
-import { MainProductList } from '@components';
+import { MainProductList, MainProductListRef } from '@components';
 import { WebViewSearch } from '../../components/webview-search';
 import ProductCard from '../../components/ProductCard';
 
@@ -47,8 +48,10 @@ export default function HomeScreen() {
 
     // 상태 관리
     const initialRef = useRef(null);
-    const [text, setText] = useState('');
-    const [query, setQuery] = useState('');
+    // const [text, setText] = useState('');
+    // const [query, setQuery] = useState('');
+    const [text, setText] = useAtom(searchTextAtom);
+    const [query, setQuery] = useAtom(searchQueryAtom);
 
     // Jotai atoms
     const getMainProducts = useSetAtom(getMainProductsAtom);
@@ -62,6 +65,10 @@ export default function HomeScreen() {
     // 검색 관련 레퍼런스
     const searchLoadingRef = useRef(null);
     const searchResultRef = useRef(null);
+    const mainListRef = useRef<MainProductListRef>(null);
+
+    // 스크롤 초기화 트리거
+    const [scrollResetTrigger] = useAtom(scrollResetTriggerAtom);
 
     useFocusEffect(
         useCallback(() => {
@@ -76,6 +83,18 @@ export default function HomeScreen() {
             setTimeout(f, 500);
         }, [])
     );
+
+    // 스크롤 초기화 트리거가 변경되면 스크롤을 맨 위로 초기화
+    useEffect(() => {
+        console.log('scrollResetTrigger', scrollResetTrigger);
+        if (mainListRef.current) {
+            // FlatList를 포함한 MainProductList 컴포넌트에 스크롤 초기화 메서드 호출
+            if (mainListRef.current.scrollToTop) {
+                mainListRef.current.scrollToTop();
+                console.log('스크롤 초기화');
+            }
+        }
+    }, [scrollResetTrigger]);
 
     useEffect(() => {
         let timer = setTimeout(() => {
@@ -94,7 +113,7 @@ export default function HomeScreen() {
 
     // 메인 상품 데이터와 카테고리 정보 가져오기
     const [mainProducts, setMainProducts] = useAtom(mainProductsAtom);
-    const [currentCategory, setCurrentCategory] = useState('');
+    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
 
     useEffect(() => {
         const randomCategoryId = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
@@ -254,7 +273,7 @@ export default function HomeScreen() {
             ) : (
                 // 메인 상품 목록
                 <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
-                    <MainProductList data={mainProducts} category={currentCategory} />
+                    <MainProductList ref={mainListRef} data={mainProducts} category={currentCategory} />
                 </View>
             )}
         </View>
