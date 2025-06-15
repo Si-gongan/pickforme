@@ -19,6 +19,7 @@ const { RangePicker } = DatePicker;
 export default function PurchaseFailures() {
   const [failures, setFailures] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [retryingIds, setRetryingIds] = useState<string[]>([]);
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -52,6 +53,7 @@ export default function PurchaseFailures() {
 
   const handleRetry = async (record: any) => {
     try {
+      setRetryingIds((prev) => [...prev, record._id]);
       const { data } = await axios.post("/purchase/retry", {
         userId: record.userId,
         _id: record.productId,
@@ -61,12 +63,14 @@ export default function PurchaseFailures() {
         `재시도 성공: ${data?.product?.displayName || "Success"}`
       );
       const filters = form.getFieldsValue();
-      onSearch(filters); // 기존 필터 조건 유지하며 갱신
+      onSearch(filters);
     } catch (error: any) {
       console.error(error);
       messageApi.error(
         `재시도 실패: ${error.response?.data?.error || "Unknown error"}`
       );
+    } finally {
+      setRetryingIds((prev) => prev.filter((id) => id !== record._id));
     }
   };
 
@@ -113,10 +117,12 @@ export default function PurchaseFailures() {
         <Button
           type="link"
           icon={<ReloadOutlined />}
-          disabled={record.status === "RESOLVED"}
+          disabled={
+            record.status === "RESOLVED" || retryingIds.includes(record._id)
+          }
           onClick={() => handleRetry(record)}
         >
-          재시도
+          {retryingIds.includes(record._id) ? "재시도 중..." : "재시도"}
         </Button>
       ),
     },
