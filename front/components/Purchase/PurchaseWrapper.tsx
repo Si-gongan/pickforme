@@ -21,6 +21,8 @@ import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom
 import { GetSubscriptionAPI, CheckPurchaseFailureAPI } from '@/stores/purchase/apis';
 import { Product, ProductType } from '@/stores/purchase/types';
 import { isShowSubscriptionModalAtom } from '@/stores/auth';
+import { Colors } from '@constants';
+import useColorScheme from '@/hooks/useColorScheme';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -49,6 +51,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const purchaseErrorRef = useRef<any>(null);
     const isInitializingRef = useRef(false);
     const loadingViewRef = useRef<View>(null);
+    const colorScheme = useColorScheme();
 
     useEffect(() => {
         getProducts({ platform: Platform.OS });
@@ -213,14 +216,14 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             {subscriptionLoading && (
                 <View
                     ref={loadingViewRef}
-                    style={styles.loadingOverlay}
+                    style={[styles.loadingOverlay, { backgroundColor: `${Colors[colorScheme].background.primary}CC` }]}
                     accessible={true}
                     accessibilityLabel="구독 처리 중"
                     accessibilityHint="구독 처리가 진행 중입니다. 잠시만 기다려주세요."
                     accessibilityRole="alert"
                     importantForAccessibility="yes"
                 >
-                    <ActivityIndicator size="large" />
+                    <ActivityIndicator size="large" color={Colors[colorScheme].text.primary} />
                 </View>
             )}
         </>
@@ -234,7 +237,6 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 9999
