@@ -81,6 +81,25 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 android {
+    def storeFlavor = project.hasProperty("store") ? project.getProperty("store") : System.getenv("STORE") ?: "play"
+
+    flavorDimensions "store"
+
+    productFlavors {
+        amazon {
+            dimension "store"
+        }
+        play {
+            dimension "store"
+        }
+    }
+
+    variantFilter { variant ->
+        if (!variant.flavors*.name.contains(storeFlavor)) {
+            variant.ignore = true
+        }
+    }
+
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion

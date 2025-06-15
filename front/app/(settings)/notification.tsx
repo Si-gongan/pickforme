@@ -67,6 +67,7 @@ export default function NotificationScreen() {
                                     <RadioButton.Android
                                         color={Colors[colorScheme].text.primary}
                                         value={key}
+                                        accessibilityRole="button"
                                         accessibilityLabel={
                                             (key === setting.service ? '선택됨,' : '') +
                                             (key === PushService.on ? '알림 켜기' : '알림 끄기')

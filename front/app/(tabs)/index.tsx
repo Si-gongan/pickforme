@@ -13,11 +13,14 @@ import {
     AccessibilityInfo,
     findNodeHandle
 } from 'react-native';
+import SearchIcon from '../../assets/icons/SearchIcon';
+import BackIcon from '../../assets/icons/BackIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import useColorScheme from '../../hooks/useColorScheme';
 import type { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
+import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
 
 import {
     setScrapedProductsAtom,
@@ -30,7 +33,7 @@ import {
 } from '../../stores/product/atoms';
 
 import { CATEGORIES, categoryName } from '../../constants/Categories';
-import { MainProductList } from '@components';
+import { MainProductList, MainProductListRef } from '@components';
 import { WebViewSearch } from '../../components/webview-search';
 import ProductCard from '../../components/ProductCard';
 
@@ -45,8 +48,10 @@ export default function HomeScreen() {
 
     // 상태 관리
     const initialRef = useRef(null);
-    const [text, setText] = useState('');
-    const [query, setQuery] = useState('');
+    // const [text, setText] = useState('');
+    // const [query, setQuery] = useState('');
+    const [text, setText] = useAtom(searchTextAtom);
+    const [query, setQuery] = useAtom(searchQueryAtom);
 
     // Jotai atoms
     const getMainProducts = useSetAtom(getMainProductsAtom);
@@ -60,6 +65,10 @@ export default function HomeScreen() {
     // 검색 관련 레퍼런스
     const searchLoadingRef = useRef(null);
     const searchResultRef = useRef(null);
+    const mainListRef = useRef<MainProductListRef>(null);
+
+    // 스크롤 초기화 트리거
+    const [scrollResetTrigger] = useAtom(scrollResetTriggerAtom);
 
     useFocusEffect(
         useCallback(() => {
@@ -74,6 +83,18 @@ export default function HomeScreen() {
             setTimeout(f, 500);
         }, [])
     );
+
+    // 스크롤 초기화 트리거가 변경되면 스크롤을 맨 위로 초기화
+    useEffect(() => {
+        console.log('scrollResetTrigger', scrollResetTrigger);
+        if (mainListRef.current) {
+            // FlatList를 포함한 MainProductList 컴포넌트에 스크롤 초기화 메서드 호출
+            if (mainListRef.current.scrollToTop) {
+                mainListRef.current.scrollToTop();
+                console.log('스크롤 초기화');
+            }
+        }
+    }, [scrollResetTrigger]);
 
     useEffect(() => {
         let timer = setTimeout(() => {
@@ -92,7 +113,7 @@ export default function HomeScreen() {
 
     // 메인 상품 데이터와 카테고리 정보 가져오기
     const [mainProducts, setMainProducts] = useAtom(mainProductsAtom);
-    const [currentCategory, setCurrentCategory] = useState('');
+    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
 
     useEffect(() => {
         const randomCategoryId = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
@@ -104,7 +125,7 @@ export default function HomeScreen() {
 
     // 검색 핸들러
     const handleClickSend = (sort: string) => {
-        if (text === '' || text === query) {
+        if (text === '') {
             return;
         }
 
@@ -142,7 +163,7 @@ export default function HomeScreen() {
                             accessibilityLabel="뒤로가기"
                             accessible
                         >
-                            <Image style={style.backButton} source={require('../../assets/images/icBack.png')} />
+                            <BackIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
                     )}
                     <View style={style.inputWrap}>
@@ -170,6 +191,7 @@ export default function HomeScreen() {
                                     style={style.resetIcon}
                                     source={require('../../assets/images/discover/icReset.png')}
                                 />
+                                {/* reset 버튼 */}
                             </Pressable>
                         )}
                         <Pressable
@@ -178,10 +200,7 @@ export default function HomeScreen() {
                             accessibilityLabel="검색하기"
                             accessibilityRole="button"
                         >
-                            <Image
-                                style={style.sendIcon}
-                                source={require('../../assets/images/discover/icSearch.png')}
-                            />
+                            <SearchIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
                     </View>
                 </View>
@@ -235,25 +254,27 @@ export default function HomeScreen() {
                         </View>
                     </View>
 
-                    <ScrollView style={style.scrollView}>
-                        {!!searchResult?.products?.length && (
-                            <FlatList
-                                scrollEnabled={false}
-                                contentContainerStyle={style.searchList}
-                                data={searchResult.products}
-                                keyExtractor={(product, index) => `search-${product.url}-${index}`}
-                                renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
-                                ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
-                            />
-                        )}
-                        {!searchResult?.products?.length && (
-                            <DefaultText style={style.loading}>검색결과가 없습니다.</DefaultText>
-                        )}
-                    </ScrollView>
+                    <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                        <FlatList
+                            style={[style.scrollView]}
+                            contentContainerStyle={{
+                                ...style.searchList
+                            }}
+                            data={searchResult?.products || []}
+                            keyExtractor={(product, index) => `search-${product.url}-${index}`}
+                            renderItem={({ item: product }) => <ProductCard data={product} type="search" />}
+                            ItemSeparatorComponent={() => <View style={style.seperator} accessible={false} />}
+                            ListEmptyComponent={() => (
+                                <DefaultText style={style.loading}>검색결과가 없습니다.</DefaultText>
+                            )}
+                        />
+                    </View>
                 </>
             ) : (
                 // 메인 상품 목록
-                <MainProductList data={mainProducts} category={currentCategory} />
+                <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                    <MainProductList ref={mainListRef} data={mainProducts} category={currentCategory} />
+                </View>
             )}
         </View>
     );
@@ -350,12 +371,10 @@ function useStyle(colorScheme: ColorScheme) {
             color: theme.text.primary
         },
         scrollView: {
-            paddingVertical: 20,
-            flex: 1
+            paddingVertical: 20
         },
         searchList: {
-            paddingHorizontal: 20,
-            paddingBottom: 44
+            paddingHorizontal: 20
         },
         seperator: {
             height: 12,

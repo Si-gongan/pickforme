@@ -26,7 +26,7 @@ export default function PointHistoryScreen1() {
     }, [getPurchaseList]);
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
             <ScrollView>
                 <View style={styles.content}>
                     <Text style={styles.title}>

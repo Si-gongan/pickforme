@@ -1,54 +1,140 @@
 import { Tabs } from 'expo-router';
-import React, { useRef, useEffect } from 'react';
-import { Platform } from 'react-native';
-import { useAtom } from 'jotai';
+import React, { useEffect } from 'react';
+import { Platform, Linking, TouchableOpacity, View, Text } from 'react-native';
 
-import { HomeIcon, WishListIcon, MyIcon } from '@assets';
-import useColorScheme from '../../hooks/useColorScheme';
+import { useCheckIsFirstLogin } from '@/hooks/useCheckIsFirstLogin';
+import { usePopupSystem } from '@/hooks/usePopupSystem';
+import { HomeIcon, MyIcon, WishListIcon } from '@assets';
+import { How, Survey } from '@components';
 import { Colors } from '@constants';
-import { How } from '@components';
-import { isShowOnboardingModalAtom } from '@stores';
-
+import useColorScheme from '../../hooks/useColorScheme';
+import { PopupService } from '@/services/popup';
+import { useAtom, useSetAtom } from 'jotai';
 import Modal from 'react-native-modal';
+import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
+import { getMainProductsAtom } from '../../stores/product/atoms';
+import { categoryName, CATEGORIES } from '@/constants/Categories';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
-    const [isModalVisible, setModalVisible] = useAtom(isShowOnboardingModalAtom);
-    useEffect(() => {
-        setModalVisible(true);
-    }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
+    const [isHowModalVisible, setIsHowModalVisible] = React.useState(false);
+    const [isSurveyVisible, setIsSurveyVisible] = React.useState(false);
+    const { isFirstLogin } = useCheckIsFirstLogin();
+    const { registerPopup, showNextPopup, handlePopupClose, isRegistered } = usePopupSystem();
 
-    const toggleModal = () => {
-        setModalVisible(!isModalVisible);
-    };
+    const [searchText, setSearchText] = useAtom(searchTextAtom);
+    const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
+    const [scrollResetTrigger, setScrollResetTrigger] = useAtom(scrollResetTriggerAtom);
+    const getMainProducts = useSetAtom(getMainProductsAtom);
+
+    // 팝업 등록
+    useEffect(() => {
+        registerPopup({
+            id: 'how',
+            shouldShow: async () => {
+                // return true;
+                return isFirstLogin;
+            },
+            onShow: () => {
+                setTimeout(() => {
+                    setIsHowModalVisible(true);
+                }, 300);
+            },
+            onClose: () => {
+                setIsHowModalVisible(false);
+            },
+            priority: 2
+        });
+
+        registerPopup({
+            id: 'survey',
+            shouldShow: async () => {
+                try {
+                    const result = await PopupService.checkSurveyPopup();
+                    return result;
+                } catch (error) {
+                    console.error('설문조사 팝업 체크 에러:', error);
+                    return false;
+                }
+            },
+            onShow: () => {
+                setTimeout(() => {
+                    setIsSurveyVisible(true);
+                }, 300);
+            },
+            onClose: () => {
+                setIsSurveyVisible(false);
+            },
+            priority: 1
+        });
+    }, [isFirstLogin, registerPopup]);
+
+    // 팝업 등록이 완료되면 showNextPopup 호출
+    useEffect(() => {
+        if (isRegistered) {
+            showNextPopup();
+        }
+    }, [isRegistered]);
 
     return (
         <>
-            <Modal
-                isVisible={isModalVisible}
-                onBackButtonPress={toggleModal}
-                onBackdropPress={toggleModal}
-                animationIn="slideInUp" // 기본값, 아래에서 위로 올라옴
-                animationInTiming={300} // 애니메이션 속도(ms)
-                style={{
-                    justifyContent: 'flex-end', // 화면 하단에 모달 위치
-                    margin: 0 // 마진 제거
+            <Survey
+                visible={isSurveyVisible}
+                onClose={handlePopupClose}
+                onDontShowToday={async () => {
+                    try {
+                        await PopupService.setDontShowSurvey();
+                        handlePopupClose();
+                    } catch (error) {
+                        console.error('설문조사 팝업 설정 실패:', error);
+                    }
                 }}
+                onSurveyClick={() => {
+                    Linking.openURL('https://forms.gle/mpVjgn7bCZ4iMvJD9');
+                }}
+                onHelpClick={() => {
+                    Linking.openURL('https://pf.kakao.com/_csbDxj');
+                }}
+            />
+
+            <Modal
+                isVisible={isHowModalVisible}
+                onBackButtonPress={handlePopupClose}
+                onBackdropPress={handlePopupClose}
+                animationIn="slideInUp"
+                animationInTiming={300}
+                style={{
+                    justifyContent: 'flex-end',
+                    margin: 0
+                }}
+                onAccessibilityEscape={handlePopupClose}
             >
-                <How />
+                <How visible={isHowModalVisible} onClose={handlePopupClose} />
             </Modal>
+
             <Tabs
                 screenOptions={{
                     tabBarActiveTintColor: Colors?.[colorScheme]?.button.primary.text,
                     headerShown: false,
+                    tabBarItemStyle: {
+                        paddingTop: 12
+                    },
                     tabBarStyle: Platform.select({
                         ios: {
                             position: 'absolute',
-                            backgroundColor: Colors?.[colorScheme]?.button.primary.background
+                            backgroundColor: Colors?.[colorScheme]?.button.primary.background,
+                            borderTopWidth: 0,
+                            elevation: 0,
+                            shadowOpacity: 0,
+                            height: 90,
+                            paddingBottom: 20
                         },
                         default: {
                             height: 100,
-                            backgroundColor: Colors?.[colorScheme]?.button.primary.background
+                            backgroundColor: Colors?.[colorScheme]?.button.primary.background,
+                            borderTopWidth: 0,
+                            elevation: 0
                         }
                     })
                 }}
@@ -59,8 +145,61 @@ export default function TabLayout() {
                         title: 'Home',
                         tabBarLabel: '홈',
                         tabBarAccessibilityLabel: '홈 탭',
-                        tabBarIcon: function ({ color, focused }) {
-                            return <HomeIcon size={28} color={color} opacity={focused ? 1 : 0.5} />;
+                        // tabBarIcon: function ({ color, focused }) {
+
+                        //     return <HomeIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
+                        // }
+                        tabBarButton: props => {
+                            const safeProps = Object.fromEntries(
+                                Object.entries(props).map(([key, value]) => [key, value === null ? undefined : value])
+                            );
+
+                            const isSelected = props['aria-selected'] ?? false;
+
+                            return (
+                                <TouchableOpacity
+                                    {...safeProps}
+                                    onPress={e => {
+                                        console.log('홈 탭 클릭!', isSelected);
+                                        props.onPress?.(e);
+
+                                        // 홈탭을 눌렀을 때 검색 정보들을 초기화
+                                        if (searchText.length > 0 || searchQuery.length > 0) {
+                                            setSearchText('');
+                                            setSearchQuery('');
+                                        } else {
+                                            console.log('refresh home');
+                                            const randomCategoryId =
+                                                CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
+                                            setCurrentCategory(
+                                                categoryName[randomCategoryId as keyof typeof categoryName]
+                                            );
+                                            // 홈화면 데이터 새로고침
+                                            getMainProducts(randomCategoryId);
+                                            
+                                            // 스크롤 초기화 트리거 호출
+                                            setScrollResetTrigger(prev => prev + 1);
+                                        }
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                                        <HomeIcon
+                                            size={28}
+                                            color={Colors?.[colorScheme]?.button.primary.text}
+                                            opacity={isSelected ? 1 : 0.5}
+                                        />
+                                        <Text
+                                            style={{
+                                                color: Colors?.[colorScheme]?.button.primary.text,
+                                                fontSize: 11,
+                                                opacity: isSelected ? 1 : 0.5
+                                            }}
+                                        >
+                                            홈
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            );
                         }
                     }}
                 />
@@ -72,7 +211,7 @@ export default function TabLayout() {
                         tabBarLabel: '위시리스트',
                         tabBarAccessibilityLabel: '위시리스트 탭',
                         tabBarIcon: function ({ color, focused }) {
-                            return <WishListIcon size={28} color={color} opacity={focused ? 1 : 0.5} />;
+                            return <WishListIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
                         }
                     }}
                 />
@@ -84,7 +223,7 @@ export default function TabLayout() {
                         tabBarLabel: '마이페이지',
                         tabBarAccessibilityLabel: '마이페이지 탭',
                         tabBarIcon: function ({ color, focused }) {
-                            return <MyIcon size={28} color={color} opacity={focused ? 1 : 0.5} />;
+                            return <MyIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
                         }
                     }}
                 />

@@ -1,6 +1,6 @@
-import { useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, Platform } from 'react-native';
-import { router } from 'expo-router';
+import { useCallback, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, Image, Platform, findNodeHandle, AccessibilityInfo } from 'react-native';
+import { useRouter } from 'expo-router';
 import { login } from '@react-native-seoul/kakao-login';
 import {
     AppleAuthenticationButton,
@@ -9,20 +9,27 @@ import {
     AppleAuthenticationScope,
     signInAsync as appleSignInAsync
 } from 'expo-apple-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAtom } from 'jotai';
 
 import { useServiceLogin } from '@services';
 import useColorScheme from '../../hooks/useColorScheme';
 import { KakaoImage, GoogleImage } from '@assets';
 import useStyle from './style';
-import { GetPopupAPI } from '@/stores';
 import { PopupService } from '@/services/popup';
+import { isShowLoginModalAtom } from '@stores';
 
 export default function LoginForm() {
     const style = useStyle();
     const colorScheme = useColorScheme();
+    const contentRef = useRef<Text>(null);
+    const router = useRouter();
+    const [isShowLoginModal, setIsShowLoginModal] = useAtom(isShowLoginModalAtom);
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
         onSuccess: async () => {
+            await AsyncStorage.removeItem('hasLoggedIn');
+
             PopupService.checkHansiryunPopup()
                 .then(hasPopup => {
                     if (hasPopup) router.replace('/(hansiryun)');
@@ -31,8 +38,21 @@ export default function LoginForm() {
                 .catch(error => {
                     router.replace('/(tabs)');
                 });
+
+            setIsShowLoginModal(false);
         }
     });
+
+    useEffect(() => {
+        if (contentRef.current) {
+            const node = findNodeHandle(contentRef.current);
+            if (node) {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 800);
+            }
+        }
+    }, [contentRef]);
 
     const onLoginWithKakao = useCallback(
         async function () {
@@ -70,13 +90,16 @@ export default function LoginForm() {
 
     return (
         <View style={style.LoginFormContainer}>
-            <Text accessible style={style.LoginFormTitle}>
+            <Text accessible style={style.LoginFormTitle} ref={contentRef}>
                 로그인하면 픽포미의 모든{'\n'}서비스를 이용할 수 있어요!
             </Text>
             <View style={style.LoginFormButtonContainer}>
                 <TouchableOpacity
                     onPress={onLoginWithKakao}
                     style={[style.LoginFormButton, style.LoginFormButtonKakao]}
+                    accessibilityRole="button"
+                    accessibilityLabel="카카오로 로그인"
+                    accessible
                 >
                     <Image source={KakaoImage} style={style.LoginFormButtonImage} />
                     <Text style={style.LoginFormButtonText}>카카오로 로그인</Text>
@@ -101,6 +124,9 @@ export default function LoginForm() {
                 <TouchableOpacity
                     onPress={onLoginWithGoogle}
                     style={[style.LoginFormButton, style.LoginFormButtonGoogle]}
+                    accessibilityRole="button"
+                    accessibilityLabel="구글로 로그인"
+                    accessible
                 >
                     <Image source={GoogleImage} style={style.LoginFormButtonImage} />
                     <Text style={style.LoginFormButtonText}>구글로 로그인</Text>

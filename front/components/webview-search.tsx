@@ -108,18 +108,13 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
     const handleError = (event: any) => {
         console.error('WebView error:', event.nativeEvent);
 
-        if (event.nativeEvent.code === -1005 && retryCount < maxRetries) {
+        if (retryCount < maxRetries) {
             console.log('network error occurred. reloading...', retryCount);
 
             setRetryCount(retryCount + 1);
             setTimeout(() => {
-                if (webViewRef.current) {
-                    webViewRef.current.reload();
-                    setTimeout(() => {
-                        runJavaScript(searchProductInjectionCode);
-                    }, 1000);
-                }
-            }, 1000);
+                if (webViewRef.current) webViewRef.current.reload();
+            }, 2000);
         }
     };
 
@@ -145,6 +140,7 @@ export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
                     cacheEnabled={false}
                     cacheMode="LOAD_NO_CACHE"
                     renderToHardwareTextureAndroid={true}
+                    userAgent="Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
                 />
             </View>
         )

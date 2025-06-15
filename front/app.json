@@ -3,7 +3,7 @@
         "owner": "sigonggan",
         "name": "픽포미",
         "slug": "pickformeapp",
-        "version": "3.3.0",
+        "version": "3.3.1",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "myapp",
@@ -22,16 +22,17 @@
             "bundleIdentifier": "com.sigonggan.pickforme",
             "jsEngine": "jsc",
             "icon": "./assets/images/pickforme_logo_200x200.png",
-            "googleServicesFile": "./GoogleService-Info.plist"
+            "googleServicesFile": "./GoogleService-Info.plist",
+            "buildNumber": "2"
         },
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/pickforme_logo_200x200.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.anonymous.pickforme",
+            "package": "com.sigonggan.pickforme",
             "googleServicesFile": "./google-services.json",
-            "versionCode": 107
+            "versionCode": 109
         },
         "web": {
             "bundler": "metro",
@@ -65,7 +66,7 @@
                         "kotlinVersion": "1.9.25"
                     },
                     "ios": {
-                        "useFrameworks": "static"
+                        "useFrameworks": "dynamic"
                     }
                 }
             ],

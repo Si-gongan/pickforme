@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
@@ -58,12 +58,7 @@ export const PointHistoryScreen: React.FC<Props> = ({
     const setIsShowSubscriptionModalAtomModal = useSetAtom(isShowSubscriptionModalAtom);
 
     const onSubClick = async (sku: string, offerToken?: string) => {
-        const success = await handleSubscription(sku, offerToken);
-        if (success) {
-            setIsShowSubscriptionModalAtomModal(true);
-
-            getCurrentSubscription();
-        }
+        await handleSubscription(sku, offerToken);
     };
 
     const handleClickUnsubscribe = () => {
@@ -100,7 +95,7 @@ export const PointHistoryScreen: React.FC<Props> = ({
     }, [getCurrentSubscription]);
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
             <BackHeader />
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>

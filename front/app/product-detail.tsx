@@ -64,6 +64,9 @@ import { userAtom } from '@stores';
 import { useTabData } from '@/hooks/product-detail/useTabData';
 import { membershipModalTypeAtom } from '../stores/auth/atoms';
 import { logEvent } from '@/services/firebase';
+import BackIcon from '@/assets/icons/BackIcon';
+import HeartFilledIcon from '@/assets/icons/HeartFilledIcon';
+import HeartOutlineIcon from '@/assets/icons/HeartOutlineIcon';
 
 interface ProductDetailScreenProps {}
 
@@ -115,7 +118,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     const [tab, setTab] = useState<TABS>(TABS.CAPTION);
     const [question, setQuestion] = useState('');
-    const [tabPressed, setTabPressed] = useState(false); // 탭 변경 여부를 추적하는 상태 추가
     const loadingStatus = useAtomValue(loadingStatusAtom);
 
     const managerResponseRef = useRef<RNView>(null);
@@ -138,7 +140,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // const ReviewWebView = useWebViewReviews({
     //     productUrl,
     //     onMessage: data => {
-    //         console.log('ReviewWebView 데이터 수신:', data.length);
     //         setProductReview(data);
     //     }
     // });
@@ -176,18 +177,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
-            Alert.alert('상품 정보를 불러오는 데 실패했습니다.');
+            console.error('상품 정보를 불러오는 데 실패했습니다.');
         },
         onMessage: data => {
-            console.log(
-                'DetailWebView에서 받은 상품 정보:',
-                JSON.stringify({
-                    name: data.name,
-                    reviews: data.reviews,
-                    ratings: data.ratings,
-                    price: data.price
-                })
-            );
             setProduct(data);
         }
     });
@@ -213,14 +205,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     }, [productUrl]);
 
-    // 3. productDetailAtom 값이 변경될 때 로그 추가
     useEffect(() => {
         if (productDetail?.product) {
-            console.log('productDetail 업데이트됨. 리뷰 정보:', {
-                reviews: productDetail.product.reviews,
-                ratings: productDetail.product.ratings,
-                출처: '서버 API 또는 WebView에서 수신'
-            });
+            getProductReview();
         }
     }, [productDetail?.product]);
 
@@ -248,8 +235,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         // 구독 및 AI 포인트 체크
         await getSubscription();
         if (userData && userData.aiPoint !== undefined && userData.aiPoint <= 0) {
-            console.log('AI 질문 - 멤버십 필요');
-            // 모달 표시
             setIsShowNonSubscriberManagerModal(true);
             return;
         }
@@ -334,9 +319,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             // 구독 히스토리에 대한 로직 확인 필요
             // setIsShowSubscriptionModal(true);
         } else {
-            console.log('userData handleClickRequest', userData);
             setRequestBottomSheet(product);
-
             setIsShowRequestModal(true);
         }
     });
@@ -344,24 +327,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const handlePressAIQuestionTab = () => setTab(TABS.QUESTION);
 
     const handlePressTab = (nextTab: TABS) => {
-        if (nextTab === TABS.QUESTION) {
-            handlePressAIQuestionTab();
-        }
-        setTab(nextTab);
-        setTabPressed(true);
+        if (nextTab === TABS.QUESTION) handlePressAIQuestionTab();
 
-        setTimeout(() => {
-            if (refs[nextTab]?.current) {
-                const node = findNodeHandle(refs[nextTab].current);
-                if (node) {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }
-            }
-        }, 500);
+        setTab(nextTab);
     };
 
     const handleRegenerate = () => {
-        console.log('handleRegenerate 호출됨:', { tab });
         if (tab === TABS.REPORT) getProductReport();
         if (tab === TABS.REVIEW) getProductReview();
         if (tab === TABS.CAPTION) getProductCaption();
@@ -371,11 +342,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { component: reviewsComponent, scrollDown } = useWebViewReviews({
         productUrl: product?.url || '',
         onMessage: data => {
-            console.log('받은 리뷰 데이터:', data.length);
-
             // 리뷰가 있을 때만 요약(캡션) 생성 API 호출
             if (data && data.length > 0) {
-                console.log('리뷰 데이터 있음, 요약 생성 API 호출');
                 // 리뷰 데이터 설정
                 setProductReview(data);
                 getProductReview(); // 리뷰 요약 요청
@@ -384,12 +352,11 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     });
 
     const handleLoadMore = () => {
-        console.log('handleLoadMore');
         scrollDown();
     };
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
             <BackHeader />
 
             <View accessible={false}>
@@ -476,7 +443,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
                         <TabContent
                             tab={tab}
-                            productDetail={productDetail}
                             refs={refs}
                             question={question}
                             setQuestion={setQuestion}
@@ -534,6 +500,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ styles, tab, handlePressT
                         onPress={() => handlePressTab(TAB)}
                         accessible
                         accessibilityLabel={`${tabName[TAB]} 탭`}
+                        accessibilityRole="button"
                         selected={tab === TAB}
                     />
                 </View>
@@ -612,11 +579,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image
-                        style={styles.heartIcon}
-                        source={require('../assets/images/discover/icHeartFill.png')}
-                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
-                    />
+                    <HeartFilledIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
             ) : (
                 <Pressable
@@ -626,11 +589,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     accessibilityRole="button"
                     disabled={!product}
                 >
-                    <Image
-                        style={styles.heartIcon}
-                        source={require('../assets/images/discover/icHeart.png')}
-                        tintColor={colorScheme === 'dark' ? '#FFFFFF' : undefined}
-                    />
+                    <HeartOutlineIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
             )}
         </View>
@@ -654,7 +613,9 @@ const useStyles = (colorScheme: ColorScheme) =>
             zIndex: 1
         },
         backButton: {
-            padding: 8
+            padding: 8,
+            marginTop: 12,
+            marginLeft: 12
         },
         backIcon: {
             width: 24,

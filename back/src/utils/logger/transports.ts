@@ -15,12 +15,14 @@ const createLogFormat = (useColors: boolean = false) => {
       const { timestamp, level, message, ...meta } = info as unknown as CustomLogInfo;
       const context = meta.context || 'unknown';
       const severity = meta.severity || LogSeverity.MEDIUM;
-      
+
       const { context: _, severity: __, ...restMeta } = meta;
       const additionalMeta = Object.keys(restMeta).length ? JSON.stringify(restMeta) : '';
-      
-      const logMessage = `[${timestamp}] [${level}] [${context}/${severity}] ${message}${additionalMeta ? ' ' + additionalMeta : ''}`;
-      
+
+      const logMessage = `[${timestamp}] [${level}] [${context}/${severity}] ${message}${
+        additionalMeta ? ' ' + additionalMeta : ''
+      }`;
+
       // 색상 적용 여부에 따라 반환
       if (useColors) {
         const color = colors[level as keyof typeof colors] || colors.reset;
@@ -32,9 +34,10 @@ const createLogFormat = (useColors: boolean = false) => {
 };
 
 // 콘솔 전송 설정
-const createConsoleTransport = () => new winston.transports.Console({
-  format: createLogFormat(true) // 색상 적용
-});
+const createConsoleTransport = () =>
+  new winston.transports.Console({
+    format: createLogFormat(true), // 색상 적용
+  });
 
 // 파일 전송 설정
 const createFileTransports = () => {
@@ -46,29 +49,29 @@ const createFileTransports = () => {
         format: createLogFormat(false), // 색상 미적용
         // 파일 시스템 에러를 처리
         handleExceptions: true,
-        handleRejections: true
+        handleRejections: true,
       }),
       new winston.transports.File({
         filename: path.join(logDir, 'combined.log'),
         format: createLogFormat(false), // 색상 미적용
         // 파일 시스템 에러를 처리
         handleExceptions: true,
-        handleRejections: true
-      })
+        handleRejections: true,
+      }),
     ];
   } catch (error) {
     // 파일 시스템 에러 발생 시 콘솔로만 로깅
     process.stderr.write(`파일 로깅 설정 실패: ${error}\n`);
-    
+
     // Slack으로도 알림 (실패해도 무시)
     if (isProduction) {
       sendToSlack({
         context: LogContext.SERVER,
         message: `파일 로깅 설정 실패: ${error}`,
-        severity: LogSeverity.HIGH
+        severity: LogSeverity.HIGH,
       }).catch(() => {});
     }
-    
+
     return [createConsoleTransport()];
   }
 };
@@ -106,7 +109,9 @@ export const sendToSlack = async (payload: SlackErrorPayload) => {
     // 서버 환경에 따른 제목 설정
     const serverEnv = isStagingServer ? 'development' : 'production';
     formattedMessage = `🚨 *[${serverEnv}] backend server에서 ERROR 발생*\n\n`;
-    formattedMessage += `*Context / Message / Severity*\n\`\`\`\nContext: ${context}\nMessage: ${message}\nSeverity: ${getSeverityText(severity)}\n\`\`\`\n\n`;
+    formattedMessage += `*Context / Message / Severity*\n\`\`\`\nContext: ${context}\nMessage: ${message}\nSeverity: ${getSeverityText(
+      severity
+    )}\n\`\`\`\n\n`;
 
     // 스택 트레이스가 있으면 코드 블록으로 포맷팅
     if (stack) {
@@ -134,16 +139,16 @@ export const getTransports = () => {
   } catch (error) {
     // 모든 transport 설정이 실패하면 최소한의 콘솔 로깅만 사용
     console.error('로거 설정 실패:', error);
-    
+
     // Slack으로도 알림 (실패해도 무시)
     if (isProduction) {
       sendToSlack({
         context: LogContext.SERVER,
         message: `로거 설정 실패: ${error}`,
-        severity: LogSeverity.HIGH
+        severity: LogSeverity.HIGH,
       }).catch(() => {});
     }
-    
+
     return [createConsoleTransport()];
   }
 };

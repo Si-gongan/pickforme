@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Platform, KeyboardAvoidingView, TextInput, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
-import BottomSheet from 'react-native-modal';
+import { TextInput, StyleSheet, AccessibilityInfo, findNodeHandle, InteractionManager } from 'react-native';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 
@@ -17,6 +16,8 @@ import useCheckMembership from '../../hooks/useCheckMembership';
 import useCheckPoint from '../../hooks/useCheckPoint';
 import type { ColorScheme } from '@hooks';
 import useCheckLogin from '../../hooks/useCheckLogin';
+import { Pressable } from 'react-native';
+import CloseIcon from '@/assets/icons/CloseIcon';
 
 export default function RequestBottomSheet() {
     const headerTitleRef = useRef(null);
@@ -63,9 +64,44 @@ export default function RequestBottomSheet() {
         setData({ ...data, text: '' });
         setProduct(undefined);
     };
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            if (headerTitleRef.current) {
+                const node = findNodeHandle(headerTitleRef.current);
+                if (node) {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 1000);
+                }
+            }
+        });
+        return () => task.cancel();
+    }, []); // 빈 배열로 최초 1회만 실행
+
     return (
-        <View style={styles.base} accessible accessibilityLabel="매니저 질문하기">
+        <View style={styles.base}>
             <View style={[styles.bottomSheet, localStyles.root]}>
+                <Pressable
+                    onPress={() => {
+                        setIsShowRequestModal(false);
+                    }}
+                    accessible
+                    accessibilityLabel="닫기"
+                    accessibilityRole="button"
+                    onAccessibilityEscape={() => {
+                        setIsShowRequestModal(false);
+                    }}
+                    style={{
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end',
+                        marginBottom: 20,
+                        marginTop: 20,
+                        paddingRight: 20
+                    }}
+                >
+                    <CloseIcon size={24} color={Colors[colorScheme].text.primary} />
+                </Pressable>
                 <Text
                     style={[styles.title, localStyles.title]}
                     ref={headerTitleRef}
@@ -85,10 +121,12 @@ export default function RequestBottomSheet() {
                         textAlignVertical="top"
                         returnKeyType="done"
                         onChangeText={text => setData({ ...data, text })}
+                        onSubmitEditing={handleSubmit}
                     />
                 </View>
                 <Button
                     accessible
+                    accessibilityRole="button"
                     accessibilityLabel="매니저에게 질문하기"
                     style={[
                         styles.button,

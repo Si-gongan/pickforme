@@ -25,6 +25,19 @@
         }
     },
     "submit": {
-        "production": {}
+        "production": {
+            "ios": {
+                "appleId": "seonggook.cho@gmail.com",
+                "ascAppId": "6450741514",
+                "companyName": "Sigongan"
+            }
+        },
+        "development": {
+            "ios": {
+                "appleId": "seonggook.cho@gmail.com",
+                "ascAppId": "6450741514",
+                "companyName": "Sigongan"
+            }
+        }
     }
 }
