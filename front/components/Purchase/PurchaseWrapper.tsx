@@ -86,6 +86,13 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 return false;
             }
 
+            // 만약에 구독 핸들러가 제대로 등록되지 않았다면 결제 못하도록 처리
+            if (!purchaseUpdateRef.current || !purchaseErrorRef.current) {
+                Alert.alert('구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                setSubscriptionLoading(false);
+                return;
+            }
+
             console.log('구독 요청중..');
 
             if (offerToken) {
