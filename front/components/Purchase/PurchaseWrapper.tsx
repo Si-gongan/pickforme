@@ -18,7 +18,7 @@ import {
 } from 'react-native-iap';
 
 import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '@/stores/purchase/atoms';
-import { GetSubscriptionAPI } from '@/stores/purchase/apis';
+import { GetSubscriptionAPI, CheckPurchaseFailureAPI } from '@/stores/purchase/apis';
 import { Product, ProductType } from '@/stores/purchase/types';
 import { isShowSubscriptionModalAtom } from '@/stores/auth';
 
@@ -76,6 +76,13 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 return false;
             }
 
+            const failureCheck = await CheckPurchaseFailureAPI();
+            if (!failureCheck.data.canPurchase) {
+                Alert.alert('구독 불가', '이전 구독 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.');
+                setSubscriptionLoading(false);
+                return false;
+            }
+
             console.log('구독 요청중..');
 
             if (offerToken) {
@@ -125,19 +132,21 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                     }
 
                     purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
+                        let isSubscription = false;
+
                         try {
                             const receipt = purchase.transactionReceipt;
                             const product = products.find(({ productId }) => productId === purchase.productId);
                             if (!product || !receipt) return;
 
-                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                            isSubscription = product.type === ProductType.SUBSCRIPTION;
+
                             const parsedReceipt =
                                 Platform.OS === 'android'
                                     ? { subscription: isSubscription, ...JSON.parse(receipt) }
                                     : receipt;
 
                             await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
-                            await finishTransaction({ purchase, isConsumable: !isSubscription });
                             await getSubscription();
 
                             setIsShowSubscriptionModal(true);
@@ -146,6 +155,9 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                             Alert.alert('구독 완료 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
                         } finally {
                             setSubscriptionLoading(false);
+
+                            // 결제가 실패하든 일단 결제 자체는 종료함.
+                            await finishTransaction({ purchase, isConsumable: !isSubscription });
                         }
                     });
 

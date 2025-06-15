@@ -1,27 +1,14 @@
 // back/src/utils/logger/types.ts
 import winston from 'winston';
 
-export enum LogLevel {
-  ERROR = 'error',
-  WARN = 'warn',
-  INFO = 'info',
-  DEBUG = 'debug',
-}
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
-export enum LogContext {
-  SCHEDULER = 'scheduler',
-  AUTH = 'auth',
-  PURCHASE = 'purchase',
-  GLOBAL = 'global',
-  SERVER = 'server',
-}
+export type LogContext = 'PURCHASE' | 'AUTH' | 'USER' | 'PRODUCT' | 'SYSTEM' | 'SCHEDULER';
 
-export enum LogSeverity {
-  CRITICAL = 4,
-  HIGH = 3,
-  MEDIUM = 2,
-  LOW = 1,
-}
+export type LogSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export const DEFAULT_CONTEXT: LogContext = 'SYSTEM';
+export const DEFAULT_SEVERITY: LogSeverity = 'MEDIUM';
 
 export interface CustomLogInfo extends winston.Logform.TransformableInfo {
   timestamp: string;

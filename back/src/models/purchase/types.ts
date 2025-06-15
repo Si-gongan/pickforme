@@ -39,3 +39,40 @@ export interface IPurchaseMethods {
 }
 
 export type PurchaseModel = Model<IPurchase, {}, IPurchaseMethods>;
+
+// export interface IReceiptData {
+//   quantity: number;
+//   productId: string;
+//   transactionId: string;
+//   originalTransactionId: string;
+//   purchaseDate: string;
+//   purchaseDateMs: number;
+//   purchaseDatePst: string;
+//   originalPurchaseDate: string;
+//   originalPurchaseDateMs: number;
+//   originalPurchaseDatePst: string;
+//   isTrialPeriod?: string;
+//   inAppOwnershipType?: string;
+//   isTrial?: boolean;
+//   bundleId?: string;
+//   expirationDate?: number;
+//   isExpired?: boolean;
+// }
+
+export type PurchaseFailureStatus = 'FAILED' | 'RESOLVED';
+
+export interface IPurchaseFailure extends Document {
+  _id: Types.ObjectId;
+  receipt: string;
+  productId: string;
+  platform: Platform;
+  userId: Types.ObjectId;
+  errorMessage: string;
+  errorStack?: string;
+  status: PurchaseFailureStatus;
+  meta?: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type PurchaseFailureModel = Model<IPurchaseFailure>;

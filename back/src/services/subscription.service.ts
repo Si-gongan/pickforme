@@ -271,6 +271,21 @@ class SubscriptionService {
 
     return subscription;
   }
+
+  public async checkPurchaseFailure(userId: string) {
+    try {
+      const hasFailedPurchase = await db.PurchaseFailure.exists({
+        userId,
+        status: 'FAILED',
+      });
+
+      return {
+        hasFailedPurchase: !!hasFailedPurchase,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export const subscriptionService = SubscriptionService.getInstance();

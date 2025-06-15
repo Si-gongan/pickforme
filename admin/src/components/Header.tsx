@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
-import styled from '@emotion/styled';
+import React from "react";
+import Link from "next/link";
+import styled from "@emotion/styled";
 
 const Header: React.FC = () => {
   return (
@@ -20,6 +20,9 @@ const Header: React.FC = () => {
         </NavItem>
         <NavItem>
           <Link href="/popup">Manage Popup</Link>
+        </NavItem>
+        <NavItem>
+          <Link href="/purchase/purchase-failure">Purchase Failures</Link>
         </NavItem>
         <NavItem>
           <Link href="/login">Login</Link>
