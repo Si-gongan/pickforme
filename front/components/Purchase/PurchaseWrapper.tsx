@@ -104,7 +104,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             return true;
         } catch (error) {
             console.error('구독 처리 중 에러 발생:', error);
-            Alert.alert('구독 처리 중 오류가 발생했습니다.');
+            Alert.alert('구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             setSubscriptionLoading(false);
             return false;
         }
@@ -165,7 +165,10 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                     });
 
                     purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
-                        Alert.alert('구독 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                        if (error.code !== 'E_USER_CANCELLED') {
+                            console.error('구독 처리 중 에러 발생:', error);
+                            Alert.alert('구독 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                        }
                         setSubscriptionLoading(false);
                     });
                 };
