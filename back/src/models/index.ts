@@ -16,6 +16,7 @@ import Popup from './popup';
 
 import dotenv from 'dotenv';
 import { log } from 'utils/logger';
+import PurchaseFailure from './purchase/failure';
 dotenv.config();
 
 const uri = process.env.MONGO_URI!;
@@ -47,6 +48,7 @@ const db = {
   Log,
   Item,
   Popup,
+  PurchaseFailure,
 };
 
 export default db;

@@ -31,6 +31,11 @@ router.post('/', requireAuth, async (ctx) => {
   }
 
   try {
+    const purchaseFailure = await subscriptionService.checkPurchaseFailure(userId);
+    if (purchaseFailure.hasFailedPurchase) {
+      throw new Error('아직 해당 구독 처리가 완료되지 않았습니다.');
+    }
+
     const purchaseData = await subscriptionService.createSubscription(userId, productId, receipt);
 
     ctx.status = 200;
@@ -219,6 +224,36 @@ router.get('/failures', requireAuth, async (ctx) => {
     ctx.status = 500;
     ctx.body = {
       msg: '결제 실패 이력 조회 중 서버 오류가 발생했습니다.',
+    };
+  }
+});
+
+// 결제 가능 여부 조회
+router.get('/my-failures', requireAuth, async (ctx) => {
+  try {
+    const userId = ctx.state.user._id;
+
+    const { hasFailedPurchase } = await subscriptionService.checkPurchaseFailure(userId);
+
+    ctx.body = {
+      canPurchase: !hasFailedPurchase, // 실패 내역이 없으면 true
+    };
+    ctx.status = 200;
+  } catch (error) {
+    void log.error('사용자 결제 가능 여부 조회 중 에러:', 'PURCHASE', 'HIGH', {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
+      endPoint: '/purchase/my-failures',
+      method: 'GET',
+      userId: ctx.state.user._id,
+    });
+
+    ctx.status = 500;
+    ctx.body = {
+      msg: '결제 가능 여부 확인 중 서버 오류가 발생했습니다.',
     };
   }
 });
