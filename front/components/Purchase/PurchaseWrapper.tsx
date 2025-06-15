@@ -18,7 +18,7 @@ import {
 } from 'react-native-iap';
 
 import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '@/stores/purchase/atoms';
-import { GetSubscriptionAPI } from '@/stores/purchase/apis';
+import { GetSubscriptionAPI, CheckPurchaseFailureAPI } from '@/stores/purchase/apis';
 import { Product, ProductType } from '@/stores/purchase/types';
 import { isShowSubscriptionModalAtom } from '@/stores/auth';
 
@@ -71,6 +71,13 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
             if (activate) {
                 Alert.alert('이미 픽포미 플러스를 구독중이에요!');
+                setSubscriptionLoading(false);
+                return false;
+            }
+
+            const failureCheck = await CheckPurchaseFailureAPI();
+            if (!failureCheck.data.canPurchase) {
+                Alert.alert('구독 불가', '이전 구독 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.');
                 setSubscriptionLoading(false);
                 return false;
             }

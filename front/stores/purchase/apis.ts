@@ -1,6 +1,13 @@
 import client, { handleApiError } from '../../utils/axios';
 
-import { Product, Purchase, GetProductsParams, PurchaseProductParams, PurchaseSubCheck, GetSubscriptionResponse } from './types';
+import {
+    Product,
+    Purchase,
+    GetProductsParams,
+    PurchaseProductParams,
+    PurchaseSubCheck,
+    GetSubscriptionResponse
+} from './types';
 
 export const PurchaseProductAPI = (params: PurchaseProductParams) =>
     client.post<Purchase | string>('/purchase', params).catch(error => handleApiError(error, 'PurchaseProduct'));
@@ -24,3 +31,8 @@ export const GetPurchaseCheckAPI = () =>
 
 export const GetPurchaseSubCheckAPI = () =>
     client.get<PurchaseSubCheck>(`/purchase/subCheck`).catch(error => handleApiError(error, 'GetPurchaseSubCheck'));
+
+export const CheckPurchaseFailureAPI = () =>
+    client
+        .get<{ canPurchase: boolean }>('/purchase/my-failures')
+        .catch(error => handleApiError(error, 'CheckPurchaseFailure'));
