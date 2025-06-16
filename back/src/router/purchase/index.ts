@@ -4,6 +4,7 @@ import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
 import PurchaseFailure from 'models/purchase/failure';
+import { formatError } from 'utils/error';
 
 const router = new Router({
   prefix: '/purchase',
@@ -41,33 +42,39 @@ router.post('/', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = purchaseData;
   } catch (error) {
-    const errorMeta = {
-      name: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'UnknownError',
-      stack: error instanceof Error ? error.stack : 'UnknownError',
-      error: JSON.stringify(error),
-    };
+    const errorMeta = formatError(error);
 
-    const alreadyLogged = await PurchaseFailure.findOne({ receipt });
-    if (!alreadyLogged) {
-      await PurchaseFailure.create({
-        userId,
-        receipt,
+    try {
+      const alreadyLogged = await PurchaseFailure.findOne({ receipt });
+
+      if (!alreadyLogged) {
+        await PurchaseFailure.create({
+          userId,
+          receipt,
+          productId,
+          errorMessage: errorMeta.message,
+          errorStack: errorMeta.stack,
+          meta: errorMeta,
+        });
+      }
+
+      void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
+        error: errorMeta,
+        endPoint: '/purchase',
+        method: 'POST',
+        userId: ctx.state.user._id,
         productId,
-        errorMessage: errorMeta.message,
-        errorStack: errorMeta.stack,
-        meta: errorMeta,
+      });
+    } catch (error) {
+      void log.error('결제 실패 기록 저장 실패:', 'PURCHASE', 'HIGH', {
+        error: formatError(error),
+        endPoint: '/purchase',
+        method: 'POST',
+        userId: ctx.state.user._id,
+        productId,
+        receipt,
       });
     }
-
-    void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
-      error: errorMeta,
-      endPoint: '/purchase',
-      method: 'POST',
-      userId: ctx.state.user._id,
-      productId,
-      receipt,
-    });
 
     ctx.status = 400;
     ctx.body =
@@ -277,17 +284,12 @@ router.post('/retry', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = result;
   } catch (error) {
-    const errorMeta = {
-      name: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'UnknownError',
-      stack: error instanceof Error ? error.stack : 'UnknownError',
-    };
+    const errorMeta = formatError(error);
 
     void log.error('결제 재시도 처리 중 에러 발생', 'PURCHASE', 'HIGH', {
       error: errorMeta,
       userId,
       productId,
-      receipt,
       endPoint: '/purchase/retry',
       method: 'POST',
     });
@@ -323,17 +325,12 @@ router.post('/admin/create', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = result;
   } catch (error) {
-    const errorMeta = {
-      name: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'UnknownError',
-      stack: error instanceof Error ? error.stack : 'UnknownError',
-    };
+    const errorMeta = formatError(error);
 
     void log.error('어드민 구독 생성 중 에러 발생', 'PURCHASE', 'HIGH', {
       error: errorMeta,
       userId,
       productId,
-      receipt,
       endPoint: '/purchase/admin/create',
       method: 'POST',
     });
