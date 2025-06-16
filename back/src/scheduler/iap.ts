@@ -2,10 +2,8 @@
 import cron from 'node-cron';
 import db from 'models';
 import iapValidator from 'utils/iap';
-import socket from 'socket';
-import sendPush from 'utils/push';
 import { log } from 'utils/logger/logger';
-import { LogContext, LogSeverity } from 'utils/logger/types';
+import { subscriptionService } from 'services/subscription.service';
 
 const SCHEDULER_NAME = 'iap';
 
@@ -22,79 +20,57 @@ const checkSubscriptions = async () => {
     });
 
     for (const purchase of purchases) {
-      const purchaseData = await iapValidator.validate(
-        purchase.receipt,
-        purchase.product.productId
-      );
-
-      // 구독이 유효한 경우
-      // 현재 아래 코드는 타입 에러가 발생하고, 어떤 케이스에 해당 로직을 실행하는지가 명확하지 않아 주석처리 해둔 상황입니다.
-      if (purchaseData) {
-        // if (purchaseData.transactionId !== purchase.purchase.transactionId) {
-        //   purchase.purchase = purchaseData;
-        //   await purchase.save();
-        //   const user = await db.User.findById(purchase.userId);
-        //   const product = await db.Product.findOne({
-        //     productId: purchase.product.productId,
-        //   });
-        //   if (!user || !product) {
-        //     log.error(LogContext.SCHEDULER, 'user or product not found', LogSeverity.HIGH, {
-        //       scheduler: SCHEDULER_NAME,
-        //       purchaseId: purchase._id,
-        //     });
-        //     continue;
-        //   }
-        //   // 포인트 업데이트
-        //   await user.applyPurchaseRewards(product.getRewards());
-        //   log.info(
-        //     LogContext.SCHEDULER,
-        //     `포인트 업데이트 완료 - userId: ${user._id}`,
-        //     LogSeverity.LOW,
-        //     {
-        //       scheduler: SCHEDULER_NAME,
-        //       userId: user._id,
-        //     }
-        //   );
-        //   // 소켓으로 포인트 업데이트 알림
-        //   const session = await db.Session.findOne({ userId: user._id });
-        //   if (session) {
-        //     socket.emit(session.connectionId, 'point', user.point);
-        //   }
-        //   // 푸시 알림
-        //   if (user.pushToken) {
-        //     sendPush({
-        //       to: user.pushToken,
-        //       body: '멤버십 픽이 충전되었습니다',
-        //     });
-        //   }
-        // }
-      } else {
-        // 구독이 환불/만료된 경우
-        purchase.updateExpiration();
-
-        try {
-          await db.User.findOneAndUpdate({ _id: purchase.userId }, { point: 0, aiPoint: 0 });
-          log.info(
-            LogContext.SCHEDULER,
-            `구독 만료 처리 완료 - userId: ${purchase.userId}`,
-            LogSeverity.LOW,
-            {
-              scheduler: SCHEDULER_NAME,
-              userId: purchase.userId,
-            }
-          );
-        } catch (error) {
-          log.error(LogContext.SCHEDULER, '구독 만료 처리 중 오류 발생', LogSeverity.HIGH, {
-            scheduler: SCHEDULER_NAME,
-            error,
-            userId: purchase.userId,
-          });
+      try {
+        // 어드민 권한으로 생성된 구독인 경우 일단 영수증을 검증하지 않고 넘어갑니다. (transactionId가 admin_으로 시작)
+        if (purchase.purchase.transactionId.startsWith('admin_')) {
+          continue;
         }
+
+        // 일반 구독의 경우 영수증 검증
+        const purchaseData = await iapValidator.validate(
+          purchase.receipt,
+          purchase.product.productId
+        );
+
+        // 구독이 유효한 경우
+        if (purchaseData) {
+          // 이 경우 예전에 로직이 있었으나, 현재는 사용되지 않는것으로 판단되고 타입 오류가 발생하는 상황이라 삭제 처리하였습니다.
+          // git으로 이력 확인 부탁드립니다.
+        } else {
+          // 구독이 환불/만료된 경우
+          try {
+            await subscriptionService.expireSubscription(purchase);
+            void log.info(
+              `개별 구독 환불/만료 처리 완료 - userId: ${purchase.userId}`,
+              'SCHEDULER',
+              'LOW',
+              {
+                scheduler: SCHEDULER_NAME,
+                userId: purchase.userId,
+              }
+            );
+          } catch (error) {
+            void log.error('개별 구독 환불/만료 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
+              scheduler: SCHEDULER_NAME,
+              error,
+              userId: purchase.userId,
+            });
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error)
+          void log.error('구독 검증 중 오류 발생', 'SCHEDULER', 'HIGH', {
+            scheduler: SCHEDULER_NAME,
+            message: error.name,
+            stack: error.stack,
+            name: error.name,
+            purchaseId: purchase._id,
+          });
       }
     }
   } catch (error) {
     if (error instanceof Error)
-      log.error(LogContext.SCHEDULER, '구독 검증 중 오류 발생', LogSeverity.HIGH, {
+      void log.error('구독 목록 조회 중 오류 발생', 'SCHEDULER', 'HIGH', {
         scheduler: SCHEDULER_NAME,
         message: error.name,
         stack: error.stack,
@@ -104,10 +80,20 @@ const checkSubscriptions = async () => {
 };
 
 export const handleIAPScheduler = async () => {
-  log.info(LogContext.SCHEDULER, 'IAP 스케줄러 실행됨', LogSeverity.LOW, {
-    scheduler: SCHEDULER_NAME,
-  });
-  await checkSubscriptions();
+  try {
+    await checkSubscriptions();
+    log.info('IAP 스케줄러 실행됨', 'SYSTEM', 'LOW', {
+      scheduler: SCHEDULER_NAME,
+    });
+  } catch (error) {
+    if (error instanceof Error)
+      void log.error('IAP 스케줄러 실행 중 오류 발생', 'SCHEDULER', 'HIGH', {
+        scheduler: SCHEDULER_NAME,
+        message: error.name,
+        stack: error.stack,
+        name: error.name,
+      });
+  }
 };
 
 export function registerIAPScheduler() {

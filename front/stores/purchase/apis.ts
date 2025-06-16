@@ -35,3 +35,8 @@ export const GetPurchaseCheckAPI = () =>
 
 export const GetPurchaseSubCheckAPI = () =>
     client.get<PurchaseSubCheck>(`/purchase/subCheck`).catch(error => handleApiError(error, 'GetPurchaseSubCheck'));
+
+export const CheckPurchaseFailureAPI = () =>
+    client
+        .get<{ canPurchase: boolean }>('/purchase/my-failures')
+        .catch(error => handleApiError(error, 'CheckPurchaseFailure'));

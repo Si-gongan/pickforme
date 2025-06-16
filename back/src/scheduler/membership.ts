@@ -2,7 +2,6 @@ import cron from 'node-cron';
 import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
-import { LogContext, LogSeverity } from 'utils/logger/types';
 import { subscriptionService } from 'services/subscription.service';
 
 const SCHEDULER_NAME = 'membership';
@@ -31,21 +30,16 @@ const checkSubscriptionExpirations = async () => {
       if (oneMonthLater < now) {
         const result = await subscriptionService.expireSubscription(purchase);
         if (result) {
-          log.info(
-            LogContext.SCHEDULER,
-            `멤버십 만료 처리 완료 - userId: ${purchase.userId}`,
-            LogSeverity.LOW,
-            {
-              scheduler: SCHEDULER_NAME,
-              userId: purchase.userId,
-            }
-          );
+          void log.info(`멤버십 만료 처리 완료 - userId: ${purchase.userId}`, 'SCHEDULER', 'LOW', {
+            scheduler: SCHEDULER_NAME,
+            userId: purchase.userId,
+          });
         }
       }
     }
   } catch (error) {
     if (error instanceof Error)
-      log.error(LogContext.SCHEDULER, '멤버십 만료 처리 중 오류 발생', LogSeverity.HIGH, {
+      void log.error('멤버십 만료 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
         scheduler: SCHEDULER_NAME,
         message: error.message,
         stack: error.stack,
@@ -55,7 +49,7 @@ const checkSubscriptionExpirations = async () => {
 };
 
 export const handleMembershipScheduler = async () => {
-  log.info(LogContext.SCHEDULER, `멤버십 만료 스케줄러 실행됨`, LogSeverity.LOW, {
+  log.info('멤버십 만료 스케줄러 실행됨', 'SCHEDULER', 'LOW', {
     scheduler: SCHEDULER_NAME,
   });
   await checkSubscriptionExpirations();

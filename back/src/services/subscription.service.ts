@@ -90,6 +90,66 @@ class SubscriptionService {
     }
   }
 
+  // 현재 안드로이드에서 구매 검증을 제대로 하지 못하고 있어서 어드민 멤버쉽 지급 기능을 추가했습니다.
+  public async createSubscriptionWithoutValidation(
+    userId: string,
+    productId: string,
+    receipt?: Receipt
+  ) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const user = await db.User.findById(userId);
+      if (!user) {
+        throw new Error('유저정보가 없습니다.');
+      }
+
+      const subscriptionStatus = await this.getSubscriptionStatus(userId);
+      if (subscriptionStatus.activate) {
+        throw new Error('이미 구독중입니다.');
+      }
+
+      const product = await db.Product.findById(productId);
+      if (!product || product.type !== ProductType.SUBSCRIPTION) {
+        throw new Error('존재하지 않는 구독 상품입니다.');
+      }
+
+      const transactionId = `admin_${Date.now()}`;
+      const purchaseDate = new Date();
+      const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
+
+      const purchaseData = await db.Purchase.create(
+        [
+          {
+            userId,
+            product,
+            purchase: {
+              transactionId,
+              productId: product.productId,
+              purchaseDate,
+              expirationDate,
+            },
+            receipt: receipt || null,
+            isExpired: false,
+          },
+        ],
+        { session }
+      );
+
+      await user.applyPurchaseRewards(product.getRewards(), session);
+
+      await session.commitTransaction();
+
+      return purchaseData[0];
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
   public async getSubscriptionStatus(userId: string) {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -270,6 +330,21 @@ class SubscriptionService {
     }
 
     return subscription;
+  }
+
+  public async checkPurchaseFailure(userId: string) {
+    try {
+      const hasFailedPurchase = await db.PurchaseFailure.exists({
+        userId,
+        status: 'FAILED',
+      });
+
+      return {
+        hasFailedPurchase: !!hasFailedPurchase,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
