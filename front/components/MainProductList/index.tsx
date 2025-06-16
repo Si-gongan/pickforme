@@ -315,7 +315,7 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
 
     // 스크롤뷰 ref 추가
     const scrollViewRef = useRef<ScrollView>(null);
-    
+
     // ref를 통해 외부에서 접근할 수 있는 메서드 노출
     useImperativeHandle(ref, () => ({
         scrollToTop: () => {
@@ -324,13 +324,11 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
             }
         }
     }));
-    
+
     return (
         <>
             {currentProductUrl && DetailWebView}
-            <ScrollView 
-                ref={scrollViewRef} 
-                showsVerticalScrollIndicator={false}>
+            <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
                 {data.local
                     .filter(function ({ order }) {
                         return order < 0;
@@ -358,6 +356,7 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                         </Text>
 
                         <FlatList
+                            accessibilityViewIsModal={false}
                             showsVerticalScrollIndicator={false}
                             scrollEnabled={false}
                             contentContainerStyle={[style.MainProductSectionListContent]}
@@ -371,19 +370,16 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                             renderItem={function ({ item }) {
                                 return <ProductCard data={item} />;
                             }}
-                            ListFooterComponentStyle={style.MainProductSectionListFooter}
-                            ListFooterComponent={function () {
-                                return (
-                                    data.random.length > randomCount && (
-                                        <MoreButton
-                                            onPress={function () {
-                                                onMore('random');
-                                            }}
-                                        />
-                                    )
-                                );
-                            }}
                         />
+                        {data.random.length > randomCount && (
+                            <View style={style.MainProductSectionListFooter}>
+                                <MoreButton
+                                    onPress={function () {
+                                        onMore('random');
+                                    }}
+                                />
+                            </View>
+                        )}
                     </View>
                 )}
 
@@ -407,19 +403,16 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                             renderItem={function ({ item }) {
                                 return <ProductCard data={item} />;
                             }}
-                            ListFooterComponentStyle={style.MainProductSectionListFooter}
-                            ListFooterComponent={function () {
-                                return (
-                                    data.special.length > specialCount && (
-                                        <MoreButton
-                                            onPress={function () {
-                                                onMore('special');
-                                            }}
-                                        />
-                                    )
-                                );
-                            }}
                         />
+                        {data.random.length > randomCount && (
+                            <View style={style.MainProductSectionListFooter}>
+                                <MoreButton
+                                    onPress={function () {
+                                        onMore('special');
+                                    }}
+                                />
+                            </View>
+                        )}
                     </View>
                 )}
             </ScrollView>

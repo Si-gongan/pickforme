@@ -18,7 +18,7 @@ export default function useStyle() {
         MainProductSectionListContent: {
             justifyContent: 'center',
             alignItems: 'center',
-            paddingBottom: 36,
+            paddingBottom: 12,
             color: theme.text.primary
         },
         MainProductSectionSeparator: {
@@ -28,7 +28,7 @@ export default function useStyle() {
         },
         MainProductSectionListFooter: {
             width: '100%',
-            marginTop: 12
+            marginTop: 0
         }
     });
 }
