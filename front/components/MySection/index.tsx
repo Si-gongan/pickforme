@@ -2,9 +2,10 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import useStyle from './style';
 import type { IMySectionProps } from './type';
 
-export default function MySection({ title, items }: IMySectionProps) {
+export default function MySection({ title, items, role }: IMySectionProps) {
     const style = useStyle();
 
+    const sectionRole = role === 'header' ? 'header' : 'button';
     return (
         <View style={style.MySectionContainer}>
             <Text style={style.MySectionTitle} accessibilityRole="header" accessible accessibilityLabel={title}>
@@ -17,6 +18,8 @@ export default function MySection({ title, items }: IMySectionProps) {
                             key={`section-${title}-${index}`}
                             onPress={item.onPress}
                             disabled={!item.onPress}
+                            accessibilityRole={sectionRole}
+                            accessible
                         >
                             <Text
                                 style={style.MySectionMenu}

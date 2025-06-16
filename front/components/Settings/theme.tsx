@@ -1,5 +1,5 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../Button';
@@ -10,6 +10,7 @@ import Colors from '../../constants/Colors';
 import { Text, View } from './Themed';
 import { settingAtom } from '../../stores/auth/atoms';
 import { ColorScheme } from '../../hooks';
+import { findNodeHandle, AccessibilityInfo } from 'react-native';
 
 const translationMap = {
     default: '휴대폰 설정과 동일하게',
@@ -37,10 +38,22 @@ export default function ThemeScreen() {
         }
     };
 
+    const contentRef = React.useRef(null);
+    useEffect(() => {
+        const node = findNodeHandle(contentRef.current);
+        if (node) {
+            setTimeout(() => {
+                AccessibilityInfo.setAccessibilityFocus(node);
+            }, 1000);
+        }
+    }, [contentRef.current]);
+
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <View style={styles.content}>
-                <Text style={styles.title}>화면 모드를 선택해주세요.</Text>
+                <Text style={styles.title} ref={contentRef}>
+                    화면 모드를 선택해주세요.
+                </Text>
                 {Object.entries(translationMap).map(([key, label]) => {
                     return (
                         <View style={styles.row} key={`Onboard-theme-${key}`}>

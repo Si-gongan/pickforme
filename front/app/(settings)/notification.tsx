@@ -1,5 +1,5 @@
 import { useRouter, usePathname } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, ScrollView } from 'react-native';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { RadioButton } from 'react-native-paper';
@@ -13,6 +13,7 @@ import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import { setPushSettingAtom } from '../../stores/auth/atoms';
 import { BackHeader } from '@components';
 import { userAtom } from '@stores';
+import { findNodeHandle, AccessibilityInfo } from 'react-native';
 
 const translationMap: {
     service: {
@@ -50,12 +51,24 @@ export default function NotificationScreen() {
         return null;
     }
 
+    const contentRef = React.useRef(null);
+    useEffect(() => {
+        const node = findNodeHandle(contentRef.current);
+        if (node) {
+            setTimeout(() => {
+                AccessibilityInfo.setAccessibilityFocus(node);
+            }, 1000);
+        }
+    }, [contentRef.current]);
+
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <BackHeader />
             <ScrollView style={styles.container}>
                 <View style={styles.scrollContainer}>
-                    <Text style={styles.title}>서비스 알림</Text>
+                    <Text style={styles.title} ref={contentRef}>
+                        서비스 알림
+                    </Text>
                     {Object.entries(translationMap.service).map(([key, label], i) => {
                         return (
                             <React.Fragment key={`Notification-service-${key}`}>

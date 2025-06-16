@@ -7,6 +7,7 @@ import useStyle from './style';
 
 import type { IPush } from '@types';
 import type { IPushForm } from './type';
+import { router } from 'expo-router';
 
 export default function PushForm({ value, onChange }: IPushForm) {
     const style = useStyle();

@@ -1,6 +1,6 @@
 import { useSetAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Alert, findNodeHandle, ScrollView, StyleSheet } from 'react-native';
 import {
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
@@ -22,7 +22,7 @@ import { GetSubscriptionAPI } from '../stores/purchase/apis';
 
 import type { ColorScheme } from '@hooks';
 import PurchaseWrapper from '../components/Purchase/PurchaseWrapper';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -36,7 +36,6 @@ interface Props {
 }
 
 const SubscriptionScreen = () => {
-    const router = useRouter();
     return (
         <PurchaseWrapper>
             {({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading }) => (
@@ -135,13 +134,25 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
         getFilteredProducts();
     }, [products, purchaseItems, subscriptionItems]);
 
+    const contentRef = React.useRef(null);
+    useEffect(() => {
+        const node = findNodeHandle(contentRef.current);
+        if (node) {
+            setTimeout(() => {
+                AccessibilityInfo.setAccessibilityFocus(node);
+            }, 1000);
+        }
+    }, [contentRef.current]);
+
     return (
-        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <BackHeader />
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
                     <View style={styles.description}>
-                        <Text style={styles.title}>픽포미 플러스</Text>
+                        <Text style={styles.title} ref={contentRef}>
+                            픽포미 플러스
+                        </Text>
                         <Text style={styles.subtitle}>한 달 AI 질문 무제한, 매니저 질문 30회 이용권</Text>
                         <Text style={{ color: Colors[colorScheme].text.primary }}>
                             픽포미 멤버십을 구독하고, 자유롭게 질문해 보세요.
