@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, findNodeHandle, AccessibilityInfo } from 'react-native';
+import { View, StyleSheet, Text, findNodeHandle, AccessibilityInfo, InteractionManager } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -34,9 +34,11 @@ export default function OnBoardingInfoScreen() {
         if (contentRef.current) {
             const node = findNodeHandle(contentRef.current);
             if (node) {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 1000);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         }
     }, [contentRef.current]);

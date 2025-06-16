@@ -1,6 +1,6 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { InteractionManager, StyleSheet } from 'react-native';
 import { useAtom } from 'jotai';
 import Button from '../Button';
 import { RadioButton } from 'react-native-paper';
@@ -42,9 +42,11 @@ export default function ThemeScreen() {
     useEffect(() => {
         const node = findNodeHandle(contentRef.current);
         if (node) {
-            setTimeout(() => {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }, 1000);
+            InteractionManager.runAfterInteractions(() => {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 1000);
+            });
         }
     }, [contentRef.current]);
 

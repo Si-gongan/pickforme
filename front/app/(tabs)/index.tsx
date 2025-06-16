@@ -11,7 +11,8 @@ import {
     FlatList,
     ScrollView,
     AccessibilityInfo,
-    findNodeHandle
+    findNodeHandle,
+    InteractionManager
 } from 'react-native';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import BackIcon from '../../assets/icons/BackIcon';
@@ -76,7 +77,11 @@ export default function HomeScreen() {
                 if (initialRef.current) {
                     const nodeHandle = findNodeHandle(initialRef.current);
                     if (nodeHandle) {
-                        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                        InteractionManager.runAfterInteractions(() => {
+                            setTimeout(() => {
+                                AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                            }, 500);
+                        });
                     }
                 }
             };
@@ -102,7 +107,11 @@ export default function HomeScreen() {
             if (ref.current) {
                 const nodeHandle = findNodeHandle(ref.current);
                 if (nodeHandle) {
-                    AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                    InteractionManager.runAfterInteractions(() => {
+                        setTimeout(() => {
+                            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                        }, 500);
+                    });
                 }
             }
         }, 500);

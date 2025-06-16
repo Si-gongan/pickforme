@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, Platform, findNodeHandle, AccessibilityInfo, Alert } from 'react-native';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Image,
+    Platform,
+    findNodeHandle,
+    AccessibilityInfo,
+    Alert,
+    InteractionManager
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { login } from '@react-native-seoul/kakao-login';
 import {
@@ -47,9 +57,11 @@ export default function LoginForm() {
         if (contentRef.current) {
             const node = findNodeHandle(contentRef.current);
             if (node) {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 800);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 800);
+                });
             }
         }
     }, [contentRef]);

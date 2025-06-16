@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { StyleSheet, findNodeHandle, AccessibilityInfo } from 'react-native';
+import { StyleSheet, findNodeHandle, AccessibilityInfo, InteractionManager } from 'react-native';
 import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
@@ -37,7 +37,11 @@ const ExpireBottomSheet: React.FC<Props> = () => {
         const focusOnHeader = () => {
             const node = findNodeHandle(headerTitleRef.current);
             if (visible && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         };
         setTimeout(focusOnHeader, 500);

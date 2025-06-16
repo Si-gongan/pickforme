@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, InteractionManager, StyleSheet } from 'react-native';
 import { Product } from '../../stores/product/types';
 import { useRouter } from 'expo-router';
 
@@ -64,7 +64,11 @@ export default function WishListScreen() {
                 if (headerTitleRef.current) {
                     const nodeHandle = findNodeHandle(headerTitleRef.current);
                     if (nodeHandle) {
-                        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                        InteractionManager.runAfterInteractions(() => {
+                            setTimeout(() => {
+                                AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                            }, 500);
+                        });
                     }
                 }
             };

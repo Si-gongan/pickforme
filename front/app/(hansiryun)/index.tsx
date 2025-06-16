@@ -225,7 +225,11 @@ export default function InterviewScreen() {
                                 setTimeout(() => {
                                     const node = findNodeHandle(phoneInputRef.current);
                                     if (node) {
-                                        AccessibilityInfo.setAccessibilityFocus(node);
+                                        InteractionManager.runAfterInteractions(() => {
+                                            setTimeout(() => {
+                                                AccessibilityInfo.setAccessibilityFocus(node);
+                                            }, 500);
+                                        });
                                     }
                                 }, 100);
                             }}
