@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Pressable,
+    Image,
+    AccessibilityInfo,
+    findNodeHandle,
+    InteractionManager
+} from 'react-native';
 import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import Modal from 'react-native-modal';
@@ -18,6 +27,27 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme];
     const styles = useStyle(colorScheme);
+    const headerTitleRef = useRef<Text>(null);
+
+    useEffect(() => {
+        if (!visible) return;
+
+        if (headerTitleRef.current) {
+            const node = findNodeHandle(headerTitleRef.current);
+            if (node) {
+                console.log('survey node', node);
+
+                // 모든 애니메이션과 상호작용이 완료된 후 초점 이동
+                InteractionManager.runAfterInteractions(() => {
+                    // 추가 지연을 주어 다른 초점 이동이나 UI 업데이트가 모두 완료되도록 함
+                    setTimeout(() => {
+                        console.log('survey focus');
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
+            }
+        }
+    }, [visible, headerTitleRef.current]);
 
     return (
         <Modal
@@ -32,7 +62,9 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
             <View style={[styles.bottomSheet, { backgroundColor: theme.background.primary }]}>
                 <View style={styles.header}>
                     <View style={styles.headerLeft} />
-                    <Text style={[styles.title, { color: theme.text.primary }]}>픽포미 사용 설문조사</Text>
+                    <Text style={[styles.title, { color: theme.text.primary }]} ref={headerTitleRef}>
+                        픽포미 사용 설문조사
+                    </Text>
                     <Pressable
                         onPress={onClose}
                         style={styles.closeButton}
