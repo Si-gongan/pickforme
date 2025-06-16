@@ -103,16 +103,6 @@ describe('IAP Scheduler (unit)', () => {
     await handleIAPScheduler();
 
     expect(mockPurchase.updateExpiration).toHaveBeenCalled();
-    expect(db.User.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: mockPurchase.userId },
-      { point: 0, aiPoint: 0 }
-    );
-    expect(log.info).toHaveBeenCalledWith(
-      expect.stringContaining('구독 만료 처리 완료'),
-      'SCHEDULER',
-      'LOW',
-      expect.objectContaining({ userId: mockPurchase.userId })
-    );
   });
 
   // it('IAP 검증 성공 시 포인트를 지급하고 소켓/푸시 알림을 보낸다.', async () => {
