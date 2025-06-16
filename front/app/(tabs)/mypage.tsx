@@ -141,15 +141,17 @@ export default function MyScreen() {
                                 { name: `매니저 질문권 ${user.point ?? 0}회` },
                                 { name: `AI 질문권 ${user.aiPoint ?? 0}회` }
                             ]}
+                            role="header"
                         />
                     )}
 
-                    <MySection title="내 정보" items={myInfoMenu} />
+                    <MySection title="내 정보" items={myInfoMenu} role="button" />
 
-                    <MySection title="앱 설정" items={appSettingMenu} />
+                    <MySection title="앱 설정" items={appSettingMenu} role="button" />
 
                     <MySection
                         title="고객 지원"
+                        role="button"
                         items={[
                             {
                                 name: '1:1 문의',
@@ -180,10 +182,12 @@ export default function MyScreen() {
 
                     {!!user?._id && (
                         <MySection
+                            title="계정"
                             items={[
                                 { name: '로그아웃', onPress: onLogout },
                                 { name: '회원탈퇴', onPress: goToLogin }
                             ]}
+                            role="button"
                         />
                     )}
                 </ScrollView>
