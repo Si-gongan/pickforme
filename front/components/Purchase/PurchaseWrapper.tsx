@@ -81,7 +81,10 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
             const failureCheck = await CheckPurchaseFailureAPI();
             if (!failureCheck.data.canPurchase) {
-                Alert.alert('구독 불가', '이전 구독 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.');
+                Alert.alert(
+                    '구독 불가',
+                    '이전 구독 처리 중 오류가 발생해 현재 처리중입니다. \n 고객센터에 문의해주세요.'
+                );
                 setSubscriptionLoading(false);
                 return false;
             }
@@ -162,7 +165,10 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                             setIsShowSubscriptionModal(true);
                         } catch (error) {
                             console.error('구매 처리 중 에러 발생:', error);
-                            Alert.alert('구독 완료 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                            Alert.alert(
+                                '멤버십 지급 과정에서 잠시 오류가 발생했습니다.',
+                                '결제 내역을 확인한 후, 약 1시간 이내로 매니저가 수동으로 멤버십을 지급해드릴 예정입니다. \n 불편을 드려 진심으로 죄송합니다.'
+                            );
                         } finally {
                             setSubscriptionLoading(false);
 

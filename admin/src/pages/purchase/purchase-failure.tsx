@@ -9,8 +9,13 @@ import {
   Space,
   message,
   Tag,
+  Tooltip,
 } from "antd";
-import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  ReloadOutlined,
+  SearchOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { format } from "date-fns";
 import axios from "@/utils/axios";
 
@@ -74,6 +79,31 @@ export default function PurchaseFailures() {
     }
   };
 
+  const handleAdminRetry = async (record: any) => {
+    try {
+      setRetryingIds((prev) => [...prev, `${record._id}_admin`]);
+      const { data } = await axios.post("/purchase/admin/create", {
+        userId: record.userId,
+        _id: record.productId,
+        receipt: record.receipt || null,
+      });
+      messageApi.success(
+        `멤버쉽 부여 성공: ${data?.product?.displayName || "Success"}`
+      );
+      const filters = form.getFieldsValue();
+      onSearch(filters);
+    } catch (error: any) {
+      console.error(error);
+      messageApi.error(
+        `멤버쉽 부여 실패: ${error.response?.data?.error || "Unknown error"}`
+      );
+    } finally {
+      setRetryingIds((prev) =>
+        prev.filter((id) => id !== `${record._id}_admin`)
+      );
+    }
+  };
+
   useEffect(() => {
     fetchFailures();
   }, []);
@@ -111,19 +141,42 @@ export default function PurchaseFailures() {
       render: (text: string) => new Date(text).toLocaleString(),
     },
     {
-      title: "작업",
+      title: (
+        <Space>
+          작업
+          <Tooltip title="일반 재시도는 영수증 검증을 통해 구독을 재시도하고, 어드민 권한으로 멤버쉽 부여는 영수증 검증 없이 바로 구독을 생성합니다. 어드민 권한으로 멤버쉽 부여는 주의해서 사용해주세요.">
+            <InfoCircleOutlined style={{ color: "#1890ff" }} />
+          </Tooltip>
+        </Space>
+      ),
       key: "action",
       render: (_: any, record: any) => (
-        <Button
-          type="link"
-          icon={<ReloadOutlined />}
-          disabled={
-            record.status === "RESOLVED" || retryingIds.includes(record._id)
-          }
-          onClick={() => handleRetry(record)}
-        >
-          {retryingIds.includes(record._id) ? "재시도 중..." : "재시도"}
-        </Button>
+        <Space>
+          <Button
+            type="link"
+            icon={<ReloadOutlined />}
+            disabled={
+              record.status === "RESOLVED" || retryingIds.includes(record._id)
+            }
+            onClick={() => handleRetry(record)}
+          >
+            {retryingIds.includes(record._id) ? "재시도 중..." : "재시도"}
+          </Button>
+          <Button
+            type="link"
+            danger
+            icon={<ReloadOutlined />}
+            disabled={
+              record.status === "RESOLVED" ||
+              retryingIds.includes(`${record._id}_admin`)
+            }
+            onClick={() => handleAdminRetry(record)}
+          >
+            {retryingIds.includes(`${record._id}_admin`)
+              ? "멤버쉽 부여 중..."
+              : "어드민 권한으로 멤버쉽 부여"}
+          </Button>
+        </Space>
       ),
     },
   ];

@@ -4,6 +4,7 @@ import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
 import PurchaseFailure from 'models/purchase/failure';
+import { formatError } from 'utils/error';
 
 const router = new Router({
   prefix: '/purchase',
@@ -41,33 +42,39 @@ router.post('/', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = purchaseData;
   } catch (error) {
-    const errorMeta = {
-      name: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'UnknownError',
-      stack: error instanceof Error ? error.stack : 'UnknownError',
-      error: JSON.stringify(error),
-    };
+    const errorMeta = formatError(error);
 
-    const alreadyLogged = await PurchaseFailure.findOne({ receipt });
-    if (!alreadyLogged) {
-      await PurchaseFailure.create({
-        userId,
-        receipt,
+    try {
+      const alreadyLogged = await PurchaseFailure.findOne({ receipt });
+
+      if (!alreadyLogged) {
+        await PurchaseFailure.create({
+          userId,
+          receipt,
+          productId,
+          errorMessage: errorMeta.message,
+          errorStack: errorMeta.stack,
+          meta: errorMeta,
+        });
+      }
+
+      void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
+        error: errorMeta,
+        endPoint: '/purchase',
+        method: 'POST',
+        userId: ctx.state.user._id,
         productId,
-        errorMessage: errorMeta.message,
-        errorStack: errorMeta.stack,
-        meta: errorMeta,
+      });
+    } catch (error) {
+      void log.error('결제 실패 기록 저장 실패:', 'PURCHASE', 'HIGH', {
+        error: formatError(error),
+        endPoint: '/purchase',
+        method: 'POST',
+        userId: ctx.state.user._id,
+        productId,
+        receipt,
       });
     }
-
-    void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
-      error: errorMeta,
-      endPoint: '/purchase',
-      method: 'POST',
-      userId: ctx.state.user._id,
-      productId,
-      receipt,
-    });
 
     ctx.status = 400;
     ctx.body =
@@ -277,11 +284,7 @@ router.post('/retry', requireAuth, async (ctx) => {
     ctx.status = 200;
     ctx.body = result;
   } catch (error) {
-    const errorMeta = {
-      name: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'UnknownError',
-      stack: error instanceof Error ? error.stack : 'UnknownError',
-    };
+    const errorMeta = formatError(error);
 
     void log.error('결제 재시도 처리 중 에러 발생', 'PURCHASE', 'HIGH', {
       error: errorMeta,
@@ -294,6 +297,47 @@ router.post('/retry', requireAuth, async (ctx) => {
     ctx.status = 500;
     ctx.body = {
       error: error instanceof Error ? error.message : '결제 재시도 중 오류가 발생했습니다.',
+    };
+  }
+});
+
+// 구매 검증과정 없이 직접 구독 생성 (영수증 검증 없음)
+// 현재 안드로이드에서 구매 검증을 제대로 하지 못하고 있어서 어드민에서 멤버쉽을 바로 추가하는 기능을 구현했습니다.
+router.post('/admin/create', requireAuth, async (ctx) => {
+  const { userId, _id: productId, receipt } = <any>ctx.request.body;
+
+  if (!userId || !productId) {
+    ctx.status = 400;
+    ctx.body = { error: '필수 항목이 누락되었습니다.' };
+    return;
+  }
+
+  try {
+    const result = await subscriptionService.createSubscriptionWithoutValidation(
+      userId,
+      productId,
+      receipt
+    );
+
+    // 실패 이력이 있다면 해결 처리
+    await PurchaseFailure.updateOne({ userId, status: 'FAILED' }, { status: 'RESOLVED' });
+
+    ctx.status = 200;
+    ctx.body = result;
+  } catch (error) {
+    const errorMeta = formatError(error);
+
+    void log.error('어드민 구독 생성 중 에러 발생', 'PURCHASE', 'HIGH', {
+      error: errorMeta,
+      userId,
+      productId,
+      endPoint: '/purchase/admin/create',
+      method: 'POST',
+    });
+
+    ctx.status = 500;
+    ctx.body = {
+      error: error instanceof Error ? error.message : '구독 생성 중 오류가 발생했습니다.',
     };
   }
 });
