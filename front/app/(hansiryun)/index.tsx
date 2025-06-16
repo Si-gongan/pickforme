@@ -11,7 +11,8 @@ import {
     KeyboardAvoidingView,
     Platform,
     AccessibilityInfo,
-    findNodeHandle
+    findNodeHandle,
+    InteractionManager
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -149,6 +150,21 @@ export default function InterviewScreen() {
         }
     };
 
+    const headerTitleRef = useRef<Text>(null);
+
+    useEffect(() => {
+        if (headerTitleRef.current) {
+            const node = findNodeHandle(headerTitleRef.current);
+            if (node) {
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
+            }
+        }
+    }, [headerTitleRef.current]);
+
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <BackHeader />
@@ -163,7 +179,7 @@ export default function InterviewScreen() {
             >
                 <StatusBar style="auto" />
                 <View style={styles.content}>
-                    <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]}>
+                    <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]} ref={headerTitleRef}>
                         픽포미 멤버십을 6개월간 무료로 이용해 보세요
                     </Text>
                     {/* <Text style={{ width: "100%", height: 60 }}></Text> */}

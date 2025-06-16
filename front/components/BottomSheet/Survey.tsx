@@ -35,13 +35,8 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
         if (headerTitleRef.current) {
             const node = findNodeHandle(headerTitleRef.current);
             if (node) {
-                console.log('survey node', node);
-
-                // 모든 애니메이션과 상호작용이 완료된 후 초점 이동
                 InteractionManager.runAfterInteractions(() => {
-                    // 추가 지연을 주어 다른 초점 이동이나 UI 업데이트가 모두 완료되도록 함
                     setTimeout(() => {
-                        console.log('survey focus');
                         AccessibilityInfo.setAccessibilityFocus(node);
                     }, 500);
                 });
