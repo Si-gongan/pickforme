@@ -51,7 +51,7 @@ export default function NotificationScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <BackHeader />
             <ScrollView style={styles.container}>
                 <View style={styles.scrollContainer}>

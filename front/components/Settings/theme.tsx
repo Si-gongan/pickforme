@@ -38,7 +38,7 @@ export default function ThemeScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <View style={styles.content}>
                 <Text style={styles.title}>화면 모드를 선택해주세요.</Text>
                 {Object.entries(translationMap).map(([key, label]) => {

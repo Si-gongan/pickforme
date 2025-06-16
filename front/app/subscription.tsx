@@ -22,7 +22,7 @@ import { GetSubscriptionAPI } from '../stores/purchase/apis';
 
 import type { ColorScheme } from '@hooks';
 import PurchaseWrapper from '../components/Purchase/PurchaseWrapper';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -36,7 +36,6 @@ interface Props {
 }
 
 const SubscriptionScreen = () => {
-    const router = useRouter();
     return (
         <PurchaseWrapper>
             {({ products, purchaseItems, subscriptionItems, handleSubscription, subscriptionLoading }) => (
@@ -136,7 +135,7 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     }, [products, purchaseItems, subscriptionItems]);
 
     return (
-        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <BackHeader />
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>

@@ -95,7 +95,7 @@ export const PointHistoryScreen: React.FC<Props> = ({
     }, [getCurrentSubscription]);
 
     return (
-        <View style={styles.container} onAccessibilityEscape={() => router.back()}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <BackHeader />
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
