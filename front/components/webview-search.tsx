@@ -13,140 +13,133 @@ import { Product } from '../stores/product/types';
 interface WebViewProps {
     keyword: string;
     onMessage: (data: Product[]) => void;
+    isSearching: boolean;
 }
 
-export const WebViewSearch = ({ keyword, onMessage }: WebViewProps) => {
+const searchProductInjectionCode = `
+(function() {
+    async function scrapeProducts() {
+        try {
+            let productElements = document.querySelectorAll('.sdw-similar-product-go-to-sdp-click');
+            
+            if (productElements.length === 0) {
+                throw new Error('Failed to find products');
+            }
+            
+            const products = Array.from(productElements).map((product) => {
+                const name = product.querySelector('.title')?.innerText || '';
+                const thumbnail = product.querySelector('img')?.src || '';
+                const priceText = product.querySelector('.discount-price')?.querySelector('strong')?.textContent || '0';
+                const price = parseInt(priceText.replace(/[^0-9]/g, ''), 10);
+                const originPriceDoc = product.querySelector('.price');
+                const originPriceText = originPriceDoc?.textContent || priceText;
+                const origin_price = parseInt(originPriceText.replace(/[^0-9]/g, ''), 10);
+                const discountRateDoc = product.querySelector('.percentage')?.textContent || '0';
+                const discount_rate = parseInt(discountRateDoc.replace(/[^0-9]/g, ''), 10);
+                const ratings = parseFloat(product.querySelector('.rating')?.textContent || '0') * 20;
+                const reviews = parseInt(product.querySelector('.rating-total-count')?.textContent.replace(/[^0-9]/g, '') || '0', 10);
+                const productId = product.getAttribute('data-product-id') || '';
+                const itemId = product.getAttribute('data-item-id') || '';
+                const vendorItemId = product.getAttribute('data-vendor-item-id') || '';
+                const url = 'https://m.coupang.com/vm/products/' + productId + '?itemId=' + itemId + '&vendorItemId=' + vendorItemId;
+
+                return {
+                    name,
+                    thumbnail,
+                    price,
+                    origin_price,
+                    discount_rate,
+                    ratings,
+                    reviews,
+                    url
+                };
+            });
+            
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ content: products }));
+            }
+        } catch (e) {
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
+            }
+        }
+    }
+
+    scrapeProducts();
+    return true;
+})();
+`;
+
+export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps) => {
     const webViewRef = useRef<WebView>(null);
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
     const url = `https://m.coupang.com/nm/search?q=${keyword}&page=1`;
 
-    const searchProductInjectionCode = `(function() {
-    try {
-      let productElements = document.querySelectorAll('.sdw-similar-product-go-to-sdp-click');
-      // throw new Error(productElements.length);
-
-      if (productElements.length === 0) {
-        throw new Error('Failed to find products');
-      }
-      
-      const products = Array.from(productElements).map((product) => {
-          const name = product.querySelector('.title')?.innerText || '';
-          
-          const thumbnail = product.querySelector('img')?.src || '';
-          
-          const priceText = product.querySelector('.discount-price')?.querySelector('strong')?.textContent || '0';
-          const price = parseInt(priceText.replace(/[^0-9]/g, ''), 10);
-
-          const originPriceDoc = product.querySelector('.price');
-          const originPriceText = originPriceDoc?.textContent || priceText;
-          const origin_price = parseInt(originPriceText.replace(/[^0-9]/g, ''), 10);
-
-          const discountRateDoc = product.querySelector('.percentage')?.textContent || '0';
-          const discount_rate = parseInt(discountRateDoc.replace(/[^0-9]/g, ''), 10);
-
-          const ratings = parseFloat(product.querySelector('.rating')?.textContent || '0') * 20;
-          const reviews = parseInt(product.querySelector('.rating-total-count')?.textContent.replace(/[^0-9]/g, '') || '0', 10);
-
-          const productId = product.getAttribute('data-product-id') || '';
-          const itemId = product.getAttribute('data-item-id') || '';
-          const vendorItemId = product.getAttribute('data-vendor-item-id') || '';
-          const url = 'https://m.coupang.com/vm/products/' + productId + '?itemId=' + itemId + '&vendorItemId=' + vendorItemId;
-
-          return {
-            name,
-            thumbnail,
-            price,
-            origin_price,
-            discount_rate,
-            ratings,
-            reviews,
-            url
-          };
-      });
-      const payload = JSON.stringify({ content: products });
-      window.ReactNativeWebView.postMessage(payload);
-    } catch (e) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-    }
-    return true;
-  })();`;
-
-    const runJavaScript = (code: string) => {
-        if (webViewRef.current && code) {
-            webViewRef.current!.injectJavaScript(code);
-        }
-    };
-
     const handleMessage = (event: WebViewMessageEvent) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
-            if (keyword === '') {
-                return;
-            }
             if (data.error) {
-                // console.error('WebView error:', data.error);
                 if (retryCount < maxRetries) {
                     setRetryCount(retryCount + 1);
-                    try {
-                        setTimeout(() => {
-                            runJavaScript(searchProductInjectionCode);
-                        }, 1000);
-                    } catch (error) {
-                        // console.error('Failed to run JavaScript:', error);
-                    }
+                    handleExecuteSearch();
                 }
                 return;
             }
-            // console.log('data:', data.content);
             onMessage(data.content);
         } catch (error) {
-            // console.error('Failed to parse WebView message:', error);
+            console.error('Failed to parse WebView message:', error);
         }
     };
 
     const handleError = (event: any) => {
-        console.error('WebView error:', event.nativeEvent);
-
-        if (event.nativeEvent.code === -1005 && retryCount < maxRetries) {
-            console.log('network error occurred. reloading...', retryCount);
-
+        if (retryCount < maxRetries) {
             setRetryCount(retryCount + 1);
             setTimeout(() => {
-                if (webViewRef.current) {
-                    webViewRef.current.reload();
-                    setTimeout(() => {
-                        runJavaScript(searchProductInjectionCode);
-                    }, 1000);
-                }
+                handleExecuteSearch();
             }, 1000);
         }
     };
 
+    const handleExecuteSearch = () => {
+        webViewRef.current?.reload();
+    };
+
     useEffect(() => {
-        setRetryCount(0);
-        if (keyword)
-            setTimeout(() => {
-                console.log('injecting javascript to url', url);
-                runJavaScript(searchProductInjectionCode);
-            }, 500);
-    }, [keyword]);
+        if (isSearching && keyword) {
+            setRetryCount(0);
+            handleExecuteSearch();
+        }
+    }, [isSearching, keyword]);
+
+    if (!isSearching || !keyword) return null;
 
     return (
-        keyword && (
-            <View style={{ width: '100%', height: 1 }}>
-                <WebView
-                    ref={webViewRef}
-                    source={{ uri: url }}
-                    onMessage={handleMessage}
-                    onLoadEnd={() => runJavaScript(searchProductInjectionCode)}
-                    onError={handleError}
-                    style={{ opacity: 0, height: 0 }}
-                    cacheEnabled={false}
-                    cacheMode="LOAD_NO_CACHE"
-                    renderToHardwareTextureAndroid={true}
-                />
-            </View>
-        )
+        <View style={{ width: '100%', height: 1 }}>
+            <WebView
+                ref={webViewRef}
+                source={{ uri: url }}
+                onMessage={handleMessage}
+                onLoadEnd={() => {
+                    setTimeout(() => {
+                        webViewRef.current?.injectJavaScript(searchProductInjectionCode);
+                    }, 1000);
+                }}
+                onError={handleError}
+                style={{ opacity: 0, height: 0 }}
+                cacheEnabled={false}
+                cacheMode="LOAD_NO_CACHE"
+                renderToHardwareTextureAndroid={true}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                startInLoadingState={true}
+                onLoadStart={() => {
+                    webViewRef.current?.injectJavaScript(`
+                        window.ReactNativeWebView = window.ReactNativeWebView || {};
+                        true;
+                    `);
+                }}
+            />
+        </View>
     );
 };
