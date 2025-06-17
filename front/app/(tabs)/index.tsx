@@ -12,7 +12,8 @@ import {
     ScrollView,
     AccessibilityInfo,
     findNodeHandle,
-    InteractionManager
+    InteractionManager,
+    Keyboard
 } from 'react-native';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import BackIcon from '../../assets/icons/BackIcon';
@@ -145,6 +146,8 @@ export default function HomeScreen() {
             onLink: (path: string) => router.push(path as any),
             onQuery: () => setQuery(text)
         });
+
+        Keyboard.dismiss();
     };
 
     const handleChangeText = (text: string) => {
