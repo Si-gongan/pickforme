@@ -26,7 +26,7 @@ import {
 } from './apis';
 import { Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { sanitizeUrl } from '../../utils/url';
+import { resolveRedirectUrl, sanitizeUrl, normalizeUrl } from '../../utils/url';
 
 export const mainProductsAtom = atom<MainProductsState>({
     special: [],
@@ -69,7 +69,8 @@ export const searchProductsAtom = atom(
         try {
             // query에 상품 url이 포함되었는지 판별
             let productUrl = params.query;
-            productUrl = sanitizeUrl(productUrl);
+            productUrl = await resolveRedirectUrl(sanitizeUrl(productUrl));
+            productUrl = normalizeUrl(productUrl);
 
             // query에 유효한 상품 url이 포함된 경우 바로 해당 상품 상세페이지로 이동
             if (productUrl.includes('http') && onLink) {

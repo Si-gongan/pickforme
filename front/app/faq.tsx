@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useColorScheme from '../hooks/useColorScheme';
