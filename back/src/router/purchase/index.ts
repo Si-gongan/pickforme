@@ -279,7 +279,8 @@ router.post('/retry', requireAuth, async (ctx) => {
 
   try {
     const result = await subscriptionService.createSubscription(userId, productId, receipt);
-    await PurchaseFailure.updateOne({ receipt }, { status: 'RESOLVED' });
+
+    await subscriptionService.sendNotificationForManualSubscription(userId);
 
     ctx.status = 200;
     ctx.body = result;
@@ -303,7 +304,7 @@ router.post('/retry', requireAuth, async (ctx) => {
 
 // 구매 검증과정 없이 직접 구독 생성 (영수증 검증 없음)
 // 현재 안드로이드에서 구매 검증을 제대로 하지 못하고 있어서 어드민에서 멤버쉽을 바로 추가하는 기능을 구현했습니다.
-router.post('/admin/create', requireAuth, async (ctx) => {
+router.post('/admin/retry', requireAuth, async (ctx) => {
   const { userId, _id: productId, receipt } = <any>ctx.request.body;
 
   if (!userId || !productId) {
@@ -319,8 +320,7 @@ router.post('/admin/create', requireAuth, async (ctx) => {
       receipt
     );
 
-    // 실패 이력이 있다면 해결 처리
-    await PurchaseFailure.updateOne({ userId, status: 'FAILED' }, { status: 'RESOLVED' });
+    await subscriptionService.sendNotificationForManualSubscription(userId);
 
     ctx.status = 200;
     ctx.body = result;

@@ -82,7 +82,7 @@ export default function PurchaseFailures() {
   const handleAdminRetry = async (record: any) => {
     try {
       setRetryingIds((prev) => [...prev, `${record._id}_admin`]);
-      const { data } = await axios.post("/purchase/admin/create", {
+      const { data } = await axios.post("/purchase/admin/retry", {
         userId: record.userId,
         _id: record.productId,
         receipt: record.receipt || null,
