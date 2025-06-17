@@ -5,6 +5,8 @@ import { IPurchase, IPurchaseMethods } from 'models/purchase/types';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import constants from '../constants';
+import { sendPushs } from 'utils/push';
+import { log } from 'utils/logger';
 
 const { POINTS } = constants;
 
@@ -78,6 +80,7 @@ class SubscriptionService {
       );
 
       await user.applyPurchaseRewards(product.getRewards(), session);
+      await this.processPurchaseFailure(userId, receipt, session);
 
       await session.commitTransaction();
 
@@ -138,6 +141,7 @@ class SubscriptionService {
       );
 
       await user.applyPurchaseRewards(product.getRewards(), session);
+      await this.processPurchaseFailure(userId, receipt, session);
 
       await session.commitTransaction();
 
@@ -344,6 +348,34 @@ class SubscriptionService {
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  private async processPurchaseFailure(
+    userId: string,
+    receipt?: string | Receipt,
+    session?: mongoose.ClientSession
+  ) {
+    const options = session ? { session } : {};
+    if (receipt) {
+      await db.PurchaseFailure.updateOne({ receipt }, { status: 'RESOLVED' }, options);
+    } else {
+      await db.PurchaseFailure.updateOne(
+        { userId, status: 'FAILED' },
+        { status: 'RESOLVED' },
+        options
+      );
+    }
+  }
+
+  public async sendNotificationForManualSubscription(userId: string) {
+    log.debug('sendNotificationForManualSubscription sending notification');
+    const user = await db.User.findById(userId);
+    if (user?.pushToken) {
+      sendPushs([user.pushToken], {
+        title: '픽포미 멤버십이 지급되었어요!',
+        body: '불편을 드려 죄송합니다. 픽포미와 함께 즐거운 쇼핑 되세요',
+      });
     }
   }
 }

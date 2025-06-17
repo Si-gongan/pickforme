@@ -1,6 +1,6 @@
 export interface UserPoint {
-  point: number,
-  aiPoint: number,
+    point: number;
+    aiPoint: number;
 }
 
-export interface GetUserPointParams { };
+export interface GetUserPointParams {}

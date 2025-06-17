@@ -45,12 +45,13 @@ export const log = {
     message: string,
     context: LogContext = DEFAULT_CONTEXT,
     severity: LogSeverity = DEFAULT_SEVERITY,
-    meta?: any
+    meta?: any,
+    channelId?: string
   ) => {
     // 기본 로깅은 안전하게 수행
     safeLog('error', context, message, severity, meta);
 
-    // Slack 전송 (transports.ts에서 이미 try-catch로 처리됨)
+    // Slack 전송
     if (isProduction && (severity === 'HIGH' || severity === 'CRITICAL')) {
       await sendToSlack({
         context,
@@ -58,6 +59,7 @@ export const log = {
         severity,
         stack: meta?.stack,
         meta: meta ? { ...meta, stack: undefined } : undefined,
+        channelId,
       });
     }
   },

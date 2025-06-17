@@ -55,10 +55,20 @@ const getSeverityText = (severity: LogSeverity): string => {
   }
 };
 
+interface SlackErrorPayload {
+  context: LogContext;
+  message: string;
+  severity: LogSeverity;
+  stack?: string;
+  meta?: Record<string, any>;
+  channelId?: string;
+}
+
 // 슬랙 전송 함수
 export const sendToSlack = async (payload: SlackErrorPayload) => {
   try {
-    const { context, message, severity, stack, meta } = payload;
+    const { context, message, severity, stack, meta, channelId } = payload;
+
     let formattedMessage = '';
 
     // 서버 환경에 따른 제목 설정
@@ -80,7 +90,7 @@ export const sendToSlack = async (payload: SlackErrorPayload) => {
 
     await slackClient.post('/chat.postMessage', {
       text: formattedMessage,
-      channel: slackChannelId,
+      channel: channelId || slackChannelId,
     });
   } catch (error) {
     console.error('슬랙 메시지 전송 실패:', error);
@@ -123,14 +133,6 @@ const createFileTransports = () => {
     return [createConsoleTransport()];
   }
 };
-
-interface SlackErrorPayload {
-  context: LogContext;
-  message: string;
-  severity: LogSeverity;
-  stack?: string;
-  meta?: Record<string, any>;
-}
 
 // 전체 transport 설정
 export const getTransports = () => {
