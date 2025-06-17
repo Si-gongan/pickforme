@@ -58,22 +58,34 @@ router.post('/', requireAuth, async (ctx) => {
         });
       }
 
-      void log.error('결제 처리 중 에러 발생:', 'PURCHASE', 'HIGH', {
-        error: errorMeta,
-        endPoint: '/purchase',
-        method: 'POST',
-        userId: ctx.state.user._id,
-        productId,
-      });
+      void log.error(
+        '결제 처리 중 에러 발생:',
+        'PURCHASE',
+        'HIGH',
+        {
+          error: errorMeta,
+          endPoint: '/purchase',
+          method: 'POST',
+          userId: ctx.state.user._id,
+          productId,
+        },
+        'C05NTFL1Q4C'
+      );
     } catch (error) {
-      void log.error('결제 실패 기록 저장 실패:', 'PURCHASE', 'HIGH', {
-        error: formatError(error),
-        endPoint: '/purchase',
-        method: 'POST',
-        userId: ctx.state.user._id,
-        productId,
-        receipt,
-      });
+      void log.error(
+        '결제 실패 기록 저장 실패:',
+        'PURCHASE',
+        'HIGH',
+        {
+          error: formatError(error),
+          endPoint: '/purchase',
+          method: 'POST',
+          userId: ctx.state.user._id,
+          productId,
+          receipt,
+        },
+        'C05NTFL1Q4C'
+      );
     }
 
     ctx.status = 400;
