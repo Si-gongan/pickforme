@@ -6,7 +6,7 @@
         "version": "3.3.1",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
-        "scheme": "myapp",
+        "scheme": "com.sigonggan.pickforme",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "extra": {
