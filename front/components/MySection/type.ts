@@ -1,3 +1,5 @@
+import { AccessibilityRole } from 'react-native';
+
 interface IMySectionItem {
     name: string;
     onPress?(): void;
@@ -6,5 +8,5 @@ interface IMySectionItem {
 export interface IMySectionProps {
     title: string;
     items: IMySectionItem[];
-    role: string;
+    role?: AccessibilityRole;
 }

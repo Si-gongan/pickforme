@@ -142,7 +142,7 @@ export default function MyScreen() {
                                 { name: `매니저 질문권 ${user.point ?? 0}회` },
                                 { name: `AI 질문권 ${user.aiPoint ?? 0}회` }
                             ]}
-                            role="header"
+                            role="none"
                         />
                     )}
 
