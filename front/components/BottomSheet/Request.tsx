@@ -65,6 +65,10 @@ export default function RequestBottomSheet() {
         setProduct(undefined);
     };
 
+    const announceMessage = (message: string) => {
+        AccessibilityInfo.announceForAccessibility(message);
+    };
+
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
             if (headerTitleRef.current) {
@@ -111,7 +115,7 @@ export default function RequestBottomSheet() {
                     상품에 대해 궁금한 점을 자유롭게 적어주세요.{'\n'} {'\n'}
                     예를 들어, "이 제품의 색상과 디자인을 자세히 설명해 주세요." 라고 물어볼 수 있어요.
                 </Text>
-                <View style={localStyles.textAreaContainer} accessible accessibilityLabel="질문 입력 영역">
+                <View style={localStyles.textAreaContainer} accessible accessibilityLabel="질문 입력 영역, 텍스트 필드">
                     <TextInput
                         accessibilityRole="none"
                         accessibilityHint="텍스트 입력창"
@@ -120,7 +124,10 @@ export default function RequestBottomSheet() {
                         numberOfLines={4}
                         textAlignVertical="top"
                         returnKeyType="done"
-                        onChangeText={text => setData({ ...data, text })}
+                        onChangeText={text => {
+                            setData({ ...data, text });
+                            announceMessage(text);
+                        }}
                         onSubmitEditing={handleSubmit}
                     />
                 </View>
