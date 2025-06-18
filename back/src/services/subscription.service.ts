@@ -5,6 +5,8 @@ import { IPurchase, IPurchaseMethods } from 'models/purchase/types';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import constants from '../constants';
+import { sendPushs } from 'utils/push';
+import { log } from 'utils/logger';
 
 const { POINTS } = constants;
 
@@ -78,6 +80,68 @@ class SubscriptionService {
       );
 
       await user.applyPurchaseRewards(product.getRewards(), session);
+      await this.processPurchaseFailure(userId, receipt, session);
+
+      await session.commitTransaction();
+
+      return purchaseData[0];
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  // 현재 안드로이드에서 구매 검증을 제대로 하지 못하고 있어서 어드민 멤버쉽 지급 기능을 추가했습니다.
+  public async createSubscriptionWithoutValidation(
+    userId: string,
+    productId: string,
+    receipt?: Receipt
+  ) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const user = await db.User.findById(userId);
+      if (!user) {
+        throw new Error('유저정보가 없습니다.');
+      }
+
+      const subscriptionStatus = await this.getSubscriptionStatus(userId);
+      if (subscriptionStatus.activate) {
+        throw new Error('이미 구독중입니다.');
+      }
+
+      const product = await db.Product.findById(productId);
+      if (!product || product.type !== ProductType.SUBSCRIPTION) {
+        throw new Error('존재하지 않는 구독 상품입니다.');
+      }
+
+      const transactionId = `admin_${Date.now()}`;
+      const purchaseDate = new Date();
+      const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
+
+      const purchaseData = await db.Purchase.create(
+        [
+          {
+            userId,
+            product,
+            purchase: {
+              transactionId,
+              productId: product.productId,
+              purchaseDate,
+              expirationDate,
+            },
+            receipt: receipt || null,
+            isExpired: false,
+          },
+        ],
+        { session }
+      );
+
+      await user.applyPurchaseRewards(product.getRewards(), session);
+      await this.processPurchaseFailure(userId, receipt, session);
 
       await session.commitTransaction();
 
@@ -270,6 +334,49 @@ class SubscriptionService {
     }
 
     return subscription;
+  }
+
+  public async checkPurchaseFailure(userId: string) {
+    try {
+      const hasFailedPurchase = await db.PurchaseFailure.exists({
+        userId,
+        status: 'FAILED',
+      });
+
+      return {
+        hasFailedPurchase: !!hasFailedPurchase,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async processPurchaseFailure(
+    userId: string,
+    receipt?: string | Receipt,
+    session?: mongoose.ClientSession
+  ) {
+    const options = session ? { session } : {};
+    if (receipt) {
+      await db.PurchaseFailure.updateOne({ receipt }, { status: 'RESOLVED' }, options);
+    } else {
+      await db.PurchaseFailure.updateOne(
+        { userId, status: 'FAILED' },
+        { status: 'RESOLVED' },
+        options
+      );
+    }
+  }
+
+  public async sendNotificationForManualSubscription(userId: string) {
+    log.debug('sendNotificationForManualSubscription sending notification');
+    const user = await db.User.findById(userId);
+    if (user?.pushToken) {
+      sendPushs([user.pushToken], {
+        title: '픽포미 멤버십이 지급되었어요!',
+        body: '불편을 드려 죄송합니다. 픽포미와 함께 즐거운 쇼핑 되세요',
+      });
+    }
   }
 }
 

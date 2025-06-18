@@ -18,9 +18,11 @@ import {
 } from 'react-native-iap';
 
 import { getProductsAtom, getSubscriptionAtom, productsAtom, purchaseProductAtom } from '@/stores/purchase/atoms';
-import { GetSubscriptionAPI } from '@/stores/purchase/apis';
+import { GetSubscriptionAPI, CheckPurchaseFailureAPI } from '@/stores/purchase/apis';
 import { Product, ProductType } from '@/stores/purchase/types';
 import { isShowSubscriptionModalAtom } from '@/stores/auth';
+import { Colors } from '@constants';
+import useColorScheme from '@/hooks/useColorScheme';
 
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
@@ -49,6 +51,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const purchaseErrorRef = useRef<any>(null);
     const isInitializingRef = useRef(false);
     const loadingViewRef = useRef<View>(null);
+    const colorScheme = useColorScheme();
 
     useEffect(() => {
         getProducts({ platform: Platform.OS });
@@ -76,6 +79,23 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 return false;
             }
 
+            const failureCheck = await CheckPurchaseFailureAPI();
+            if (!failureCheck.data.canPurchase) {
+                Alert.alert(
+                    '구독 불가',
+                    '이전 구독 처리 중 오류가 발생해 현재 처리중입니다. \n 고객센터에 문의해주세요.'
+                );
+                setSubscriptionLoading(false);
+                return false;
+            }
+
+            // 만약에 구독 핸들러가 제대로 등록되지 않았다면 결제 못하도록 처리
+            if (!purchaseUpdateRef.current || !purchaseErrorRef.current) {
+                Alert.alert('구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                setSubscriptionLoading(false);
+                return;
+            }
+
             console.log('구독 요청중..');
 
             if (offerToken) {
@@ -94,7 +114,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             return true;
         } catch (error) {
             console.error('구독 처리 중 에러 발생:', error);
-            Alert.alert('구독 처리 중 오류가 발생했습니다.');
+            Alert.alert('구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             setSubscriptionLoading(false);
             return false;
         }
@@ -125,32 +145,43 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                     }
 
                     purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
+                        let isSubscription = false;
+
                         try {
                             const receipt = purchase.transactionReceipt;
                             const product = products.find(({ productId }) => productId === purchase.productId);
                             if (!product || !receipt) return;
 
-                            const isSubscription = product.type === ProductType.SUBSCRIPTION;
+                            isSubscription = product.type === ProductType.SUBSCRIPTION;
+
                             const parsedReceipt =
                                 Platform.OS === 'android'
                                     ? { subscription: isSubscription, ...JSON.parse(receipt) }
                                     : receipt;
 
                             await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
-                            await finishTransaction({ purchase, isConsumable: !isSubscription });
                             await getSubscription();
 
                             setIsShowSubscriptionModal(true);
                         } catch (error) {
                             console.error('구매 처리 중 에러 발생:', error);
-                            Alert.alert('구독 완료 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                            Alert.alert(
+                                '멤버십 지급 과정에서 잠시 오류가 발생했습니다.',
+                                '결제 내역을 확인한 후, 약 1시간 이내로 매니저가 수동으로 멤버십을 지급해드릴 예정입니다. \n 불편을 드려 진심으로 죄송합니다.'
+                            );
                         } finally {
                             setSubscriptionLoading(false);
+
+                            // 결제가 실패하든 일단 결제 자체는 종료함.
+                            await finishTransaction({ purchase, isConsumable: !isSubscription });
                         }
                     });
 
                     purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
-                        Alert.alert('구독 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                        if (error.code !== 'E_USER_CANCELLED') {
+                            console.error('구독 처리 중 에러 발생:', error);
+                            Alert.alert('구독 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                        }
                         setSubscriptionLoading(false);
                     });
                 };
@@ -201,14 +232,14 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             {subscriptionLoading && (
                 <View
                     ref={loadingViewRef}
-                    style={styles.loadingOverlay}
+                    style={[styles.loadingOverlay, { backgroundColor: `${Colors[colorScheme].background.primary}CC` }]}
                     accessible={true}
                     accessibilityLabel="구독 처리 중"
                     accessibilityHint="구독 처리가 진행 중입니다. 잠시만 기다려주세요."
                     accessibilityRole="alert"
                     importantForAccessibility="yes"
                 >
-                    <ActivityIndicator size="large" />
+                    <ActivityIndicator size="large" color={Colors[colorScheme].text.primary} />
                 </View>
             )}
         </>
@@ -222,7 +253,6 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 9999

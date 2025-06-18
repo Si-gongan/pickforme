@@ -5,7 +5,6 @@ import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
 import { subscriptionService } from '../subscription.service';
 import constants from '../../constants';
-import { log, LogContext, LogSeverity } from 'utils/logger';
 
 const { POINTS } = constants;
 
@@ -929,9 +928,8 @@ describe('Subscription Service Integration Tests', () => {
 
       // When
       const iosProducts = await subscriptionService.getSubscriptionProductsByPlatform('ios');
-      const androidProducts = await subscriptionService.getSubscriptionProductsByPlatform(
-        'android'
-      );
+      const androidProducts =
+        await subscriptionService.getSubscriptionProductsByPlatform('android');
 
       // Then
       expect(iosProducts).toHaveLength(1);

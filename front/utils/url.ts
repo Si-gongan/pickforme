@@ -39,3 +39,37 @@ export const sanitizeUrl = (inputUrl: string): string => {
         return inputUrl;
     }
 };
+
+// URL을 정규화하여 비교 가능한 형태로 변환 (임시 파라미터 제거)
+export const normalizeUrl = (url: string): string => {
+    try {
+        if (!url) return '';
+        
+        const urlObj = new URL(url);
+        
+        // 쿠팡 URL인 경우 필수 파라미터만 유지
+        if (urlObj.hostname.includes('coupang.com')) {
+            // 필수 파라미터 목록
+            const essentialParams = ['itemId', 'vendorItemId'];
+            
+            // 새로운 URLSearchParams 생성
+            const params = new URLSearchParams();
+            
+            // 필수 파라미터만 추가
+            essentialParams.forEach(param => {
+                const value = urlObj.searchParams.get(param);
+                if (value) {
+                    params.append(param, value);
+                }
+            });
+            
+            // 정규화된 URL 생성
+            return `${urlObj.origin}${urlObj.pathname}?${params.toString()}`;
+        }
+        
+        return url;
+    } catch (error) {
+        console.error('URL 정규화 중 오류:', error);
+        return url;
+    }
+};

@@ -10,6 +10,7 @@ import Colors from '../../constants/Colors';
 import { IconHeader, MySection } from '@components';
 import { userAtom } from '@stores';
 import { changeToken } from '../../utils/axios';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MyScreen() {
     const colorScheme = useColorScheme();
@@ -141,7 +142,7 @@ export default function MyScreen() {
                                 { name: `매니저 질문권 ${user.point ?? 0}회` },
                                 { name: `AI 질문권 ${user.aiPoint ?? 0}회` }
                             ]}
-                            role="header"
+                            role="none"
                         />
                     )}
 
@@ -197,11 +198,13 @@ export default function MyScreen() {
 }
 
 function useStyle(colorScheme: ColorScheme) {
+    const insets = useSafeAreaInsets();
     const theme = Colors[colorScheme];
     return StyleSheet.create({
         MyContainer: {
             flex: 1,
-            backgroundColor: theme.background.primary
+            backgroundColor: theme.background.primary,
+            marginBottom: insets.bottom + 55
         },
         MyContent: {
             flex: 1,

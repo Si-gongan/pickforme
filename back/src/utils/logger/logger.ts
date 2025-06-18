@@ -1,14 +1,14 @@
 // back/src/utils/logger/logger.ts
 import winston from 'winston';
-import { LogLevel, LogContext, LogSeverity } from './types';
+import { LogLevel, LogContext, LogSeverity, DEFAULT_CONTEXT, DEFAULT_SEVERITY } from './types';
 import { getTransports, sendToSlack } from './transports';
 import { config } from './config';
 
-const { isProduction, slackTransportSeverityThreshold } = config;
+const { isProduction } = config;
 
 // 로거 생성
 const logger = winston.createLogger({
-  level: isProduction ? LogLevel.INFO : LogLevel.DEBUG,
+  level: isProduction ? 'info' : 'debug',
   format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports: getTransports(),
 
@@ -42,48 +42,50 @@ const safeLog = (
 // 로깅 함수 추상화
 export const log = {
   error: async (
-    context: LogContext,
     message: string,
-    severity: LogSeverity = LogSeverity.MEDIUM,
-    meta?: any
+    context: LogContext = DEFAULT_CONTEXT,
+    severity: LogSeverity = DEFAULT_SEVERITY,
+    meta?: any,
+    channelId?: string
   ) => {
     // 기본 로깅은 안전하게 수행
-    safeLog(LogLevel.ERROR, context, message, severity, meta);
+    safeLog('error', context, message, severity, meta);
 
-    // Slack 전송 (transports.ts에서 이미 try-catch로 처리됨)
-    if (isProduction && severity >= slackTransportSeverityThreshold) {
+    // Slack 전송
+    if (isProduction && (severity === 'HIGH' || severity === 'CRITICAL')) {
       await sendToSlack({
         context,
         message,
         severity,
         stack: meta?.stack,
         meta: meta ? { ...meta, stack: undefined } : undefined,
+        channelId,
       });
     }
   },
   warn: (
-    context: LogContext,
     message: string,
-    severity: LogSeverity = LogSeverity.MEDIUM,
+    context: LogContext = DEFAULT_CONTEXT,
+    severity: LogSeverity = DEFAULT_SEVERITY,
     meta?: any
   ) => {
-    safeLog(LogLevel.WARN, context, message, severity, meta);
+    safeLog('warn', context, message, severity, meta);
   },
   info: (
-    context: LogContext,
     message: string,
-    severity: LogSeverity = LogSeverity.LOW,
+    context: LogContext = DEFAULT_CONTEXT,
+    severity: LogSeverity = 'LOW',
     meta?: any
   ) => {
-    safeLog(LogLevel.INFO, context, message, severity, meta);
+    safeLog('info', context, message, severity, meta);
   },
   debug: (
-    context: LogContext,
     message: string,
-    severity: LogSeverity = LogSeverity.LOW,
+    context: LogContext = DEFAULT_CONTEXT,
+    severity: LogSeverity = 'LOW',
     meta?: any
   ) => {
-    safeLog(LogLevel.DEBUG, context, message, severity, meta);
+    safeLog('debug', context, message, severity, meta);
   },
 };
 

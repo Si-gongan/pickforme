@@ -2,14 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom, settingAtom } from '@stores';
 import { setClientToken } from '../utils/axios';
 import { GetPopupAPI } from '../stores/auth';
 import { PopupService } from '@/services/popup';
+import { UserPointAPI } from '@/stores/user/apis';
+import { AxiosResponse } from 'axios';
+import { UserPoint } from '@/stores/user/types';
 
 export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const user = useAtomValue(userAtom);
+    const setUser = useSetAtom(userAtom);
     const setting = useAtomValue(settingAtom);
     const [isUserLoading, setIsUserLoading] = useState(true);
     const [isPopupLoading, setIsPopupLoading] = useState(true);
@@ -29,6 +33,26 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
         };
         checkUser();
     }, []);
+
+    useEffect(() => {
+        if (user?.token && user?._id) {
+            setClientToken(user.token);
+
+            // 유저 정보 전체 업데이트
+            UserPointAPI({})
+                .then((response: AxiosResponse<UserPoint>) => {
+                    if (response && response.status === 200) {
+                        const userData = response.data;
+                        if (typeof userData === 'object' && user) {
+                            setUser({ ...user, ...userData });
+                        }
+                    }
+                })
+                .catch((error: Error) => {
+                    console.error('유저 정보 업데이트 실패:', error);
+                });
+        }
+    }, [user?.token, user?._id]);
 
     // 설정 데이터 로딩
     useEffect(() => {
@@ -51,7 +75,6 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
             return;
         }
 
-        // 토큰 설정
         setClientToken(user.token);
 
         PopupService.checkHansiryunPopup()

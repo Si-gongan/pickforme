@@ -8,7 +8,8 @@ import {
     View as RNView,
     findNodeHandle,
     AccessibilityInfo,
-    Keyboard
+    Keyboard,
+    InteractionManager
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { formatDate, formatTime } from '../utils/common';
@@ -135,9 +136,11 @@ const TabContent: React.FC<TabContentProps> = ({
                 if (contentRef.current && isTabPressed) {
                     const node = findNodeHandle(contentRef.current);
                     if (node) {
-                        setTimeout(() => {
-                            AccessibilityInfo.setAccessibilityFocus(node);
-                        }, 1000);
+                        InteractionManager.runAfterInteractions(() => {
+                            setTimeout(() => {
+                                AccessibilityInfo.setAccessibilityFocus(node);
+                            }, 500);
+                        });
                     }
                 }
             }, [tab, contentRef.current, isTabPressed]);
@@ -207,9 +210,11 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
         if (contentRef.current) {
             const node = findNodeHandle(contentRef.current);
             if (node) {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 1000);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         }
     }, [tab, contentRef.current]);
@@ -347,9 +352,11 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
         if (contentRef.current) {
             const node = findNodeHandle(contentRef.current);
             if (node) {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 1000);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         }
     }, [tab, contentRef.current]);

@@ -1,6 +1,6 @@
 import { useSetAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
-import { AccessibilityInfo, Alert, findNodeHandle, ScrollView, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Alert, findNodeHandle, InteractionManager, ScrollView, StyleSheet } from 'react-native';
 import {
     Product as IAPProductB,
     Subscription as IAPSubscriptionB,
@@ -138,9 +138,11 @@ export const PointScreen: React.FC<Props> = ({ products, purchaseItems, subscrip
     useEffect(() => {
         const node = findNodeHandle(contentRef.current);
         if (node) {
-            setTimeout(() => {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }, 1000);
+            InteractionManager.runAfterInteractions(() => {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 500);
+            });
         }
     }, [contentRef.current]);
 

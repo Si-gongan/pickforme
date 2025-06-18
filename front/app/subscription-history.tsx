@@ -1,7 +1,7 @@
 import { router, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect } from 'react';
-import { AccessibilityInfo, findNodeHandle, ScrollView, StyleSheet } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, InteractionManager, ScrollView, StyleSheet } from 'react-native';
 
 import { Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
@@ -99,9 +99,11 @@ export const PointHistoryScreen: React.FC<Props> = ({
         const node = findNodeHandle(contentRef.current);
         console.log('node', node);
         if (node) {
-            setTimeout(() => {
-                AccessibilityInfo.setAccessibilityFocus(node);
-            }, 1000);
+            InteractionManager.runAfterInteractions(() => {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 500);
+            });
         }
     }, [contentRef.current]);
 

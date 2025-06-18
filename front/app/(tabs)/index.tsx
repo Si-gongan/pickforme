@@ -11,26 +11,19 @@ import {
     FlatList,
     ScrollView,
     AccessibilityInfo,
-    findNodeHandle
+    findNodeHandle,
+    InteractionManager,
+    Keyboard
 } from 'react-native';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import BackIcon from '../../assets/icons/BackIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import useColorScheme from '../../hooks/useColorScheme';
 import type { ColorScheme } from '../../hooks/useColorScheme';
 import Colors from '../../constants/Colors';
 import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
-
-import {
-    setScrapedProductsAtom,
-    isSearchingAtom,
-    searchSorterAtom,
-    searchResultAtom,
-    searchProductsAtom,
-    getMainProductsAtom,
-    mainProductsAtom
-} from '../../stores/product/atoms';
+import { useProductSearch } from '../../hooks/useProductSearch';
+import { searchResultAtom, getMainProductsAtom, mainProductsAtom } from '../../stores/product/atoms';
 
 import { CATEGORIES, categoryName } from '../../constants/Categories';
 import { MainProductList, MainProductListRef } from '@components';
@@ -43,32 +36,36 @@ const SORTER_NAME = ['추천순', '낮은가격순', '높은가격순', '판매�
 export default function HomeScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
-    const router = useRouter();
     const insets = useSafeAreaInsets();
 
     // 상태 관리
     const initialRef = useRef(null);
-    // const [text, setText] = useState('');
-    // const [query, setQuery] = useState('');
-    const [text, setText] = useAtom(searchTextAtom);
-    const [query, setQuery] = useAtom(searchQueryAtom);
+    const searchLoadingRef = useRef(null);
+    const searchResultRef = useRef(null);
 
     // Jotai atoms
     const getMainProducts = useSetAtom(getMainProductsAtom);
-
-    const setScrapedProducts = useSetAtom(setScrapedProductsAtom);
-    const searchProducts = useSetAtom(searchProductsAtom);
     const searchResult = useAtomValue(searchResultAtom);
-    const searchSorter = useAtomValue(searchSorterAtom);
-    const isSearching = useAtomValue(isSearchingAtom);
+    const [mainProducts, setMainProducts] = useAtom(mainProductsAtom);
+    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
 
     // 검색 관련 레퍼런스
-    const searchLoadingRef = useRef(null);
-    const searchResultRef = useRef(null);
     const mainListRef = useRef<MainProductListRef>(null);
 
     // 스크롤 초기화 트리거
     const [scrollResetTrigger] = useAtom(scrollResetTriggerAtom);
+    // 검색 훅 사용
+    const {
+        searchText,
+        isSearching,
+        searchSorter,
+        isSearchMode,
+        handleSearchTextChange,
+        handleSearchResults,
+        handleSortChange,
+        handleSearchButtonClick,
+        handleBackButtonClick
+    } = useProductSearch();
 
     useFocusEffect(
         useCallback(() => {
@@ -76,7 +73,11 @@ export default function HomeScreen() {
                 if (initialRef.current) {
                     const nodeHandle = findNodeHandle(initialRef.current);
                     if (nodeHandle) {
-                        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                        InteractionManager.runAfterInteractions(() => {
+                            setTimeout(() => {
+                                AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                            }, 500);
+                        });
                     }
                 }
             };
@@ -102,7 +103,11 @@ export default function HomeScreen() {
             if (ref.current) {
                 const nodeHandle = findNodeHandle(ref.current);
                 if (nodeHandle) {
-                    AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                    InteractionManager.runAfterInteractions(() => {
+                        setTimeout(() => {
+                            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                        }, 500);
+                    });
                 }
             }
         }, 500);
@@ -111,54 +116,19 @@ export default function HomeScreen() {
         };
     }, [isSearching]);
 
-    // 메인 상품 데이터와 카테고리 정보 가져오기
-    const [mainProducts, setMainProducts] = useAtom(mainProductsAtom);
-    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
-
     useEffect(() => {
         const randomCategoryId = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
-
-        console.log('tabs getMainProducts', randomCategoryId);
         setCurrentCategory(categoryName[randomCategoryId as keyof typeof categoryName]);
         getMainProducts(randomCategoryId);
     }, [getMainProducts]);
 
-    // 검색 핸들러
-    const handleClickSend = (sort: string) => {
-        if (text === '') {
-            return;
-        }
-
-        searchProducts({
-            query: text,
-            page: 1,
-            sort,
-            onLink: (path: string) => router.push(path as any),
-            onQuery: () => setQuery(text)
-        });
-    };
-
-    const handleChangeText = (text: string) => {
-        console.log('handleChangeText', text);
-        setScrapedProducts([], '');
-        setText(text);
-    };
-
-    const handleClickReset = () => {
-        handleChangeText('');
-    };
-
     return (
         <View style={style.Container}>
             <View style={style.Header}>
-                {/* 검색창 */}
                 <View style={style.searchContainer}>
-                    {!!query.length && (
+                    {isSearchMode && (
                         <Pressable
-                            onPress={() => {
-                                setQuery('');
-                                setText('');
-                            }}
+                            onPress={handleBackButtonClick}
                             accessibilityRole="button"
                             accessibilityLabel="뒤로가기"
                             accessible
@@ -171,18 +141,18 @@ export default function HomeScreen() {
                             ref={initialRef}
                             style={style.textArea}
                             underlineColorAndroid="transparent"
-                            value={text}
-                            returnKeyType="done"
-                            onSubmitEditing={() => handleClickSend(searchSorter)}
+                            value={searchText}
+                            returnKeyType="search"
+                            onSubmitEditing={handleSearchButtonClick}
                             accessible
                             accessibilityLabel="검색어 입력창"
-                            onChangeText={handleChangeText}
+                            onChangeText={handleSearchTextChange}
                             placeholder="찾고 싶은 상품 키워드 또는 링크를 입력해 보세요"
                             placeholderTextColor={Colors[colorScheme].text.placeholder}
                         />
-                        {!!text.length && (
+                        {!!searchText.length && (
                             <Pressable
-                                onPress={handleClickReset}
+                                onPress={() => handleSearchTextChange('')}
                                 accessible
                                 accessibilityLabel="삭제"
                                 accessibilityRole="button"
@@ -195,7 +165,7 @@ export default function HomeScreen() {
                             </Pressable>
                         )}
                         <Pressable
-                            onPress={() => handleClickSend(searchSorter)}
+                            onPress={handleSearchButtonClick}
                             accessible
                             accessibilityLabel="검색하기"
                             accessibilityRole="button"
@@ -207,39 +177,32 @@ export default function HomeScreen() {
             </View>
 
             {/* WebView Search */}
-            <View accessible={false}>
-                <WebViewSearch keyword={text} onMessage={data => setScrapedProducts(data, text)} />
-            </View>
+            {isSearchMode && (
+                <WebViewSearch keyword={searchText} isSearching={isSearching} onMessage={handleSearchResults} />
+            )}
 
             {/* 검색 결과 또는 메인 상품 목록 */}
             {isSearching ? (
                 <DefaultText style={style.loading} ref={searchLoadingRef}>
                     검색하신 상품을 로딩중이에요.
                 </DefaultText>
-            ) : !!query.length ? (
-                // 검색 결과
+            ) : isSearchMode ? (
                 <>
                     <View style={style.searchStatus}>
                         <View
                             ref={searchResultRef}
                             accessible
-                            accessibilityLabel={`총 ${searchResult?.products?.length}건 검색됨`}
+                            accessibilityLabel={`총 ${searchResult?.products?.length || 0}건 검색됨`}
                         >
-                            <DefaultText style={style.productCount}>총 {searchResult?.products?.length}건</DefaultText>
+                            <DefaultText style={style.productCount}>
+                                총 {searchResult?.products?.length || 0}건
+                            </DefaultText>
                         </View>
                         <View style={style.sorterSelector}>
                             {SORTERS.map((sort, idx) => (
                                 <Pressable
                                     key={`sort-${sort}`}
-                                    onPress={() =>
-                                        searchProducts({
-                                            query: text,
-                                            page: 1,
-                                            sort,
-                                            onLink: (path: string) => router.push(path as any),
-                                            onQuery: () => setQuery(text)
-                                        })
-                                    }
+                                    onPress={() => handleSortChange(sort)}
                                     accessible
                                     accessibilityRole="button"
                                     accessibilityLabel={
@@ -342,7 +305,6 @@ function useStyle(colorScheme: ColorScheme) {
             marginRight: 5,
             flexShrink: 0
         },
-        // 여기서부터 검색 결과 관련 스타일
         searchStatus: {
             paddingHorizontal: 20,
             paddingVertical: 12,

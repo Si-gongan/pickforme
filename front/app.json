@@ -6,7 +6,7 @@
         "version": "3.3.1",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
-        "scheme": "myapp",
+        "scheme": "com.sigonggan.pickforme",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "extra": {
@@ -32,7 +32,7 @@
             },
             "package": "com.sigonggan.pickforme",
             "googleServicesFile": "./google-services.json",
-            "versionCode": 109
+            "versionCode": 111
         },
         "web": {
             "bundler": "metro",

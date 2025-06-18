@@ -1,7 +1,7 @@
 // back/src/utils/logger/transports.ts
 import winston from 'winston';
 import path from 'path';
-import { LogLevel, CustomLogInfo, colors, LogSeverity, LogContext } from './types';
+import { CustomLogInfo, colors, LogSeverity, LogContext } from './types';
 import slackClient from '../slack';
 import { config } from './config';
 
@@ -14,9 +14,9 @@ const createLogFormat = (useColors: boolean = false) => {
     winston.format.printf((info) => {
       const { timestamp, level, message, ...meta } = info as unknown as CustomLogInfo;
       const context = meta.context || 'unknown';
-      const severity = meta.severity || LogSeverity.MEDIUM;
+      const severity = meta.severity || 'MEDIUM';
 
-      const { context: _, severity: __, ...restMeta } = meta;
+      const { context: contextValue, severity: severityValue, ...restMeta } = meta;
       const additionalMeta = Object.keys(restMeta).length ? JSON.stringify(restMeta) : '';
 
       const logMessage = `[${timestamp}] [${level}] [${context}/${severity}] ${message}${
@@ -39,40 +39,19 @@ const createConsoleTransport = () =>
     format: createLogFormat(true), // 색상 적용
   });
 
-// 파일 전송 설정
-const createFileTransports = () => {
-  try {
-    return [
-      new winston.transports.File({
-        filename: path.join(logDir, 'error.log'),
-        level: LogLevel.ERROR,
-        format: createLogFormat(false), // 색상 미적용
-        // 파일 시스템 에러를 처리
-        handleExceptions: true,
-        handleRejections: true,
-      }),
-      new winston.transports.File({
-        filename: path.join(logDir, 'combined.log'),
-        format: createLogFormat(false), // 색상 미적용
-        // 파일 시스템 에러를 처리
-        handleExceptions: true,
-        handleRejections: true,
-      }),
-    ];
-  } catch (error) {
-    // 파일 시스템 에러 발생 시 콘솔로만 로깅
-    process.stderr.write(`파일 로깅 설정 실패: ${error}\n`);
-
-    // Slack으로도 알림 (실패해도 무시)
-    if (isProduction) {
-      sendToSlack({
-        context: LogContext.SERVER,
-        message: `파일 로깅 설정 실패: ${error}`,
-        severity: LogSeverity.HIGH,
-      }).catch(() => {});
-    }
-
-    return [createConsoleTransport()];
+// severity를 텍스트로 변환하는 함수
+const getSeverityText = (severity: LogSeverity): string => {
+  switch (severity) {
+    case 'CRITICAL':
+      return '🔴 CRITICAL';
+    case 'HIGH':
+      return '🟠 HIGH';
+    case 'MEDIUM':
+      return '🟡 MEDIUM';
+    case 'LOW':
+      return '🟢 LOW';
+    default:
+      return '⚪ UNKNOWN';
   }
 };
 
@@ -82,28 +61,14 @@ interface SlackErrorPayload {
   severity: LogSeverity;
   stack?: string;
   meta?: Record<string, any>;
+  channelId?: string;
 }
-
-// severity를 텍스트로 변환하는 함수
-const getSeverityText = (severity: LogSeverity): string => {
-  switch (severity) {
-    case LogSeverity.CRITICAL:
-      return '🔴 CRITICAL';
-    case LogSeverity.HIGH:
-      return '🟠 HIGH';
-    case LogSeverity.MEDIUM:
-      return '🟡 MEDIUM';
-    case LogSeverity.LOW:
-      return '🟢 LOW';
-    default:
-      return '⚪ UNKNOWN';
-  }
-};
 
 // 슬랙 전송 함수
 export const sendToSlack = async (payload: SlackErrorPayload) => {
   try {
-    const { context, message, severity, stack, meta } = payload;
+    const { context, message, severity, stack, meta, channelId } = payload;
+
     let formattedMessage = '';
 
     // 서버 환경에 따른 제목 설정
@@ -125,10 +90,47 @@ export const sendToSlack = async (payload: SlackErrorPayload) => {
 
     await slackClient.post('/chat.postMessage', {
       text: formattedMessage,
-      channel: slackChannelId,
+      channel: channelId || slackChannelId,
     });
   } catch (error) {
     console.error('슬랙 메시지 전송 실패:', error);
+  }
+};
+
+// 파일 전송 설정
+const createFileTransports = () => {
+  try {
+    return [
+      new winston.transports.File({
+        filename: path.join(logDir, 'error.log'),
+        level: 'error',
+        format: createLogFormat(false), // 색상 미적용
+        // 파일 시스템 에러를 처리
+        handleExceptions: true,
+        handleRejections: true,
+      }),
+      new winston.transports.File({
+        filename: path.join(logDir, 'combined.log'),
+        format: createLogFormat(false), // 색상 미적용
+        // 파일 시스템 에러를 처리
+        handleExceptions: true,
+        handleRejections: true,
+      }),
+    ];
+  } catch (error) {
+    // 파일 시스템 에러 발생 시 콘솔로만 로깅
+    process.stderr.write(`파일 로깅 설정 실패: ${error}\n`);
+
+    // Slack으로도 알림 (실패해도 무시)
+    if (isProduction) {
+      sendToSlack({
+        context: 'SYSTEM',
+        message: `파일 로깅 설정 실패: ${error}`,
+        severity: 'HIGH',
+      }).catch(() => {});
+    }
+
+    return [createConsoleTransport()];
   }
 };
 
@@ -143,9 +145,9 @@ export const getTransports = () => {
     // Slack으로도 알림 (실패해도 무시)
     if (isProduction) {
       sendToSlack({
-        context: LogContext.SERVER,
+        context: 'SYSTEM',
         message: `로거 설정 실패: ${error}`,
-        severity: LogSeverity.HIGH,
+        severity: 'HIGH',
       }).catch(() => {});
     }
 

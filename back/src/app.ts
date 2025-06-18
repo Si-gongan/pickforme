@@ -8,7 +8,6 @@ import router from './router';
 import socket from './socket';
 import { registerAllSchedulers } from 'scheduler';
 import { log } from './utils/logger';
-import { LogContext, LogSeverity } from './utils/logger';
 import * as Sentry from '@sentry/node';
 
 const PORT = process.env.PORT || 3000;
@@ -28,7 +27,7 @@ app.use(async (ctx, next) => {
 
     Sentry.captureException(error);
     // 에러 로깅
-    await log.error(LogContext.GLOBAL, `Global error: ${error.message}`, LogSeverity.HIGH, {
+    void log.error(`Global error: ${error.message}`, 'SYSTEM', 'HIGH', {
       stack: error.stack,
       path: ctx.path,
       method: ctx.method,

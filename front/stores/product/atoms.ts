@@ -26,7 +26,7 @@ import {
 } from './apis';
 import { Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { sanitizeUrl } from '../../utils/url';
+import { resolveRedirectUrl, sanitizeUrl, normalizeUrl } from '../../utils/url';
 
 export const mainProductsAtom = atom<MainProductsState>({
     special: [],
@@ -48,10 +48,6 @@ export const loadingStatusAtom = atom({
     question: LoadingStatus.INIT
 });
 
-export const isSearchingAtom = atom(false);
-
-export const searchSorterAtom = atom('scoreDesc');
-
 export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
 
 export const scrapedProductsAtom = atom<Product[]>([]);
@@ -60,101 +56,6 @@ export const setScrapedProductsAtom = atom(null, async (get, set, products: Prod
     set(scrapedProductsAtom, products);
     set(scrapedProductsQueryAtom, query);
 });
-
-export const searchProductsAtom = atom(
-    null,
-    async (get, set, { onQuery, onLink, ...params }: SearchProductsRequest) => {
-        set(isSearchingAtom, true);
-
-        try {
-            // query에 상품 url이 포함되었는지 판별
-            let productUrl = params.query;
-            productUrl = sanitizeUrl(productUrl);
-
-            // query에 유효한 상품 url이 포함된 경우 바로 해당 상품 상세페이지로 이동
-            if (productUrl.includes('http') && onLink) {
-                // coupang 외 link는 일단 제외
-                if (!productUrl.includes('coupang')) {
-                    // console.log('Not coupang link:', productUrl);
-                    set(searchResultAtom, { count: 0, page: 1, products: [] });
-                    onQuery?.();
-                    // await new Promise(resolve => setTimeout(resolve, 1000));
-                    set(isSearchingAtom, false);
-                    return;
-                }
-
-                // 로그 관련 코드 제거
-                onLink(`/product-detail?productUrl=${encodeURIComponent(productUrl)}`);
-
-                const maxTries = 5;
-                let tries = 0;
-                let productDetail: GetProductDetailResponse | void = undefined;
-                let successFlag = false;
-
-                while (tries < maxTries) {
-                    productDetail = get(productDetailAtom);
-                    if (productDetail?.product?.url === productUrl) {
-                        successFlag = true;
-                        break;
-                    } else {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        tries++;
-                    }
-                }
-
-                if (successFlag) {
-                    set(searchResultAtom, {
-                        count: 1,
-                        page: 1,
-                        products: [productDetail?.product!]
-                    });
-                } else {
-                    set(searchResultAtom, { count: 0, page: 1, products: [] });
-                }
-
-                set(isSearchingAtom, false);
-                return;
-            }
-
-            // query에 상품 url 포함 안 된 경우 일반 키워드 검색 결과 노출
-            set(searchSorterAtom, params.sort);
-
-            if (params.page === 1) {
-                set(searchResultAtom, undefined);
-            }
-            // const { data } = await SearchProductsAPI(params);
-            const maxTries = 5;
-            let tries = 0;
-            let products: Product[] = [];
-            let query = '';
-
-            while (tries < maxTries) {
-                products = get(scrapedProductsAtom);
-                query = get(scrapedProductsQueryAtom);
-                if (products.length > 0 && query === params.query) {
-                    break;
-                } else {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    tries++;
-                }
-            }
-            // TODO: deeplink 변환 로직 추가
-            set(searchResultAtom, {
-                count: products.length,
-                page: 1,
-                products
-            });
-
-            onQuery?.();
-        } catch (error) {
-            console.error('Failed to fetch search results:', error);
-            // 검색이 실패하면 빈 배열로 초기화
-            set(searchResultAtom, { count: 0, page: 1, products: [] });
-        } finally {
-            set(isSearchingAtom, false);
-        }
-    }
-);
 
 export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
     const result = await attempt(() => GetMainProductsAPI(categoryId));

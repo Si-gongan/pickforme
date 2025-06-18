@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, Platform, findNodeHandle, AccessibilityInfo } from 'react-native';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Image,
+    Platform,
+    findNodeHandle,
+    AccessibilityInfo,
+    Alert,
+    InteractionManager
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { login } from '@react-native-seoul/kakao-login';
 import {
@@ -47,9 +57,11 @@ export default function LoginForm() {
         if (contentRef.current) {
             const node = findNodeHandle(contentRef.current);
             if (node) {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 800);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 800);
+                });
             }
         }
     }, [contentRef]);
@@ -82,8 +94,16 @@ export default function LoginForm() {
     );
 
     const onLoginWithGoogle = useCallback(
-        function () {
-            mutateGoogleLogin();
+        async function () {
+            try {
+                await mutateGoogleLogin();
+            } catch (error) {
+                console.error('구글 로그인 에러:', error);
+                Alert.alert(
+                    '구글 로그인 오류',
+                    `오류 상세 정보: ${error instanceof Error ? error.message : JSON.stringify(error)}`
+                );
+            }
         },
         [mutateGoogleLogin]
     );

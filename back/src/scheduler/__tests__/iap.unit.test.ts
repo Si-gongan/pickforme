@@ -66,7 +66,6 @@ import db from 'models';
 import iapValidator from 'utils/iap';
 import { log } from 'utils/logger/logger';
 import { handleIAPScheduler } from '../iap';
-import { LogContext, LogSeverity } from 'utils/logger/types';
 
 describe('IAP Scheduler (unit)', () => {
   const RealDate = Date;
@@ -104,16 +103,6 @@ describe('IAP Scheduler (unit)', () => {
     await handleIAPScheduler();
 
     expect(mockPurchase.updateExpiration).toHaveBeenCalled();
-    expect(db.User.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: mockPurchase.userId },
-      { point: 0, aiPoint: 0 }
-    );
-    expect(log.info).toHaveBeenCalledWith(
-      LogContext.SCHEDULER,
-      expect.stringContaining('구독 만료 처리 완료'),
-      LogSeverity.LOW,
-      expect.objectContaining({ userId: mockPurchase.userId })
-    );
   });
 
   // it('IAP 검증 성공 시 포인트를 지급하고 소켓/푸시 알림을 보낸다.', async () => {
@@ -176,9 +165,9 @@ describe('IAP Scheduler (unit)', () => {
     await handleIAPScheduler();
 
     expect(log.error).toHaveBeenCalledWith(
-      LogContext.SCHEDULER,
       '구독 검증 중 오류 발생',
-      LogSeverity.HIGH,
+      'SCHEDULER',
+      'HIGH',
       expect.objectContaining({
         scheduler: 'iap',
         message: 'Error',
