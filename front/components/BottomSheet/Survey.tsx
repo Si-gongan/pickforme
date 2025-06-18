@@ -120,7 +120,7 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                     accessibilityLabel="앞으로 보지 않기"
                     accessibilityRole="button"
                 >
-                    <Text style={[styles.dontShowText, { color: '1E1E1E' }]}>앞으로 보지 않기</Text>
+                    <Text style={[styles.dontShowText, { color: theme.text.primary }]}>앞으로 보지 않기</Text>
                 </Pressable>
             </View>
         </Modal>

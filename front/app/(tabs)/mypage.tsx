@@ -204,7 +204,7 @@ function useStyle(colorScheme: ColorScheme) {
         MyContainer: {
             flex: 1,
             backgroundColor: theme.background.primary,
-            marginBottom: insets.bottom + 60
+            marginBottom: insets.bottom + 55
         },
         MyContent: {
             flex: 1,
