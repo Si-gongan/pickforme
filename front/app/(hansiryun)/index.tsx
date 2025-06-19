@@ -166,7 +166,11 @@ export default function InterviewScreen() {
     }, [headerTitleRef.current]);
 
     return (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            onAccessibilityEscape={() => router.replace('/(tabs)')}
+        >
             <BackHeader />
             <ScrollView
                 style={[
