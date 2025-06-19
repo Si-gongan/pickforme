@@ -18,7 +18,8 @@
             "distribution": "internal"
         },
         "production": {
-            "credentialsSource": "local"
+            "credentialsSource": "local",
+            "channel": "production"
         },
         "develop": {
             "distribution": "store"
