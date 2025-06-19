@@ -78,7 +78,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
             }
         },
         onError: function (error) {
-            console.log('error', error);
+            console.error('Google 로그인 에러:', error);
         }
     });
 
@@ -92,11 +92,13 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
 
     useEffect(
         function () {
-            if (googleResult?.type === 'success' && googleResult.authentication) {
+            if (googleResult?.type === 'success' && (googleResult as any).authentication) {
                 const {
                     authentication: { accessToken }
-                } = googleResult;
+                } = googleResult as any;
                 mutateGoogleLogin({ accessToken });
+            } else {
+                console.error('Google 인증 대기 중 또는 알 수 없는 상태:', googleResult?.type);
             }
         },
         [googleResult, mutateGoogleLogin]
