@@ -1,6 +1,9 @@
 # node modules
 node_modules
 
+# backups
+backups/*
+
 # misc
 .env
 .env.local
