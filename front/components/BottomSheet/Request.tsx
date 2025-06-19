@@ -35,6 +35,7 @@ export default function RequestBottomSheet() {
         type: RequestType.QUESTION,
         text: ''
     });
+    const prevTextRef = useRef('');
     const checkMembership = useCheckMembership((params: QuestionRequestParams) => {
         if (product) {
             addRequest(params);
@@ -126,7 +127,38 @@ export default function RequestBottomSheet() {
                         returnKeyType="done"
                         onChangeText={text => {
                             setData({ ...data, text });
-                            announceMessage(text);
+                            
+                            // 이전 텍스트와 비교하여 텍스트가 삭제되었는지 확인
+                            const prevText = prevTextRef.current;
+                            if (prevText.length > text.length) {
+                                // 삭제된 글자 찾기
+                                let deletedChars = '';
+                                
+                                // 간단한 경우: 마지막 글자만 삭제된 경우
+                                if (prevText.startsWith(text)) {
+                                    deletedChars = prevText.substring(text.length);
+                                } 
+                                // 앞쪽이나 중간에서 삭제된 경우, 더 복잡한 비교 필요
+                                else {
+                                    // 최대 연속 공통 부분을 찾아 삭제된 부분 유추
+                                    for (let i = 0; i < prevText.length; i++) {
+                                        if (i >= text.length || prevText[i] !== text[i]) {
+                                            deletedChars += prevText[i];
+                                        }
+                                    }
+                                }
+                                
+                                if (deletedChars) {
+                                    announceMessage(`삭제됨: ${deletedChars}`);
+                                } else {
+                                    announceMessage('삭제됨');
+                                }
+                            } else if (text) {
+                                announceMessage(text);
+                            }
+                            
+                            // 현재 텍스트를 이전 텍스트로 저장
+                            prevTextRef.current = text;
                         }}
                         onSubmitEditing={handleSubmit}
                     />
