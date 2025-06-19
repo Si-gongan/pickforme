@@ -8,6 +8,7 @@ const execAsync = promisify(exec);
 
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
 const RETENTION_DAYS = 7;
+const dbName = process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme-production';
 
 // 백업 디렉토리 생성
 const ensureBackupDir = () => {
@@ -50,7 +51,6 @@ export const backupDatabase = async () => {
     const backupPath = path.join(BACKUP_DIR, `backup-${timestamp}`);
 
     // MongoDB Atlas URI에서 데이터베이스 이름 추출
-    const dbName = process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme-production';
 
     // mongodump 명령어 실행
     await execAsync(
