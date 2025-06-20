@@ -99,8 +99,6 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
             // 라우팅 처리
             if (!user?.token) {
                 router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
-            } else if (isHansiryunPopup) {
-                router.push('/(hansiryun)');
             } else {
                 router.push('/(tabs)');
             }

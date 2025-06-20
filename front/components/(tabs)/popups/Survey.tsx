@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import useColorScheme from '../../hooks/useColorScheme';
-import Colors from '../../constants/Colors';
 import Modal from 'react-native-modal';
 import { Button_old as Button } from '@components';
+import useColorScheme from '@/hooks/useColorScheme';
+import { Colors } from '@/constants';
+import icCloseDark from '@/assets/images/icCloseDark.png';
 
 interface SurveyProps {
     visible: boolean;
@@ -37,7 +38,7 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                         accessibilityLabel="닫기"
                         accessibilityRole="button"
                     >
-                        <Image source={require('../../assets/images/icCloseDark.png')} style={styles.closeIcon} />
+                        <Image source={icCloseDark} style={styles.closeIcon} />
                     </Pressable>
                 </View>
 

@@ -1,4 +1,5 @@
 import { GetPopupAPI, SetPopupAPI } from '@/stores';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const PopupService = {
     async checkPopup(popupId: string) {
@@ -28,6 +29,33 @@ export const PopupService = {
         } catch (error) {
             console.error('설문조사 팝업 설정 실패:', error);
             return false;
+        }
+    },
+
+    // 최초 로그인 관련 메서드들
+    async checkIsFirstLogin(): Promise<boolean> {
+        try {
+            const hasLoggedIn = await AsyncStorage.getItem('hasLoggedIn');
+            return !hasLoggedIn;
+        } catch (error) {
+            console.error('최초 로그인 체크 에러:', error);
+            return false;
+        }
+    },
+
+    async setFirstLoginComplete(): Promise<void> {
+        try {
+            await AsyncStorage.setItem('hasLoggedIn', 'true');
+        } catch (error) {
+            console.error('최초 로그인 완료 설정 에러:', error);
+        }
+    },
+
+    async resetFirstLogin(): Promise<void> {
+        try {
+            await AsyncStorage.removeItem('hasLoggedIn');
+        } catch (error) {
+            console.error('최초 로그인 리셋 에러:', error);
         }
     }
 };

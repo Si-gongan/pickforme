@@ -6,17 +6,23 @@ import { View } from '../Settings/Themed'; // Themed View 사용
 import { BackImage } from '@assets';
 import useStyle from './style';
 
-export default function BackHeader() {
+interface BackHeaderProps {
+    onPressBack?: () => void;
+}
+
+export default function BackHeader({ onPressBack }: BackHeaderProps) {
     const router = useRouter();
     const style = useStyle();
 
     const onPress = useCallback(
         function () {
-            if (router.canGoBack()) {
+            if (onPressBack) {
+                onPressBack();
+            } else if (router.canGoBack()) {
                 router.back();
             }
         },
-        [router]
+        [router, onPressBack]
     );
 
     return (
