@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -11,65 +11,55 @@ import {
     KeyboardAvoidingView,
     Platform
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { CheckBox, BackHeader } from '@components';
-import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI, GetPopupAPI } from '../../stores/auth/apis';
+import { BackHeader, CheckBox } from '@components';
+import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI } from '@/stores/auth/apis';
 import { userAtom } from '@stores';
 import { useAtomValue } from 'jotai';
-import { setClientToken } from '../../utils/axios';
-import Colors from '../../constants/Colors';
-import useColorScheme from '../../hooks/useColorScheme';
-import { attempt } from '../../utils/axios';
+import { setClientToken } from '@/utils/axios';
+import Colors from '@/constants/Colors';
+import useColorScheme from '@/hooks/useColorScheme';
+import { attempt } from '@/utils/axios';
 import { AxiosError } from 'axios';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
-export default function InterviewScreen() {
-    const router = useRouter();
+interface HansiryunPopupProps {
+    visible: boolean;
+    onClose: () => void;
+}
+
+export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps) {
     const user = useAtomValue(userAtom);
     const colorScheme = useColorScheme();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isChecked, setIsChecked] = useState(false);
     const [isDuplicate, setIsDuplicate] = useState(false);
-    // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
 
-    useAuthRedirect(true);
+    if (!visible) return null;
 
     // 신청하기 버튼 처리
     const handleSubmit = async () => {
-        // fot test
-        // router.replace('/(tabs)');
-        // return;
-
         if (!phoneNumber) {
             alert('전화번호를 입력해주세요.');
             return;
         }
-
         if (!isChecked) {
             alert('개인 정보 수집과 이용에 동의해주세요.');
             return;
         }
-
         if (isDuplicate) {
             alert('이미 등록되어 있는 전화번호입니다.');
             return;
         }
-
         const id = user?._id;
         const token = user?.token;
-
         if (!id || !token) {
             console.log('id 또는 token이 없습니다.');
             return;
         }
-
         if (!phoneRegex.test(phoneNumber)) {
             alert('유효하지 않은 전화번호 형식입니다. \n 숫자만 입력해주세요.');
             return;
         }
-
         attempt(() =>
             PhoneSubmitAPI({
                 id: id,
@@ -80,62 +70,43 @@ export default function InterviewScreen() {
                 console.error('팝업 설정 실패 in hansiryun:', res.error);
                 return;
             }
-
-            // 구글 폼 링크로 이동
             await Linking.openURL('https://forms.gle/WW3ZbZunF9LCdQnr7');
-
             alert('신청이 완료되었습니다.');
-            router.replace('/(tabs)');
+            onClose();
         });
     };
 
     // 앞으로 보지 않기 버튼 처리
     const handleDontShowAgain = async () => {
-        router.replace('/(tabs)');
-
+        onClose();
         if (!user?._id) {
             console.log('id가 없습니다.');
             return;
         }
-
         const payload = { popup_id: 'event_hansiryun', flag: 1 };
-        console.log(payload);
-
         attempt(() => SetPopupAPI(payload)).then(res => {
             if (!res.ok) {
                 console.error('팝업 설정 실패 in hansiryun:', res.error);
                 return;
             }
-            console.log('setpopup response :', res?.value?.data);
         });
     };
 
-    // onChangeText 핸들러 수정
+    // onChangeText 핸들러
     const handlePhoneChange = async (text: string) => {
         setIsDuplicate(false);
-
         setPhoneNumber(text);
-        // 숫자만 추출
         let phoneNumber = text.replace(/[^0-9]/g, '');
-
         if (!phoneRegex.test(phoneNumber)) {
-            console.log('유효하지 않은 전화번호 형식입니다.');
             return;
         }
-
         const id = user?._id;
         const token = user?.token;
-
         if (!id || !token) {
-            console.log('id 또는 token이 없습니다.');
             return;
         }
-
-        // 토큰 설정
         setClientToken(token);
-
         setPhoneNumber(text);
-
         try {
             await PhoneCheckAPI({ id: id, phone: phoneNumber });
             setIsDuplicate(false);
@@ -148,7 +119,7 @@ export default function InterviewScreen() {
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <BackHeader />
+            <BackHeader onPressBack={onClose} />
             <ScrollView
                 style={[
                     styles.container,
@@ -158,12 +129,10 @@ export default function InterviewScreen() {
                     }
                 ]}
             >
-                <StatusBar style="auto" />
                 <View style={styles.content}>
                     <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]}>
                         픽포미 멤버십을 6개월간 무료로 이용해 보세요
                     </Text>
-                    {/* <Text style={{ width: "100%", height: 60 }}></Text> */}
                     <Text style={[styles.description, { color: Colors[colorScheme].text.primary }]}>
                         안녕하세요!{'\n'}
                         {'\n'}픽포미에서 한국시각장애인연합회와 함께 유료 멤버십 서비스를 무료로 사용해보실 수 있는
@@ -180,7 +149,6 @@ export default function InterviewScreen() {
                         {'\n'}
                         항상 픽포미 서비스를 애용해 주셔서 감사드립니다.{'\n'}
                     </Text>
-
                     <View style={styles.phoneInputContainer}>
                         <Text style={[styles.inputLabel, { color: Colors[colorScheme].text.primary }]}>전화번호</Text>
                         <TextInput
@@ -207,7 +175,7 @@ export default function InterviewScreen() {
                         {isDuplicate && (
                             <View style={styles.errorContainer}>
                                 <Image
-                                    source={require('../../assets/images/warning.png')}
+                                    source={require('@/assets/images/warning.png')}
                                     style={[
                                         styles.warningIcon,
                                         { tintColor: colorScheme === 'dark' ? '#FF6B6B' : undefined }
@@ -217,7 +185,6 @@ export default function InterviewScreen() {
                             </View>
                         )}
                     </View>
-
                     <View style={styles.checkboxContainer}>
                         <TouchableOpacity
                             style={styles.checkboxWrapper}
@@ -241,7 +208,6 @@ export default function InterviewScreen() {
                             </Text>
                         </TouchableOpacity>
                     </View>
-
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
                             style={[
@@ -271,7 +237,6 @@ export default function InterviewScreen() {
                                 신청하기
                             </Text>
                         </TouchableOpacity>
-
                         <TouchableOpacity
                             style={[
                                 styles.button,
@@ -395,15 +360,5 @@ const styles = StyleSheet.create({
         width: 16,
         height: 16,
         marginRight: 6
-    },
-    backButton: {
-        padding: 10,
-        marginBottom: 10,
-        alignSelf: 'flex-start'
-    },
-    backButtonImage: {
-        width: 24,
-        height: 24,
-        resizeMode: 'contain'
     }
 });

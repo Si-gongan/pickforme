@@ -9,6 +9,7 @@ import { How, Survey } from '@components';
 import { Colors } from '@constants';
 import useColorScheme from '../../hooks/useColorScheme';
 import { PopupService } from '@/services/popup';
+import HansiryunPopup from '@/components/HansiryunPopup';
 
 import Modal from 'react-native-modal';
 
@@ -18,6 +19,7 @@ export default function TabLayout() {
     const [isSurveyVisible, setIsSurveyVisible] = React.useState(false);
     const { isFirstLogin } = useCheckIsFirstLogin();
     const { registerPopup, showNextPopup, handlePopupClose, isRegistered } = usePopupSystem();
+    const [isHansiryunVisible, setIsHansiryunVisible] = React.useState(false);
 
     // 팝업 등록
     useEffect(() => {
@@ -25,6 +27,7 @@ export default function TabLayout() {
             id: 'how',
             shouldShow: async () => {
                 // return true;
+                console.log('isFirstLogin', isFirstLogin);
                 return isFirstLogin;
             },
             onShow: () => {
@@ -37,7 +40,6 @@ export default function TabLayout() {
             },
             priority: 2
         });
-
         registerPopup({
             id: 'survey',
             shouldShow: async () => {
@@ -58,6 +60,28 @@ export default function TabLayout() {
                 setIsSurveyVisible(false);
             },
             priority: 1
+        });
+        registerPopup({
+            id: 'hansiryun',
+            shouldShow: async () => {
+                return PopupService.checkHansiryunPopup()
+                    .then(hasPopup => {
+                        return hasPopup;
+                    })
+                    .catch(error => {
+                        console.error('한시련 팝업 체크 에러:', error);
+                        return false;
+                    });
+            },
+            onShow: () => {
+                setTimeout(() => {
+                    setIsHansiryunVisible(true);
+                }, 300);
+            },
+            onClose: () => {
+                setIsHansiryunVisible(false);
+            },
+            priority: 0
         });
     }, [isFirstLogin, registerPopup]);
 
@@ -101,6 +125,17 @@ export default function TabLayout() {
                 }}
             >
                 <How visible={isHowModalVisible} onClose={handlePopupClose} />
+            </Modal>
+
+            <Modal
+                isVisible={isHansiryunVisible}
+                onBackButtonPress={handlePopupClose}
+                onBackdropPress={handlePopupClose}
+                animationIn="slideInUp"
+                animationInTiming={300}
+                style={{ justifyContent: 'flex-end', margin: 0 }}
+            >
+                <HansiryunPopup visible={isHansiryunVisible} onClose={handlePopupClose} />
             </Modal>
 
             <Tabs
