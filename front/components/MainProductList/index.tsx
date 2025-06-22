@@ -148,12 +148,6 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
     const processNextProduct = useCallback(() => {
         const allProducts = allProductsRef.current;
 
-        console.log('processNextProduct 호출됨 - 현재 상태:', {
-            productIndex: productIndex.current,
-            allProductsLength: allProducts.length,
-            processedCount
-        });
-
         // 모든 상품 처리 완료 확인
         if (productIndex.current >= allProducts.length) {
             // 모든 상품 처리 완료
@@ -237,12 +231,12 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
     }, [data, randomCount, specialCount, updatedProducts]);
 
     // 컴포넌트 마운트 시 화면에 보이는 상품만 처리 시작
-    useEffect(() => {
-        // 처음 로드될 때만 실행
-        if (Object.keys(updatedProducts).length === 0) {
-            processVisibleProducts();
-        }
-    }, [data, processNextProduct]);
+    // useEffect(() => {
+    //     // 처음 로드될 때만 실행
+    //     if (Object.keys(updatedProducts).length === 0) {
+    //         processVisibleProducts();
+    //     }
+    // }, [data, processNextProduct]);
 
     // 업데이트가 필요한 상품 필터링 (reviews나 ratings가 없는 상품)
     const filterProductsNeedingUpdate = useCallback((products: Product[]) => {
@@ -288,12 +282,10 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                         return newCount;
                     });
                     // 추가로 로드된 상품 처리
-                    setTimeout(() => {
-                        const newVisibleProducts = data.special.slice(specialCount, newCount);
-                        console.log('추가 로드된 special 상품 업데이트 시작 - 총 상품 수:', newVisibleProducts.length);
-                        // useProductUpdater 유틸리티를 사용하여 상품 업데이트
-                        startUpdateProcess(newVisibleProducts);
-                    }, 100);
+                    // setTimeout(() => {
+                    //     const newVisibleProducts = data.special.slice(specialCount, newCount);
+                    //     startUpdateProcess(newVisibleProducts);
+                    // }, 100);
                     break;
                 case 'random':
                     onRandomCount(function (prev) {
@@ -301,12 +293,10 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                         return newCount;
                     });
                     // 추가로 로드된 상품 처리
-                    setTimeout(() => {
-                        const newVisibleProducts = data.random.slice(randomCount, newCount);
-                        console.log('추가 로드된 random 상품 업데이트 시작 - 총 상품 수:', newVisibleProducts.length);
-                        // useProductUpdater 유틸리티를 사용하여 상품 업데이트
-                        startUpdateProcess(newVisibleProducts);
-                    }, 100);
+                    // setTimeout(() => {
+                    //     const newVisibleProducts = data.random.slice(randomCount, newCount);
+                    //     startUpdateProcess(newVisibleProducts);
+                    // }, 100);
                     break;
             }
         },
