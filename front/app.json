@@ -32,7 +32,7 @@
             },
             "package": "com.sigonggan.pickforme",
             "googleServicesFile": "./google-services.json",
-            "versionCode": 113
+            "versionCode": 114
         },
         "web": {
             "bundler": "metro",
