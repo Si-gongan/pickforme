@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
 import { useSetAtom } from 'jotai';
-import { useAuthRequest as useGoogleAuthRequest } from 'expo-auth-session/providers/google';
-import { makeRedirectUri } from 'expo-auth-session';
+import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 
 import { userAtom, modalAtom } from '@stores';
 import client from '../utils/axios';
@@ -13,6 +13,16 @@ import type { IAppleAuthPayload, ILogin, IServiceProps, IBaseAuthPayload } from 
 export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     const onUser = useSetAtom(userAtom);
     const onModal = useSetAtom(modalAtom);
+
+    // Google Sign-In 설정
+    useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
+            offlineAccess: true,
+            hostedDomain: '',
+            forceCodeForRefreshToken: true
+        });
+    }, []);
 
     const onLogin = useCallback(
         async function (data: ILogin) {
@@ -35,13 +45,10 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     const { mutateAsync: mutateKakaoLogin, isPending: isPendingKakaoLogin } = useMutation({
         mutationKey: ['mutateKakaoLogin'],
         mutationFn: function (payload: IBaseAuthPayload) {
-            console.log('서버 API 호출 시작:', payload);
             return client.post<ILogin>('/auth/kakao', payload);
         },
         onSuccess: async function (response) {
-            console.log('서버 응답 성공:', response);
             if (response.status === 200) {
-                console.log('로그인 데이터:', response.data);
                 await onLogin(response.data);
                 onSuccess?.();
             }
@@ -83,41 +90,35 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         }
     });
 
-    const redirectUri = makeRedirectUri({
-        scheme: 'com.sigonggan.pickforme'
-    });
+    // Google 로그인 함수
+    const handleGoogleLogin = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+            const userInfo = await GoogleSignin.signIn();
 
-    console.log('리디렉션 URI:', redirectUri);
+            // accessToken 추출
+            const tokens = await GoogleSignin.getTokens();
 
-    const [_, googleResult, googleBase] = useGoogleAuthRequest({
-        clientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
-        androidClientId: '618404683764-vc6iaucqdo8me4am0t9062d01800q0cr.apps.googleusercontent.com',
-        iosClientId: '618404683764-e4rl4qllc10k93lgs2bv7vbv9j1lruu7.apps.googleusercontent.com',
-        redirectUri
-    });
-
-    useEffect(
-        function () {
-            if (googleResult?.type === 'success' && (googleResult as any).authentication) {
-                const {
-                    authentication: { accessToken }
-                } = googleResult as any;
-                mutateGoogleLogin({ accessToken });
-            } else if (googleResult?.type === 'dismiss') {
-                console.log('Google 인증이 취소되었습니다.');
-            } else if (googleResult?.type === 'error') {
-                console.error('Google 인증 에러:', googleResult.error);
-            } else if (googleResult?.type) {
-                console.log('Google 인증 상태:', googleResult.type);
+            if (tokens.accessToken) {
+                await mutateGoogleLogin({ accessToken: tokens.accessToken });
             }
-        },
-        [googleResult, mutateGoogleLogin]
-    );
+        } catch (error: any) {
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                console.log('Google 로그인이 취소되었습니다.');
+            } else if (error.code === statusCodes.IN_PROGRESS) {
+                console.log('Google 로그인이 진행 중입니다.');
+            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                console.log('Play Services를 사용할 수 없습니다.');
+            } else {
+                console.log('Google 로그인 중 알 수 없는 오류가 발생했습니다.');
+            }
+        }
+    };
 
     return {
         mutateKakaoLogin,
         mutateAppleLogin,
-        mutateGoogleLogin: googleBase,
+        mutateGoogleLogin: handleGoogleLogin,
         isPending: isPendingAppleLogin || isPendingKakaoLogin || isPendingGoogleLogin
     };
 }
