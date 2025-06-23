@@ -21,12 +21,13 @@ prepare_react_native_project!
 target 'app' do
   use_expo_modules!
 
-  # Firebase 관련 모듈에 대해서만 모듈러 헤더 적용
+  pod 'FirebaseAnalytics'
   pod 'FirebaseCore', :modular_headers => true
   pod 'FirebaseCoreInternal', :modular_headers => true
   pod 'GoogleUtilities', :modular_headers => true
   pod 'FirebaseInstallations', :modular_headers => true
   pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => false
+  pod 'RNGoogleSignin', :path => '../node_modules/@react-native-google-signin/google-signin', :modular_headers => false
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];

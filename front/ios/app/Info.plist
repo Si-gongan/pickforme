@@ -29,31 +29,15 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>myapp</string>
           <string>com.sigonggan.pickforme</string>
-        </array>
-      </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>com.googleusercontent.apps.951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l</string>
-        </array>
-      </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
+          <string>com.googleusercontent.apps.951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l</string>          
           <string>exp+pickformeapp</string>
-        </array>
-      </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
           <string>kakaoa48d1b07defd794b769579746e2bb995</string>
         </array>
-      </dict>
+      </dict>      
     </array>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>2</string>
     <key>KAKAO_APP_KEY</key>
     <string>a48d1b07defd794b769579746e2bb995</string>
     <key>LSApplicationQueriesSchemes</key>

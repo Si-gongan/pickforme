@@ -47,6 +47,7 @@
                     "kakaoAppKey": "a48d1b07defd794b769579746e2bb995"
                 }
             ],
+            "@react-native-google-signin/google-signin",
             "expo-router",
             "expo-apple-authentication",
             [

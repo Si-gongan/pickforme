@@ -17,8 +17,8 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     // Google Sign-In 설정
     useEffect(() => {
         GoogleSignin.configure({
-            webClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
-            offlineAccess: true,
+            iosClientId: '951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l.apps.googleusercontent.com',
+            offlineAccess: false,
             hostedDomain: '',
             forceCodeForRefreshToken: true
         });
@@ -110,7 +110,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
             } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
                 console.log('Play Services를 사용할 수 없습니다.');
             } else {
-                console.log('Google 로그인 중 알 수 없는 오류가 발생했습니다.');
+                console.log('Google 로그인 중 알 수 없는 오류가 발생했습니다.', error);
             }
         }
     };
