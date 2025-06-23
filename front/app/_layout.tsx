@@ -1,22 +1,19 @@
-import { useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
 // import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as JotaiProvider } from 'jotai';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import useColorScheme from '../hooks/useColorScheme';
-import { useInitializationAndRouting } from '../hooks/useInitializationAndRouting';
-import { changeToken, setClientToken, attempt } from '../utils/axios';
-import { GetPopupAPI } from '../stores/auth';
-import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
-import LoginBottomSheet from '../components/BottomSheet/Login';
-import { useScreenTracking } from '@/hooks/useScreenTracking';
 import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
 import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
+import usePushToken from '@/hooks/usePushToken';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
+import LoginBottomSheet from '../components/BottomSheet/Login';
+import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
+import { useInitializationAndRouting } from '../hooks/useInitializationAndRouting';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,6 +27,7 @@ export default function RootLayout() {
     const { isTotalLoading } = useInitializationAndRouting(fontLoaded);
 
     useScreenTracking();
+    usePushToken();
 
     // 로딩 중이면 아무것도 렌더링 하지 않음
     if (isTotalLoading) {
