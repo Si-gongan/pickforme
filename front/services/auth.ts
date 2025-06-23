@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useSetAtom } from 'jotai';
 import { useAuthRequest as useGoogleAuthRequest } from 'expo-auth-session/providers/google';
+import { makeRedirectUri } from 'expo-auth-session';
 
 import { userAtom, modalAtom } from '@stores';
 import client from '../utils/axios';
@@ -82,12 +83,17 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         }
     });
 
+    const redirectUri = makeRedirectUri({
+        scheme: 'com.sigonggan.pickforme'
+    });
+
+    console.log('리디렉션 URI:', redirectUri);
+
     const [_, googleResult, googleBase] = useGoogleAuthRequest({
         clientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
-        webClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
         androidClientId: '618404683764-vc6iaucqdo8me4am0t9062d01800q0cr.apps.googleusercontent.com',
         iosClientId: '618404683764-e4rl4qllc10k93lgs2bv7vbv9j1lruu7.apps.googleusercontent.com',
-        redirectUri: 'com.sigonggan.pickforme:/login'
+        redirectUri
     });
 
     useEffect(
@@ -97,8 +103,12 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
                     authentication: { accessToken }
                 } = googleResult as any;
                 mutateGoogleLogin({ accessToken });
-            } else {
-                console.error('Google 인증 대기 중 또는 알 수 없는 상태:', googleResult?.type);
+            } else if (googleResult?.type === 'dismiss') {
+                console.log('Google 인증이 취소되었습니다.');
+            } else if (googleResult?.type === 'error') {
+                console.error('Google 인증 에러:', googleResult.error);
+            } else if (googleResult?.type) {
+                console.log('Google 인증 상태:', googleResult.type);
             }
         },
         [googleResult, mutateGoogleLogin]
