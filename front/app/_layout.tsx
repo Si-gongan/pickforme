@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,6 +11,7 @@ import LoginBottomSheet from '../components/BottomSheet/Login';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
 import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
 import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
+import { checkAndFetchUpdates } from '@/utils/updates';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,6 +25,17 @@ export default function RootLayout() {
     const { isTotalLoading } = useInitializationAndRouting(fontLoaded);
 
     useScreenTracking();
+
+    // 앱 시작 시 자동으로 업데이트 확인
+    useEffect(() => {
+        async function finalizeLoad() {
+            if (!isTotalLoading && fontLoaded) {
+                await checkAndFetchUpdates();
+                await SplashScreen.hideAsync();
+            }
+        }
+        finalizeLoad();
+    }, [isTotalLoading, fontLoaded]);
 
     // 로딩 중이면 아무것도 렌더링 하지 않음
     if (isTotalLoading) {
