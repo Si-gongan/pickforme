@@ -201,14 +201,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         if (product) getProductDetail(product);
     }, [productUrl]);
 
-    // 3. productDetailAtom 값이 변경될 때 로그 추가
-    useEffect(() => {
-        if (productDetail?.product) {
-            console.log('productDetail?.product', productDetail?.product);
-            getProductReview();
-        }
-    }, [productDetail?.product]);
-
     const handleClickBuy = async () => {
         await WebBrowser.openBrowserAsync(product.url);
     };
@@ -377,7 +369,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             if (data && data.length > 0) {
                 // 리뷰 데이터 설정
                 setProductReview(data);
-                getProductReview(); // 리뷰 요약 요청
             }
         }
     });
