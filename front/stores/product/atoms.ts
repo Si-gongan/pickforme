@@ -155,8 +155,10 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
 export const getProductReviewAtom = atom(null, async (get, set) => {
     set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
     const reviews = get(productReviewAtom).reviews;
+    const product = get(productDetailAtom)?.product;
+
     // 리뷰 없으면 생성 종료
-    if (reviews.length === 0) {
+    if (reviews.length === 0 || !product) {
         set(productDetailAtom, {
             ...get(productDetailAtom),
             review: { pros: [], cons: [], bests: [] },
@@ -165,7 +167,6 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
         set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
         return;
     }
-    const product = get(productDetailAtom)?.product!;
 
     const result = await attempt(() => GetProductReviewAPI({ product, reviews }));
 
