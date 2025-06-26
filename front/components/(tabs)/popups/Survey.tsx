@@ -14,7 +14,6 @@ import Modal from 'react-native-modal';
 import { Button_old as Button } from '@components';
 import CloseIcon from '@/assets/icons/CloseIcon';
 import { Colors } from '@/constants';
-import icCloseDark from '@/assets/images/icCloseDark.png';
 
 interface SurveyProps {
     visible: boolean;
@@ -68,7 +67,7 @@ const Survey: React.FC<SurveyProps> = ({ visible, onClose, onDontShowToday, onSu
                         accessibilityLabel="닫기"
                         accessibilityRole="button"
                     >
-                        <Image source={icCloseDark} style={styles.closeIcon} />
+                        <CloseIcon size={24} color={theme.text.primary} />
                     </Pressable>
                 </View>
 

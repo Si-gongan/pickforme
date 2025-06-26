@@ -22,7 +22,7 @@ import Colors from '@/constants/Colors';
 import useColorScheme from '@/hooks/useColorScheme';
 import { attempt } from '@/utils/axios';
 import { AxiosError } from 'axios';
-import icCloseDark from '@/assets/images/icCloseDark.png';
+import CloseIcon from '@/assets/icons/CloseIcon';
 
 interface HansiryunPopupProps {
     visible: boolean;
@@ -141,7 +141,7 @@ const HansiryunPopup: React.FC<HansiryunPopupProps> = ({ visible, onClose }) => 
                         accessibilityLabel="닫기"
                         accessibilityRole="button"
                     >
-                        <Image source={icCloseDark} style={styles.closeIcon} />
+                        <CloseIcon size={24} color={theme.text.primary} />
                     </Pressable>
                 </View>
 
