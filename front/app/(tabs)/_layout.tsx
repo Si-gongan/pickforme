@@ -5,9 +5,19 @@ import { HomeIcon, MyIcon, WishListIcon } from '@assets';
 import { Colors } from '@constants';
 import useColorScheme from '../../hooks/useColorScheme';
 import MainPagePopups from '@/components/(tabs)/MainPagePopups';
+import { useAtom, useSetAtom } from 'jotai';
+import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
+import { getMainProductsAtom } from '../../stores/product/atoms';
+import { categoryName, CATEGORIES } from '@/constants/Categories';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
+    const [searchText, setSearchText] = useAtom(searchTextAtom);
+    const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+    const [currentCategory, setCurrentCategory] = useAtom(currentCategoryAtom);
+    const [scrollResetTrigger, setScrollResetTrigger] = useAtom(scrollResetTriggerAtom);
+    const getMainProducts = useSetAtom(getMainProductsAtom);
+
     return (
         <>
             <MainPagePopups />
