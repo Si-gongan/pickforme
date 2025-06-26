@@ -1,9 +1,10 @@
 import { Suspense, useEffect } from 'react';
+// import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as JotaiProvider } from 'jotai';
 import { useInitializationAndRouting } from '../hooks/useInitializationAndRouting';
 import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
@@ -12,6 +13,7 @@ import { useScreenTracking } from '@/hooks/useScreenTracking';
 import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
 import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
 import { checkAndFetchUpdates } from '@/utils/updates';
+import usePushToken from '@/hooks/usePushToken';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +27,7 @@ export default function RootLayout() {
     const { isTotalLoading } = useInitializationAndRouting(fontLoaded);
 
     useScreenTracking();
+    usePushToken();
 
     // 앱 시작 시 자동으로 업데이트 확인
     useEffect(() => {

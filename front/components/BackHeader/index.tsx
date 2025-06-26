@@ -7,20 +7,26 @@ import useStyle from './style';
 import useColorScheme from '@/hooks/useColorScheme';
 import Colors from '@/constants/Colors';
 
-export default function BackHeader() {
-    const colorScheme = useColorScheme();
+interface BackHeaderProps {
+    onPressBack?: () => void;
+}
+
+export default function BackHeader({ onPressBack }: BackHeaderProps) {
     const router = useRouter();
     const style = useStyle();
+    const colorScheme = useColorScheme();
 
     const onPress = useCallback(
         function () {
-            if (router.canGoBack()) {
+            if (onPressBack) {
+                onPressBack();
+            } else if (router.canGoBack()) {
                 router.back();
             } else {
                 router.replace('/(tabs)');
             }
         },
-        [router]
+        [router, onPressBack]
     );
 
     return (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PopupService } from '@/services/popup';
 
 export const useCheckIsFirstLogin = () => {
     const [isFirstLogin, setIsFirstLogin] = useState(false);
@@ -7,10 +7,10 @@ export const useCheckIsFirstLogin = () => {
     useEffect(() => {
         const checkFirstLogin = async () => {
             try {
-                const hasLoggedIn = await AsyncStorage.getItem('hasLoggedIn');
-                if (!hasLoggedIn) {
+                const isFirst = await PopupService.checkIsFirstLogin();
+                if (isFirst) {
                     setIsFirstLogin(true);
-                    await AsyncStorage.setItem('hasLoggedIn', 'true');
+                    await PopupService.setFirstLoginComplete();
                 } else {
                     setIsFirstLogin(false);
                 }

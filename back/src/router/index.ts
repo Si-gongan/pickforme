@@ -52,6 +52,10 @@ router.get('/logger-test', async (ctx) => {
   return;
 });
 
+router.get('/health-check', async (ctx) => {
+  ctx.body = 'ok';
+});
+
 router.get('/export', async (ctx) => {
   const requests = await db.Request.find({}).populate('userId').sort({
     createdAt: -1,

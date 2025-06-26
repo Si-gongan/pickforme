@@ -1,6 +1,7 @@
 import { registerMembershipScheduler } from './membership';
 import { registerIAPScheduler } from './iap';
 import { registerEventScheduler } from './events';
+import { registerBackupScheduler } from './backup';
 
 /**
  * 프로덕션 환경에서만 스케줄러를 등록합니다.
@@ -11,6 +12,7 @@ export function registerAllSchedulers() {
     registerMembershipScheduler();
     registerIAPScheduler();
     registerEventScheduler();
+    registerBackupScheduler();
   }
 }
 

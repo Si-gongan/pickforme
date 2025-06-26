@@ -17,4 +17,3 @@ export { default as Text } from './Text';
 export { default as How } from './BottomSheet/How';
 export { default as CheckBox } from './CheckBox';
 export { default as Button_old } from './Button_old';
-export { default as Survey } from './BottomSheet/Survey';
