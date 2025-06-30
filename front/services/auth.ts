@@ -24,6 +24,19 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         });
     }, []);
 
+    // 계정 선택 화면을 표시하는 Google 로그인 함수
+    const signInWithGoogleFresh = async () => {
+        try {
+            await GoogleSignin.signOut();
+            await GoogleSignin.hasPlayServices();
+            const userInfo = await GoogleSignin.signIn();
+            return userInfo;
+        } catch (error) {
+            console.error('Google 로그인 오류:', error);
+            throw error;
+        }
+    };
+
     const onLogin = useCallback(
         async function (data: ILogin) {
             const userData = data.user;
@@ -93,10 +106,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     // Google 로그인 함수
     const handleGoogleLogin = async () => {
         try {
-            await GoogleSignin.hasPlayServices();
-            const userInfo = await GoogleSignin.signIn();
-
-            // accessToken 추출
+            const userInfo = await signInWithGoogleFresh();
             const tokens = await GoogleSignin.getTokens();
 
             if (tokens.accessToken) {
@@ -104,13 +114,13 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
             }
         } catch (error: any) {
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-                console.log('Google 로그인이 취소되었습니다.');
+                console.error('Google 로그인이 취소되었습니다.');
             } else if (error.code === statusCodes.IN_PROGRESS) {
-                console.log('Google 로그인이 진행 중입니다.');
+                console.error('Google 로그인이 진행 중입니다.');
             } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-                console.log('Play Services를 사용할 수 없습니다.');
+                console.error('Play Services를 사용할 수 없습니다.');
             } else {
-                console.log('Google 로그인 중 알 수 없는 오류가 발생했습니다.', error);
+                console.error('Google 로그인 중 알 수 없는 오류가 발생했습니다.', error);
             }
         }
     };
