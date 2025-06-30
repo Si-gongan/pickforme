@@ -208,20 +208,23 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     // ref가 설정되면 부모에게 알림
     useEffect(() => {
         if (contentRef.current) {
+            console.log('contentRef.current');
             const node = findNodeHandle(contentRef.current);
+            console.log('node', node);
             if (node) {
                 InteractionManager.runAfterInteractions(() => {
                     setTimeout(() => {
                         AccessibilityInfo.setAccessibilityFocus(node);
-                    }, 500);
+                        console.log('AccessibilityInfo.setAccessibilityFocus(node)');
+                    }, 1500);
                 });
             }
         }
     }, [tab, contentRef.current]);
 
     return (
-        <View style={styles.detailWrap} ref={contentRef}>
-            <View style={styles.inputWrap}>
+        <View style={styles.detailWrap}>
+            <View style={styles.inputWrap} ref={contentRef} accessible>
                 <TextInput
                     style={styles.textArea}
                     underlineColorAndroid="transparent"
@@ -231,7 +234,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                         handleClickSend(question);
                     }}
                     accessible
-                    accessibilityLabel="질문 입력창. 텍스트 필드. 상품에 대해 궁금한 점을 자유롭게 AI 포미에게 물어보세요."
+                    accessibilityLabel="질문 입력창."
                     onChangeText={text => {
                         setQuestion(text);
                     }}
