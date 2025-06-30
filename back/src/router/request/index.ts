@@ -62,7 +62,7 @@ router.post('/', requireAuth, async (ctx) => {
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}\n
-어드민 링크: ${process.env.ADMIN_URL}/request?requestId=${request._id}`;
+어드민 링크: ${process.env.CLIENT_ORIGIN}/request?requestId=${request._id}`;
 
     await slack.post('/chat.postMessage', {
       text: slackMsg,
