@@ -3,7 +3,7 @@ node_modules
 
 # backups
 backups/*
-
+dist/*
 # misc
 .env
 .env.local

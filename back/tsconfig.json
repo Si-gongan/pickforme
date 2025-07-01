@@ -19,12 +19,7 @@
     "types": ["jest", "node"],
     "strictPropertyInitialization": false
   },
-  "noEmit": true,
-  "include": [
-    "src/**/*.ts",
-    "backups/push.ts",
-    "backups/receipt_test_android.ts",
-    "backups/receipt_test_ios.ts"
-  ],
-  "exclude": ["node_modules"]
+  "noEmit": false,
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "backups", "dist"]
 }

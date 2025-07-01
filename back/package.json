@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/app.ts",
   "scripts": {
-    "start": "NODE_ENV=production NODE_PATH=./src ts-node src/app.ts",
+    "start": "NODE_ENV=production NODE_PATH=./dist node dist/app.js",
+    "build": "tsc",
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "pm2": "pm2 kill && pm2 start ./pm2.json",
@@ -76,6 +77,7 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   }
 }
