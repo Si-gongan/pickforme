@@ -5,7 +5,12 @@ module.exports = {
     '^.+\\.ts?$': 'ts-jest',
   },
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
-  testMatch: ['**/__tests__/**/*.test.ts'],
+  testMatch: [
+    '**/__tests__/**/*.test.ts',
+    '**/__tests__/**/*.spec.ts', // 추가
+    '**/*.test.ts',
+    '**/*.spec.ts', // 추가
+  ],
   setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
   moduleNameMapper: {
     '^models$': '<rootDir>/src/models',
@@ -21,7 +26,11 @@ module.exports = {
   projects: [
     {
       displayName: 'unit',
-      testMatch: ['**/__tests__/**/*.unit.test.ts'],
+      testMatch: [
+        '**/__tests__/**/*.unit.test.ts',
+        '**/__tests__/**/*.unit.spec.ts', // 추가
+        '**/__tests__/**/*.spec.ts', // 추가
+      ],
       moduleNameMapper: {
         '^models$': '<rootDir>/src/models',
         '^models/(.*)$': '<rootDir>/src/models/$1',
@@ -37,7 +46,10 @@ module.exports = {
     },
     {
       displayName: 'integration',
-      testMatch: ['**/__tests__/**/*.integration.test.ts'],
+      testMatch: [
+        '**/__tests__/**/*.integration.test.ts',
+        '**/__tests__/**/*.integration.spec.ts', // 추가
+      ],
       moduleNameMapper: {
         '^models$': '<rootDir>/src/models',
         '^models/(.*)$': '<rootDir>/src/models/$1',

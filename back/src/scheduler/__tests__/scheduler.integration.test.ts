@@ -7,6 +7,7 @@ import { handleIAPScheduler } from '../iap';
 import { handleMembershipScheduler } from '../membership';
 import { EVENT_IDS } from '../../constants/events';
 import { POINTS } from '../../constants/points';
+import { subscriptionService } from 'services/subscription.service';
 
 jest.mock('utils/iap', () => {
   const mockValidate = jest.fn();
@@ -136,7 +137,7 @@ describe('Scheduler Integration Tests', () => {
     });
 
     it('어드민 권한으로 생성된 구독은 영수증을 검증하지 않고 넘어간다. (오류가 나거나, 만료처리되지 않는다.)', async () => {
-      const user = await db.User.create({ email: 'test@example.com', point: 100, aiPoint: 1000 });
+      const user = await db.User.create({ email: 'test@example.com', point: 0, aiPoint: 0 });
 
       const product = await db.Product.create({
         productId: 'test_subscription',
@@ -148,15 +149,11 @@ describe('Scheduler Integration Tests', () => {
         rewards: { point: 100, aiPoint: 1000 },
       });
 
-      const purchase = await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        receipt: null,
-        isExpired: false,
-        createdAt: new Date('2022-12-31T15:00:00.000Z'),
-        product: { ...product.toObject() },
-        purchase: { transactionId: 'admin_1234567890' },
-      });
+      const purchase = await subscriptionService.createSubscriptionWithoutValidation(
+        user._id,
+        product._id,
+        undefined
+      );
 
       (iapValidator.validate as jest.Mock).mockResolvedValue(null);
 
@@ -165,8 +162,8 @@ describe('Scheduler Integration Tests', () => {
       const updated = await db.User.findById(user._id);
       const updatedPurchase = await db.Purchase.findById(purchase._id);
 
-      expect(updated?.point).toBe(100);
-      expect(updated?.aiPoint).toBe(1000);
+      expect(updated?.point).toBe(product.point);
+      expect(updated?.aiPoint).toBe(product.aiPoint);
       expect(updatedPurchase?.isExpired).toBe(false);
     });
   });

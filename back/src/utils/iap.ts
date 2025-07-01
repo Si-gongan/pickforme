@@ -38,16 +38,23 @@ class IAPValidator {
 
   public async validate(receipt: Receipt, productId: string) {
     await this.initialized;
-    const validationResult = await iap.validate(receipt).then(async (validatedData) => {
-      // validatedData: the actual content of the validated receipt (also contains the original receipt)
-      const options = {
-        ignoreCanceled: true, // Apple ONLY: purchaseData will NOT contain cancceled items
-        ignoreExpired: true, // purchaseData will NOT contain exipired subscription items
-      };
-      // validatedData contains sandbox: true/false for Apple and Amazon
-      const purchaseDatas = await iap.getPurchaseData(validatedData, options);
-      return purchaseDatas?.find((purchase) => purchase.productId === productId);
-    });
+    const validationResult = await iap
+      .validate(receipt)
+      .then(async (validatedData) => {
+        // validatedData: the actual content of the validated receipt (also contains the original receipt)
+        const options = {
+          ignoreCanceled: true, // Apple ONLY: purchaseData will NOT contain cancceled items
+          ignoreExpired: true, // purchaseData will NOT contain exipired subscription items
+        };
+        // validatedData contains sandbox: true/false for Apple and Amazon
+        const purchaseDatas = iap.getPurchaseData(validatedData, options);
+        return purchaseDatas?.find((purchase) => purchase.productId === productId);
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new Error(err);
+      });
+
     return validationResult;
   }
 }

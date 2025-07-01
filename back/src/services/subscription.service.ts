@@ -1,12 +1,17 @@
 import { Receipt } from 'in-app-purchase';
 import db from 'models';
-import { ProductType } from 'models/product';
-import { IPurchase, IPurchaseMethods } from 'models/purchase/types';
+import { IProduct, ProductType } from 'models/product';
+import { IPurchase, IPurchaseMethods, IUnifiedPurchaseData } from 'models/purchase/types';
 import mongoose from 'mongoose';
-import iapValidator from 'utils/iap';
-import constants from '../constants';
-import { sendPushs } from 'utils/push';
 import { log } from 'utils/logger';
+import { sendPushs } from 'utils/push';
+import constants from '../constants';
+import { receiptValidatorService } from './receipt-validator.service';
+
+export type ReceiptValidationResult =
+  | { status: 'valid'; data: IUnifiedPurchaseData }
+  | { status: 'expired' }
+  | { status: 'invalid'; reason: string; cause?: any };
 
 const { POINTS } = constants;
 
@@ -40,30 +45,35 @@ class SubscriptionService {
     return subscriptions;
   }
 
-  public async createSubscription(userId: string, productId: string, receipt: Receipt) {
+  private async _createSubscriptionCore(
+    userId: string,
+    productId: string,
+    receipt: Receipt | undefined,
+    resolvePurchase: (product: IProduct) => Promise<IUnifiedPurchaseData>
+  ) {
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
       const user = await db.User.findById(userId);
-      if (!user) {
-        throw new Error('유저정보가 없습니다.');
-      }
+      if (!user) throw new Error('유저정보가 없습니다.');
 
       const subscriptionStatus = await this.getSubscriptionStatus(userId);
-      if (subscriptionStatus.activate) {
-        throw new Error('이미 구독중입니다.');
-      }
+      if (subscriptionStatus.activate) throw new Error('이미 구독중입니다.');
 
       const product = await db.Product.findById(productId);
       if (!product || product.type !== ProductType.SUBSCRIPTION) {
         throw new Error('존재하지 않는 구독 상품입니다.');
       }
 
-      // 결제 검증
-      const purchase = await iapValidator.validate(receipt, product.productId);
-      if (!purchase) {
-        throw new Error('결제가 정상적으로 처리되지 않았습니다.');
+      const purchase = await resolvePurchase(product);
+
+      if ((!purchase.createdByAdmin && !receipt) || !purchase.isVerified || purchase.isExpired) {
+        log.debug(`receipt:${Boolean(receipt)}`);
+        log.debug(`isVerified:${purchase.isVerified}`);
+        log.debug(`isExpired:${purchase.isExpired}`);
+        log.debug(`createdByAdmin:${purchase.createdByAdmin}`);
+        throw new Error('결제 정보가 올바르지 않습니다.');
       }
 
       const purchaseData = await db.Purchase.create(
@@ -72,67 +82,6 @@ class SubscriptionService {
             userId,
             product,
             purchase,
-            receipt,
-            isExpired: false,
-          },
-        ],
-        { session }
-      );
-
-      await user.applyPurchaseRewards(product.getRewards(), session);
-      await this.processPurchaseFailure(userId, receipt, session);
-
-      await session.commitTransaction();
-
-      return purchaseData[0];
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  // 현재 안드로이드에서 구매 검증을 제대로 하지 못하고 있어서 어드민 멤버쉽 지급 기능을 추가했습니다.
-  public async createSubscriptionWithoutValidation(
-    userId: string,
-    productId: string,
-    receipt?: Receipt
-  ) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-      const user = await db.User.findById(userId);
-      if (!user) {
-        throw new Error('유저정보가 없습니다.');
-      }
-
-      const subscriptionStatus = await this.getSubscriptionStatus(userId);
-      if (subscriptionStatus.activate) {
-        throw new Error('이미 구독중입니다.');
-      }
-
-      const product = await db.Product.findById(productId);
-      if (!product || product.type !== ProductType.SUBSCRIPTION) {
-        throw new Error('존재하지 않는 구독 상품입니다.');
-      }
-
-      const transactionId = `admin_${Date.now()}`;
-      const purchaseDate = new Date();
-      const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
-
-      const purchaseData = await db.Purchase.create(
-        [
-          {
-            userId,
-            product,
-            purchase: {
-              transactionId,
-              productId: product.productId,
-              purchaseDate,
-              expirationDate,
-            },
             receipt: receipt || null,
             isExpired: false,
           },
@@ -141,17 +90,66 @@ class SubscriptionService {
       );
 
       await user.applyPurchaseRewards(product.getRewards(), session);
-      await this.processPurchaseFailure(userId, receipt, session);
+      await this.resolvePurchaseFailures(userId, receipt, session);
 
       await session.commitTransaction();
-
       return purchaseData[0];
     } catch (error) {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      void session.endSession();
     }
+  }
+
+  public async createSubscription(userId: string, productId: string, receipt: Receipt) {
+    return this._createSubscriptionCore(userId, productId, receipt, async (product) => {
+      const validation = await receiptValidatorService.verifyReceipt(receipt, product);
+
+      if (validation.status === 'expired') {
+        throw new Error('이미 만료되었거나 존재하지 않는 구독입니다.');
+      }
+
+      if (validation.status === 'invalid') {
+        // 원본 에러 정보를 포함한 상세 에러 생성
+        const errorDetails = {
+          message: `유효하지 않은 영수증입니다. (${validation.reason})`,
+          originalError: validation.cause,
+          validationResult: validation,
+        };
+
+        const error = new Error(JSON.stringify(errorDetails));
+        throw error;
+      }
+
+      return validation.data;
+    });
+  }
+
+  public async createSubscriptionWithoutValidation(
+    userId: string,
+    productId: string,
+    receipt?: Receipt
+  ) {
+    return this._createSubscriptionCore(userId, productId, receipt, async (product) => {
+      const now = Date.now();
+      const isIos = typeof receipt === 'string';
+      return {
+        platform: isIos ? 'ios' : 'android',
+        transactionId: `admin_${now}`,
+        originalTransactionId: undefined,
+        productId: product.productId,
+        purchaseDate: now,
+        expirationDate: now + 30 * 24 * 60 * 60 * 1000,
+        isTrial: false,
+        isExpired: false,
+        isVerified: true,
+        verifiedBy: 'admin',
+        createdByAdmin: true,
+        verificationNote: '어드민에서 멤버쉽 지급',
+        raw: undefined,
+      };
+    });
   }
 
   public async getSubscriptionStatus(userId: string) {
@@ -309,7 +307,7 @@ class SubscriptionService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      void session.endSession();
     }
   }
 
@@ -351,16 +349,23 @@ class SubscriptionService {
     }
   }
 
-  private async processPurchaseFailure(
+  private async resolvePurchaseFailures(
     userId: string,
     receipt?: string | Receipt,
     session?: mongoose.ClientSession
   ) {
     const options = session ? { session } : {};
+
     if (receipt) {
-      await db.PurchaseFailure.updateOne({ receipt }, { status: 'RESOLVED' }, options);
+      // 해당 영수증과 관련된 모든 실패 내역 해결
+      await db.PurchaseFailure.updateMany(
+        { receipt, status: 'FAILED' },
+        { status: 'RESOLVED' },
+        options
+      );
     } else {
-      await db.PurchaseFailure.updateOne(
+      // 해당 사용자의 모든 미해결 실패 내역 해결
+      await db.PurchaseFailure.updateMany(
         { userId, status: 'FAILED' },
         { status: 'RESOLVED' },
         options

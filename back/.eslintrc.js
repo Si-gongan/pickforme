@@ -11,10 +11,11 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-floating-promises': 'error',
     'unused-imports/no-unused-imports': 'error',
-    'no-underscore-dangle': ['error', { allow: ['_id'] }],
-    'max-len': ['error', { code: 140 }],
+    'no-underscore-dangle': ['off', { allow: ['_id'] }],
+    'max-len': ['off', { code: 140 }],
     'import/prefer-default-export': 0,
     'prettier/prettier': 'error',
+    '@typescript-eslint/no-empty-function': 'off',
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {

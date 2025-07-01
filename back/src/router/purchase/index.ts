@@ -34,7 +34,7 @@ router.post('/', requireAuth, async (ctx) => {
   try {
     const purchaseFailure = await subscriptionService.checkPurchaseFailure(userId);
     if (purchaseFailure.hasFailedPurchase) {
-      throw new Error('아직 해당 구독 처리가 완료되지 않았습니다.');
+      throw new Error('아직 처리되지 않은 구독 실패 내역이 있습니다.');
     }
 
     const purchaseData = await subscriptionService.createSubscription(userId, productId, receipt);
@@ -71,13 +71,13 @@ router.post('/', requireAuth, async (ctx) => {
         },
         process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID
       );
-    } catch (error) {
+    } catch (error2) {
       void log.error(
         '결제 실패 기록 저장 실패:',
         'PURCHASE',
         'HIGH',
         {
-          error: formatError(error),
+          error: formatError(error2),
           endPoint: '/purchase',
           method: 'POST',
           userId: ctx.state.user._id,

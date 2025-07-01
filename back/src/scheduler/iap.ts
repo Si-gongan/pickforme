@@ -1,8 +1,8 @@
 // back/src/scheduler/iap.ts
 import cron from 'node-cron';
 import db from 'models';
-import iapValidator from 'utils/iap';
 import { log } from 'utils/logger/logger';
+import { receiptValidatorService } from 'services/receipt-validator.service';
 import { subscriptionService } from 'services/subscription.service';
 
 const SCHEDULER_NAME = 'iap';
@@ -22,22 +22,17 @@ const checkSubscriptions = async () => {
     for (const purchase of purchases) {
       try {
         // 어드민 권한으로 생성된 구독인 경우 일단 영수증을 검증하지 않고 넘어갑니다. (transactionId가 admin_으로 시작)
-        if (purchase.purchase.transactionId.startsWith('admin_')) {
+        if (purchase.purchase.createdByAdmin) {
           continue;
         }
 
         // 일반 구독의 경우 영수증 검증
-        const purchaseData = await iapValidator.validate(
+        const validation = await receiptValidatorService.verifyReceipt(
           purchase.receipt,
-          purchase.product.productId
+          purchase.product
         );
 
-        // 구독이 유효한 경우
-        if (purchaseData) {
-          // 이 경우 예전에 로직이 있었으나, 현재는 사용되지 않는것으로 판단되고 타입 오류가 발생하는 상황이라 삭제 처리하였습니다.
-          // git으로 이력 확인 부탁드립니다.
-        } else {
-          // 구독이 환불/만료된 경우
+        if (validation.status === 'expired') {
           try {
             await subscriptionService.expireSubscription(purchase);
             void log.info(

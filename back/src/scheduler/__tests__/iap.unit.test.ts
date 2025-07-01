@@ -62,10 +62,28 @@ jest.mock('utils/iap', () => ({
   },
 }));
 
+// Google Play API 모킹
+jest.mock('googleapis', () => ({
+  google: {
+    auth: {
+      GoogleAuth: jest.fn().mockImplementation(() => ({
+        getClient: jest.fn().mockResolvedValue({}),
+      })),
+    },
+    androidpublisher: jest.fn().mockReturnValue({
+      purchases: {
+        subscriptionsv2: {
+          get: jest.fn(),
+        },
+      },
+    }),
+  },
+}));
+
 import db from 'models';
 import iapValidator from 'utils/iap';
-import { log } from 'utils/logger/logger';
 import { handleIAPScheduler } from '../iap';
+import { google } from 'googleapis';
 
 describe('IAP Scheduler (unit)', () => {
   const RealDate = Date;
@@ -85,11 +103,11 @@ describe('IAP Scheduler (unit)', () => {
     global.Date = RealDate;
   });
 
-  it('IAP 검증 실패 시 구독을 만료 처리하고 유저 포인트를 초기화한다.', async () => {
+  it('IOS에서 해당 영수증에 대한 활성화된 구독이 없다면 픽포미 구독을 구독을 만료 처리하고 유저 포인트를 초기화한다.', async () => {
     const mockPurchase = {
       _id: 'purchase1',
       userId: 'user1',
-      receipt: 'receipt1',
+      receipt: 'receipt1', // ios의 영수증
       product: { productId: 'product1' },
       purchase: { transactionId: 'old' },
       isExpired: false,
@@ -105,73 +123,31 @@ describe('IAP Scheduler (unit)', () => {
     expect(mockPurchase.updateExpiration).toHaveBeenCalled();
   });
 
-  // it('IAP 검증 성공 시 포인트를 지급하고 소켓/푸시 알림을 보낸다.', async () => {
-  //   const mockPurchase = {
-  //     _id: 'purchase2',
-  //     userId: 'user2',
-  //     receipt: 'receipt2',
-  //     product: { productId: 'product2' },
-  //     purchase: { transactionId: 'old' },
-  //     isExpired: false,
-  //     save: jest.fn(),
-  //   };
-
-  //   const mockUser = {
-  //     _id: 'user2',
-  //     applyPurchaseRewards: jest.fn(),
-  //     point: 100,
-  //     pushToken: 'token2',
-  //   };
-
-  //   const mockProduct = {
-  //     getRewards: jest.fn().mockReturnValue({ point: 100, aiPoint: 1000 }),
-  //   };
-
-  //   const mockSession = {
-  //     connectionId: 'session1',
-  //   };
-
-  //   (db.Purchase.find as jest.Mock).mockResolvedValue([mockPurchase]);
-  //   (iapValidator.validate as jest.Mock).mockResolvedValue({ transactionId: 'new' });
-  //   (db.User.findById as jest.Mock).mockResolvedValue(mockUser);
-  //   (db.Product.findOne as jest.Mock).mockResolvedValue(mockProduct);
-  //   (db.Session.findOne as jest.Mock).mockResolvedValue(mockSession);
-
-  //   await handleIAPScheduler();
-
-  //   expect(mockPurchase.save).toHaveBeenCalled();
-  //   expect(mockUser.applyPurchaseRewards).toHaveBeenCalledWith(mockProduct.getRewards());
-  //   expect(log.info).toHaveBeenCalledWith(
-  //     LogContext.SCHEDULER,
-  //     expect.stringContaining('포인트 업데이트 완료'),
-  //     LogSeverity.LOW,
-  //     expect.objectContaining({ userId: mockUser._id })
-  //   );
-  // });
-
-  it('IAP 검증 중 오류 발생 시 에러를 로깅한다.', async () => {
+  it('Android에서 해당 영수증에 대한 활성화된 구독이 없다면 픽포미 구독을 구독을 만료 처리하고 유저 포인트를 초기화한다.', async () => {
     const mockPurchase = {
-      _id: 'purchase3',
-      userId: 'user3',
-      receipt: 'receipt3',
-      product: { productId: 'product3' },
+      _id: 'purchase1',
+      userId: 'user1',
+      receipt: {},
+      product: { productId: 'product1' },
       purchase: { transactionId: 'old' },
       isExpired: false,
+      updateExpiration: jest.fn(),
     };
 
     (db.Purchase.find as jest.Mock).mockResolvedValue([mockPurchase]);
-    (iapValidator.validate as jest.Mock).mockRejectedValue(new Error('validation error'));
+    (
+      google.androidpublisher({
+        version: 'v3',
+      }).purchases.subscriptionsv2.get as jest.Mock
+    ).mockResolvedValue({
+      data: {
+        subscriptionState: 'SUBSCRIPTION_STATE_EXPIRED',
+      },
+    });
+    (db.User.findOneAndUpdate as jest.Mock).mockResolvedValue(undefined);
 
     await handleIAPScheduler();
 
-    expect(log.error).toHaveBeenCalledWith(
-      '구독 검증 중 오류 발생',
-      'SCHEDULER',
-      'HIGH',
-      expect.objectContaining({
-        scheduler: 'iap',
-        message: 'Error',
-      })
-    );
+    expect(mockPurchase.updateExpiration).toHaveBeenCalled();
   });
 });
