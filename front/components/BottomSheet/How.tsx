@@ -1,5 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
-import { findNodeHandle, AccessibilityInfo, StyleSheet, TextStyle, ViewStyle } from 'react-native';
+import { findNodeHandle, AccessibilityInfo, StyleSheet, TextStyle, ViewStyle, InteractionManager } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useAtom } from 'jotai';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -29,7 +29,11 @@ function How({ isHomeButton = true, visible, onClose }: HowProps) {
         const focusOnHeader = () => {
             const node = findNodeHandle(headerTitleRef.current);
             if (visible && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         };
         setTimeout(focusOnHeader, 500);

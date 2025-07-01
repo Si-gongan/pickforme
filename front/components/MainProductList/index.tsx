@@ -2,7 +2,7 @@
  * 홈 화면 메인 상품 노출
  * - 기본적으로 랜덤 카테고리 상품 노출
  */
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { ScrollView, FlatList, View, Text } from 'react-native';
 import { useSetAtom } from 'jotai';
 
@@ -21,7 +21,12 @@ interface MainProductListProps {
     category: string;
 }
 
-export default function MainProductList({ data, category }: MainProductListProps) {
+// ref를 통해 외부에서 접근할 수 있는 메서드 정의
+export interface MainProductListRef {
+    scrollToTop: () => void;
+}
+
+const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ data, category }, ref) => {
     const [randomCount, onRandomCount] = useState<number>(5);
     const [specialCount, onSpecialCount] = useState<number>(5);
     const [currentProductUrl, setCurrentProductUrl] = useState<string>('');
@@ -143,12 +148,6 @@ export default function MainProductList({ data, category }: MainProductListProps
     const processNextProduct = useCallback(() => {
         const allProducts = allProductsRef.current;
 
-        console.log('processNextProduct 호출됨 - 현재 상태:', {
-            productIndex: productIndex.current,
-            allProductsLength: allProducts.length,
-            processedCount
-        });
-
         // 모든 상품 처리 완료 확인
         if (productIndex.current >= allProducts.length) {
             // 모든 상품 처리 완료
@@ -232,12 +231,12 @@ export default function MainProductList({ data, category }: MainProductListProps
     }, [data, randomCount, specialCount, updatedProducts]);
 
     // 컴포넌트 마운트 시 화면에 보이는 상품만 처리 시작
-    useEffect(() => {
-        // 처음 로드될 때만 실행
-        if (Object.keys(updatedProducts).length === 0) {
-            processVisibleProducts();
-        }
-    }, [data, processNextProduct]);
+    // useEffect(() => {
+    //     // 처음 로드될 때만 실행
+    //     if (Object.keys(updatedProducts).length === 0) {
+    //         processVisibleProducts();
+    //     }
+    // }, [data, processNextProduct]);
 
     // 업데이트가 필요한 상품 필터링 (reviews나 ratings가 없는 상품)
     const filterProductsNeedingUpdate = useCallback((products: Product[]) => {
@@ -283,12 +282,10 @@ export default function MainProductList({ data, category }: MainProductListProps
                         return newCount;
                     });
                     // 추가로 로드된 상품 처리
-                    setTimeout(() => {
-                        const newVisibleProducts = data.special.slice(specialCount, newCount);
-                        console.log('추가 로드된 special 상품 업데이트 시작 - 총 상품 수:', newVisibleProducts.length);
-                        // useProductUpdater 유틸리티를 사용하여 상품 업데이트
-                        startUpdateProcess(newVisibleProducts);
-                    }, 100);
+                    // setTimeout(() => {
+                    //     const newVisibleProducts = data.special.slice(specialCount, newCount);
+                    //     startUpdateProcess(newVisibleProducts);
+                    // }, 100);
                     break;
                 case 'random':
                     onRandomCount(function (prev) {
@@ -296,22 +293,32 @@ export default function MainProductList({ data, category }: MainProductListProps
                         return newCount;
                     });
                     // 추가로 로드된 상품 처리
-                    setTimeout(() => {
-                        const newVisibleProducts = data.random.slice(randomCount, newCount);
-                        console.log('추가 로드된 random 상품 업데이트 시작 - 총 상품 수:', newVisibleProducts.length);
-                        // useProductUpdater 유틸리티를 사용하여 상품 업데이트
-                        startUpdateProcess(newVisibleProducts);
-                    }, 100);
+                    // setTimeout(() => {
+                    //     const newVisibleProducts = data.random.slice(randomCount, newCount);
+                    //     startUpdateProcess(newVisibleProducts);
+                    // }, 100);
                     break;
             }
         },
         [data, randomCount, specialCount, startUpdateProcess]
     );
 
+    // 스크롤뷰 ref 추가
+    const scrollViewRef = useRef<ScrollView>(null);
+
+    // ref를 통해 외부에서 접근할 수 있는 메서드 노출
+    useImperativeHandle(ref, () => ({
+        scrollToTop: () => {
+            if (scrollViewRef.current) {
+                scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+            }
+        }
+    }));
+
     return (
         <>
             {currentProductUrl && DetailWebView}
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
                 {data.local
                     .filter(function ({ order }) {
                         return order < 0;
@@ -339,6 +346,7 @@ export default function MainProductList({ data, category }: MainProductListProps
                         </Text>
 
                         <FlatList
+                            accessibilityViewIsModal={false}
                             showsVerticalScrollIndicator={false}
                             scrollEnabled={false}
                             contentContainerStyle={[style.MainProductSectionListContent]}
@@ -352,19 +360,16 @@ export default function MainProductList({ data, category }: MainProductListProps
                             renderItem={function ({ item }) {
                                 return <ProductCard data={item} />;
                             }}
-                            ListFooterComponentStyle={style.MainProductSectionListFooter}
-                            ListFooterComponent={function () {
-                                return (
-                                    data.random.length > randomCount && (
-                                        <MoreButton
-                                            onPress={function () {
-                                                onMore('random');
-                                            }}
-                                        />
-                                    )
-                                );
-                            }}
                         />
+                        {data.random.length > randomCount && (
+                            <View style={style.MainProductSectionListFooter}>
+                                <MoreButton
+                                    onPress={function () {
+                                        onMore('random');
+                                    }}
+                                />
+                            </View>
+                        )}
                     </View>
                 )}
 
@@ -388,22 +393,21 @@ export default function MainProductList({ data, category }: MainProductListProps
                             renderItem={function ({ item }) {
                                 return <ProductCard data={item} />;
                             }}
-                            ListFooterComponentStyle={style.MainProductSectionListFooter}
-                            ListFooterComponent={function () {
-                                return (
-                                    data.special.length > specialCount && (
-                                        <MoreButton
-                                            onPress={function () {
-                                                onMore('special');
-                                            }}
-                                        />
-                                    )
-                                );
-                            }}
                         />
+                        {data.random.length > randomCount && (
+                            <View style={style.MainProductSectionListFooter}>
+                                <MoreButton
+                                    onPress={function () {
+                                        onMore('special');
+                                    }}
+                                />
+                            </View>
+                        )}
                     </View>
                 )}
             </ScrollView>
         </>
     );
-}
+});
+
+export default MainProductList;

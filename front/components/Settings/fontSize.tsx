@@ -57,6 +57,7 @@ export default function FontSizeScreen() {
                             <RadioButton.Android
                                 color={Colors[colorScheme].text.primary}
                                 value={key}
+                                accessibilityRole="button"
                                 accessibilityLabel={(key === fontSize ? '선택됨,' : '') + label}
                                 status={key === fontSize ? 'checked' : 'unchecked'}
                                 onPress={() => setFontSize(key)}

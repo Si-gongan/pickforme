@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -20,6 +20,7 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const [isSettingLoading, setIsSettingLoading] = useState(true);
     const [isHansiryunPopup, setIsHansiryunPopup] = useState(false);
     const isInitialized = useRef(false);
+    const router = useRouter();
 
     // 유저 데이터 로딩
     useEffect(() => {

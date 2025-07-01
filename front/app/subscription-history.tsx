@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, InteractionManager, ScrollView, StyleSheet } from 'react-native';
 
 import { Button_old as Button, Text, View } from '@components';
 import { Colors } from '@constants';
@@ -94,12 +94,27 @@ export const PointHistoryScreen: React.FC<Props> = ({
         getCurrentSubscription();
     }, [getCurrentSubscription]);
 
+    const contentRef = React.useRef(null);
+    useEffect(() => {
+        const node = findNodeHandle(contentRef.current);
+        console.log('node', node);
+        if (node) {
+            InteractionManager.runAfterInteractions(() => {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 500);
+            });
+        }
+    }, [contentRef.current]);
+
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onAccessibilityEscape={router.back}>
             <BackHeader />
             <ScrollView style={{ backgroundColor: Colors[colorScheme].background.primary }}>
                 <View style={styles.content}>
-                    <Text style={styles.title}>멤버십 구매 내역</Text>
+                    <Text style={styles.title} ref={contentRef}>
+                        멤버십 구매 내역
+                    </Text>
                     {currentSubscription?.activate ? (
                         <>
                             {/* <Text style={styles.subtitle}>전체</Text> */}

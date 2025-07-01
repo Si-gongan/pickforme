@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { findNodeHandle, AccessibilityInfo, StyleSheet } from 'react-native';
+import { findNodeHandle, AccessibilityInfo, InteractionManager, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
@@ -38,7 +38,11 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
         const focusOnHeader = () => {
             const node = findNodeHandle(headerTitleRef.current);
             if (visible && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         };
         setTimeout(focusOnHeader, 500);
@@ -90,12 +94,13 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             lineHeight: 20,
             fontWeight: '600',
             marginBottom: 20,
-            color: '#1e1e1e'
+            color: Colors[colorScheme].text.primary
         },
         desc: {
             fontSize: 14,
             lineHeight: 20,
-            marginBottom: 39
+            marginBottom: 39,
+            color: Colors[colorScheme].text.primary
         },
         buttonWrap: {},
         buttonOuter: {

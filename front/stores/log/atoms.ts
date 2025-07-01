@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
-import { PostLogAPI } from './apis';
-import { PostLogParams } from './types';
+// import { PostLogAPI } from './apis';
+// import { PostLogParams } from './types';
 import { userAtom } from '../user';
 
 export const productGroupAtom = atom<String | null>(null);

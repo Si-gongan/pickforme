@@ -10,7 +10,8 @@ import { isShowIntroduceAlertModalAtom, settingAtom } from '@stores';
 import { Colors } from '@constants';
 import { View, Text, Button_old as Button } from '@components';
 import useColorScheme from '../../../hooks/useColorScheme';
-
+import { Pressable } from 'react-native';
+import BackIcon from '@/assets/icons/BackIcon';
 import type { ColorScheme } from '@hooks';
 
 //Membership
@@ -35,6 +36,17 @@ const IntroduceAlertBottomSheet: React.FC<Props> = () => {
     return (
         <BottomSheet style={styles.base} isVisible={visible} onBackButtonPress={onClose} onBackdropPress={onClose}>
             <View style={[styles.bottomSheet, localStyles.root]}>
+                <Pressable
+                    style={localStyles.backButton}
+                    onPress={onClose}
+                    accessible={true}
+                    accessibilityLabel="뒤로가기"
+                    accessibilityHint="로그인 화면을 닫습니다"
+                    accessibilityRole="button"
+                    onAccessibilityEscape={onClose}
+                >
+                    <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
+                </Pressable>
                 <Text style={[styles.title, localStyles.title]}>{setting.name}님! 중요한 소식이 있어요.</Text>
                 <Text style={[styles.desc, localStyles.desc]}>
                     {
@@ -94,6 +106,11 @@ const useLocalStyles = (colorScheme: ColorScheme) =>
             backgroundColor: 'white',
             borderWidth: 1,
             borderColor: Colors[colorScheme].button.primary.background
+        },
+        backButton: {
+            padding: 10,
+            marginBottom: 10,
+            alignSelf: 'flex-start'
         }
     });
 

@@ -1,28 +1,39 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, AccessibilityRole } from 'react-native';
+import useStyle from './style';
+import type { IMySectionProps } from './type';
 
-import useStyle from "./style";
+export default function MySection({ title, items, role }: IMySectionProps) {
+    const style = useStyle();
 
-import type { IMySectionProps } from "./type";
+    let sectionRole: AccessibilityRole = 'button';
+    if (role !== undefined && role !== 'button') sectionRole = role as AccessibilityRole;
 
-export default function MySection({ title, items }: IMySectionProps) {
-  const style = useStyle();
-
-  return (
-    <View style={style.MySectionContainer}>
-      {title && <Text style={style.MySectionTitle}>{title}</Text>}
-      <View style={style.MySectionMenuContent}>
-        {items.map(function (item, index) {
-          return (
-            <TouchableOpacity
-              key={`section-${title}-${index}`}
-              onPress={item.onPress}
-              disabled={!item.onPress}
-            >
-              <Text style={style.MySectionMenu}>{item.name}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </View>
-  );
+    return (
+        <View style={style.MySectionContainer}>
+            <Text style={style.MySectionTitle} accessibilityRole="header" accessible accessibilityLabel={title}>
+                {title}
+            </Text>
+            <View style={style.MySectionMenuContent}>
+                {items.map(function (item, index) {
+                    return (
+                        <TouchableOpacity
+                            key={`section-${title}-${index}`}
+                            onPress={item.onPress || (() => {})}
+                            disabled={false}
+                            accessibilityRole={sectionRole}
+                            accessible
+                        >
+                            <Text
+                                style={style.MySectionMenu}
+                                accessibilityLabel={item.name === '1:1 문의' ? '일대일 문의하기' : item.name}
+                                accessible
+                            >
+                                {item.name}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
+        </View>
+    );
 }

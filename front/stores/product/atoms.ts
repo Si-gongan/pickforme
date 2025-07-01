@@ -26,7 +26,7 @@ import {
 } from './apis';
 import { Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { sanitizeUrl } from '../../utils/url';
+import { resolveRedirectUrl, sanitizeUrl, normalizeUrl } from '../../utils/url';
 
 export const mainProductsAtom = atom<MainProductsState>({
     special: [],
@@ -49,6 +49,13 @@ export const loadingStatusAtom = atom({
 });
 
 export const searchResultAtom = atom<SearchProductsResponse | void>(undefined);
+
+export const scrapedProductsAtom = atom<Product[]>([]);
+export const scrapedProductsQueryAtom = atom<string>('');
+export const setScrapedProductsAtom = atom(null, async (get, set, products: Product[], query: string) => {
+    set(scrapedProductsAtom, products);
+    set(scrapedProductsQueryAtom, query);
+});
 
 export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
     const result = await attempt(() => GetMainProductsAPI(categoryId));
@@ -105,7 +112,7 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
         const result = await attempt(() => UpdateProductAPI({ product }));
         if (!result.ok) console.error('백엔드 업데이트 API 호출 실패:', result.error);
     } else {
-        console.log('필수 데이터 누락:', {
+        console.error('필수 데이터 누락:', {
             hasName: !!product.name,
             hasPrice: !!product.price
         });
@@ -155,15 +162,13 @@ export const getProductDetailAtom = atom(null, async (get, set, product: Product
 export const getProductReviewAtom = atom(null, async (get, set) => {
     set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.LOADING });
     const reviews = get(productReviewAtom).reviews;
-    // 리뷰 없으면 생성 종료
+
     if (reviews.length === 0) {
         set(productDetailAtom, {
             ...get(productDetailAtom),
             review: { pros: [], cons: [], bests: [] },
             url: get(productDetailAtom)?.product?.url as string
         } as ProductDetailState);
-        set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
-        return;
     }
     const product = get(productDetailAtom)?.product!;
 
@@ -242,7 +247,6 @@ export const getProductCaptionAtom = atom(null, async (get, set) => {
 export const getProductAIAnswerAtom = atom(null, async (get, set, question: string) => {
     // ai 답변 생성 후 aiPoint 차감
     const userData = await get(userAtom);
-    console.log('check userData', userData);
     if (!userData || typeof userData.aiPoint === 'undefined' || userData.aiPoint < 1) {
         Alert.alert('AI 질문권 개수가 부족해요.');
         return;

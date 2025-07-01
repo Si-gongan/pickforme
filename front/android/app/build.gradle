@@ -81,25 +81,45 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 android {
+    def storeFlavor = project.hasProperty("store") ? project.getProperty("store") : System.getenv("STORE") ?: "play"
+
+    flavorDimensions "store"
+
+    productFlavors {
+        amazon {
+            dimension "store"
+        }
+        play {
+            dimension "store"
+        }
+    }
+
+    variantFilter { variant ->
+        if (!variant.flavors*.name.contains(storeFlavor)) {
+            variant.ignore = true
+        }
+    }
+
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.pickforme'
+    namespace 'com.sigonggan.pickforme'
     defaultConfig {
-        applicationId 'com.anonymous.pickforme'
+        applicationId 'com.sigonggan.pickforme'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "3.3.0"
+        versionCode 116
+        versionName "3.3.2"
+        missingDimensionStrategy 'store', 'play' 
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile file('pickforme.keystore')
+            storePassword 'pickforme'
+            keyAlias 'pickformekey'
+            keyPassword 'pickforme'
         }
     }
     buildTypes {
