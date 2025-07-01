@@ -16,21 +16,31 @@ export default function MySection({ title, items, role }: IMySectionProps) {
             <View style={style.MySectionMenuContent}>
                 {items.map(function (item, index) {
                     return (
-                        <TouchableOpacity
-                            key={`section-${title}-${index}`}
-                            onPress={item.onPress || (() => {})}
-                            disabled={false}
-                            accessibilityRole={sectionRole}
-                            accessible
-                        >
+                        (sectionRole === 'none' && (
                             <Text
-                                style={style.MySectionMenu}
-                                accessibilityLabel={item.name === '1:1 문의' ? '일대일 문의하기' : item.name}
-                                accessible
+                                key={`section-${title}-${index}`}
+                                onPress={item.onPress || (() => {})}
+                                disabled={false}
+                                accessibilityRole={sectionRole}
                             >
                                 {item.name}
                             </Text>
-                        </TouchableOpacity>
+                        )) || (
+                            <TouchableOpacity
+                                key={`section-${title}-${index}`}
+                                onPress={item.onPress || (() => {})}
+                                disabled={false}
+                                accessibilityRole={sectionRole}
+                            >
+                                <Text
+                                    style={style.MySectionMenu}
+                                    accessibilityLabel={item.name === '1:1 문의' ? '일대일 문의하기' : item.name}
+                                    accessible={false}
+                                >
+                                    {item.name}
+                                </Text>
+                            </TouchableOpacity>
+                        )
                     );
                 })}
             </View>

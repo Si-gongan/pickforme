@@ -146,7 +146,7 @@ const TabContent: React.FC<TabContentProps> = ({
             }, [tab, contentRef.current, isTabPressed]);
 
             return (
-                <View style={styles.detailWrap} ref={contentRef} accessibilityLabel={`${tab} 내용`}>
+                <View style={styles.detailWrap} ref={contentRef} accessible accessibilityLabel={`${tab} 내용`}>
                     <Markdown style={markdownStyles}>{productDetail?.[tab]}</Markdown>
                 </View>
             );
@@ -208,14 +208,11 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     // ref가 설정되면 부모에게 알림
     useEffect(() => {
         if (contentRef.current) {
-            console.log('contentRef.current');
             const node = findNodeHandle(contentRef.current);
-            console.log('node', node);
             if (node) {
                 InteractionManager.runAfterInteractions(() => {
                     setTimeout(() => {
                         AccessibilityInfo.setAccessibilityFocus(node);
-                        console.log('AccessibilityInfo.setAccessibilityFocus(node)');
                     }, 1500);
                 });
             }
@@ -381,7 +378,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({
                 </View>
             ) : null} */}
             {review?.pros?.length !== 0 && (
-                <View style={styles.detailWrap} ref={contentRef}>
+                <View style={styles.detailWrap} ref={contentRef} accessible={true}>
                     <Text
                         style={styles.reviewListTitle}
                         accessible={true}
