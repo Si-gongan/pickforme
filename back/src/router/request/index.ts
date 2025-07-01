@@ -1,11 +1,8 @@
 import Router from '@koa/router';
 import db from 'models';
 import requireAuth from 'middleware/jwt';
-import ogs from 'open-graph-scraper';
 import client from 'utils/axios';
 import slack from 'utils/slack';
-import sendPush from 'utils/push';
-import socket from 'socket';
 import { RequestType } from 'models/request';
 
 const router = new Router({
@@ -53,7 +50,7 @@ router.post('/', requireAuth, async (ctx) => {
       if (user.point <= 0) {
         throw new Error('pick error');
       }
-      user.usePoint(1);
+      await user.usePoint(1);
     } catch (e) {
       ctx.status = 400;
       ctx.body = {
@@ -61,15 +58,15 @@ router.post('/', requireAuth, async (ctx) => {
       };
       return;
     }
-    const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
+    const slackMsg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}\n
-어드민 링크: https://pickforme-admin-sigongan.vercel.app/request?requestId=${request._id}`;
+어드민 링크: ${process.env.CLIENT_ORIGIN}/request?requestId=${request._id}`;
 
-    slack.post('/chat.postMessage', {
-      text: slack_msg,
-      channel: 'C05NTFL1Q4C',
+    await slack.post('/chat.postMessage', {
+      text: slackMsg,
+      channel: process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID,
     });
   } else {
     // slack ai 응답 생성
@@ -102,7 +99,7 @@ router.post('/', requireAuth, async (ctx) => {
       };
       return;
     }
-    user.useAiPoint(1);
+    await user.useAiPoint(1);
 
     const {
       data: { answer },
@@ -112,9 +109,9 @@ router.post('/', requireAuth, async (ctx) => {
       model: 'gpt',
     });
 
-    slack.post('/chat.postMessage', {
+    await slack.post('/chat.postMessage', {
       text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
-      channel: 'C05NTFL1Q4C',
+      channel: process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID,
     });
   }
 });

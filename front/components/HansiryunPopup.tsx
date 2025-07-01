@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -9,7 +9,10 @@ import {
     Image,
     Linking,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    AccessibilityInfo,
+    findNodeHandle,
+    InteractionManager
 } from 'react-native';
 import { BackHeader, CheckBox } from '@components';
 import { PhoneCheckAPI, PhoneSubmitAPI, SetPopupAPI } from '@/stores/auth/apis';
@@ -32,6 +35,8 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isChecked, setIsChecked] = useState(false);
     const [isDuplicate, setIsDuplicate] = useState(false);
+    const phoneInputRef = useRef<TextInput>(null);
+    // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
 
     if (!visible) return null;
@@ -117,6 +122,21 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
         }
     };
 
+    const headerTitleRef = useRef<Text>(null);
+
+    useEffect(() => {
+        if (headerTitleRef.current) {
+            const node = findNodeHandle(headerTitleRef.current);
+            if (node) {
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
+            }
+        }
+    }, [headerTitleRef.current]);
+
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <BackHeader onPressBack={onClose} />
@@ -130,7 +150,7 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
                 ]}
             >
                 <View style={styles.content}>
-                    <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]}>
+                    <Text style={[styles.title, { color: Colors[colorScheme].text.primary }]} ref={headerTitleRef}>
                         픽포미 멤버십을 6개월간 무료로 이용해 보세요
                     </Text>
                     <Text style={[styles.description, { color: Colors[colorScheme].text.primary }]}>
@@ -152,6 +172,7 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
                     <View style={styles.phoneInputContainer}>
                         <Text style={[styles.inputLabel, { color: Colors[colorScheme].text.primary }]}>전화번호</Text>
                         <TextInput
+                            ref={phoneInputRef}
                             style={[
                                 styles.input,
                                 isDuplicate && styles.inputError,
@@ -170,6 +191,16 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
                             returnKeyType="send"
                             onSubmitEditing={() => {
                                 setPhoneNumber(phoneNumber);
+                                setTimeout(() => {
+                                    const node = findNodeHandle(phoneInputRef.current);
+                                    if (node) {
+                                        InteractionManager.runAfterInteractions(() => {
+                                            setTimeout(() => {
+                                                AccessibilityInfo.setAccessibilityFocus(node);
+                                            }, 500);
+                                        });
+                                    }
+                                }, 100);
                             }}
                         />
                         {isDuplicate && (

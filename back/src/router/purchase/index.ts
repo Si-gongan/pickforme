@@ -69,7 +69,7 @@ router.post('/', requireAuth, async (ctx) => {
           userId: ctx.state.user._id,
           productId,
         },
-        'C05NTFL1Q4C'
+        process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID
       );
     } catch (error) {
       void log.error(
@@ -84,7 +84,7 @@ router.post('/', requireAuth, async (ctx) => {
           productId,
           receipt,
         },
-        'C05NTFL1Q4C'
+        process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID
       );
     }
 

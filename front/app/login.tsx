@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAtomValue } from 'jotai';
 import useColorScheme from '../hooks/useColorScheme';
@@ -7,13 +7,14 @@ import Colors from '../constants/Colors';
 
 import { LoginForm, BackHeader } from '@components';
 import { userAtom } from '@stores';
+import BackIcon from '@/assets/icons/BackIcon';
 
 export default function LoginScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
+    const router = useRouter();
 
     const user = useAtomValue(userAtom);
-    const router = useRouter();
 
     useEffect(
         function () {
@@ -25,8 +26,17 @@ export default function LoginScreen() {
     );
 
     return (
-        <View style={style.LoginScreenContainer}>
-            <BackHeader />
+        <View style={style.LoginScreenContainer} onAccessibilityEscape={() => router.back()}>
+            <Pressable
+                onPress={() => router.push('/(tabs)')}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="뒤로가기"
+                style={{ marginTop: 100, marginLeft: 20 }}
+                onAccessibilityEscape={() => router.push('/(tabs)')}
+            >
+                <BackIcon size={48} color={Colors[colorScheme].text.primary} />
+            </Pressable>
             <View style={style.LoginScreenContent}>
                 <LoginForm />
             </View>

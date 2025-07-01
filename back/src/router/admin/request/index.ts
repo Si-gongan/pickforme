@@ -1,6 +1,5 @@
 import Router from '@koa/router';
 import db from 'models';
-import socket from 'socket';
 import sendPush from 'utils/push';
 
 import { RequestType, RequestStatus } from 'models/request';
@@ -16,29 +15,9 @@ router.post('/answer', async (ctx) => {
     throw new Error('Request 존재하지 않음');
   }
 
-  if (request!.answer) {
+  if (!request.answer) {
     const deeplink = `/product-detail?productUrl=${encodeURIComponent(request!.product.url)}`;
-    // const chat = await db.Chat.create({
-    //   userId: request.userId,
-    //   requestId: request._id,
-    //   text: `'${request.product.name}' 상품에 대한 매니저 답변이 도착했습니다. 추가 문의사항이 있으실 경우 '추가 문의하기' 버튼을 눌러주세요.`,
-    //   createdAt: new Date(),
-    //   isMine: false,
-    //   button: {
-    //     text: '결과물 보기',
-    //     deeplink,
-    //   },
-    // });
-    // request.chats.push(chat._id);
-    // request.unreadCount += 1;
-    // const session = await db.Session.findOne({
-    //   userId: request.userId,
-    // });
-    // if (session) {
-    //   socket.emit(session.connectionId, 'message', {
-    //     chat, unreadCount: request.unreadCount,
-    //   });
-    // }
+
     const user = await db.User.findById(request!.userId);
     if (user && user.pushToken && user.push.service === 'on') {
       sendPush({

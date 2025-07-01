@@ -3,7 +3,16 @@
  */
 import React from 'react';
 import { useRef, useEffect } from 'react';
-import { findNodeHandle, AccessibilityInfo, StyleSheet, Platform, Linking, Alert, Dimensions } from 'react-native';
+import {
+    findNodeHandle,
+    AccessibilityInfo,
+    InteractionManager,
+    StyleSheet,
+    Platform,
+    Linking,
+    Alert,
+    Dimensions
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
@@ -55,7 +64,11 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
         const focusOnHeader = () => {
             const node = findNodeHandle(headerTitleRef.current);
             if (visible && node) {
-                AccessibilityInfo.setAccessibilityFocus(node);
+                InteractionManager.runAfterInteractions(() => {
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(node);
+                    }, 500);
+                });
             }
         };
         setTimeout(focusOnHeader, 500);
