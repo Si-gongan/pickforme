@@ -30,6 +30,9 @@ interface HansiryunPopupProps {
 }
 
 export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps) {
+    // Early return before any hooks
+    if (!visible) return null;
+    
     const user = useAtomValue(userAtom);
     const colorScheme = useColorScheme();
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -38,8 +41,6 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
     const phoneInputRef = useRef<TextInput>(null);
     // 전화번호 형식 검사 (010으로 시작하는 11자리)
     const phoneRegex = /^010\d{8}$/;
-
-    if (!visible) return null;
 
     // 신청하기 버튼 처리
     const handleSubmit = async () => {
