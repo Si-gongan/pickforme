@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Platform, ActivityIndicator, View, StyleSheet, AccessibilityInfo } from 'react-native';
+import { Alert, Platform, ActivityIndicator, View, StyleSheet, AccessibilityInfo, EmitterSubscription } from 'react-native';
 import {
     getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
@@ -24,8 +24,30 @@ import { isShowSubscriptionModalAtom } from '@/stores/auth';
 import { Colors } from '@constants';
 import useColorScheme from '@/hooks/useColorScheme';
 
+// 타입 정의 개선
 type IAPProduct = Omit<IAPProductB, 'type'>;
 type IAPSubscription = Omit<IAPSubscriptionB, 'type' | 'platform'>;
+
+// 에러 타입 정의
+enum PurchaseErrorType {
+    ALREADY_SUBSCRIBED = 'ALREADY_SUBSCRIBED',
+    PURCHASE_BLOCKED = 'PURCHASE_BLOCKED',
+    HANDLER_NOT_READY = 'HANDLER_NOT_READY',
+    PURCHASE_PROCESSING = 'PURCHASE_PROCESSING',
+    UNKNOWN = 'UNKNOWN'
+}
+
+// 상수 분리
+const PURCHASE_MESSAGES = {
+    ALREADY_SUBSCRIBED: '이미 픽포미 플러스를 구독중이에요!',
+    PURCHASE_BLOCKED: '이전 구독 처리 중 오류가 발생해 현재 처리중입니다. \n 고객센터에 문의해주세요.',
+    HANDLER_NOT_READY: '구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+    PURCHASE_PROCESSING: '구독 처리가 진행 중입니다. 잠시만 기다려주세요.',
+    PURCHASE_ERROR: '구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+    PURCHASE_SUCCESS_ERROR: '멤버십 지급 과정에서 잠시 오류가 발생했습니다.',
+    PURCHASE_SUCCESS_ERROR_DETAIL: '결제 내역을 확인한 후, 약 1시간 이내로 매니저가 수동으로 멤버십을 지급해드릴 예정입니다. \n 불편을 드려 진심으로 죄송합니다.',
+    LOADING_ANNOUNCEMENT: '구독 처리가 진행 중입니다. 잠시만 기다려주세요.'
+} as const;
 
 interface PurchaseWrapperProps {
     children: (props: {
@@ -47,9 +69,11 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const products = useAtomValue(productsAtom);
     const [subscriptionLoading, setSubscriptionLoading] = useState<boolean>(false);
 
-    const purchaseUpdateRef = useRef<any>(null);
-    const purchaseErrorRef = useRef<any>(null);
+    // 타입 안전성 개선
+    const purchaseUpdateRef = useRef<EmitterSubscription | null>(null);
+    const purchaseErrorRef = useRef<EmitterSubscription | null>(null);
     const isInitializingRef = useRef(false);
+    const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const loadingViewRef = useRef<View>(null);
     const colorScheme = useColorScheme();
 
@@ -61,62 +85,92 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         getSubscription();
     }, [getSubscription]);
 
-    const handleSubscription = async (sku: string, offerToken?: string | null) => {
+    // 구독 검증 함수들
+    const validateSubscription = async (): Promise<void> => {
+        const subCheck = await GetSubscriptionAPI();
+        const { activate } = subCheck.data;
+
+        if (activate) {
+            throw new Error(PurchaseErrorType.ALREADY_SUBSCRIBED);
+        }
+    };
+
+    const validatePurchaseFailure = async (): Promise<void> => {
+        const failureCheck = await CheckPurchaseFailureAPI();
+        if (!failureCheck.data.canPurchase) {
+            throw new Error(PurchaseErrorType.PURCHASE_BLOCKED);
+        }
+    };
+
+    const validateHandlers = (): void => {
+        if (!purchaseUpdateRef.current || !purchaseErrorRef.current) {
+            throw new Error(PurchaseErrorType.HANDLER_NOT_READY);
+        }
+    };
+
+    const performSubscriptionRequest = async (sku: string, offerToken?: string | null): Promise<void> => {
+        console.log('구독 요청중..');
+
+        if (offerToken) {
+            const subscriptionRequest: RequestSubscriptionAndroid = {
+                subscriptionOffers: [
+                    {
+                        sku,
+                        offerToken
+                    }
+                ]
+            };
+            await requestSubscription(subscriptionRequest);
+        } else {
+            await requestSubscription({ sku });
+        }
+    };
+
+    const handleSubscriptionError = (error: Error): boolean => {
+        console.error('구독 처리 중 에러 발생:', error);
+        
+        let message: string = PURCHASE_MESSAGES.PURCHASE_ERROR;
+        let title = '';
+        
+        switch (error.message) {
+            case PurchaseErrorType.ALREADY_SUBSCRIBED:
+                message = PURCHASE_MESSAGES.ALREADY_SUBSCRIBED;
+                break;
+            case PurchaseErrorType.PURCHASE_BLOCKED:
+                title = '구독 불가';
+                message = PURCHASE_MESSAGES.PURCHASE_BLOCKED;
+                break;
+            case PurchaseErrorType.HANDLER_NOT_READY:
+                message = PURCHASE_MESSAGES.HANDLER_NOT_READY;
+                break;
+            case PurchaseErrorType.PURCHASE_PROCESSING:
+                message = PURCHASE_MESSAGES.PURCHASE_PROCESSING;
+                break;
+        }
+        
+        Alert.alert(title, message);
+        setSubscriptionLoading(false);
+        return false;
+    };
+
+    const handleSubscription = async (sku: string, offerToken?: string | null): Promise<boolean> => {
         try {
             if (subscriptionLoading) {
-                Alert.alert('구독 처리가 진행 중입니다. 잠시만 기다려주세요.');
-                return false;
+                throw new Error(PurchaseErrorType.PURCHASE_PROCESSING);
             }
 
             setSubscriptionLoading(true);
 
-            const subCheck = await GetSubscriptionAPI();
-            const { activate } = subCheck.data;
+            // 순차적 검증
+            await validateSubscription();
+            await validatePurchaseFailure();
+            validateHandlers();
 
-            if (activate) {
-                Alert.alert('이미 픽포미 플러스를 구독중이에요!');
-                setSubscriptionLoading(false);
-                return false;
-            }
-
-            const failureCheck = await CheckPurchaseFailureAPI();
-            if (!failureCheck.data.canPurchase) {
-                Alert.alert(
-                    '구독 불가',
-                    '이전 구독 처리 중 오류가 발생해 현재 처리중입니다. \n 고객센터에 문의해주세요.'
-                );
-                setSubscriptionLoading(false);
-                return false;
-            }
-
-            // 만약에 구독 핸들러가 제대로 등록되지 않았다면 결제 못하도록 처리
-            if (!purchaseUpdateRef.current || !purchaseErrorRef.current) {
-                Alert.alert('구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                setSubscriptionLoading(false);
-                return;
-            }
-
-            console.log('구독 요청중..');
-
-            if (offerToken) {
-                const subscriptionRequest: RequestSubscriptionAndroid = {
-                    subscriptionOffers: [
-                        {
-                            sku,
-                            offerToken
-                        }
-                    ]
-                };
-                await requestSubscription(subscriptionRequest);
-            } else {
-                await requestSubscription({ sku });
-            }
+            // 구독 요청 실행
+            await performSubscriptionRequest(sku, offerToken);
             return true;
         } catch (error) {
-            console.error('구독 처리 중 에러 발생:', error);
-            Alert.alert('구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-            setSubscriptionLoading(false);
-            return false;
+            return handleSubscriptionError(error as Error);
         }
     };
 
@@ -166,8 +220,8 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                         } catch (error) {
                             console.error('구매 처리 중 에러 발생:', error);
                             Alert.alert(
-                                '멤버십 지급 과정에서 잠시 오류가 발생했습니다.',
-                                '결제 내역을 확인한 후, 약 1시간 이내로 매니저가 수동으로 멤버십을 지급해드릴 예정입니다. \n 불편을 드려 진심으로 죄송합니다.'
+                                PURCHASE_MESSAGES.PURCHASE_SUCCESS_ERROR,
+                                PURCHASE_MESSAGES.PURCHASE_SUCCESS_ERROR_DETAIL
                             );
                         } finally {
                             setSubscriptionLoading(false);
@@ -180,7 +234,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                     purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
                         if (error.code !== 'E_USER_CANCELLED') {
                             console.error('구독 처리 중 에러 발생:', error);
-                            Alert.alert('구독 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+                            Alert.alert(PURCHASE_MESSAGES.PURCHASE_ERROR);
                         }
                         setSubscriptionLoading(false);
                     });
@@ -203,6 +257,13 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         return () => {
             isInitializingRef.current = false;
 
+            // 타이머 정리
+            if (loadingTimeoutRef.current) {
+                clearTimeout(loadingTimeoutRef.current);
+                loadingTimeoutRef.current = null;
+            }
+
+            // 리스너 정리
             if (purchaseUpdateRef.current) {
                 purchaseUpdateRef.current.remove();
                 purchaseUpdateRef.current = null;
@@ -217,12 +278,18 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
     useEffect(() => {
         if (subscriptionLoading) {
-            setTimeout(() => {
+            loadingTimeoutRef.current = setTimeout(() => {
                 loadingViewRef.current?.setNativeProps({
                     accessibilityViewIsModal: true
                 });
-                AccessibilityInfo.announceForAccessibility('구독 처리가 진행 중입니다. 잠시만 기다려주세요.');
+                AccessibilityInfo.announceForAccessibility(PURCHASE_MESSAGES.LOADING_ANNOUNCEMENT);
             }, 100);
+        } else {
+            // 로딩이 끝나면 타이머 정리
+            if (loadingTimeoutRef.current) {
+                clearTimeout(loadingTimeoutRef.current);
+                loadingTimeoutRef.current = null;
+            }
         }
     }, [subscriptionLoading]);
 
