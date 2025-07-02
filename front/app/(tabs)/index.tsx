@@ -87,12 +87,10 @@ export default function HomeScreen() {
 
     // 스크롤 초기화 트리거가 변경되면 스크롤을 맨 위로 초기화
     useEffect(() => {
-        console.log('scrollResetTrigger', scrollResetTrigger);
         if (mainListRef.current) {
             // FlatList를 포함한 MainProductList 컴포넌트에 스크롤 초기화 메서드 호출
             if (mainListRef.current.scrollToTop) {
                 mainListRef.current.scrollToTop();
-                console.log('스크롤 초기화');
             }
         }
     }, [scrollResetTrigger]);
@@ -156,6 +154,10 @@ export default function HomeScreen() {
                                 accessible
                                 accessibilityLabel="삭제"
                                 accessibilityRole="button"
+                                onAccessibilityTap={() => {
+                                    Keyboard.dismiss();
+                                    handleSearchTextChange('');
+                                }}
                             >
                                 <Image
                                     style={style.resetIcon}
@@ -169,6 +171,10 @@ export default function HomeScreen() {
                             accessible
                             accessibilityLabel="검색하기"
                             accessibilityRole="button"
+                            onAccessibilityTap={() => {
+                                Keyboard.dismiss();
+                                handleSearchButtonClick();
+                            }}
                         >
                             <SearchIcon size={24} color={Colors[colorScheme].text.primary} opacity={1} />
                         </Pressable>
