@@ -242,6 +242,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
 
                 <Pressable
                     onPress={() => {
+                        Keyboard.dismiss();
                         if (question.trim()) {
                             handleClickSend(question);
                         }

@@ -150,7 +150,11 @@ export default function HomeScreen() {
                         />
                         {!!searchText.length && (
                             <Pressable
-                                onPress={() => handleSearchTextChange('')}
+                                onPress={() => {
+                                    console.log('keyboard dismiss');
+                                    Keyboard.dismiss();
+                                    handleSearchTextChange('');
+                                }}
                                 accessible
                                 accessibilityLabel="삭제"
                                 accessibilityRole="button"
@@ -167,11 +171,15 @@ export default function HomeScreen() {
                             </Pressable>
                         )}
                         <Pressable
-                            onPress={handleSearchButtonClick}
+                            onPress={() => {
+                                Keyboard.dismiss();
+                                handleSearchButtonClick();
+                            }}
                             accessible
                             accessibilityLabel="검색하기"
                             accessibilityRole="button"
                             onAccessibilityTap={() => {
+                                console.log('keyboard dismiss onAccessibilityTap');
                                 Keyboard.dismiss();
                                 handleSearchButtonClick();
                             }}
