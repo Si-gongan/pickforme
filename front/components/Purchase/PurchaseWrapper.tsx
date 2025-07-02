@@ -1,6 +1,14 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Platform, ActivityIndicator, View, StyleSheet, AccessibilityInfo, EmitterSubscription } from 'react-native';
+import {
+    Alert,
+    Platform,
+    ActivityIndicator,
+    View,
+    StyleSheet,
+    AccessibilityInfo,
+    EmitterSubscription
+} from 'react-native';
 import {
     getSubscriptions as IAPGetSubscriptions,
     Product as IAPProductB,
@@ -45,7 +53,8 @@ const PURCHASE_MESSAGES = {
     PURCHASE_PROCESSING: '구독 처리가 진행 중입니다. 잠시만 기다려주세요.',
     PURCHASE_ERROR: '구독 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
     PURCHASE_SUCCESS_ERROR: '멤버십 지급 과정에서 잠시 오류가 발생했습니다.',
-    PURCHASE_SUCCESS_ERROR_DETAIL: '결제 내역을 확인한 후, 약 1시간 이내로 매니저가 수동으로 멤버십을 지급해드릴 예정입니다. \n 불편을 드려 진심으로 죄송합니다.',
+    PURCHASE_SUCCESS_ERROR_DETAIL:
+        '결제 내역을 확인한 후, 약 1시간 이내로 매니저가 수동으로 멤버십을 지급해드릴 예정입니다. \n 불편을 드려 진심으로 죄송합니다.',
     LOADING_ANNOUNCEMENT: '구독 처리가 진행 중입니다. 잠시만 기다려주세요.'
 } as const;
 
@@ -75,12 +84,12 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const isInitializingRef = useRef(false);
     const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const loadingViewRef = useRef<View>(null);
-    
+
     // 중복 결제 방지를 위한 추가 상태
     const isProcessingRef = useRef(false);
     const processedTransactionsRef = useRef<Set<string>>(new Set());
     const apiCallsRef = useRef<Map<string, Promise<any>>>(new Map());
-    
+
     const colorScheme = useColorScheme();
 
     useEffect(() => {
@@ -99,7 +108,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
         const promise = apiCall();
         apiCallsRef.current.set(key, promise);
-        
+
         try {
             const result = await promise;
             return result;
@@ -154,10 +163,10 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
     const handleSubscriptionError = (error: Error): boolean => {
         console.error('구독 처리 중 에러 발생:', error);
-        
+
         let message: string = PURCHASE_MESSAGES.PURCHASE_ERROR;
         let title = '';
-        
+
         switch (error.message) {
             case PurchaseErrorType.ALREADY_SUBSCRIBED:
                 message = PURCHASE_MESSAGES.ALREADY_SUBSCRIBED;
@@ -173,9 +182,9 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 message = PURCHASE_MESSAGES.PURCHASE_PROCESSING;
                 break;
         }
-        
+
         Alert.alert(title, message);
-        
+
         // 에러 발생 시 상태 초기화
         isProcessingRef.current = false;
         setSubscriptionLoading(false);
@@ -191,7 +200,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         }
 
         try {
-            // 원자적 상태 변경
+            // 구독 처리 상태로 변경
             isProcessingRef.current = true;
             setSubscriptionLoading(true);
 
@@ -234,7 +243,8 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
                     purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
                         let isSubscription = false;
-                        const transactionId = purchase.transactionId || purchase.purchaseToken || `${purchase.productId}_${Date.now()}`;
+                        const transactionId =
+                            purchase.transactionId || purchase.purchaseToken || `${purchase.productId}_${Date.now()}`;
 
                         // 중복 거래 처리 방지
                         if (processedTransactionsRef.current.has(transactionId)) {
@@ -284,7 +294,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                             console.error('구독 처리 중 에러 발생:', error);
                             Alert.alert(PURCHASE_MESSAGES.PURCHASE_ERROR);
                         }
-                        
+
                         // 에러 발생 시 상태 초기화
                         isProcessingRef.current = false;
                         setSubscriptionLoading(false);
