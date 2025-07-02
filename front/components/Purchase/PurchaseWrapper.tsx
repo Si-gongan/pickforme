@@ -75,6 +75,12 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const isInitializingRef = useRef(false);
     const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const loadingViewRef = useRef<View>(null);
+    
+    // 중복 결제 방지를 위한 추가 상태
+    const isProcessingRef = useRef(false);
+    const processedTransactionsRef = useRef<Set<string>>(new Set());
+    const apiCallsRef = useRef<Map<string, Promise<any>>>(new Map());
+    
     const colorScheme = useColorScheme();
 
     useEffect(() => {
@@ -85,9 +91,29 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         getSubscription();
     }, [getSubscription]);
 
+    // API 호출 중복 방지 헬퍼
+    const memoizedApiCall = async <T extends unknown>(key: string, apiCall: () => Promise<T>): Promise<T> => {
+        if (apiCallsRef.current.has(key)) {
+            return apiCallsRef.current.get(key);
+        }
+
+        const promise = apiCall();
+        apiCallsRef.current.set(key, promise);
+        
+        try {
+            const result = await promise;
+            return result;
+        } finally {
+            // API 호출 완료 후 캐시에서 제거 (다음 호출을 위해)
+            setTimeout(() => {
+                apiCallsRef.current.delete(key);
+            }, 1000);
+        }
+    };
+
     // 구독 검증 함수들
     const validateSubscription = async (): Promise<void> => {
-        const subCheck = await GetSubscriptionAPI();
+        const subCheck = await memoizedApiCall('getSubscription', GetSubscriptionAPI);
         const { activate } = subCheck.data;
 
         if (activate) {
@@ -96,7 +122,7 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     };
 
     const validatePurchaseFailure = async (): Promise<void> => {
-        const failureCheck = await CheckPurchaseFailureAPI();
+        const failureCheck = await memoizedApiCall('checkPurchaseFailure', CheckPurchaseFailureAPI);
         if (!failureCheck.data.canPurchase) {
             throw new Error(PurchaseErrorType.PURCHASE_BLOCKED);
         }
@@ -149,16 +175,24 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         }
         
         Alert.alert(title, message);
+        
+        // 에러 발생 시 상태 초기화
+        isProcessingRef.current = false;
         setSubscriptionLoading(false);
         return false;
     };
 
     const handleSubscription = async (sku: string, offerToken?: string | null): Promise<boolean> => {
-        try {
-            if (subscriptionLoading) {
-                throw new Error(PurchaseErrorType.PURCHASE_PROCESSING);
-            }
+        // Race Condition 방지
+        if (isProcessingRef.current || subscriptionLoading) {
+            console.log('이미 구독 처리가 진행 중입니다.');
+            Alert.alert(PURCHASE_MESSAGES.PURCHASE_PROCESSING);
+            return false;
+        }
 
+        try {
+            // 원자적 상태 변경
+            isProcessingRef.current = true;
             setSubscriptionLoading(true);
 
             // 순차적 검증
@@ -200,8 +234,18 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
                     purchaseUpdateRef.current = purchaseUpdatedListener(async purchase => {
                         let isSubscription = false;
+                        const transactionId = purchase.transactionId || purchase.purchaseToken || `${purchase.productId}_${Date.now()}`;
+
+                        // 중복 거래 처리 방지
+                        if (processedTransactionsRef.current.has(transactionId)) {
+                            console.log('이미 처리된 거래입니다:', transactionId);
+                            return;
+                        }
 
                         try {
+                            // 거래 처리 시작 표시
+                            processedTransactionsRef.current.add(transactionId);
+
                             const receipt = purchase.transactionReceipt;
                             const product = products.find(({ productId }) => productId === purchase.productId);
                             if (!product || !receipt) return;
@@ -223,7 +267,11 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                                 PURCHASE_MESSAGES.PURCHASE_SUCCESS_ERROR,
                                 PURCHASE_MESSAGES.PURCHASE_SUCCESS_ERROR_DETAIL
                             );
+                            // 에러 발생 시 거래를 처리 완료 목록에서 제거
+                            processedTransactionsRef.current.delete(transactionId);
                         } finally {
+                            // 상태 초기화
+                            isProcessingRef.current = false;
                             setSubscriptionLoading(false);
 
                             // 결제가 실패하든 일단 결제 자체는 종료함.
@@ -236,6 +284,9 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                             console.error('구독 처리 중 에러 발생:', error);
                             Alert.alert(PURCHASE_MESSAGES.PURCHASE_ERROR);
                         }
+                        
+                        // 에러 발생 시 상태 초기화
+                        isProcessingRef.current = false;
                         setSubscriptionLoading(false);
                     });
                 };
@@ -262,6 +313,11 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                 clearTimeout(loadingTimeoutRef.current);
                 loadingTimeoutRef.current = null;
             }
+
+            // 상태 초기화
+            isProcessingRef.current = false;
+            processedTransactionsRef.current.clear();
+            apiCallsRef.current.clear();
 
             // 리스너 정리
             if (purchaseUpdateRef.current) {
