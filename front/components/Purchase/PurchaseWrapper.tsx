@@ -86,7 +86,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     const loadingViewRef = useRef<View>(null);
 
     // 중복 결제 방지를 위한 추가 상태
-    const isProcessingRef = useRef(false);
     const processedTransactionsRef = useRef<Set<string>>(new Set());
     const apiCallsRef = useRef<Map<string, Promise<any>>>(new Map());
 
@@ -186,14 +185,13 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         Alert.alert(title, message);
 
         // 에러 발생 시 상태 초기화
-        isProcessingRef.current = false;
         setSubscriptionLoading(false);
         return false;
     };
 
     const handleSubscription = async (sku: string, offerToken?: string | null): Promise<boolean> => {
         // Race Condition 방지
-        if (isProcessingRef.current || subscriptionLoading) {
+        if (subscriptionLoading) {
             console.log('이미 구독 처리가 진행 중입니다.');
             Alert.alert(PURCHASE_MESSAGES.PURCHASE_PROCESSING);
             return false;
@@ -201,7 +199,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
         try {
             // 구독 처리 상태로 변경
-            isProcessingRef.current = true;
             setSubscriptionLoading(true);
 
             // 순차적 검증
@@ -281,7 +278,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                             processedTransactionsRef.current.delete(transactionId);
                         } finally {
                             // 상태 초기화
-                            isProcessingRef.current = false;
                             setSubscriptionLoading(false);
 
                             // 결제가 실패하든 일단 결제 자체는 종료함.
@@ -296,7 +292,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                         }
 
                         // 에러 발생 시 상태 초기화
-                        isProcessingRef.current = false;
                         setSubscriptionLoading(false);
                     });
                 };
@@ -325,7 +320,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             }
 
             // 상태 초기화
-            isProcessingRef.current = false;
             processedTransactionsRef.current.clear();
             apiCallsRef.current.clear();
 
