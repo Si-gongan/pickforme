@@ -3,42 +3,11 @@ import axios from 'axios';
 import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
-import {
-  PushSetting,
-} from 'models/user/types';
-import {
-  ProductType,
-} from 'models/product';
-import iapValidator from 'utils/iap';
+import { PushSetting } from 'models/user/types';
 
 const router = new Router({
   prefix: '/auth',
 });
-
-// NOTE: 환불 후 로그인을 위한 함수
-const subscriptionCheck = async (userId: string): Promise<boolean> => {
-  const subscriptions = await db.Purchase.findOne({
-    userId,
-    'product.type': ProductType.SUBSCRIPTION,
-    isExpired: false,
-  }).sort({
-    createdAt: -1,
-  });
-
-  if (subscriptions) {
-    const purchaseData = await iapValidator.validate(
-      subscriptions.receipt,
-      subscriptions.product.productId
-    );
-    if (!purchaseData) {
-      subscriptions.isExpired = true;
-      await subscriptions.save();
-      return true;
-    }
-  }
-
-  return false;
-};
 
 const handleLogin = async (email: string) => {
   let user = await db.User.findOne({
@@ -56,60 +25,34 @@ const handleLogin = async (email: string) => {
       point: 0,
       aiPoint: 15,
     });
+
     const usedEmail = await db.User.findOne({
       originEmail: email,
     });
     if (!usedEmail) {
       // 과거 회원 기록이 없는 경우
-      
     } else {
       // 과거 회원 기록이 있는 경우
-      const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
+      // const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
     }
     isRegister = true;
   } else {
     // 기존 회원
-    const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
+    // const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
 
-    const today = new Date(); // 현재 날짜 객체 생성
-    const dayOfMonth = today.getDate(); // 오늘 날짜의 '일' 값 가져오기
-
-    if(user.MembershipAt){
-
-    const mDay = user.MembershipAt;
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    // mDay가 6개월 전인지 확인 (연도와 월이 같아야 함)
-    const isSixMonthsAgo = mDay.getFullYear() == sixMonthsAgo.getFullYear() && mDay.getMonth() == sixMonthsAgo.getMonth();
-    if (dayOfMonth == 1 && user.event == 1) {
-      if(isSixMonthsAgo){
-        user.point = 0;
-        user.aiPoint=0;
-        user.event=0
-      }else{
-        user.point = 15;
-        user.aiPoint = 99999;
-      }
-    }
-  }
+    // 한시련 이벤트 처리 관련 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/events.ts
 
     // update last login date
     user.lastLoginAt = new Date();
   }
 
-  // NOTE: 환불 후 로그인을 위한 것
-  const subCheckRst = await subscriptionCheck(user._id);
-  if (subCheckRst) {
-    user.point = 0;
-    user.aiPoint = 0;
-  }
+  // 환불 후 로그인 시 유저 포인트 초기화 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/iap.ts
 
   await user.save();
 
   const token = await user.generateToken();
   // const refreshToken = await user.generateRefreshToken();
-  
+
   return {
     user: {
       ...user.toObject(),
@@ -122,19 +65,13 @@ const handleLogin = async (email: string) => {
 };
 
 router.post('/google', async (ctx) => {
-  const {
-    accessToken,
-  } = <{ accessToken: string }>ctx.request.body;
-  const {
-    data,
-  } = await axios.get<{ email: string; verified_email: boolean }>(
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
+  const { data } = await axios.get<{ email: string; verified_email: boolean }>(
     `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}
-  `,
+  `
   );
-  
-  const {
-    email, verified_email,
-  } = data;
+
+  const { email, verified_email } = data;
   if (!verified_email || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
@@ -146,18 +83,14 @@ router.post('/google', async (ctx) => {
 });
 
 router.post('/kakao', async (ctx) => {
-  const {
-    accessToken,
-  } = <{ accessToken: string }>ctx.request.body;
+  const { accessToken } = <{ accessToken: string }>ctx.request.body;
   const data = await axios.get('https://kapi.kakao.com/v2/user/me', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  
-  const {
-    is_email_verified, is_email_valid, email,
-  } = data?.data?.kakao_account || {};
+
+  const { is_email_verified, is_email_valid, email } = data?.data?.kakao_account || {};
   if (!is_email_valid || !is_email_verified || !email) {
     ctx.body = {
       error: '잘못된 접근입니다',
@@ -169,12 +102,8 @@ router.post('/kakao', async (ctx) => {
 });
 
 router.post('/apple', async (ctx) => {
-  const {
-    identityToken,
-  } = <{ identityToken: string }>ctx.request.body;
-  const {
-    email_verified, email,
-  } = await verifyAppleToken({
+  const { identityToken } = <{ identityToken: string }>ctx.request.body;
+  const { email_verified, email } = await verifyAppleToken({
     idToken: identityToken,
     clientId: 'com.sigonggan.pickforme',
   });
@@ -191,9 +120,7 @@ router.post('/apple', async (ctx) => {
 router.post('/pushtoken', requireAuth, async (ctx) => {
   const user = await db.User.findById(ctx.state.user._id);
   if (user) {
-    const {
-      token,
-    } = <{ token: string }>ctx.request.body;
+    const { token } = <{ token: string }>ctx.request.body;
     user.pushToken = token;
     await user.save();
     ctx.status = 200;

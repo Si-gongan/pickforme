@@ -1,96 +1,86 @@
 {
-  "expo": {
-    "owner": "sigongan",
-    "plugins": [
-      [
-        "@react-native-seoul/kakao-login",
-        {
-          "kakaoAppKey": "a48d1b07defd794b769579746e2bb995",
-          "overrideKakaoSDKVersion": "2.11.1",
-          "kotlinVersion": "1.5.10"
+    "expo": {
+        "owner": "sigonggan",
+        "name": "픽포미",
+        "slug": "pickformeapp",
+        "version": "3.3.2",
+        "orientation": "portrait",
+        "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
+        "scheme": "com.sigonggan.pickforme",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "extra": {
+            "eas": {
+                "projectId": "fc30c083-8843-43b4-9abc-5754cd747988"
+            },
+            "router": {
+                "origin": false
+            }
+        },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.sigonggan.pickforme",
+            "jsEngine": "jsc",
+            "icon": "./assets/images/pickforme_logo_200x200.png",
+            "googleServicesFile": "./GoogleService-Info.plist",
+            "buildNumber": "2"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/pickforme_logo_200x200.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.sigonggan.pickforme",
+            "googleServicesFile": "./google-services.json",
+            "versionCode": 116
+        },
+        "web": {
+            "bundler": "metro",
+            "output": "static",
+            "favicon": "./assets/images/pickforme_logoWtxt_200x200.png"
+        },
+        "plugins": [
+            ["@react-native-firebase/app", "@react-native-firebase/analytics"],
+            [
+                "@react-native-seoul/kakao-login",
+                {
+                    "kakaoAppKey": "a48d1b07defd794b769579746e2bb995"
+                }
+            ],
+            "@react-native-google-signin/google-signin",
+            "expo-router",
+            "expo-apple-authentication",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/pickforme_logoWtxt_200x200.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#ffffff"
+                }
+            ],
+            [
+                "expo-build-properties",
+                {
+                    "android": {
+                        "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"],
+                        "kotlinVersion": "1.9.25"
+                    },
+                    "ios": {
+                        "useFrameworks": "dynamic"
+                    }
+                }
+            ],
+            "expo-font"
+        ],
+        "experiments": {
+            "typedRoutes": true
+        },
+        "runtimeVersion": "1.0.0",
+        "updates": {
+            "enabled": true,
+            "fallbackToCacheTimeout": 0,
+            "url": "https://u.expo.dev/fc30c083-8843-43b4-9abc-5754cd747988"
         }
-      ],
-      "expo-apple-authentication"
-    ],
-    "name": "픽포미",
-    "slug": "pickforme",
-    "version": "3.1.1",
-    "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "backgroundColor": "#000000",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "dark": {
-        "image": "./assets/images/splash_dark.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#111525"
-      }
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.sigonggan.pickforme",
-      "splash": {
-        "image": "./assets/images/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "image": "./assets/images/splash_dark.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#111525"
-        }
-      },
-      "buildNumber": "1"
-    },
-    "android": {
-      "splash": {
-        "image": "./assets/images/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "image": "./assets/images/splash_dark.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#111525"
-        }
-      },
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.sigonggan.pickforme",
-      "versionCode": 81,
-      "intentFilters": [
-        {
-          "action": "android.intent.action.SEND",
-          "data": {
-            "mimeType": "text/plain"
-          },
-          "categories": [
-            "android.intent.category.DEFAULT"
-          ]
-        }
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "e1838378-658e-46ee-b890-0e439a47e799"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/e1838378-658e-46ee-b890-0e439a47e799"
     }
-  }
 }

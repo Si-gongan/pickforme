@@ -1,9 +1,9 @@
 import Router from '@koa/router';
 import requireAuth from 'middleware/jwt';
-import db from 'models';
-import { RequestType } from 'models/request';
 import client from 'utils/axios';
 import slack from 'utils/slack';
+import { RequestType } from 'models/request';
+import db from 'models';
 
 const router = new Router({
   prefix: '/request',
@@ -50,7 +50,7 @@ router.post('/', requireAuth, async (ctx) => {
       if (user.point <= 0) {
         throw new Error('pick error');
       }
-      user.usePoint(1);
+      await user.usePoint(1);
     } catch (e) {
       ctx.status = 400;
       ctx.body = {
@@ -58,28 +58,29 @@ router.post('/', requireAuth, async (ctx) => {
       };
       return;
     }
-    const slack_msg = `[픽포미 의뢰가 도착했습니다]\n
+    const slackMsg = `[픽포미 의뢰가 도착했습니다]\n
 상품명: ${product.name}\n
 의뢰 내용: ${body.text}\n
 상품 링크: ${product.url}\n
 어드민 링크: ${process.env.CLIENT_ORIGIN}/request?requestId=${request._id}`;
 
-    slack.post('/chat.postMessage', {
-      text: slack_msg,
-      channel: `${process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID}`,
+    await slack.post('/chat.postMessage', {
+      text: slackMsg,
+      channel: process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID,
     });
   } else {
     // slack ai 응답 생성
     const purchase = await db.Purchase.findOne({ userId: user._id }).sort({ createdAt: -1 }).lean();
 
     if (purchase) {
-      const today = new Date();
-      const oneMonthLater = new Date(purchase.createdAt);
-      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-      if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
-        await purchase.updateExpiration();
-        await user.processExpiredMembership();
-      }
+      // 이 부분 로직은 스케쥴러에서 처리하도록 변경했습니다. feat/membership-scheduler
+      // const today = new Date();
+      // const oneMonthLater = new Date(purchase.createdAt);
+      // oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      // if (oneMonthLater < new Date(today.setHours(0, 0, 0, 0))) {
+      //   await purchase.updateExpiration();
+      //   await user.processExpiredMembership();
+      // }
     } else {
       // 마지막 요청이 오늘의 달과 다르면 유저 횟수 초기화 (AI 횟수만, 매니저 횟수는 X)
       const today = new Date();
@@ -98,7 +99,7 @@ router.post('/', requireAuth, async (ctx) => {
       };
       return;
     }
-    user.useAiPoint(1);
+    await user.useAiPoint(1);
 
     const {
       data: { answer },
@@ -108,7 +109,7 @@ router.post('/', requireAuth, async (ctx) => {
       model: 'gpt',
     });
 
-    slack.post('/chat.postMessage', {
+    await slack.post('/chat.postMessage', {
       text: `[AI 답변이 생성되었습니다]\n의뢰 내용: ${body.text}\nAI 답변: ${answer}`,
       channel: process.env.SLACK_SERVICE_NOTIFICATION_CHANNEL_ID,
     });

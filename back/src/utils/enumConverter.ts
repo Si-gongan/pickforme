@@ -1,6 +1,4 @@
-import {
-  ProductType,
-} from 'models/product';
+import { ProductType } from 'models/product';
 
 function productConverter(value: ProductType): number {
   switch (value) {
@@ -13,6 +11,4 @@ function productConverter(value: ProductType): number {
   }
 }
 
-export {
-  productConverter,
-};
+export { productConverter };

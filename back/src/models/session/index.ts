@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const SessionSchema = new mongoose.Schema({
   connectionId: String,
   userId: {
-    type: mongoose.Schema.Types.ObjectId, ref: 'Users',
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
   },
 });
 

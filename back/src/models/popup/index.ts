@@ -21,6 +21,6 @@ const popupSchema = new mongoose.Schema({
   },
 });
 
-const Popup = mongoose.models.Popup || mongoose.model("Popup", popupSchema);
+const Popup = mongoose.models.Popup || mongoose.model('Popup', popupSchema);
 
 export default Popup;

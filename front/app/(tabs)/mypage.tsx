@@ -1,282 +1,220 @@
-import { useCallback, useRef } from 'react';
-import { Text as TextBase, AccessibilityInfo, ScrollView, findNodeHandle, StyleSheet, Pressable, Alert, Image } from 'react-native';
-import { Link, useRouter } from 'expo-router';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { settingAtom, userDataAtom, quitAtom, logoutAtom } from '../../stores/auth/atoms';
-import { useFocusEffect } from '@react-navigation/core';
-
-import Colors from '../../constants/Colors';
-import { Text, View } from '../../components/Themed';
-import Button from '../../components/Button';
-import useColorScheme, { ColorScheme } from '../../hooks/useColorScheme';
+import { useRouter } from 'expo-router';
+import { useCallback, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { useAtom } from 'jotai';
 import * as WebBrowser from 'expo-web-browser';
+import useColorScheme from '../../hooks/useColorScheme';
+import type { ColorScheme } from '../../hooks/useColorScheme';
+import Colors from '../../constants/Colors';
 
-import MypageIcon from '../../assets/images/tabbar/mypage.svg';
+import { IconHeader, MySection } from '@components';
+import { userAtom } from '@stores';
+import { changeToken } from '../../utils/axios';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function MyPageScreen() {
-  const [userData, setUserData] = useAtom(userDataAtom);
-  const setting = useAtomValue(settingAtom);
-  const colorScheme = useColorScheme();
-  const styles = useStyles(colorScheme);
-  const headerTitleRef = useRef<TextBase>(null);
+export default function MyScreen() {
+    const colorScheme = useColorScheme();
+    const style = useStyle(colorScheme);
+    const router = useRouter();
 
-  useFocusEffect(
-    useCallback(() => {
-      const f = () => {
-        if (headerTitleRef.current) {
-          const nodeHandle = findNodeHandle(headerTitleRef.current);
-          if (nodeHandle) {
-            AccessibilityInfo.setAccessibilityFocus(nodeHandle);
-          }
-        }
-      }
-      setTimeout(f, 500);
-    }, [])
-  );
+    const [user, onUser] = useAtom(userAtom);
 
-  const quit = useSetAtom(quitAtom);
-  const logout = useSetAtom(logoutAtom);
-  const router = useRouter();
-  const handleClickQuit = () => {
-    Alert.alert(
-      '정말 탈퇴하시겠습니까?',
-      '모든 계정 정보가 삭제됩니다',
-      [
-        {
-          text: '탈퇴',
-          onPress: quit,
-          style: 'destructive',
+    const goToInfo = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/info');
         },
-        {
-          text: '취소',
-          style: 'cancel',
-        },
-      ],
-      {
-        cancelable: true,
-      },
+        [router]
     );
-  }
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <MypageIcon style={styles.icon} />
-        <Text style={styles.headerTitle} ref={headerTitleRef} accessibilityRole='header'>마이페이지</Text>
-      </View>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.scrollContainer}>
-          {!!userData && (
-            <View style={styles.card}>
-              <Text style={styles.title}>
-                잔여 이용권
-              </Text>
-              <Text style={styles.menu}>
-                매니저 질문권 {userData.point}회
-              </Text>
-              <Text style={styles.menu}>
-                AI 질문권 {userData.aiPoint}회
-              </Text>
-            </View>
-          )}
 
-          <View style={styles.card}>
-            <Text style={styles.title}>
-              내 정보
-            </Text>
-            <Link href='/(settings)/nickname' accessibilityRole='button'>
-              <Text style={styles.menu}>
-                내 정보 수정하기
-              </Text>
-            </Link>
+    const goToLogin = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/login');
+        },
+        [router]
+    );
 
-            {!userData ? (
-              <Button
-                variant='text'
-                color='tertiary'
-                title='로그인'
-                size='small'
-                style={styles.menu}
-                textStyle={styles.buttonText}
-                onPress={() => router.push('(auths)/login')}
-              />) :
-              (<>
-                {/* <Link href='/purchase' accessibilityRole='button'>
-                  <Text style={styles.menu}>
-                    이용권 충전하기
-                  </Text>
-                </Link>
-                <Link href='/purchase-history' accessibilityRole='button'>
-                  <Text style={styles.menu}>
-                    이용권 구매내역
-                  </Text>
-                </Link> */}
-                <Link href='/subscription' accessibilityRole='button'>
-                  <Text style={styles.menu}>
-                    멤버십 이용하기
-                  </Text>
-                </Link>
-                <Link href='/subscription-history' accessibilityRole='button'>
-                  <Text style={styles.menu}>
-                    멤버십 구매내역
-                  </Text>
-                </Link>
-              </>)
+    const goToPush = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/(settings)/notification');
+        },
+        [router]
+    );
+
+    const goToTheme = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/(settings)/theme');
+        },
+        [router]
+    );
+
+    const goToHow = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/how');
+        },
+        [router]
+    );
+
+    const goToFontSize = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/(settings)/setFontSize');
+        },
+        [router]
+    );
+
+    const goToFAQ = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/faq');
+        },
+        [router]
+    );
+
+    const goToSubscription = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/subscription');
+        },
+        [router]
+    );
+
+    const goToSubscriptionHistory = useCallback(
+        function () {
+            // @ts-ignore - Expo Router 4 type issues
+            router.push('/subscription-history');
+        },
+        [router]
+    );
+
+    const onLogout = useCallback(
+        function () {
+            onUser({});
+            changeToken(undefined);
+            Alert.alert('로그아웃 되었습니다.');
+        },
+        [onUser]
+    );
+
+    const myInfoMenu = useMemo(
+        function () {
+            // const defaultMenu = [{ name: '내 정보 수정하기', onPress: goToInfo }];
+            if (!user?._id) {
+                return [{ name: '로그인', onPress: goToLogin }];
             }
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.title}>
-              앱 설정
-            </Text>
-            <Link href='/(settings)/theme' accessibilityRole='button'>
-              <Text style={styles.menu}>
-                화면 모드 변경하기
-              </Text>
-            </Link>
-            {!!userData && (
-              <Link href='/(settings)/notification' accessibilityRole='button'>
-                <Text style={styles.menu}>
-                  알림 설정하기
-                </Text>
-              </Link>
-            )}
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.title}>
-              고객 지원
-            </Text>
-            <Button
-              title='1:1 문의'
-              variant='text'
-              onPress={() => WebBrowser.openBrowserAsync('http://pf.kakao.com/_csbDxj')}
-              style={[styles.menu, styles.solo]}
-              textStyle={styles.buttonText}
-              color='tertiary'
-              size='small'
-            />
-            <Link href='/how' accessibilityRole='button'>
-              <Text style={styles.menu}>
-                사용 설명서
-              </Text>
-            </Link>
-            <Link href='/faq' accessibilityRole='button'>
-              <Text style={styles.menu}>
-                자주 묻는 질문
-              </Text>
-            </Link>
-            <Button
-              title='개인정보처리방침'
-              variant='text'
-              onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/개인정보처리방침?authuser=0')}
-              style={[styles.menu, styles.solo]}
-              textStyle={styles.buttonText}
-              color='tertiary'
-              size='small'
-            />
-            <Button
-              title='서비스 이용약관'
-              variant='text'
-              onPress={() => WebBrowser.openBrowserAsync('https://sites.google.com/view/sigongan-useterm/홈?authuser=0')}
-              style={[styles.menu, styles.solo]}
-              textStyle={styles.buttonText}
-              color='tertiary'
-              size='small'
-            />
-          </View>
-          {!!userData && (
-            <View style={[styles.card]}>
-              <Button
-                title='로그아웃'
-                variant='text'
-                onPress={logout}
-                style={[styles.menu, styles.solo]}
-                textStyle={styles.buttonText}
-                color='tertiary'
-                size='small'
-              />
-              <Button
-                title='회원탈퇴'
-                variant='text'
-                onPress={handleClickQuit}
-                style={[styles.menu, styles.solo]}
-                textStyle={[styles.buttonText, styles.red]}
-                color='tertiary'
-                size='small'
-              />
+            return [
+                // ...defaultMenu,
+                { name: '멤버십 이용하기', onPress: goToSubscription },
+                { name: '멤버십 구매내역', onPress: goToSubscriptionHistory }
+            ];
+        },
+        [user?._id, goToInfo, goToLogin, goToSubscription, goToSubscriptionHistory]
+    );
+
+    const appSettingMenu = useMemo(
+        function () {
+            const defaultMenu = [
+                { name: '화면 모드 변경하기', onPress: goToTheme },
+                // { name: '글자 크기 변경하기', onPress: goToFontSize },
+                {
+                    name: '알림 설정하기',
+                    onPress: goToPush
+                }
+            ];
+            return defaultMenu;
+        },
+        [user?._id, goToPush]
+    );
+
+    return (
+        <View style={style.MyContainer}>
+            <IconHeader title="마이페이지" />
+            <View style={style.MyContent}>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={style.MyScrollView}>
+                    {!!user?._id && (
+                        <MySection
+                            title="잔여 이용권"
+                            items={[
+                                { name: `매니저 질문권 ${user.point ?? 0}회` },
+                                { name: `AI 질문권 ${user.aiPoint ?? 0}회` }
+                            ]}
+                            role="none"
+                        />
+                    )}
+
+                    <MySection title="내 정보" items={myInfoMenu} role="button" />
+
+                    <MySection title="앱 설정" items={appSettingMenu} role="button" />
+
+                    <MySection
+                        title="고객 지원"
+                        role="button"
+                        items={[
+                            {
+                                name: '1:1 문의',
+                                onPress: function () {
+                                    WebBrowser.openBrowserAsync('http://pf.kakao.com/_csbDxj');
+                                }
+                            },
+                            { name: '사용 설명서', onPress: goToHow },
+                            { name: '자주 묻는 질문', onPress: goToFAQ },
+                            {
+                                name: '개인정보처리방침',
+                                onPress: function () {
+                                    WebBrowser.openBrowserAsync(
+                                        'https://sites.google.com/view/sigongan-useterm/개인정보처리방침?authuser=0'
+                                    );
+                                }
+                            },
+                            {
+                                name: '서비스 이용약관',
+                                onPress: function () {
+                                    WebBrowser.openBrowserAsync(
+                                        'https://sites.google.com/view/sigongan-useterm/홈?authuser=0'
+                                    );
+                                }
+                            }
+                        ]}
+                    />
+
+                    {!!user?._id && (
+                        <MySection
+                            title="계정"
+                            items={[
+                                { name: '로그아웃', onPress: onLogout },
+                                { name: '회원탈퇴', onPress: goToLogin }
+                            ]}
+                            role="button"
+                        />
+                    )}
+                </ScrollView>
             </View>
-          )}
         </View>
-      </ScrollView>
-    </View>
-  );
+    );
 }
 
-const useStyles = (colorScheme: ColorScheme) => StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    paddingTop: 50,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  name: {
-    fontWeight: '600',
-    fontSize: 20,
-    lineHeight: 24,
-    marginBottom: 31,
-  },
-  card: {
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: Colors[colorScheme].borderColor.secondary,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    gap: 14,
-    paddingVertical: 15,
-    marginBottom: 14,
-  },
-  title: {
-    fontWeight: '600',
-    fontSize: 18,
-    lineHeight: 22,
-    marginBottom: 4,
-  },
-  menu: {
-    fontWeight: '400',
-    fontSize: 14,
-    lineHeight: 17,
-    alignItems: 'flex-start',
-  },
-  solo: {
-    marginTop: 0,
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  buttonText: {
-    fontWeight: '400',
-  },
-  red: {
-    color: '#EA4335',
-  },
-  header: {
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-  },
-  icon: {
-    color: Colors[colorScheme].text.primary,
-    marginRight: 9,
-  },
-  headerTitle: {
-    fontWeight: '600',
-    fontSize: 22,
-    lineHeight: 27,
-    marginBottom: 13,
-  }
-});
+function useStyle(colorScheme: ColorScheme) {
+    const insets = useSafeAreaInsets();
+    const theme = Colors[colorScheme];
+    return StyleSheet.create({
+        MyContainer: {
+            flex: 1,
+            backgroundColor: theme.background.primary,
+            marginBottom: insets.bottom
+        },
+        MyContent: {
+            flex: 1,
+            backgroundColor: theme.background.primary
+        },
+        MyScrollView: {
+            paddingTop: 20,
+            paddingBottom: 96,
+            paddingHorizontal: 20,
+            backgroundColor: theme.background.primary
+        }
+    });
+}

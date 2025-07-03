@@ -1,29 +1,37 @@
 {
-  "cli": {
-    "version": ">= 3.13.2"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
-      },
-      "channel": "development"
+    "cli": {
+        "version": ">= 3.13.3"
     },
-    "preview": {
-      "distribution": "internal",
-      "channel": "preview"
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "android": {
+                "buildType": "apk",
+                "gradleCommand": ":app:assembleDebug",
+                "env": {
+                    "ANDROID_HOME": "/Users/shareemotion/Library/Android/sdk"
+                }
+            }
+        },
+        "preview": {
+            "distribution": "internal"
+        },
+        "production": {
+            "channel": "production",
+            "android": {
+                "credentialsSource": "local"
+            },
+            "ios": {
+                "credentialsSource": "remote"
+            }
+        },
+        "develop": {
+            "distribution": "store"
+        }
     },
-    "production": {
-      "ios": {
-        "cocoapods": "1.15.2",
-        "image": "macos-ventura-13.6-xcode-15.2"
-      },
-      "channel": "production"
+    "submit": {
+        "production": {},
+        "development": {}
     }
-  },
-  "submit": {
-    "production": {}
-  }
 }

@@ -1,6 +1,4 @@
-import {
-  Context,
-} from 'koa';
+import { Context } from 'koa';
 import db from 'models';
 
 export default async (ctx: Context, next: () => Promise<any>) => {

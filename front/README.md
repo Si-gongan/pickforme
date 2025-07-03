@@ -1,92 +1,50 @@
-# React Native (Expo) 로컬 실행 및 빌드
+# Welcome to your Expo app 👋
 
-This project is a React Native application bootstrapped with Expo.
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Prerequisites
+## Get started
 
-Make sure you have the following installed on your machine:
+1. Install dependencies
 
-- [Node.js](https://nodejs.org/) (LTS version recommended)
-- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+   ```bash
+   npm install
+   ```
 
-## Getting Started
+2. Start the app
 
-### Installation
+   ```bash
+    npx expo start
+   ```
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Si-gongan/pickforme.git
-    cd pickforme/front
-    ```
+In the output, you'll find options to open the app in a
 
-2. Install the dependencies:
-    ```bash
-    npm install
-    ```
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-3. Install Expo CLI globally if you haven't already:
-    ```bash
-    npm install -g expo-cli
-    ```
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-### Running the Project
+## Get a fresh project
 
-You can run the project on different platforms using the following npm scripts:
+When you're ready, run:
 
-- Start the Expo development server:
-    ```bash
-    npm run dev
-    ```
+```bash
+npm run reset-project
+```
 
-- Run the project on an Android device/emulator:
-    ```bash
-    npm run android
-    ```
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-- Run the project on an iOS device/simulator:
-    ```bash
-    npm run ios
-    ```
+## Learn more
 
-### Building the Project
+To learn more about developing your project with Expo, look at the following resources:
 
-To build the project for production, use the following commands:
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-- Build for iOS:
-    ```bash
-    npm run build:ios
-    ```
+## Join the community
 
-- Build for Android:
-    ```bash
-    npm run build:android
-    ```
+Join our community of developers creating universal apps.
 
-### 빌드 제출
-- iOS
-  1. Xcode에서 직접 빌드 후 archive 전송
-  2. ipa 직접 다운로드 후 Mac에서 transporter (MacApp) 이용해 appstore connect 직접 업로드
-  3. `eas submit -p ios` 이용
-- Android
-  1. appbundle 직접 다운로드 후 google play console에 직접 업로드
-  2. `eas build -p android` 이용
-
-### 빌드 버전 수정
-- app.json
-  ```bash
-  {
-    "expo": {
-      "version": "3.0.0", // 배포 버전 넘버
-      ...,
-      "ios": {
-        ...,
-        "buildNumber": "1" // iOS 빌드 넘버
-      },
-      "android": {
-        ...,
-        "versionCode": 1 // android 버전 코드
-      }
-  }
-  ```
-- 수정 후 꼭 `npx expo prebuild`를 진행해주어야 반영됨
-        
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

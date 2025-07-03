@@ -1,16 +1,16 @@
 name: Deploy PickForMe Server to Prod
 
 on:
-  workflow_dispatch:  # 수동 트리거만 사용
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions" 
+          git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
       - name: Start SSH agent with deploy keys
@@ -22,8 +22,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: main  # main 브랜치 체크아웃
+          ref: main
           fetch-depth: 0
+
+      - name: Ensure latest main HEAD
+        run: |
+          git checkout main
+          git pull origin main
 
       - name: Set remote to SSH
         run: git remote set-url origin git@github.com:Si-gongan/pickforme.git
@@ -32,16 +37,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Create and push tags
+        id: tag
         run: |
-          GIT_TAG_FOR_PROD="prod_$(date -u +'%y%m%d-%H%M')"
-          echo "GIT_TAG_FOR_PROD=$GIT_TAG_FOR_PROD" >> $GITHUB_ENV
-          git tag $GIT_TAG_FOR_PROD
-          git tag -f prod_server "$GIT_TAG_FOR_PROD"
-          git push -f origin $GIT_TAG_FOR_PROD
-          git push -f origin prod_server
-      
+          TAG="prod_$(date -u +'%y%m%d-%H%M')"
+          echo "Generated tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          git tag "$TAG"
+          git tag -fa prod_server -m "latest prod server tag" "$TAG"
+          git push origin "$TAG"
+          git push --force origin prod_server
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
@@ -52,8 +59,9 @@ jobs:
             source ~/.nvm/nvm.sh
             nvm use 18
             cd /home/ubuntu/pickforme
-            git fetch --all
-            git checkout $GIT_TAG_FOR_PROD
+            git fetch origin
+            git fetch --tags --force
+            git checkout ${{ steps.tag.outputs.tag }}
             cd back
             npm install
             pm2 start pm2.json

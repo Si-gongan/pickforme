@@ -12,17 +12,14 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"],
     "baseUrl": "./src",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "types": [],
+    "types": ["jest", "node"],
     "strictPropertyInitialization": false
   },
-  "noEmit": true,
+  "noEmit": false,
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "backups", "dist"]
 }
-
-
-

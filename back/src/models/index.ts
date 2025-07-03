@@ -15,13 +15,29 @@ import Item from './item';
 import Popup from './popup';
 
 import dotenv from 'dotenv';
+import { log } from 'utils/logger';
+import PurchaseFailure from './purchase/failure';
 dotenv.config();
 
 const uri = process.env.MONGO_URI!;
+const isTest = process.env.NODE_ENV === 'test';
 
-mongoose.connect(uri, {
-  dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'test',
-});
+if (!isTest) {
+  log.debug(`connecting to mongodb`);
+  mongoose
+    .connect(uri, {
+      dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme-production',
+      serverSelectionTimeoutMS: 5000,
+    })
+    .then(() => {
+      log.debug('MongoDB 연결 성공');
+    })
+    .catch((err) => {
+      void log.error('MongoDB 연결 실패', 'SYSTEM', 'HIGH', {
+        error: err,
+      });
+    });
+}
 
 const db = {
   User,
@@ -37,6 +53,7 @@ const db = {
   Log,
   Item,
   Popup,
+  PurchaseFailure,
 };
 
 export default db;

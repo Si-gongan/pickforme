@@ -1,21 +1,14 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require("expo/metro-config");
+const { getDefaultConfig } = require('expo/metro-config');
 
-module.exports = (() => {
-  const config = getDefaultConfig(__dirname);
+/** @type {import('expo/metro-config').MetroConfig} */
+const defaultConfig = getDefaultConfig(__dirname);
 
-  const { transformer, resolver } = config;
+// SVG 트랜스포머 설정 추가
+defaultConfig.transformer.babelTransformerPath = require.resolve('react-native-svg-transformer');
 
-  config.transformer = {
-    ...transformer,
-    babelTransformerPath: require.resolve("react-native-svg-transformer"),
-  };
-  config.resolver = {
-    ...resolver,
-    assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
-    sourceExts: [...resolver.sourceExts, "svg"],
-  };
+// 에셋 해석기에 SVG 추가
+defaultConfig.resolver.assetExts = defaultConfig.resolver.assetExts.filter(ext => ext !== 'svg');
+defaultConfig.resolver.sourceExts = [...defaultConfig.resolver.sourceExts, 'svg'];
 
-  return config;
-})();
-
+module.exports = defaultConfig;

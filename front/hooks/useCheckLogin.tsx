@@ -1,15 +1,17 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { userDataAtom, isShowLoginModalAtom } from '../stores/auth/atoms';
+
+import { isShowLoginModalAtom } from '@stores';
+import { userAtom } from '../stores/user';
 
 const useCheckLogin = (callback: (e: any) => any) => {
-  const isLogin = !!useAtomValue(userDataAtom);
-  const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
-  if (isLogin) {
-    return callback;
-  }
-  return () => {
-    setIsShowLoginModal(true);
-  }
-}
+    const user = useAtomValue(userAtom);
+    const setIsShowLoginModal = useSetAtom(isShowLoginModalAtom);
+    if (user?.token) {
+        return callback;
+    }
+    return () => {
+        setIsShowLoginModal(true);
+    };
+};
 
 export default useCheckLogin;

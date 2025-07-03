@@ -1,45 +1,64 @@
 export interface UserData {
-  _id: string,
-  email: string,
-  point: number,
-  aiPoint: number,
-  level: number,
-  lastLoginAt: string,
-  token: string,
-  push: {
-    service: PushService;
-  }
+    _id: string;
+    token: string;
+    point: number;
+    aiPoint: number;
+    lastLoginAt: string;
+    push: {
+        service: PushService;
+    };
 }
 
 export interface Setting {
-  name?: string,
-  vision?: 'none' | 'low' | 'blind',
-  theme?: 'light' | 'dark' | 'default',
-  isReady: boolean,
+    name?: string;
+    vision?: 'none' | 'low' | 'blind';
+    theme?: 'light' | 'dark' | 'default';
+    fontSize?: 'medium' | 'large' | 'extraLarge';
+    isReady: boolean;
 }
 
 export interface AppleLoginParams {
-  identityToken: string,
+    identityToken: string;
 }
 export interface KakaoLoginParams {
-  accessToken: string,
+    accessToken: string;
 }
 export interface GoogleLoginParams {
-  accessToken: string,
+    accessToken: string;
 }
 
 export interface LoginResponse {
-  user: UserData;
-  isRegister: boolean;
-  isNewLoginInEvent: boolean,
+    user: UserData;
+    isRegister: boolean;
+    isNewLoginInEvent: boolean;
 }
 export interface SetPushTokenParams {
-  token: string;
+    token: string;
 }
 
 export enum PushService {
-  on = 'on',
-  off = 'off',
+    on = 'on',
+    off = 'off'
+}
+
+export interface phoneCheckParams {
+    id: string;
+    phone: string;
+}
+
+export interface SetPopupParams {
+    popup_id: string;
+    flag: number;
+}
+
+export interface Popup {
+    _id: string;
+    popup_id: string;
+    title: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
 }
 
 export type SetPushSettingParams = UserData['push'];

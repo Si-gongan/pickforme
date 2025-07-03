@@ -23,13 +23,13 @@ router.get('/active', requireAuth, async (ctx) => {
     ctx.body = { error: '사용자를 찾을 수 없습니다.' };
     return;
   }
- 
-  if(!user.hide || !Array.isArray(user.hide)) {
+
+  if (!user.hide || !Array.isArray(user.hide)) {
     user.hide = [];
   }
 
-  const hidePopupIds = new Set(user.hide.map(id => id.toString()));
-  
+  const hidePopupIds = new Set(user.hide.map((id) => id.toString()));
+
   const filteredPopups = popups.filter((popup) => !hidePopupIds.has(popup.popup_id));
 
   ctx.body = filteredPopups;
@@ -38,8 +38,7 @@ router.get('/active', requireAuth, async (ctx) => {
 // 팝업 생성
 router.post('/', async (ctx) => {
   try {
-    const { popup_id, title, description, isActive } = ctx
-      .request.body as {
+    const { popup_id, title, description, isActive } = ctx.request.body as {
       popup_id: string;
       title: string;
       description?: string;
@@ -66,11 +65,7 @@ router.post('/', async (ctx) => {
     ctx.status = 201;
     ctx.body = popup;
   } catch (error) {
-    if (
-      error instanceof Error &&
-      'code' in error &&
-      (error as any).code === 11000
-    ) {
+    if (error instanceof Error && 'code' in error && (error as any).code === 11000) {
       ctx.status = 400;
       ctx.body = { error: '이미 존재하는 popup_id입니다.' };
       return;
@@ -81,7 +76,7 @@ router.post('/', async (ctx) => {
 });
 
 // 팝업 삭제
-router.delete('/:popup_id',  async (ctx) => {
+router.delete('/:popup_id', async (ctx) => {
   try {
     const { popup_id } = ctx.params;
     const result = await Popup.findOneAndDelete({

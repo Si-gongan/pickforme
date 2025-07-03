@@ -1,4 +1,5 @@
-import { Model, Document, Schema } from 'mongoose';
+import { ProductReward } from 'models/product';
+import { Model, Document, ClientSession } from 'mongoose';
 
 export interface LocalRegisterPayload {
   email: string;
@@ -21,20 +22,27 @@ export interface User extends LocalRegisterPayload {
   lastLoginAt: Date;
   pushToken?: string;
   originEmail?: string;
-  MembershipAt: Date;
-  phone:string;
-  event:number;
-  hide: string[] | null;
+  MembershipAt: Date | null;
+  lastMembershipAt: Date | null;
+  phone?: string;
+  event?: number | null;
+  hide?: string[];
 }
 
 export interface UserDocument extends User, Document {
   generateToken: () => Promise<string>;
   generateRefreshToken: () => Promise<string>; //리프레시 토큰 생성 메서드 추가
   clearRefreshToken: () => Promise<void>; //
-  usePoint(payload: number): () => Promise<number>;
-  useAiPoint(payload: number): () => Promise<number>;
-  processExpiredMembership: () => Promise<void>;
+  usePoint(payload: number): Promise<number>;
+  useAiPoint(payload: number): Promise<number>;
+  processExpiredMembership: (options?: { session?: ClientSession }) => Promise<void>;
   initMonthPoint: () => Promise<void>;
+  applyPurchaseRewards: (rewards: ProductReward, session?: ClientSession) => Promise<void>;
+  applyEventRewards: (
+    rewards: ProductReward,
+    eventType: number,
+    session?: ClientSession
+  ) => Promise<void>;
 }
 
 export interface UserModel extends Model<UserDocument> {

@@ -1,130 +1,77 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Redirect, SplashScreen, Stack, ErrorBoundary } from 'expo-router';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Suspense, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+// import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { Provider as JotaiProvider } from 'jotai';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import useInterceptor from '../hooks/useInterceptor';
-import useColorScheme from '../hooks/useColorScheme';
-import useSocket from '../hooks/useSocket';
-import usePushToken from '../hooks/usePushToken';
-import useGetShare from '../hooks/useGetShare';
-
-import { Text } from '../components/Themed';
-import Colors from '../constants/Colors';
-
-import { bottomSheetsAtom } from '../stores/layout/atoms';
-import { userDataAtom, settingAtom, isLoadedAtom, setClientTokenAtom } from '../stores/auth/atoms';
-import HeaderLeft from '../components/HeaderLeft';
-import OnboardingBottomSheet from '../components/BottomSheet/How';
+import { useInitializationAndRouting } from '../hooks/useInitializationAndRouting';
+import NonSubscriberManagerBottomSheet from '../components/BottomSheet/Membership/NonSubscriberManager';
 import LoginBottomSheet from '../components/BottomSheet/Login';
-import NonSubscribedBottomSheet from '../components/BottomSheet/Membership/NonSubscribed';
-import LackPointBottomSheet from '../components/BottomSheet/LackPoint';
-import GreetingBottomSheet from '../components/BottomSheet/Greeting';
-import RequestBottomSheet from '../components/BottomSheet/Request';
-import CommonBottomSheet from '../components/BottomSheet/Common';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
+import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
+import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
+import { checkAndFetchUpdates } from '@/utils/updates';
+import usePushToken from '@/hooks/usePushToken';
 
-// 2024
-import VersionUpdateAlarmBottomSheet from '../components/BottomSheet/VersionUpdateAlarm';
-import IntroduceAlertBottomSheet from '../components/BottomSheet/Membership/IntroduceAlert';
+SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
+    const [fontLoaded] = useFonts({
+        SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf')
+    });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    const { isTotalLoading } = useInitializationAndRouting(fontLoaded);
 
-  if (!loaded) {
-    return <SplashScreen />;
-  }
-  return (
-    <Suspense fallback={null}>
-      <JotaiProvider>
-        <RootLayoutNav />
-      </JotaiProvider>
-    </Suspense>
-  );
-}
+    useScreenTracking();
+    usePushToken();
 
-const hideHeaderOption = {
-  headerShadowVisible: false, // applied here
-  headerTitle: () => <Text accessible={false} />,
-  headerBackVisible: false,
-  headerLeft: HeaderLeft,
-}
-function RootLayoutNav() {
-  const bottomSheets = useAtomValue(bottomSheetsAtom);
-  const setClientToken = useSetAtom(setClientTokenAtom);
-  const colorScheme = useColorScheme();
-  const setting = useAtomValue(settingAtom);
-  const userData = useAtomValue(userDataAtom);
-  const [isLoaded, setIsLoaded] = useAtom(isLoadedAtom);
-  usePushToken();
-  useSocket();
-  useInterceptor();
-  useGetShare();
-  useEffect(() => {
-    (async () => {
-      const storageIsLoaded = await AsyncStorage.getItem('isLoaded');
-      if (!storageIsLoaded) {
-        setIsLoaded('true');
-      }
-    })();
-  }, []);
+    // 앱 시작 시 자동으로 업데이트 확인
+    useEffect(() => {
+        async function finalizeLoad() {
+            if (!isTotalLoading && fontLoaded) {
+                await checkAndFetchUpdates();
+                await SplashScreen.hideAsync();
+            }
+        }
+        finalizeLoad();
+    }, [isTotalLoading, fontLoaded]);
 
-  useEffect(() => {
-    if (isLoaded && userData) {
-      setClientToken();
+    // 로딩 중이면 아무것도 렌더링 하지 않음
+    if (isTotalLoading) {
+        return null;
     }
-  }, [setClientToken, isLoaded, userData]);
 
-  if (isLoaded === 'false') {
-    return <SplashScreen />
-  }
-  return (
-    <Suspense fallback={null}>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack
-          initialRouteName={setting.isReady ? '(tabs)' : '(onboarding)'}
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: Colors[colorScheme].background.primary,
-            },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          {["(auths)", "(settings)", "product-detail", "purchase", "purchase-history", "faq", "how", "subscription-history", "subscription"].map((name) => (
-            <Stack.Screen name={name} options={hideHeaderOption} key={`index-route-${name}`} />
-          ))}
-          <Stack.Screen name="(onboarding)" options={{ headerShown: false, presentation: 'modal' }} />
-        </Stack>
-        <LoginBottomSheet />
-        <GreetingBottomSheet />
-        <RequestBottomSheet />
-        <OnboardingBottomSheet />
-        <LackPointBottomSheet />
-        {/* <NoMembershipBottomSheet /> */}
-
-        {/* 2024 */}
-        <VersionUpdateAlarmBottomSheet />
-        <IntroduceAlertBottomSheet />
-
-
-        {bottomSheets.map((info, i) => (
-          <CommonBottomSheet info={info} index={i} />
-        ))}
-      </ThemeProvider>
-    </Suspense>
-  );
+    return (
+        <Suspense fallback={null}>
+            <QueryClientProvider client={queryClient}>
+                <JotaiProvider>
+                    <Stack
+                        screenOptions={{
+                            headerShown: false
+                        }}
+                    >
+                        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(hansiryun)" options={{ headerShown: false }} />
+                        <Stack.Screen name="product-detail" options={{ headerShown: false }} />
+                        <Stack.Screen name="info" options={{ headerShown: false }} />
+                        <Stack.Screen name="login" options={{ headerShown: false }} />
+                        <Stack.Screen name="push" options={{ headerShown: false }} />
+                        <Stack.Screen name="mode" options={{ headerShown: false }} />
+                        <Stack.Screen name="faq" options={{ headerShown: false }} />
+                        <Stack.Screen name="how" options={{ headerShown: false }} />
+                    </Stack>
+                    <StatusBar style="auto" />
+                    <NonSubscriberManagerBottomSheet />
+                    <LoginBottomSheet />
+                    <SubscriptionBottomSheet />
+                    <UnsubscribeBottomSheet />
+                </JotaiProvider>
+            </QueryClientProvider>
+        </Suspense>
+    );
 }
-const styles = StyleSheet.create({
-});

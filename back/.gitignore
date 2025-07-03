@@ -1,8 +1,12 @@
 # node modules
 node_modules
 
+# backups
+backups/*
+dist/*
 # misc
 .env
+.env.local
 .env.development
 .env.production
 .DS_Store
@@ -12,3 +16,6 @@ node_modules
 
 # webpack
 .webpackCache
+
+logs/*
+google_api_credentials.json

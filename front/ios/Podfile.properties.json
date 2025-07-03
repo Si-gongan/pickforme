@@ -1,3 +1,9 @@
 {
-  "expo.jsEngine": "hermes"
+  "expo.jsEngine": "jsc",
+  "EX_DEV_CLIENT_NETWORK_INSPECTOR": "true",
+  "newArchEnabled": "true",
+  "ios.useFrameworks": "dynamic",
+  "apple.extraPods": "[]",
+  "apple.ccacheEnabled": "false",
+  "apple.privacyManifestAggregationEnabled": "true"
 }

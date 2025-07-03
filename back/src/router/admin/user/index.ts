@@ -16,8 +16,8 @@ router.get('/', async (ctx) => {
     const users = await db.User.find({
       createdAt: {
         $gte: startDate, // '이상'
-        $lte: endDate   // '이하'
-      }
+        $lte: endDate, // '이하'
+      },
     });
 
     // 조회된 사용자 목록을 응답으로 반환합니다.
