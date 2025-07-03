@@ -19,27 +19,33 @@ import { IconHeader, MySection } from '@components';
 import { userAtom } from '@stores';
 import { changeToken } from '../../utils/axios';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/core';
 
 export default function MyScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
     const router = useRouter();
-    const contentRef = useRef<View>(null);
+    const headerTitleRef = useRef<View>(null);
 
     const [user, onUser] = useAtom(userAtom);
 
-    useEffect(() => {
-        const node = findNodeHandle(contentRef.current);
-        console.log('node', node);
-        if (node) {
-            InteractionManager.runAfterInteractions(() => {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 500);
-            });
-        }
-    }, [contentRef.current]);
-
+    useFocusEffect(
+        useCallback(() => {
+            const f = () => {
+                if (headerTitleRef.current) {
+                    const nodeHandle = findNodeHandle(headerTitleRef.current);
+                    if (nodeHandle) {
+                        InteractionManager.runAfterInteractions(() => {
+                            setTimeout(() => {
+                                AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                            }, 500);
+                        });
+                    }
+                }
+            };
+            setTimeout(f, 500);
+        }, [])
+    );
     const goToInfo = useCallback(
         function () {
             // @ts-ignore - Expo Router 4 type issues
@@ -153,7 +159,7 @@ export default function MyScreen() {
 
     return (
         <View style={style.MyContainer}>
-            <View accessible={true} accessibilityRole="header" accessibilityLabel="마이페이지" ref={contentRef}>
+            <View accessible={true} accessibilityRole="header" accessibilityLabel="마이페이지" ref={headerTitleRef}>
                 <IconHeader title="마이페이지" />
             </View>
             <View style={style.MyContent}>
