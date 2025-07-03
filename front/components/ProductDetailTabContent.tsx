@@ -221,24 +221,26 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
 
     return (
         <View style={styles.detailWrap}>
-            <View style={styles.inputWrap} ref={contentRef} accessible>
-                <TextInput
-                    style={styles.textArea}
-                    underlineColorAndroid="transparent"
-                    value={question}
-                    returnKeyType="done"
-                    onSubmitEditing={() => {
-                        handleClickSend(question);
-                    }}
-                    accessible
-                    accessibilityLabel="질문 입력창."
-                    onChangeText={text => {
-                        setQuestion(text);
-                    }}
-                    accessibilityHint="예를 들어, 이 상품의 단백질 함량은 몇그램 인가요? 라고 물어볼 수 있어요."
-                    placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요."
-                    placeholderTextColor={colorScheme === 'dark' ? '#aaaaaa' : '#888888'}
-                />
+            <View style={styles.inputWrap}>
+                <View ref={contentRef} accessible style={{ width: '90%' }}>
+                    <TextInput
+                        style={styles.textArea}
+                        underlineColorAndroid="transparent"
+                        value={question}
+                        returnKeyType="done"
+                        onSubmitEditing={() => {
+                            handleClickSend(question);
+                        }}
+                        accessible
+                        accessibilityLabel="질문 입력창. 예를 들어, 이 상품의 단백질 함량은 몇그램 인가요? 라고 물어볼 수 있어요."
+                        onChangeText={text => {
+                            setQuestion(text);
+                        }}
+                        accessibilityHint="예를 들어, 이 상품의 단백질 함량은 몇그램 인가요? 라고 물어볼 수 있어요."
+                        placeholder="상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요."
+                        placeholderTextColor={colorScheme === 'dark' ? '#aaaaaa' : '#888888'}
+                    />
+                </View>
 
                 <Pressable
                     onPress={() => {
