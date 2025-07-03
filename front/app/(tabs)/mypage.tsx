@@ -1,6 +1,14 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import {
+    View,
+    StyleSheet,
+    ScrollView,
+    Alert,
+    findNodeHandle,
+    InteractionManager,
+    AccessibilityInfo
+} from 'react-native';
 import { useAtom } from 'jotai';
 import * as WebBrowser from 'expo-web-browser';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -16,8 +24,21 @@ export default function MyScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
     const router = useRouter();
+    const contentRef = useRef<View>(null);
 
     const [user, onUser] = useAtom(userAtom);
+
+    useEffect(() => {
+        const node = findNodeHandle(contentRef.current);
+        console.log('node', node);
+        if (node) {
+            InteractionManager.runAfterInteractions(() => {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 500);
+            });
+        }
+    }, [contentRef.current]);
 
     const goToInfo = useCallback(
         function () {
@@ -132,7 +153,9 @@ export default function MyScreen() {
 
     return (
         <View style={style.MyContainer}>
-            <IconHeader title="마이페이지" />
+            <View accessible={true} accessibilityRole="header" accessibilityLabel="마이페이지" ref={contentRef}>
+                <IconHeader title="마이페이지" />
+            </View>
             <View style={style.MyContent}>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={style.MyScrollView}>
                     {!!user?._id && (
