@@ -102,12 +102,23 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
         }
     };
 
-    // productDetail이 변경될 때마다 현재 탭의 API 호출 여부 체크
+    // 모든 탭에 대해 조건을 만족하면 fetch하는 함수
+    const fetchAllAvailableTabs = () => {
+        if (!productDetail) return;
+
+        // 모든 탭에 대해 조건을 체크하고 fetch
+        Object.values(TABS).forEach(tabKey => {
+            if (tabKey !== TABS.QUESTION) {
+                // QUESTION 탭은 제외
+                callTabAPI(tabKey);
+            }
+        });
+    };
+
+    // productDetail이 변경될 때마다 모든 탭의 API 호출 여부 체크
     useEffect(() => {
-        if (productDetail) {
-            callTabAPI(tab);
-        }
-    }, [productDetail, tab, loadingStatus, productReview]);
+        fetchAllAvailableTabs();
+    }, [productDetail, loadingStatus, productReview]);
 
     return {
         checkRequiredData,

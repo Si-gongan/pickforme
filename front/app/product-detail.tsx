@@ -205,12 +205,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         }
     }, [productUrl]);
 
-    useEffect(() => {
-        if (productDetail?.product) {
-            getProductReview();
-        }
-    }, [productDetail?.product]);
-
     const handleClickBuy = async () => {
         await WebBrowser.openBrowserAsync(product.url);
     };
@@ -346,7 +340,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             if (data && data.length > 0) {
                 // 리뷰 데이터 설정
                 setProductReview(data);
-                getProductReview(); // 리뷰 요약 요청
             }
         }
     });
