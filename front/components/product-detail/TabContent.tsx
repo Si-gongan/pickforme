@@ -60,6 +60,12 @@ const TabContent: React.FC<TabContentProps> = ({
     }
 
     // 2. 로딩 상태 처리
+    console.log('TabContent 디버깅:', {
+        tab,
+        loadingStatus: loadingStatus[tab],
+        condition: loadingStatus[tab] === 0 || loadingStatus[tab] === 1,
+        loadingMessages: loadingMessages[tab]
+    });
     if (loadingStatus[tab] === 0 || loadingStatus[tab] === 1) {
         return (
             <View style={styles.detailWrap}>
@@ -119,7 +125,7 @@ const useStyles = (colorScheme: 'light' | 'dark') =>
         },
         loadingMessageText: {
             fontSize: 14,
-            color: Colors[colorScheme].text.secondary
+            color: Colors[colorScheme].text.primary
         },
         errorText: {
             fontSize: 14,
