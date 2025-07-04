@@ -53,10 +53,6 @@ export default function TabLayout() {
                         title: 'Home',
                         tabBarLabel: '홈',
                         tabBarAccessibilityLabel: '홈 탭',
-                        // tabBarIcon: function ({ color, focused }) {
-
-                        //     return <HomeIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
-                        // }
                         tabBarButton: props => {
                             const safeProps = Object.fromEntries(
                                 Object.entries(props).map(([key, value]) => [key, value === null ? undefined : value])
@@ -68,7 +64,6 @@ export default function TabLayout() {
                                 <TouchableOpacity
                                     {...safeProps}
                                     onPress={e => {
-                                        console.log('홈 탭 클릭!', isSelected);
                                         props.onPress?.(e);
 
                                         // 홈탭을 눌렀을 때 검색 정보들을 초기화
@@ -76,7 +71,6 @@ export default function TabLayout() {
                                             setSearchText('');
                                             setSearchQuery('');
                                         } else {
-                                            console.log('refresh home');
                                             const randomCategoryId =
                                                 CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
                                             setCurrentCategory(
