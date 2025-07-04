@@ -38,7 +38,9 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ productDetail, isTabPressed, hand
             InteractionManager.runAfterInteractions(() => {
                 const nodeHandle = findNodeHandle(contentRef.current);
                 if (nodeHandle) {
-                    AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                    setTimeout(() => {
+                        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                    }, 500); // 0.5초 후에 시도
                 }
             });
         }

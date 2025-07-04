@@ -49,23 +49,18 @@ const TabContent: React.FC<TabContentProps> = ({
                 question={question}
                 setQuestion={setQuestion}
                 handleClickSend={handleClickSend}
-                request={request}
                 productRequests={productRequests}
                 loadingMessages={loadingMessages}
                 loadingStatus={loadingStatus}
                 tab={tab}
                 productDetail={productDetail}
+                isTabPressed={isTabPressed}
+                request={request}
             />
         );
     }
 
     // 2. 로딩 상태 처리
-    console.log('TabContent 디버깅:', {
-        tab,
-        loadingStatus: loadingStatus[tab],
-        condition: loadingStatus[tab] === 0 || loadingStatus[tab] === 1,
-        loadingMessages: loadingMessages[tab]
-    });
     if (loadingStatus[tab] === 0 || loadingStatus[tab] === 1) {
         return (
             <View style={styles.detailWrap}>

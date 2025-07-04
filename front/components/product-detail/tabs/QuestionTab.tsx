@@ -31,6 +31,7 @@ interface QuestionTabProps {
     loadingStatus: any;
     tab: TABS;
     productDetail: ProductDetailState | void;
+    isTabPressed: boolean;
 }
 
 const QuestionTab: React.FC<QuestionTabProps> = ({
@@ -42,11 +43,12 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     loadingMessages,
     loadingStatus,
     tab,
-    productDetail
+    productDetail,
+    isTabPressed
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
-    const contentRef = useRef<RNView>(null);
+    const inputRef = useRef<TextInput>(null);
 
     const markdownStyles = StyleSheet.create({
         text: {
@@ -57,23 +59,24 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     });
 
     useEffect(() => {
-        if (contentRef.current) {
-            const node = findNodeHandle(contentRef.current);
+        if (isTabPressed && inputRef.current) {
+            const node = findNodeHandle(inputRef.current);
             if (node) {
                 InteractionManager.runAfterInteractions(() => {
                     setTimeout(() => {
                         AccessibilityInfo.setAccessibilityFocus(node);
-                    }, 1500);
+                    }, 1000);
                 });
             }
         }
-    }, [tab, contentRef.current]);
+    }, [isTabPressed]);
 
     return (
         <View style={styles.detailWrap}>
             <View style={styles.inputWrap}>
-                <View ref={contentRef} accessible style={{ width: '90%' }}>
+                <View accessible style={{ width: '90%' }}>
                     <TextInput
+                        ref={inputRef}
                         style={styles.textArea}
                         underlineColorAndroid="transparent"
                         value={question}
