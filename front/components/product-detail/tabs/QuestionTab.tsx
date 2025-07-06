@@ -85,7 +85,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                             handleClickSend(question);
                         }}
                         accessible
-                        accessibilityLabel="질문 입력창. 상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요. 예를 들어, 이 상품의 단백질 함량은 몇그램 인가요? 라고 물어볼 수 있어요."
+                        accessibilityLabel="질문 입력창. 텍스트 필드. 상품에 대해 궁금한 점을 자유롭게 AI포미에게 물어보세요. 예를 들어, 이 상품의 단백질 함량은 몇그램 인가요? 라고 물어볼 수 있어요."
                         onChangeText={text => {
                             setQuestion(text);
                         }}
