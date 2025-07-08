@@ -77,6 +77,7 @@ export const productDetailAtom = atom<ProductDetailState | undefined>(undefined)
 
 export const initProductDetailAtom = atom(null, async (get, set) => {
     set(productDetailAtom, { product: undefined } as ProductDetailState);
+    set(productReviewAtom, { reviews: [] } as ProductReview);
     set(loadingStatusAtom, {
         caption: LoadingStatus.INIT,
         review: LoadingStatus.INIT,
