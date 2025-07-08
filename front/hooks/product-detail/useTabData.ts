@@ -70,6 +70,11 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
             return;
         }
 
+        // 현재 productUrl과 productDetail의 URL이 일치하지 않으면 요청하지 않음 (이전 상품 정보로 요청하는 것 방지)
+        if (productDetail?.product?.url !== productUrl) {
+            return;
+        }
+
         // 1: 이미 데이터를 가져오고 있다 -> 그러면 중복호출임.
         // 2: 데이터를 가져오는데 실패했다 -> handleRegenerate를 통해서 유저가 수동으로 호출해야 함.
         // 3: 데이터를 가져오는데 성공했다. 그러면 또 가져올 필요가 없음.
@@ -118,7 +123,7 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
     // productDetail이 변경될 때마다 모든 탭의 API 호출 여부 체크
     useEffect(() => {
         fetchAllAvailableTabs();
-    }, [productDetail, loadingStatus, productReview]);
+    }, [productDetail, loadingStatus, productReview, productUrl]);
 
     return {
         checkRequiredData,
