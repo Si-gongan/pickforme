@@ -52,12 +52,6 @@ const ReportTab: React.FC<ReportTabProps> = ({ productDetail, isTabPressed }) =>
             importantForAccessibility="yes"
         >
             <Markdown style={markdownStyles}>{reportContent}</Markdown>
-            {/* 보이스오버를 위한 감춰진 텍스트 */}
-            <RNView
-                style={{ height: 1, width: 1, overflow: 'hidden' }}
-                accessible={true}
-                accessibilityLabel={plainText}
-            />
         </View>
     );
 };
