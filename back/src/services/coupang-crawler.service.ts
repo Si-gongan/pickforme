@@ -37,8 +37,6 @@ class CoupangCrawlerService extends EventEmitter {
 
   private queue: CrawlRequest[] = [];
 
-  private isProcessing = false;
-
   private isInitialized = false;
 
   async initialize() {
@@ -132,48 +130,30 @@ class CoupangCrawlerService extends EventEmitter {
       };
 
       this.queue.push(request);
-      // 큐가 비어있을 때만 processQueue 시작
-      if (!this.isProcessing) {
-        void this.processQueue();
-      }
+      this.tryProcessQueue(); // 큐에 추가하고 바로 처리 시도
     });
   }
 
-  private async processQueue() {
-    if (this.isProcessing) return;
-    if (this.queue.length === 0) return;
+  private tryProcessQueue() {
+    // 사용 가능한 페이지가 있고 큐에 요청이 있으면 처리
+    while (this.pages.length > 0 && this.queue.length > 0) {
+      const page = this.pages.shift();
+      const request = this.queue.shift();
 
-    this.isProcessing = true;
-
-    try {
-      while (this.queue.length > 0) {
-        const request = this.queue.shift();
-        if (!request) continue;
-
-        try {
-          const result = await this.processRequest(request);
-          request.resolve(result);
-        } catch (error) {
-          request.reject(error);
-        }
+      if (page && request) {
+        // 비동기로 처리 (await 하지 않음)
+        void this.processRequest(request, page);
       }
-    } finally {
-      this.isProcessing = false;
     }
   }
 
-  private async processRequest(request: CrawlRequest): Promise<CrawlResult> {
-    const page = this.pages.shift();
-    if (!page) {
-      throw new Error('사용 가능한 페이지가 없습니다');
-    }
-
+  private async processRequest(request: CrawlRequest, page: Page): Promise<void> {
     try {
       console.log(`🔍 크롤링 시작: ${request.url}`);
 
       const response = await page.goto(request.url, {
         waitUntil: 'networkidle',
-        timeout: 60000,
+        timeout: 30000,
       });
 
       if (response?.status() !== 200 || (await page.content()).includes('Access Denied')) {
@@ -258,11 +238,19 @@ class CoupangCrawlerService extends EventEmitter {
         data.reviews = [];
       }
 
+      if (!data.name) {
+        throw new Error('상품 이름을 찾을 수 없습니다.');
+      }
+
       console.log(`✅ 크롤링 완료: ${request.url}`);
-      return data;
+      request.resolve(data);
+    } catch (error) {
+      console.error(`❌ 크롤링 실패: ${request.url}`, error);
+      request.reject(error);
     } finally {
-      // 페이지를 다시 풀에 반환
+      // 페이지를 다시 풀에 반환하고 큐 처리 시도
       this.pages.push(page);
+      this.tryProcessQueue(); // 다음 요청 처리 시도
     }
   }
 
@@ -295,7 +283,6 @@ class CoupangCrawlerService extends EventEmitter {
       isInitialized: this.isInitialized,
       availablePages: this.pages.length,
       queueLength: this.queue.length,
-      isProcessing: this.isProcessing,
     };
   }
 }
