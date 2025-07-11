@@ -14,13 +14,12 @@ async function testParallelProcessing() {
     const testUrls = [
       'https://invalid-url-that-does-not-exist.com',
       'https://www.coupang.com/vp/products/8597104219?itemId=24927818789&vendorItemId=92219765728&sourceType=sdp_carousel_3_ads&clickEventId=c99a3390-5c84-11f0-ae7e-096b39f82f0e&templateId=5177',
-      'https://www.coupang.com/vp/products/6671243928?itemId=19026712612&vendorItemId=3073291162&sourceType=gm_crm_goldbox&subSourceType=cmgoms_gm_crm_gwsrtcut&omsPageId=121237&omsPageUrl=121237',
-      'https://www.coupang.com/vp/products/5071892418?itemId=18296977677&vendorItemId=74157319832&sourceType=gm_crm_goldbox&subSourceType=cmgoms_gm_crm_gwsrtcut&omsPageId=121237&omsPageUrl=121237',
-      'https://www.coupang.com/vp/products/5071892418?itemId=18296977677&vendorItemId=74157319832&sourceType=gm_crm_goldbox&subSourceType=cmgoms_gm_crm_gwsrtcut&omsPageId=121237&omsPageUrl=121237',
+      'https://link.coupang.com/a/cuBzJN',
+      'https://m.coupang.com/vm/products/10294558?itemId=17601366094&vendorItemId=90766204239',
       'https://www.coupang.com/vp/products/7599769341?vendorItemId=88277400971&sourceType=sdp_bottom_promotion&searchId=feed-48445764eaa242efb7971ca6b56a5668-gw_promotion',
-      'https://www.coupang.com/vp/products/8313424981?itemId=23990305722&searchId=feed-eef7c520b04643cf9ef6eae386aca0f5-view_together_ads-P7599769341&vendorItemId=91011302435&sourceType=SDP_ADS&clickEventId=e756f6c0-5c84-11f0-a68b-9d778fa00cd3',
-      'https://www.coupang.com/vp/products/8349392977?vendorItemId=91139103559&sourceType=HOME_RELATED_ADS&searchId=feed-312dfc4f92974eed9954d049e1d2f611-related_ads&clickEventId=f3f39230-5c84-11f0-8151-42f0b1dbbafc',
-      'https://www.coupang.com/vp/products/8689258726?itemId=25227855502&searchId=feed-fca98b061663453ab4cd5b7dc46b12e6-view_together_ads-P8349392977&vendorItemId=91922526198&sourceType=SDP_ADS&clickEventId=f6029c10-5c84-11f0-abb6-41fe3428bd40',
+      'https://m.coupang.com/vm/products/7225189423?',
+      'https://link.coupang.com/a/cxAcbH',
+      'https://link.coupang.com/a/cxAfeD',
       'https://www.coupang.com/vp/products/8756786700?itemId=25459158235&vendorItemId=92451806560&q=%EC%9A%94%EB%84%A4%EC%A6%88%20%EC%BC%84%EC%8B%9C&searchId=3a03c975541539&sourceType=search&itemsCount=36&searchRank=7&rank=7',
       'https://www.coupang.com/vp/products/7605326917?itemId=20128870013&vendorItemId=88897431689&q=%EC%9A%94%EB%84%A4%EC%A6%88%20%EC%BC%84%EC%8B%9C&searchId=3a03c975541539&sourceType=search&itemsCount=36&searchRank=0&rank=0',
     ];

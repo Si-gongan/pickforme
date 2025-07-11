@@ -1,6 +1,7 @@
 import Router from '@koa/router';
 import coupangCrawlerService from '../../services/coupang-crawler.service';
 import { log } from 'utils/logger';
+import { extractAndValidateCoupangUrl } from 'utils/coupang';
 
 const router = new Router({
   prefix: '/coupang',
@@ -9,9 +10,9 @@ const router = new Router({
 // 쿠팡 상품 크롤링
 router.post('/crawl', async (ctx) => {
   try {
-    const { url } = ctx.request.body as { url: string };
+    const { url: inputText } = ctx.request.body as { url: string };
 
-    if (!url) {
+    if (!inputText) {
       ctx.status = 400;
       ctx.body = {
         success: false,
@@ -20,28 +21,34 @@ router.post('/crawl', async (ctx) => {
       return;
     }
 
-    // 쿠팡 URL 검증
-    if (!url.includes('coupang.com/vp/products/')) {
+    // URL 추출 및 검증
+    const validation = extractAndValidateCoupangUrl(inputText);
+
+    if (!validation.success) {
       ctx.status = 400;
       ctx.body = {
         success: false,
-        message: '유효한 쿠팡 상품 URL이 아닙니다.',
+        message: validation.message,
+        inputText, // 디버깅용으로 원본 텍스트 반환
+        extractedUrl: validation.url,
       };
       return;
     }
 
-    console.log(`🚀 쿠팡 크롤링 요청: ${url}`);
-
-    const result = await coupangCrawlerService.crawl(url);
+    const result = await coupangCrawlerService.crawl(validation.url!);
 
     ctx.body = {
       success: true,
       data: result,
+      extractedUrl: validation.url,
+      productId: validation.productId,
     };
 
     // 로그 기록
     void log.info('쿠팡 크롤링 성공', 'COUPANG', 'LOW', {
-      url,
+      originalInput: inputText,
+      extractedUrl: validation.url,
+      productId: validation.productId,
       productName: result.name,
       price: result.price,
     });
@@ -56,7 +63,7 @@ router.post('/crawl', async (ctx) => {
 
     // 에러 로그 기록
     void log.error(error instanceof Error ? error.message : '쿠팡 크롤링 실패', 'COUPANG', 'HIGH', {
-      url: (ctx.request.body as any)?.url,
+      originalInput: (ctx.request.body as any)?.url,
       error: error instanceof Error ? error.stack : error,
     });
   }
