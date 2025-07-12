@@ -44,17 +44,17 @@ export const sanitizeUrl = (inputUrl: string): string => {
 export const normalizeUrl = (url: string): string => {
     try {
         if (!url) return '';
-        
+
         const urlObj = new URL(url);
-        
+
         // 쿠팡 URL인 경우 필수 파라미터만 유지
         if (urlObj.hostname.includes('coupang.com')) {
             // 필수 파라미터 목록
             const essentialParams = ['itemId', 'vendorItemId'];
-            
+
             // 새로운 URLSearchParams 생성
             const params = new URLSearchParams();
-            
+
             // 필수 파라미터만 추가
             essentialParams.forEach(param => {
                 const value = urlObj.searchParams.get(param);
@@ -62,14 +62,52 @@ export const normalizeUrl = (url: string): string => {
                     params.append(param, value);
                 }
             });
-            
+
             // 정규화된 URL 생성
             return `${urlObj.origin}${urlObj.pathname}?${params.toString()}`;
         }
-        
+
         return url;
     } catch (error) {
         console.error('URL 정규화 중 오류:', error);
         return url;
+    }
+};
+
+// 쿠팡 URL을 리뷰 페이지 URL로 변환하는 함수
+export const convertToCoupangReviewUrl = async (url: string): Promise<string> => {
+    try {
+        let processedUrl = url;
+
+        // 쿠팡 앱 링크 처리 (link.coupang.com)
+        if (url.includes('link.coupang.com')) {
+            processedUrl = await resolveRedirectUrl(url);
+        }
+
+        // 쿠팡 제품 ID 추출
+        let productId = null;
+
+        // 패턴 1: productId= 쿼리 파라미터
+        if (processedUrl.includes('productId=')) {
+            productId = processedUrl.split('productId=')[1]?.split('&')[0];
+        }
+        // 패턴 2: products/ 경로 사용 (모바일 및 데스크톱)
+        else if (
+            processedUrl.includes('coupang.com/vp/products/') ||
+            processedUrl.includes('coupang.com/vm/products/')
+        ) {
+            let idPart = processedUrl.split('products/')[1] || '';
+            productId = idPart.split(/[\?#]/)[0]; // 쿼리스트링이나 해시 태그 제거
+        }
+
+        if (!productId) {
+            throw new Error('쿠팡 제품 ID를 찾을 수 없습니다.');
+        }
+
+        // 리뷰 페이지 URL 구성
+        return `https://m.coupang.com/vm/products/${productId}/brand-sdp/reviews/detail`;
+    } catch (error) {
+        console.error('쿠팡 리뷰 URL 변환 중 오류:', error);
+        throw error;
     }
 };

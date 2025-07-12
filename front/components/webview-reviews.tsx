@@ -9,6 +9,7 @@
 import React, { useRef, useState, useEffect, ReactElement } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { View } from 'react-native';
+import { convertToCoupangReviewUrl } from '@/utils/url';
 
 interface WebViewProps {
     productUrl: string;
@@ -31,44 +32,43 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
     let retryCount = 0;
     let scrollDownCount = 0;
 
-    const parseUrl = (url: string) => {
-        if (url.includes('coupang')) {
-            let coupang_id;
-            if (url.includes('link.coupang.com/re')) {
-                coupang_id = parseInt(url.split('pageKey=')[1].split('&')[0]);
-            } else if (url.includes('coupang.com/vp/products') || url.includes('coupang.com/vm/products')) {
-                coupang_id = parseInt(url.split('products/')[1].split('?')[0]);
+    const parseUrl = async (url: string) => {
+        try {
+            if (url.includes('coupang')) {
+                const reviewUrl = await convertToCoupangReviewUrl(url);
+                setReviewWebviewUrl(reviewUrl);
+                setInjectionCode(`(function() {
+                  const divs = document.querySelectorAll('div[class*="review-content"]');
+                  const divContents = [];
+                  divs.forEach(div => {
+                    divContents.push(div.innerText.trim());
+                  });
+                  const uniqueContents = Array.from(new Set(divContents));
+                  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
+                  }
+                })();
+                true;`);
+            } else {
+                // TODO: add other platforms
+                setReviewWebviewUrl(url);
+                setInjectionCode(`(function() {
+                  const divs = document.querySelectorAll('div[class*="review"]');
+                  const divContents = [];
+                  divs.forEach(div => {
+                    if (div.innerText.length > 20) {
+                      divContents.push(div.innerText.trim());
+                    }
+                  });
+                  const uniqueContents = Array.from(new Set(divContents));
+                  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
+                  }
+                })();
+                true;`);
             }
-            setReviewWebviewUrl(`https://m.coupang.com/vm/products/${coupang_id}/brand-sdp/reviews/detail`);
-            setInjectionCode(`(function() {
-              const divs = document.querySelectorAll('div[class*="review-content"]');
-              const divContents = [];
-              divs.forEach(div => {
-                divContents.push(div.innerText.trim());
-              });
-              const uniqueContents = Array.from(new Set(divContents));
-              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
-              }
-            })();
-            true;`);
-        } else {
-            // TODO: add other platforms
+        } catch (error) {
             setReviewWebviewUrl(url);
-            setInjectionCode(`(function() {
-              const divs = document.querySelectorAll('div[class*="review"]');
-              const divContents = [];
-              divs.forEach(div => {
-                if (div.innerText.length > 20) {
-                  divContents.push(div.innerText.trim());
-                }
-              });
-              const uniqueContents = Array.from(new Set(divContents));
-              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
-              }
-            })();
-            true;`);
         }
     };
 
@@ -81,7 +81,6 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
     };
 
     const scrollDown = () => {
-        console.log('스크롤 다운');
         if (webViewRef.current) {
             const scrollScript = `
                 (function() {
@@ -114,8 +113,13 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
 
     useEffect(() => {
         retryCount = 0;
-        parseUrl(productUrl);
-        runJavaScript();
+        parseUrl(productUrl)
+            .then(() => {
+                runJavaScript();
+            })
+            .catch(error => {
+                console.error('URL 파싱 중 오류:', error);
+            });
     }, [productUrl]);
 
     const handleMessage = (event: WebViewMessageEvent) => {
