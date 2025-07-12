@@ -3,7 +3,14 @@ import winston from 'winston';
 
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
-export type LogContext = 'PURCHASE' | 'AUTH' | 'USER' | 'PRODUCT' | 'SYSTEM' | 'SCHEDULER';
+export type LogContext =
+  | 'PURCHASE'
+  | 'AUTH'
+  | 'USER'
+  | 'PRODUCT'
+  | 'SYSTEM'
+  | 'SCHEDULER'
+  | 'COUPANG';
 
 export type LogSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
