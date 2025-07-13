@@ -45,11 +45,16 @@ export const useWebViewFallback = ({ productUrl }: UseWebViewFallbackProps) => {
                 // 서버 응답에서 상품 정보 추출
                 const serverData = response.data.data;
 
-                console.log('get data from server', serverData);
+                console.log('서버 크롤링 데이터:', {
+                    name: serverData.name,
+                    price: serverData.price,
+                    detail_images: serverData.detail_images?.length > 0 ? '있음' : '없음',
+                    reviews: serverData.reviews?.length > 0 ? '있음' : '없음'
+                });
 
                 if (serverData && serverData.name && serverData.price) {
                     // Product 타입에 맞게 변환
-                    const product: Product = {
+                    const productData: Partial<Product> = {
                         name: serverData.name,
                         price: serverData.price,
                         origin_price: serverData.origin_price || serverData.price,
@@ -57,15 +62,23 @@ export const useWebViewFallback = ({ productUrl }: UseWebViewFallbackProps) => {
                         ratings: serverData.ratings || 0,
                         reviews: serverData.reviews_count || 0,
                         thumbnail: serverData.thumbnail || '',
-                        detail_images: serverData.detail_images || [],
                         url: serverData.url || productUrl,
                         platform: 'coupang'
                     };
 
+                    // detail_images가 있고 빈 배열이 아닐 때만 추가
+                    if (serverData.detail_images && serverData.detail_images.length > 0) {
+                        productData.detail_images = serverData.detail_images;
+                    }
+
+                    // Product 타입에 맞게 변환
+                    const product: Product = productData as Product;
+
                     // 상품 정보를 atoms에 설정
                     setProduct(product);
 
-                    if (serverData.reviews) {
+                    // reviews가 있고 빈 배열이 아닐 때만 업데이트
+                    if (serverData.reviews && serverData.reviews.length > 0) {
                         setProductReview(serverData.reviews);
                     }
 
