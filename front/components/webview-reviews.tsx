@@ -14,6 +14,7 @@ import { convertToCoupangReviewUrl } from '@/utils/url';
 interface WebViewProps {
     productUrl: string;
     onMessage: (data: string[]) => void;
+    onError?: () => void;
 }
 
 // 반환 타입 정의
@@ -23,14 +24,23 @@ interface WebViewReviewsResult {
     runJavaScript: () => void;
 }
 
-export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebViewReviewsResult => {
+export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewProps): WebViewReviewsResult => {
     const webViewRef = useRef<WebView>(null);
     const [reviewWebviewUrl, setReviewWebviewUrl] = useState<string>('');
     const [injectionCode, setInjectionCode] = useState<string>('');
     const [accumulatedReviews, setAccumulatedReviews] = useState<string[]>([]);
-    const maxRetries = 5;
+    const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
+
+    const maxRetries = 3;
     let retryCount = 0;
     let scrollDownCount = 0;
+
+    const handleErrorOnce = () => {
+        if (!hasErrorOccurred) {
+            setHasErrorOccurred(true);
+            onError?.();
+        }
+    };
 
     const parseUrl = async (url: string) => {
         try {
@@ -68,7 +78,8 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
                 true;`);
             }
         } catch (error) {
-            setReviewWebviewUrl(url);
+            console.error('URL 파싱 중 오류:', error);
+            handleErrorOnce();
         }
     };
 
@@ -113,6 +124,9 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
 
     useEffect(() => {
         retryCount = 0;
+        scrollDownCount = 0;
+        setHasErrorOccurred(false);
+        setAccumulatedReviews([]);
         parseUrl(productUrl)
             .then(() => {
                 runJavaScript();
@@ -125,7 +139,7 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
     const handleMessage = (event: WebViewMessageEvent) => {
         const data = event.nativeEvent.data;
 
-        console.log('WebView message in webview-reviews:', data.length);
+        // console.log('WebView message in webview-reviews:', data.length);
 
         try {
             const parsedData = JSON.parse(data);
@@ -167,15 +181,29 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
                 }
             } else {
                 retryCount++;
-                runJavaScript();
+                if (retryCount >= maxRetries) {
+                    handleErrorOnce();
+                } else {
+                    runJavaScript();
+                }
             }
         } catch (error) {
             console.error('Failed to parse JSON:', error);
+            retryCount++;
+            if (retryCount >= maxRetries) {
+                handleErrorOnce();
+            } else {
+                runJavaScript();
+            }
         }
     };
 
     const handleError = (event: any) => {
-        console.warn('WebView error:', event.nativeEvent);
+        if (retryCount >= maxRetries) {
+            handleErrorOnce();
+        } else {
+            runJavaScript();
+        }
     };
 
     const component = (
