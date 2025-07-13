@@ -94,6 +94,25 @@ export interface ParseProductUrlAPIResponse {
     url: string;
 }
 
+export interface CoupangCrawlResponse {
+    success: boolean;
+    data: {
+        name: string;
+        brand: string;
+        price: number;
+        origin_price: number;
+        discount_rate: number | null;
+        ratings: number;
+        reviews_count: number;
+        thumbnail: string;
+        detail_images: string[];
+        url: string;
+        reviews: string[];
+    };
+    extractedUrl: string;
+    productId: string;
+}
+
 export interface ProductReview {
     reviews: string[]; // 웹뷰에서 스크래핑한 상품 리뷰 리스트
 }

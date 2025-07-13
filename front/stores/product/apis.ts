@@ -8,7 +8,8 @@ import {
     SearchProductsRequest,
     SearchProductsResponse,
     ParseProductUrlAPIRequest,
-    ParseProductUrlAPIResponse
+    ParseProductUrlAPIResponse,
+    CoupangCrawlResponse
 } from './types';
 
 export const GetMainProductsAPI = (id: string) =>
@@ -57,3 +58,8 @@ export const UpdateProductAPI = (params: GetProductDetailRequest) =>
     client
         .put<GetProductResponse>('/discover/product', params)
         .catch(error => handleApiError(error, 'UpdateProductAPI'));
+
+export const CoupangCrawlAPI = (url: string) =>
+    client
+        .post<CoupangCrawlResponse>('/coupang/crawl', { url })
+        .catch(error => handleApiError(error, 'CoupangCrawlAPI'));
