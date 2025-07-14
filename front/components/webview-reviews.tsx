@@ -9,10 +9,12 @@
 import React, { useRef, useState, useEffect, ReactElement } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { View } from 'react-native';
+import { convertToCoupangReviewUrl } from '@/utils/url';
 
 interface WebViewProps {
     productUrl: string;
     onMessage: (data: string[]) => void;
+    onError?: () => void;
 }
 
 // 반환 타입 정의
@@ -22,53 +24,62 @@ interface WebViewReviewsResult {
     runJavaScript: () => void;
 }
 
-export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebViewReviewsResult => {
+export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewProps): WebViewReviewsResult => {
     const webViewRef = useRef<WebView>(null);
     const [reviewWebviewUrl, setReviewWebviewUrl] = useState<string>('');
     const [injectionCode, setInjectionCode] = useState<string>('');
     const [accumulatedReviews, setAccumulatedReviews] = useState<string[]>([]);
-    const maxRetries = 5;
+    const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
+
+    const maxRetries = 3;
     let retryCount = 0;
     let scrollDownCount = 0;
 
-    const parseUrl = (url: string) => {
-        if (url.includes('coupang')) {
-            let coupang_id;
-            if (url.includes('link.coupang.com/re')) {
-                coupang_id = parseInt(url.split('pageKey=')[1].split('&')[0]);
-            } else if (url.includes('coupang.com/vp/products') || url.includes('coupang.com/vm/products')) {
-                coupang_id = parseInt(url.split('products/')[1].split('?')[0]);
+    const handleErrorOnce = () => {
+        if (!hasErrorOccurred) {
+            setHasErrorOccurred(true);
+            onError?.();
+        }
+    };
+
+    const parseUrl = async (url: string) => {
+        try {
+            if (url.includes('coupang')) {
+                const reviewUrl = await convertToCoupangReviewUrl(url);
+                setReviewWebviewUrl(reviewUrl);
+                setInjectionCode(`(function() {
+                  const divs = document.querySelectorAll('div[class*="review-content"]');
+                  const divContents = [];
+                  divs.forEach(div => {
+                    divContents.push(div.innerText.trim());
+                  });
+                  const uniqueContents = Array.from(new Set(divContents));
+                  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
+                  }
+                })();
+                true;`);
+            } else {
+                // TODO: add other platforms
+                setReviewWebviewUrl(url);
+                setInjectionCode(`(function() {
+                  const divs = document.querySelectorAll('div[class*="review"]');
+                  const divContents = [];
+                  divs.forEach(div => {
+                    if (div.innerText.length > 20) {
+                      divContents.push(div.innerText.trim());
+                    }
+                  });
+                  const uniqueContents = Array.from(new Set(divContents));
+                  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
+                  }
+                })();
+                true;`);
             }
-            setReviewWebviewUrl(`https://m.coupang.com/vm/products/${coupang_id}/brand-sdp/reviews/detail`);
-            setInjectionCode(`(function() {
-              const divs = document.querySelectorAll('div[class*="review-content"]');
-              const divContents = [];
-              divs.forEach(div => {
-                divContents.push(div.innerText.trim());
-              });
-              const uniqueContents = Array.from(new Set(divContents));
-              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
-              }
-            })();
-            true;`);
-        } else {
-            // TODO: add other platforms
-            setReviewWebviewUrl(url);
-            setInjectionCode(`(function() {
-              const divs = document.querySelectorAll('div[class*="review"]');
-              const divContents = [];
-              divs.forEach(div => {
-                if (div.innerText.length > 20) {
-                  divContents.push(div.innerText.trim());
-                }
-              });
-              const uniqueContents = Array.from(new Set(divContents));
-              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
-              }
-            })();
-            true;`);
+        } catch (error) {
+            console.error('URL 파싱 중 오류:', error);
+            handleErrorOnce();
         }
     };
 
@@ -81,7 +92,6 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
     };
 
     const scrollDown = () => {
-        console.log('스크롤 다운');
         if (webViewRef.current) {
             const scrollScript = `
                 (function() {
@@ -114,14 +124,22 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
 
     useEffect(() => {
         retryCount = 0;
-        parseUrl(productUrl);
-        runJavaScript();
+        scrollDownCount = 0;
+        setHasErrorOccurred(false);
+        setAccumulatedReviews([]);
+        parseUrl(productUrl)
+            .then(() => {
+                runJavaScript();
+            })
+            .catch(error => {
+                console.error('URL 파싱 중 오류:', error);
+            });
     }, [productUrl]);
 
     const handleMessage = (event: WebViewMessageEvent) => {
         const data = event.nativeEvent.data;
 
-        console.log('WebView message in webview-reviews:', data.length);
+        // console.log('WebView message in webview-reviews:', data.length);
 
         try {
             const parsedData = JSON.parse(data);
@@ -163,15 +181,29 @@ export const useWebViewReviews = ({ productUrl, onMessage }: WebViewProps): WebV
                 }
             } else {
                 retryCount++;
-                runJavaScript();
+                if (retryCount >= maxRetries) {
+                    handleErrorOnce();
+                } else {
+                    runJavaScript();
+                }
             }
         } catch (error) {
             console.error('Failed to parse JSON:', error);
+            retryCount++;
+            if (retryCount >= maxRetries) {
+                handleErrorOnce();
+            } else {
+                runJavaScript();
+            }
         }
     };
 
     const handleError = (event: any) => {
-        console.warn('WebView error:', event.nativeEvent);
+        if (retryCount >= maxRetries) {
+            handleErrorOnce();
+        } else {
+            runJavaScript();
+        }
     };
 
     const component = (

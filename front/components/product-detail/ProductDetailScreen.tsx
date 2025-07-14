@@ -36,6 +36,7 @@ import { useTabData } from '@/hooks/product-detail/useTabData';
 // 웹뷰 관련
 import { useWebViewReviews } from '../webview-reviews';
 import { useWebViewDetail } from '../webview-detail';
+import { useWebViewFallback } from '@/hooks/useWebViewFallback';
 
 interface ProductDetailScreenProps {}
 
@@ -74,11 +75,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { handleClickBuy, handleClickWish, handleClickSend, handleClickRequest, handleClickContact } =
         useProductActions({ product, productUrl, wishlistItem, question, setQuestion });
 
+    // 웹뷰에서 정보를 가져오는 것이 실패했을 때 서버측 크롤러 API 호출
+    const { handleWebViewError, isLoading: isFallbackLoading } = useWebViewFallback({
+        productUrl
+    });
+
     // 웹뷰 관련
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
-            console.error('상품 정보를 불러오는 데 실패했습니다.');
+            console.error('상품 정보 오류');
+            handleWebViewError(); // 서버 API 호출
         },
         onMessage: data => {
             setProduct(data);
@@ -91,6 +98,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             if (data && data.length > 0) {
                 setProductReview(data);
             }
+        },
+        onError: () => {
+            console.error('상품 리뷰 오류');
+            handleWebViewError(); // 서버 API 호출
         }
     });
 

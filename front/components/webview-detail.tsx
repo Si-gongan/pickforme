@@ -22,11 +22,17 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     const [url, setUrl] = useState<string>('');
     const [platform, setPlatform] = useState<string>('');
     const [retryCount, setRetryCount] = useState<number>(0);
-    const maxRetries = 5;
+    const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
+    const maxRetries = 3;
+
+    const handleErrorOnce = () => {
+        if (!hasErrorOccurred) {
+            setHasErrorOccurred(true);
+            onError?.();
+        }
+    };
 
     const convertUrl = (url: string) => {
-        console.log('convertUrl url:', url);
-
         let convertedUrl = '';
 
         // 쿠팡 URL 처리
@@ -36,7 +42,6 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             // 쿠팡 앱 링크 처리 (link.coupang.com)
             if (url.includes('link.coupang.com')) {
                 resolveRedirectUrl(url).then(redirectUrl => {
-                    console.log('resolveRedirectUrl redirectUrl:', redirectUrl);
                     convertUrl(redirectUrl);
                 });
                 return;
@@ -208,7 +213,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             setRetryCount(retryCount + 1);
             setTimeout(() => runJavaScript(getProductDetailInjectionCode()), 1000);
         } else {
-            onError?.();
+            handleErrorOnce();
         }
     };
 
@@ -232,7 +237,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     };
 
     const handleError = (event: any) => {
-        console.warn('WebView error:', event.nativeEvent);
+        // console.warn('WebView error:', event.nativeEvent);
 
         if (retryCount < maxRetries) {
             setRetryCount(prev => prev + 1);
@@ -242,13 +247,14 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
                 }
             }, 1000 * retryCount); // 점진적으로 대기 시간 증가
         } else {
-            onError?.();
+            handleErrorOnce();
         }
     };
 
     useEffect(() => {
         setUrl('');
         setRetryCount(0);
+        setHasErrorOccurred(false);
         convertUrl(productUrl);
     }, [productUrl]);
 
