@@ -26,6 +26,18 @@ interface TabContentProps {
     isTabPressed: boolean;
 }
 
+const NO_DATA_MESSAGE = {
+    [TABS.CAPTION]: '이미지를 불러오는데 실패했습니다.',
+    [TABS.REPORT]: '상세페이지 정보를 불러오는데 실패했습니다.',
+    [TABS.REVIEW]: '리뷰 정보를 불러오는데 실패했습니다.'
+};
+
+const ERROR_MESSAGE = {
+    [TABS.CAPTION]: '이미지 설명을 생성하는데 실패했습니다.',
+    [TABS.REPORT]: '상세페이지 설명을 생성하는데 실패했습니다.',
+    [TABS.REVIEW]: '리뷰 요약을 생성하는데 실패했습니다.'
+};
+
 const TabContent: React.FC<TabContentProps> = ({
     tab,
     question,
@@ -91,10 +103,19 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     }
 
+    // 웹뷰, 서버 크롤링 모두 실패한 경우.
+    if (loadingStatus[tab] === LoadingStatus.NO_DATA) {
+        return (
+            <View style={styles.detailWrap}>
+                <Text style={styles.errorText}>{NO_DATA_MESSAGE[tab]}</Text>
+            </View>
+        );
+    }
+
     // 4. 실패 상태
     return (
         <View style={styles.detailWrap}>
-            <Text style={styles.errorText}>정보를 불러오는데 실패했습니다.</Text>
+            <Text style={styles.errorText}>{ERROR_MESSAGE[tab]}</Text>
             <Pressable
                 onPress={handleRegenerate}
                 accessible
