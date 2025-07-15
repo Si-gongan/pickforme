@@ -1,6 +1,14 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import {
+    View,
+    StyleSheet,
+    ScrollView,
+    Alert,
+    findNodeHandle,
+    InteractionManager,
+    AccessibilityInfo
+} from 'react-native';
 import { useAtom } from 'jotai';
 import * as WebBrowser from 'expo-web-browser';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -11,14 +19,33 @@ import { IconHeader, MySection } from '@components';
 import { userAtom } from '@stores';
 import { changeToken } from '../../utils/axios';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/core';
 
 export default function MyScreen() {
     const colorScheme = useColorScheme();
     const style = useStyle(colorScheme);
     const router = useRouter();
+    const headerTitleRef = useRef<View>(null);
 
     const [user, onUser] = useAtom(userAtom);
 
+    useFocusEffect(
+        useCallback(() => {
+            const f = () => {
+                if (headerTitleRef.current) {
+                    const nodeHandle = findNodeHandle(headerTitleRef.current);
+                    if (nodeHandle) {
+                        InteractionManager.runAfterInteractions(() => {
+                            setTimeout(() => {
+                                AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+                            }, 500);
+                        });
+                    }
+                }
+            };
+            setTimeout(f, 500);
+        }, [])
+    );
     const goToInfo = useCallback(
         function () {
             // @ts-ignore - Expo Router 4 type issues
@@ -132,7 +159,9 @@ export default function MyScreen() {
 
     return (
         <View style={style.MyContainer}>
-            <IconHeader title="마이페이지" />
+            <View accessible={true} accessibilityRole="header" accessibilityLabel="마이페이지" ref={headerTitleRef}>
+                <IconHeader title="마이페이지" />
+            </View>
             <View style={style.MyContent}>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={style.MyScrollView}>
                     {!!user?._id && (

@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { FlatList, InteractionManager, StyleSheet } from 'react-native';
 import { Product } from '../../stores/product/types';
-import { useRouter } from 'expo-router';
 
 import { getRequestsAtom, requestsAtom } from '../../stores/request/atoms';
 import { Request } from '../../stores/request/types';
@@ -21,7 +20,7 @@ import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 
 import { useWebViewDetail } from '../../components/webview-detail';
-import { mainProductsAtom } from '../../stores/product/atoms';
+// import { mainProductsAtom } from '../../stores/product/atoms';
 
 enum TABS {
     PRODUCT = 'PRODUCT',
@@ -34,11 +33,10 @@ const tabName = {
 };
 
 export default function WishListScreen() {
-    const router = useRouter();
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
     const wishProducts = useAtomValue(wishProductsAtom);
-    const mainProducts = useAtomValue(mainProductsAtom);
+    // const mainProducts = useAtomValue(mainProductsAtom);
     const setWishProducts = useSetAtom(wishProductsAtom);
     const headerTitleRef = useRef<TextBase>(null);
     const [tab, setTab] = React.useState<TABS>(TABS.PRODUCT);
