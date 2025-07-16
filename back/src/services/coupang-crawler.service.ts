@@ -226,6 +226,9 @@ class CoupangCrawlerService extends EventEmitter {
       // 리뷰 데이터 가져오기 (이미 추출된 productId 사용)
       const reviews = await page.evaluate(async (pid: string) => {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+
           const res = await fetch(
             `https://www.coupang.com/next-api/review?productId=${pid}&page=1&size=10&sortBy=ORDER_SCORE_ASC&ratingSummary=true&ratings=&market=`,
             {
@@ -233,8 +236,11 @@ class CoupangCrawlerService extends EventEmitter {
               headers: {
                 Accept: 'application/json',
               },
+              signal: controller.signal,
             }
           );
+
+          clearTimeout(timeoutId);
           const json = await res.json();
           const contents = json?.rData?.paging?.contents || [];
           return contents.map((r: any) => r.content || '').filter(Boolean);
