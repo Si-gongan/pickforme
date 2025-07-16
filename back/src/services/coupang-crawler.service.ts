@@ -149,7 +149,7 @@ class CoupangCrawlerService extends EventEmitter {
 
   private async processRequest(request: CrawlRequest, page: Page): Promise<void> {
     try {
-      console.log(`🔍 크롤링 시작: ${request.url}`);
+      console.log(`🔍 크롤링 시작 (원본 URL): ${request.url}`);
 
       const response = await page.goto(request.url, {
         waitUntil: 'networkidle',
@@ -159,6 +159,20 @@ class CoupangCrawlerService extends EventEmitter {
       if (response?.status() !== 200 || (await page.content()).includes('Access Denied')) {
         throw new Error('접근 차단됨 또는 페이지 로딩 실패');
       }
+
+      // 브라우저에서 리다이렉트된 최종 URL 확인
+      const finalUrl = page.url();
+      console.log(`📍 최종 리다이렉트된 URL: ${finalUrl}`);
+
+      // 최종 URL에서 productId 추출
+      const match = finalUrl.match(/\/products\/(\d+)/);
+      const productId = match ? match[1] : null;
+
+      if (!productId) {
+        throw new Error('상품 ID를 추출할 수 없습니다.');
+      }
+
+      console.log(`🔍 상품 ID: ${productId}`);
 
       const data = await page.evaluate(() => {
         const result: any = {};
@@ -209,34 +223,27 @@ class CoupangCrawlerService extends EventEmitter {
         return result;
       });
 
-      // 리뷰 데이터 가져오기
-      const match = request.url.match(/\/products\/(\d+)/);
-      const productId = match ? match[1] : null;
+      // 리뷰 데이터 가져오기 (이미 추출된 productId 사용)
+      const reviews = await page.evaluate(async (pid: string) => {
+        try {
+          const res = await fetch(
+            `https://www.coupang.com/next-api/review?productId=${pid}&page=1&size=10&sortBy=ORDER_SCORE_ASC&ratingSummary=true&ratings=&market=`,
+            {
+              method: 'GET',
+              headers: {
+                Accept: 'application/json',
+              },
+            }
+          );
+          const json = await res.json();
+          const contents = json?.rData?.paging?.contents || [];
+          return contents.map((r: any) => r.content || '').filter(Boolean);
+        } catch (e) {
+          return [];
+        }
+      }, productId);
 
-      if (productId) {
-        const reviews = await page.evaluate(async (pid: string) => {
-          try {
-            const res = await fetch(
-              `https://www.coupang.com/next-api/review?productId=${pid}&page=1&size=10&sortBy=ORDER_SCORE_ASC&ratingSummary=true&ratings=&market=`,
-              {
-                method: 'GET',
-                headers: {
-                  Accept: 'application/json',
-                },
-              }
-            );
-            const json = await res.json();
-            const contents = json?.rData?.paging?.contents || [];
-            return contents.map((r: any) => r.content || '').filter(Boolean);
-          } catch (e) {
-            return [];
-          }
-        }, productId);
-
-        data.reviews = reviews;
-      } else {
-        data.reviews = [];
-      }
+      data.reviews = reviews;
 
       if (!data.name) {
         throw new Error('상품 이름을 찾을 수 없습니다.');
