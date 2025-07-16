@@ -39,6 +39,10 @@ class CoupangCrawlerService extends EventEmitter {
 
   private isInitialized = false;
 
+  private processingCount = 0; // 현재 처리 중인 요청 수
+
+  private cleanupTimer: NodeJS.Timeout | null = null; // 자동 정리용 타이머
+
   async initialize() {
     if (this.isInitialized) return;
 
@@ -109,7 +113,7 @@ class CoupangCrawlerService extends EventEmitter {
       }
 
       this.isInitialized = true;
-      console.log('✅ 쿠팡 크롤러 초기화 완료');
+      console.log(`✅ 쿠팡 크롤러 초기화 완료 (세션: ${randomSessionId})`);
     } catch (error) {
       console.error('❌ 쿠팡 크롤러 초기화 실패:', error);
       throw error;
@@ -117,6 +121,12 @@ class CoupangCrawlerService extends EventEmitter {
   }
 
   async crawl(url: string): Promise<CrawlResult> {
+    // 자동 정리 타이머가 있으면 취소
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -141,6 +151,7 @@ class CoupangCrawlerService extends EventEmitter {
       const request = this.queue.shift();
 
       if (page && request) {
+        this.processingCount++;
         // 비동기로 처리 (await 하지 않음)
         void this.processRequest(request, page);
       }
@@ -261,14 +272,40 @@ class CoupangCrawlerService extends EventEmitter {
       console.error(`❌ 크롤링 실패: ${request.url}`, error);
       request.reject(error);
     } finally {
+      this.processingCount--;
+
       // 페이지를 다시 풀에 반환하고 큐 처리 시도
       this.pages.push(page);
       this.tryProcessQueue(); // 다음 요청 처리 시도
+
+      // 모든 요청이 완료되었는지 확인하고 자동 정리 스케줄링
+      this.scheduleCleanupIfIdle();
+    }
+  }
+
+  private scheduleCleanupIfIdle() {
+    // 큐가 비어있고 처리 중인 요청이 없으면 자동 정리 스케줄링
+    if (this.queue.length === 0 && this.processingCount === 0) {
+      console.log('📅 모든 요청 완료. 30초 후 브라우저 정리 예정...');
+
+      this.cleanupTimer = setTimeout(() => {
+        // 타이머 실행 시점에 다시 한번 확인
+        if (this.queue.length === 0 && this.processingCount === 0) {
+          console.log('🧹 유휴 상태로 브라우저 자동 정리 시작...');
+          void this.cleanup();
+        }
+      }, 30000); // 30초 후 정리
     }
   }
 
   async cleanup() {
     console.log('🧹 쿠팡 크롤러 정리 중...');
+
+    // 자동 정리 타이머 취소
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
 
     if (this.pages.length > 0) {
       for (const page of this.pages) {
@@ -288,7 +325,7 @@ class CoupangCrawlerService extends EventEmitter {
     }
 
     this.isInitialized = false;
-    console.log('✅ 쿠팡 크롤러 정리 완료');
+    console.log('✅ 쿠팡 크롤러 정리 완료 (새로운 요청 시 새 세션으로 시작됩니다)');
   }
 
   getStatus() {
@@ -296,6 +333,8 @@ class CoupangCrawlerService extends EventEmitter {
       isInitialized: this.isInitialized,
       availablePages: this.pages.length,
       queueLength: this.queue.length,
+      processingCount: this.processingCount,
+      hasCleanupScheduled: this.cleanupTimer !== null,
     };
   }
 }
