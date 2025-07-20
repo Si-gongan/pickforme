@@ -1,9 +1,10 @@
-import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, AccessibilityInfo, findNodeHandle, View } from 'react-native';
+import type { View as RNView } from 'react-native';
 import { useAtomValue } from 'jotai';
 import { productDetailAtom, LoadingStatus } from '../../stores/product/atoms';
 import { TABS, loadingMessages } from '../../utils/common';
-import { Text, View } from '@components';
+import { Text } from '@components';
 import { Request } from '../../stores/request/types';
 import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
@@ -53,6 +54,21 @@ const TabContent: React.FC<TabContentProps> = ({
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
     const productDetail = useAtomValue(productDetailAtom);
+
+    // NO_DATA 메시지 ref
+    const noDataRef = useRef<RNView>(null);
+
+    // 탭이 바뀌거나, loading 상태가 바뀌었을때 -> 해당 탭의 상태가 NO_DATA면 포커스 이동.
+    useEffect(() => {
+        if (loadingStatus[tab] === LoadingStatus.NO_DATA && noDataRef.current) {
+            const node = findNodeHandle(noDataRef.current);
+            if (node) {
+                setTimeout(() => {
+                    AccessibilityInfo.setAccessibilityFocus(node);
+                }, 500);
+            }
+        }
+    }, [loadingStatus[tab], tab]);
 
     // 1. Question 탭 처리
     if (tab === TABS.QUESTION) {
@@ -106,7 +122,7 @@ const TabContent: React.FC<TabContentProps> = ({
     // 웹뷰, 서버 크롤링 모두 실패한 경우.
     if (loadingStatus[tab] === LoadingStatus.NO_DATA) {
         return (
-            <View style={styles.detailWrap}>
+            <View style={styles.detailWrap} ref={noDataRef} accessible accessibilityLabel={NO_DATA_MESSAGE[tab]}>
                 <Text style={styles.errorText}>{NO_DATA_MESSAGE[tab]}</Text>
             </View>
         );
