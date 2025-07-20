@@ -18,7 +18,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     useEffect(() => {
         GoogleSignin.configure({
             iosClientId: '951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l.apps.googleusercontent.com',
-            webClientId: '951645615132-nree4g94n2ghcsrjjthchtlk29drkrfv.apps.googleusercontent.com',
+            webClientId: '951645615132-joo66ec1glh5gbetk7d386fjt6e1e307.apps.googleusercontent.com',
             offlineAccess: false,
             forceCodeForRefreshToken: false
         });
