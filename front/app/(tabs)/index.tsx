@@ -64,7 +64,8 @@ export default function HomeScreen() {
         handleSearchResults,
         handleSortChange,
         handleSearchButtonClick,
-        handleBackButtonClick
+        handleBackButtonClick,
+        hasError
     } = useProductSearch();
 
     useFocusEffect(
@@ -96,6 +97,7 @@ export default function HomeScreen() {
     }, [scrollResetTrigger]);
 
     useEffect(() => {
+        if (hasError) return;
         let timer = setTimeout(() => {
             const ref = isSearching ? searchLoadingRef : searchResultRef;
             if (ref.current) {
@@ -112,7 +114,7 @@ export default function HomeScreen() {
         return () => {
             clearTimeout(timer);
         };
-    }, [isSearching]);
+    }, [isSearching, hasError]);
 
     useEffect(() => {
         const randomCategoryId = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
