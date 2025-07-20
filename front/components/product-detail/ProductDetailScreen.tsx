@@ -150,6 +150,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // 초기화
     useEffect(() => {
         initProductDetail();
+        return () => {
+            initProductDetail();
+        };
     }, [initProductDetail]);
 
     useEffect(() => {
