@@ -55,7 +55,7 @@
         "react-native": "0.76.9",
         "react-native-dotenv": "^3.4.11",
         "react-native-gesture-handler": "~2.20.2",
-        "react-native-iap": "^12.16.2",
+        "react-native-iap": "12.16.2",
         "react-native-markdown-display": "^7.0.2",
         "react-native-modal": "^14.0.0-rc.1",
         "react-native-paper": "^5.14.5",

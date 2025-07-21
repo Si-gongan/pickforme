@@ -3,7 +3,7 @@
         "owner": "sigonggan",
         "name": "픽포미",
         "slug": "pickformeapp",
-        "version": "3.3.2",
+        "version": "3.3.3",
         "orientation": "portrait",
         "icon": "./assets/images/pickforme_logoWtxt_200x200.png",
         "scheme": "com.sigonggan.pickforme",
@@ -23,7 +23,7 @@
             "jsEngine": "jsc",
             "icon": "./assets/images/pickforme_logo_200x200.png",
             "googleServicesFile": "./GoogleService-Info.plist",
-            "buildNumber": "2"
+            "buildNumber": "4"
         },
         "android": {
             "adaptiveIcon": {
@@ -32,7 +32,7 @@
             },
             "package": "com.sigonggan.pickforme",
             "googleServicesFile": "./google-services.json",
-            "versionCode": 116
+            "versionCode": 118
         },
         "web": {
             "bundler": "metro",
