@@ -1,0 +1,22 @@
+{
+  "name": "pickforme",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently --names \"front,back,ai,mongo\" --prefix-colors \"cyan,green,magenta,yellow\" \"npm run front-client\" \"npm run back\" \"npm run ai-server\" \"npm run mongod\"",
+    "server": "concurrently --names \"back,ai,mongo,admin\" --prefix-colors \"green,magenta,yellow,blue\" \"npm run back\" \"npm run ai-server\" \"npm run mongod\" \"npm run admin\"",
+    "front-client": "cd front && npm run start",
+    "back": "cd back && npm run dev",
+    "admin": "cd admin && npm run dev",
+    "ai-server": "cd ../sigongan-ai/server && uvicorn main:app --host 0.0.0.0 --port 8000 --reload --app-dir .",
+    "mongod": "mongod --quiet --dbpath /opt/homebrew/var/mongodb --replSet rs0",
+    "mongoshell": "mongosh -u admin -p"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

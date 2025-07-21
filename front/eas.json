@@ -1,10 +1,12 @@
 {
     "cli": {
-        "version": ">= 3.13.3"
+        "version": ">= 3.13.3",
+        "appVersionSource": "remote"
     },
     "build": {
         "development": {
             "developmentClient": true,
+            "autoIncrement": true,
             "distribution": "internal",
             "android": {
                 "buildType": "apk",
@@ -15,10 +17,12 @@
             }
         },
         "preview": {
+            "autoIncrement": true,
             "distribution": "internal"
         },
         "production": {
             "channel": "production",
+            "autoIncrement": true,
             "android": {
                 "credentialsSource": "local"
             },
@@ -27,6 +31,7 @@
             }
         },
         "develop": {
+            "autoIncrement": true,
             "distribution": "store"
         }
     },
