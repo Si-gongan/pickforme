@@ -69,6 +69,26 @@ router.post('/crawl', async (ctx) => {
   }
 });
 
+// 쿠팡 상품 검색
+router.post('/search', async (ctx) => {
+  try {
+    const { searchText } = ctx.request.body as { searchText: string };
+    if (!searchText) {
+      ctx.status = 400;
+      ctx.body = { success: false, message: '검색어가 필요합니다.' };
+      return;
+    }
+    const result = await coupangCrawlerService.search(searchText);
+    ctx.body = { success: true, data: result };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: error instanceof Error ? error.message : '검색 중 오류 발생',
+    };
+  }
+});
+
 // 크롤러 상태 확인
 router.get('/status', async (ctx) => {
   try {

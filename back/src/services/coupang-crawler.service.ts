@@ -7,7 +7,9 @@ chromium.use(stealth());
 
 interface CrawlRequest {
   id: string;
-  url: string;
+  type: 'crawl' | 'search';
+  url?: string;
+  searchText?: string;
   resolve: (value: any) => void;
   reject: (error: any) => void;
 }
@@ -24,6 +26,17 @@ interface CrawlResult {
   detail_images: string[];
   url: string;
   reviews: string[];
+}
+
+interface ProductListItem {
+  name: string;
+  thumbnail: string;
+  price: number;
+  originPrice: number;
+  discountRate: number;
+  ratings: number;
+  reviews: number;
+  url: string;
 }
 
 class CoupangCrawlerService extends EventEmitter {
@@ -121,26 +134,44 @@ class CoupangCrawlerService extends EventEmitter {
   }
 
   async crawl(url: string): Promise<CrawlResult> {
-    // 자동 정리 타이머가 있으면 취소
     if (this.cleanupTimer) {
       clearTimeout(this.cleanupTimer);
       this.cleanupTimer = null;
     }
-
     if (!this.isInitialized) {
       await this.initialize();
     }
-
     return new Promise((resolve, reject) => {
       const request: CrawlRequest = {
         id: Math.random().toString(36).substr(2, 9),
+        type: 'crawl',
         url,
         resolve,
         reject,
       };
-
       this.queue.push(request);
-      this.tryProcessQueue(); // 큐에 추가하고 바로 처리 시도
+      this.tryProcessQueue();
+    });
+  }
+
+  async search(searchText: string): Promise<ProductListItem[]> {
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    return new Promise((resolve, reject) => {
+      const request: CrawlRequest = {
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'search',
+        searchText,
+        resolve,
+        reject,
+      };
+      this.queue.push(request);
+      this.tryProcessQueue();
     });
   }
 
@@ -149,136 +180,161 @@ class CoupangCrawlerService extends EventEmitter {
     while (this.pages.length > 0 && this.queue.length > 0) {
       const page = this.pages.shift();
       const request = this.queue.shift();
-
       if (page && request) {
         this.processingCount++;
-        // 비동기로 처리 (await 하지 않음)
         void this.processRequest(request, page);
       }
     }
   }
 
+  // 상품 상세 정보 크롤링
+  private async crawlProductInfo(request: CrawlRequest, page: Page): Promise<any> {
+    console.log(`🔍 크롤링 시작 (원본 URL): ${request.url}`);
+    const response = await page.goto(request.url!, {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    });
+    if (response?.status() !== 200 || (await page.content()).includes('Access Denied')) {
+      throw new Error('접근 차단됨 또는 페이지 로딩 실패');
+    }
+    const finalUrl = page.url();
+    console.log(`📍 최종 리다이렉트된 URL: ${finalUrl}`);
+    const match = finalUrl.match(/\/products\/(\d+)/);
+    const productId = match ? match[1] : null;
+    if (!productId) {
+      throw new Error('상품 ID를 추출할 수 없습니다.');
+    }
+    console.log(`🔍 상품 ID: ${productId}`);
+    const data = await page.evaluate(() => {
+      const result: any = {};
+      const getInt = (txt: string) => parseInt((txt || '').replace(/[^0-9]/g, '')) || 0;
+      const getImageSrc = (img: HTMLImageElement) =>
+        img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
+      result.name = (document.querySelector('.product-title span') as HTMLElement)?.innerText || '';
+      result.brand = (document.querySelector('.brand-info div') as HTMLElement)?.innerText || '';
+      const sales = document.querySelector('.price-amount.sales-price-amount') as HTMLElement;
+      const final = document.querySelector('.price-amount.final-price-amount') as HTMLElement;
+      const priceText = sales?.innerText || final?.innerText || '';
+      result.price = getInt(priceText);
+      const origin = document.querySelector('.price-amount.original-price-amount') as HTMLElement;
+      result.origin_price = getInt(origin?.innerText || '');
+      const discountElem = document.querySelector('.original-price > div > div') as HTMLElement;
+      const percentMatch = discountElem?.innerText?.match(/\d+/);
+      result.discount_rate = percentMatch ? parseInt(percentMatch[0]) : null;
+      const rating = document.querySelector('.rating-star-container span') as HTMLElement;
+      if (rating?.style?.width) {
+        const widthPercent = parseFloat(rating.style.width);
+        result.ratings = Math.round((widthPercent / 100) * 5 * 2) / 2;
+      } else {
+        result.ratings = 0;
+      }
+      const reviewText =
+        (document.querySelector('.rating-count-txt') as HTMLElement)?.innerText || '';
+      result.reviews_count = getInt(reviewText);
+      const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
+      result.thumbnail = getImageSrc(thumb as HTMLImageElement).replace(/^\/\//, 'https://');
+      const detailImages = Array.from(
+        document.querySelectorAll('.subType-IMAGE img, .subType-TEXT img')
+      )
+        .map((img) => getImageSrc(img as HTMLImageElement))
+        .filter(Boolean)
+        .map((src) => src.replace(/^\/\//, 'https://'));
+      result.detail_images = detailImages;
+      result.url = window.location.href;
+      return result;
+    });
+    const reviews = await page.evaluate(async (pid: string) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const res = await fetch(
+          `https://www.coupang.com/next-api/review?productId=${pid}&page=1&size=10&sortBy=ORDER_SCORE_ASC&ratingSummary=true&ratings=&market=`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+            },
+            signal: controller.signal,
+          }
+        );
+        clearTimeout(timeoutId);
+        const json = await res.json();
+        const contents = json?.rData?.paging?.contents || [];
+        return contents.map((r: any) => r.content || '').filter(Boolean);
+      } catch (e) {
+        return [];
+      }
+    }, productId);
+    data.reviews = reviews;
+    if (!data.name) {
+      throw new Error('상품 이름을 찾을 수 없습니다.');
+    }
+    console.log(`✅ 크롤링 완료: ${request.url}`);
+    return data;
+  }
+
+  // 상품 리스트 검색
+  private async searchProduct(request: CrawlRequest, page: Page): Promise<any> {
+    console.log(`🔍 검색 시작 (검색어): ${request.searchText}`);
+    const searchUrl = `https://www.coupang.com/np/search?q=${encodeURIComponent(request.searchText!)}`;
+    await page.goto(searchUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForSelector('li.ProductUnit_productUnit__Qd6sv', { timeout: 10000 });
+    const products = await page.evaluate(() => {
+      function getInt(txt: string) {
+        return parseInt((txt || '').replace(/[^0-9]/g, ''), 10) || 0;
+      }
+      function getFloat(txt: string) {
+        return parseFloat((txt || '').replace(/[^0-9.]/g, '')) || 0;
+      }
+      return Array.from(document.querySelectorAll('li.ProductUnit_productUnit__Qd6sv')).map(
+        (li) => {
+          const aTag = li.querySelector('a');
+          const url = aTag ? 'https://www.coupang.com' + aTag.getAttribute('href') : '';
+          const name =
+            (li.querySelector('.ProductUnit_productName__gre7e') as HTMLElement)?.innerText || '';
+          const thumbnail = (li.querySelector('img') as HTMLImageElement)?.src || '';
+          const price = getInt(
+            (li.querySelector('.Price_priceValue__A4KOr') as HTMLElement)?.innerText || ''
+          );
+          const originPrice = getInt(
+            (li.querySelector('.PriceInfo_basePrice__8BQ32') as HTMLElement)?.innerText || ''
+          );
+          const discountRate = getInt(
+            (li.querySelector('.PriceInfo_discountRate__EsQ8I') as HTMLElement)?.innerText || ''
+          );
+          let ratings = 0;
+          const starDiv = li.querySelector('.ProductRating_star__RGSlV') as HTMLElement;
+          if (starDiv && starDiv.style.width) {
+            ratings = Math.round((parseFloat(starDiv.style.width) / 100) * 5 * 2) / 2;
+          }
+          const reviews = getInt(
+            (li.querySelector('.ProductRating_ratingCount__R0Vhz') as HTMLElement)?.innerText || ''
+          );
+          return { name, thumbnail, price, originPrice, discountRate, ratings, reviews, url };
+        }
+      );
+    });
+    return products;
+  }
+
   private async processRequest(request: CrawlRequest, page: Page): Promise<void> {
     try {
-      console.log(`🔍 크롤링 시작 (원본 URL): ${request.url}`);
-
-      const response = await page.goto(request.url, {
-        waitUntil: 'networkidle',
-        timeout: 30000,
-      });
-
-      if (response?.status() !== 200 || (await page.content()).includes('Access Denied')) {
-        throw new Error('접근 차단됨 또는 페이지 로딩 실패');
+      let result;
+      if (request.type === 'crawl' && request.url) {
+        result = await this.crawlProductInfo(request, page);
+      } else if (request.type === 'search' && request.searchText) {
+        result = await this.searchProduct(request, page);
+      } else {
+        throw new Error('잘못된 요청입니다.');
       }
-
-      // 브라우저에서 리다이렉트된 최종 URL 확인
-      const finalUrl = page.url();
-      console.log(`📍 최종 리다이렉트된 URL: ${finalUrl}`);
-
-      // 최종 URL에서 productId 추출
-      const match = finalUrl.match(/\/products\/(\d+)/);
-      const productId = match ? match[1] : null;
-
-      if (!productId) {
-        throw new Error('상품 ID를 추출할 수 없습니다.');
-      }
-
-      console.log(`🔍 상품 ID: ${productId}`);
-
-      const data = await page.evaluate(() => {
-        const result: any = {};
-        const getInt = (txt: string) => parseInt((txt || '').replace(/[^0-9]/g, '')) || 0;
-        const getImageSrc = (img: HTMLImageElement) =>
-          img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
-
-        result.name =
-          (document.querySelector('.product-title span') as HTMLElement)?.innerText || '';
-        result.brand = (document.querySelector('.brand-info div') as HTMLElement)?.innerText || '';
-
-        const sales = document.querySelector('.price-amount.sales-price-amount') as HTMLElement;
-        const final = document.querySelector('.price-amount.final-price-amount') as HTMLElement;
-        const priceText = sales?.innerText || final?.innerText || '';
-        result.price = getInt(priceText);
-
-        const origin = document.querySelector('.price-amount.original-price-amount') as HTMLElement;
-        result.origin_price = getInt(origin?.innerText || '');
-
-        const discountElem = document.querySelector('.original-price > div > div') as HTMLElement;
-        const percentMatch = discountElem?.innerText?.match(/\d+/);
-        result.discount_rate = percentMatch ? parseInt(percentMatch[0]) : null;
-
-        const rating = document.querySelector('.rating-star-container span') as HTMLElement;
-        if (rating?.style?.width) {
-          const widthPercent = parseFloat(rating.style.width);
-          result.ratings = Math.round((widthPercent / 100) * 5 * 2) / 2;
-        } else {
-          result.ratings = 0;
-        }
-
-        const reviewText =
-          (document.querySelector('.rating-count-txt') as HTMLElement)?.innerText || '';
-        result.reviews_count = getInt(reviewText);
-
-        const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
-        result.thumbnail = getImageSrc(thumb as HTMLImageElement).replace(/^\/\//, 'https://');
-
-        const detailImages = Array.from(
-          document.querySelectorAll('.subType-IMAGE img, .subType-TEXT img')
-        )
-          .map((img) => getImageSrc(img as HTMLImageElement))
-          .filter(Boolean)
-          .map((src) => src.replace(/^\/\//, 'https://'));
-        result.detail_images = detailImages;
-
-        result.url = window.location.href;
-        return result;
-      });
-
-      // 리뷰 데이터 가져오기 (이미 추출된 productId 사용)
-      const reviews = await page.evaluate(async (pid: string) => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-          const res = await fetch(
-            `https://www.coupang.com/next-api/review?productId=${pid}&page=1&size=10&sortBy=ORDER_SCORE_ASC&ratingSummary=true&ratings=&market=`,
-            {
-              method: 'GET',
-              headers: {
-                Accept: 'application/json',
-              },
-              signal: controller.signal,
-            }
-          );
-
-          clearTimeout(timeoutId);
-          const json = await res.json();
-          const contents = json?.rData?.paging?.contents || [];
-          return contents.map((r: any) => r.content || '').filter(Boolean);
-        } catch (e) {
-          return [];
-        }
-      }, productId);
-
-      data.reviews = reviews;
-
-      if (!data.name) {
-        throw new Error('상품 이름을 찾을 수 없습니다.');
-      }
-
-      console.log(`✅ 크롤링 완료: ${request.url}`);
-      request.resolve(data);
+      request.resolve(result);
     } catch (error) {
-      console.error(`❌ 크롤링 실패: ${request.url}`, error);
+      console.error('❌ 요청 처리 실패:', error);
       request.reject(error);
     } finally {
       this.processingCount--;
-
-      // 페이지를 다시 풀에 반환하고 큐 처리 시도
       this.pages.push(page);
-      this.tryProcessQueue(); // 다음 요청 처리 시도
-
-      // 모든 요청이 완료되었는지 확인하고 자동 정리 스케줄링
+      this.tryProcessQueue();
       this.scheduleCleanupIfIdle();
     }
   }

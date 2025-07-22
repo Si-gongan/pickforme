@@ -7,6 +7,7 @@ import { Alert } from 'react-native';
 import { GetProductAPI } from '../stores/product/apis';
 import { Product } from '../stores/product/types';
 import { sanitizeUrl } from '../utils/url';
+import { SearchCoupangAPI } from '../stores/product/apis';
 
 interface UseProductSearchProps {}
 
@@ -90,11 +91,27 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                 setIsSearching(true);
 
                 // 검색 시작 후 5초 타임아웃 설정
-                timeoutRef.current = setTimeout(() => {
-                    setIsSearching(false);
-                    setHasError(true);
-                    setSearchResult({ count: 0, page: 1, products: [] });
-                    Alert.alert('일시적으로 검색에 실패했습니다. 다시 검색해 주세요');
+                timeoutRef.current = setTimeout(async () => {
+                    console.log('웹뷰 검색에 실패했습니다. 서버 크롤링 검색을 시도합니다.');
+
+                    // 2. Fallback: 서버 크롤링 검색
+                    const coupangRes = await SearchCoupangAPI(keyword);
+
+                    if (
+                        coupangRes &&
+                        coupangRes.data &&
+                        coupangRes.data.success &&
+                        Array.isArray(coupangRes.data.data)
+                    ) {
+                        console.log('서버 크롤링 검색 성공');
+                        handleSearchResults(coupangRes.data.data);
+                        return;
+                    } else {
+                        setIsSearching(false);
+                        setHasError(true);
+                        setSearchResult({ count: 0, page: 1, products: [] });
+                        Alert.alert('일시적으로 검색에 실패했습니다. 다시 검색해 주세요');
+                    }
                 }, TIMEOUT_DURATION);
             } catch (error) {
                 console.error('Keyword search error:', error);
