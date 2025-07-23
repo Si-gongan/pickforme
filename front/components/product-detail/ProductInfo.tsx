@@ -64,7 +64,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                     <View style={styles.tableRow} accessible>
                         <Text style={styles.tableHeader}>평점</Text>
                         <Text style={styles.tableItem}>
-                            {Math.floor(((productDetail?.product?.ratings ?? 0) / 20) * 10) / 10} 점
+                            {(productDetail?.product?.ratings ?? 0).toFixed(1).replace('.0', '')} 점
                         </Text>
                     </View>
                 </View>
