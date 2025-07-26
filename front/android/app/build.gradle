@@ -110,7 +110,7 @@ android {
         applicationId 'com.sigonggan.pickforme'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 118
+        versionCode 120
         versionName "3.3.3"
         missingDimensionStrategy 'store', 'play' 
     }

@@ -22,6 +22,7 @@
 	<true></true>
 	<key>IS_GCM_ENABLED</key>
 	<true></true>
+
 	<key>GOOGLE_APP_ID</key>
 	<string>1:951645615132:ios:0bc340f663e8f4dea99bd9</string>
 </dict>
