@@ -218,11 +218,9 @@ export default function HomeScreen() {
                             {SORTERS.map((sort, idx) => (
                                 <Pressable
                                     key={`sort-${sort}`}
-                                    onPress={() => handleSortChange(sort)}
                                     accessible
-                                    accessibilityRole="button"
                                     accessibilityLabel={
-                                        sort === searchSorter ? `선택됨 ${SORTER_NAME[idx]}` : SORTER_NAME[idx]
+                                        sort === searchSorter ? `${SORTER_NAME[idx]}` : SORTER_NAME[idx]
                                     }
                                 >
                                     <DefaultText style={sort === searchSorter ? style.selectedSorter : style.sorter}>
