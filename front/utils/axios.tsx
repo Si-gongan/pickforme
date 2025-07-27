@@ -1,12 +1,9 @@
 import axios from 'axios';
-import { API_HOST } from '../constants/info';
+import { Platform } from 'react-native';
 
-const baseURL = 'https://apidev.sigongan-ai.shop';
-// const baseURL = 'http://192.168.219.100:3001';
-// const baseURL = 'http://52.79.85.108:3000';
-// const baseURL = 'https://api.sigongan-ai.shop';
-// const baseURL = 'http://192.168.219.104:3000';
-// const baseURL = API_HOST;
+const baseURL = process.env.EXPO_PUBLIC_API_HOST;
+// 로컬 개발 시
+// const baseURL = Platform.OS === 'ios' ? 'http://localhost:3001' : 'http://10.0.2.2:3001';
 
 console.log('baseURL', baseURL);
 
