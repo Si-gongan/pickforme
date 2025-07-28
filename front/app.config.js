@@ -73,7 +73,7 @@ export default ({ config }) => {
             [
                 'expo-splash-screen',
                 {
-                    image: './assets/images/pickforme_logoWtxt_200x200.png',
+                    image: './assets/images/pickforme_logoWtxt_4x.png',
                     imageWidth: 200,
                     resizeMode: 'contain',
                     backgroundColor: '#ffffff'
