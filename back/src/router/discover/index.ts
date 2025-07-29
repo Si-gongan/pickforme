@@ -2,25 +2,18 @@ import Router from '@koa/router';
 import db from 'models';
 import client from 'utils/axios';
 import requireAuth from 'middleware/jwt';
+import { getCachedBestCategory, getCachedGoldbox } from 'services/coupang-api.service';
 
 const router = new Router({
   prefix: '/discover',
 });
 
 router.get('/products/:category_id', async (ctx) => {
-  const { category_id } = ctx.params;
+  const { category_id: categoryId } = ctx.params;
 
-  const [
-    {
-      data: { products: random },
-    },
-    {
-      data: { products: special },
-    },
-    local,
-  ] = await Promise.all([
-    client.get(`/coupang/bestcategories/${category_id}`),
-    client.get('/coupang/goldbox'),
+  const [random, special, local] = await Promise.all([
+    getCachedBestCategory(categoryId),
+    getCachedGoldbox(),
     db.DiscoverSection.find({ name: 'local' }).catch(() => []),
   ]);
   ctx.body = {
@@ -40,7 +33,8 @@ router.post('/product', async (ctx) => {
       'products.url': url,
     });
     if (section) {
-      const product = section.products.find((product: any) => product.url === url);
+      const product = section.products.find((sectionProduct: any) => sectionProduct.url === url);
+
       ctx.body = {
         product,
       };
@@ -276,7 +270,7 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
 
   const user = await db.User.findById(ctx.state.user._id);
   if (user && user.aiPoint > 0) {
-    user.useAiPoint(1);
+    await user.useAiPoint(1);
 
     /*
     const subscription = await db.Purchase.findOne({
