@@ -265,12 +265,11 @@ function useStyle(colorScheme: ColorScheme) {
         Container: {
             flex: 1,
             backgroundColor: theme.background.primary,
-            paddingHorizontal: 12
+            paddingHorizontal: 20
         },
         Header: {
-            paddingTop: insets.top,
-            height: 55 + insets.top,
-            paddingBottom: 8
+            paddingTop: insets.top + 18,
+            paddingBottom: 32
         },
         searchContainer: {
             flexDirection: 'row',
