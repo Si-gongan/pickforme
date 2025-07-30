@@ -94,9 +94,6 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
         if (fontLoaded && !isUserLoading && !isPopupLoading && !isSettingLoading && !isInitialized.current) {
             isInitialized.current = true;
 
-            // 스플래시 스크린 숨기기
-            SplashScreen.hideAsync();
-
             // 라우팅 처리
             if (!user?.token) {
                 router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');

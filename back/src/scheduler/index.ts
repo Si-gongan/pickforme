@@ -2,6 +2,7 @@ import { registerMembershipScheduler } from './membership';
 import { registerIAPScheduler } from './iap';
 import { registerEventScheduler } from './events';
 import { registerBackupScheduler } from './backup';
+import { registerCoupangAPIScheduler } from './coupangAPI';
 
 /**
  * 프로덕션 환경에서만 스케줄러를 등록합니다.
@@ -13,6 +14,7 @@ export function registerAllSchedulers() {
     registerIAPScheduler();
     registerEventScheduler();
     registerBackupScheduler();
+    registerCoupangAPIScheduler();
   }
 }
 

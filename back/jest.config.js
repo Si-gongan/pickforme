@@ -42,6 +42,8 @@ module.exports = {
         '^socket/(.*)$': '<rootDir>/src/socket.ts',
         '^services$': '<rootDir>/src/services',
         '^services/(.*)$': '<rootDir>/src/services/$1',
+        '^cache$': '<rootDir>/src/cache',
+        '^cache/(.*)$': '<rootDir>/src/cache/$1',
       },
     },
     {
@@ -61,6 +63,8 @@ module.exports = {
         '^socket/(.*)$': '<rootDir>/src/socket.ts',
         '^services$': '<rootDir>/src/services',
         '^services/(.*)$': '<rootDir>/src/services/$1',
+        '^cache$': '<rootDir>/src/cache',
+        '^cache/(.*)$': '<rootDir>/src/cache/$1',
       },
     },
   ],

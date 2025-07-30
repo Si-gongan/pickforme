@@ -17,8 +17,8 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
     // Google Sign-In 설정
     useEffect(() => {
         GoogleSignin.configure({
-            iosClientId: '618404683764-e4rl4qllc10k93lgs2bv7vbv9j1lruu7.apps.googleusercontent.com',
-            webClientId: '618404683764-44mvv1k1mpsin7s7uiqmcn3h1n7sravc.apps.googleusercontent.com',
+            iosClientId: '951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l.apps.googleusercontent.com',
+            webClientId: '951645615132-joo66ec1glh5gbetk7d386fjt6e1e307.apps.googleusercontent.com',
             offlineAccess: false,
             forceCodeForRefreshToken: false
         });

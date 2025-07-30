@@ -11,7 +11,7 @@ import { AnalyticsEventName, AnalyticsScreenName, AnalyticsEventParams } from '.
 
 // Analytics 인스턴스
 const app = getApp();
-const isProd = !__DEV__;
+const isProd = process.env.EXPO_PUBLIC_APP_ENV === 'production';
 
 let analytics: FirebaseAnalyticsTypes.Module;
 

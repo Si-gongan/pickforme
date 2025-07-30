@@ -1,7 +1,26 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
+.env.test.local
+.env.production.local
+.env.development.local
+
+*.aab
+*.apk
+
+*.ipa
+*.app
+
+
 # dependencies
 node_modules/
+/credentials/
 
 # Expo
 .expo/

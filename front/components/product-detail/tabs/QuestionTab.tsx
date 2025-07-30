@@ -1,25 +1,12 @@
-import React, { useRef, useEffect } from 'react';
-import {
-    ActivityIndicator,
-    Image,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    View as RNView,
-    findNodeHandle,
-    AccessibilityInfo,
-    Keyboard,
-    InteractionManager
-} from 'react-native';
-import Markdown from 'react-native-markdown-display';
-import { formatDate, formatTime } from '../../../utils/common';
-import useColorScheme from '../../../hooks/useColorScheme';
-import { Colors } from '@constants';
-import { TABS } from '../../../utils/common';
+import { focusOnRef } from '@/utils/accessibility';
 import { Text, View } from '@components';
-import { Request } from '../../../stores/request/types';
+import { Colors } from '@constants';
+import React, { useEffect, useRef } from 'react';
+import { ActivityIndicator, Image, Keyboard, Pressable, View as RNView, StyleSheet, TextInput } from 'react-native';
+import Markdown from 'react-native-markdown-display';
+import useColorScheme from '../../../hooks/useColorScheme';
 import { ProductDetailState } from '../../../stores/product/types';
-import { LoadingStatus } from '../../../stores/product/atoms';
+import { TABS, formatDate, formatTime } from '../../../utils/common';
 
 interface QuestionTabProps {
     question: string;
@@ -49,6 +36,8 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
     const inputRef = useRef<TextInput>(null);
+    const loadingRef = useRef<RNView>(null);
+    const answerRef = useRef<RNView>(null);
 
     const markdownStyles = StyleSheet.create({
         text: {
@@ -59,15 +48,20 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     });
 
     useEffect(() => {
+        if (loadingStatus[tab] === 1 && loadingRef.current) {
+            focusOnRef(loadingRef);
+        }
+    }, [loadingStatus[tab]]);
+
+    useEffect(() => {
+        if (loadingStatus[tab] === 2 && productDetail?.answer && answerRef.current) {
+            focusOnRef(answerRef);
+        }
+    }, [loadingStatus[tab], productDetail?.answer]);
+
+    useEffect(() => {
         if (isTabPressed && inputRef.current) {
-            const node = findNodeHandle(inputRef.current);
-            if (node) {
-                InteractionManager.runAfterInteractions(() => {
-                    setTimeout(() => {
-                        AccessibilityInfo.setAccessibilityFocus(node);
-                    }, 1000);
-                });
-            }
+            focusOnRef(inputRef);
         }
     }, [isTabPressed]);
 
@@ -120,12 +114,21 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
             </View>
 
             {loadingStatus[tab] === 1 ? (
-                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+                <View
+                    ref={loadingRef}
+                    style={styles.indicatorWrap}
+                    accessible
+                    accessibilityLabel={loadingMessages[tab]}
+                >
                     <ActivityIndicator />
                     <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
                 </View>
             ) : loadingStatus[tab] === 2 ? (
-                <View accessible={true} accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}>
+                <View
+                    ref={answerRef}
+                    accessible={true}
+                    accessibilityLabel={`AI 포미 답변: ${productDetail?.answer || ''}`}
+                >
                     <Markdown style={markdownStyles}>{`**AI 포미:** ${
                         productDetail && productDetail.answer
                     }`}</Markdown>

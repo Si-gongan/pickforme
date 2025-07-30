@@ -63,3 +63,14 @@ export const CoupangCrawlAPI = (url: string) =>
     client
         .post<CoupangCrawlResponse>('/coupang/crawl', { url })
         .catch(error => handleApiError(error, 'CoupangCrawlAPI'));
+
+export const SearchCoupangAPI = (searchText: string) =>
+    client
+        .post(
+            '/coupang/search',
+            { searchText },
+            {
+                timeout: 20000
+            }
+        )
+        .catch(error => handleApiError(error, 'SearchCoupangAPI'));

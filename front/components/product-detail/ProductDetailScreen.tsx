@@ -13,7 +13,9 @@ import {
     setProductAtom,
     setProductReviewAtom,
     productReviewAtom,
-    loadingStatusAtom
+    loadingStatusAtom,
+    setProductLoadingStatusAtom,
+    LoadingStatus
 } from '../../stores/product/atoms';
 import { isShowRequestModalAtom } from '../../stores/auth/atoms';
 
@@ -65,6 +67,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const initProductDetail = useSetAtom(initProductDetailAtom);
     const setProduct = useSetAtom(setProductAtom);
     const setProductReview = useSetAtom(setProductReviewAtom);
+    const setProductLoadingStatus = useSetAtom(setProductLoadingStatusAtom);
 
     // 질문 상태 (먼저 선언)
     const [question, setQuestion] = useState('');
@@ -77,14 +80,41 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     // 웹뷰에서 정보를 가져오는 것이 실패했을 때 서버측 크롤러 API 호출
     const { handleWebViewError, isLoading: isFallbackLoading } = useWebViewFallback({
-        productUrl
+        productUrl,
+        // 서버 크롤링까지 마치면 이제 크롤링은 끝난 상황. 이제 최종적으로 각 탭에 필요한 데이터가 있는지 확인하고 그에 따라 loading status 업데이트
+        onComplete: ({ canLoadReport, canLoadReview, canLoadCaption }) => {
+            const updates: {
+                caption?: LoadingStatus;
+                review?: LoadingStatus;
+                report?: LoadingStatus;
+            } = {};
+
+            // report 탭에 필요한 데이터가 없으면 NO_DATA로 설정
+            if (!canLoadReport) {
+                updates.report = LoadingStatus.NO_DATA;
+            }
+
+            // review 탭에 필요한 데이터가 없으면 NO_DATA로 설정
+            if (!canLoadReview) {
+                updates.review = LoadingStatus.NO_DATA;
+            }
+
+            // caption 탭에 필요한 데이터가 없으면 NO_DATA로 설정
+            if (!canLoadCaption) {
+                updates.caption = LoadingStatus.NO_DATA;
+            }
+
+            // 업데이트가 있으면 상태 변경
+            if (Object.keys(updates).length > 0) {
+                setProductLoadingStatus(updates);
+            }
+        }
     });
 
     // 웹뷰 관련
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
-            console.error('상품 정보 오류');
             handleWebViewError(); // 서버 API 호출
         },
         onMessage: data => {
@@ -100,7 +130,6 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             }
         },
         onError: () => {
-            console.error('상품 리뷰 오류');
             handleWebViewError(); // 서버 API 호출
         }
     });
@@ -121,6 +150,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // 초기화
     useEffect(() => {
         initProductDetail();
+        return () => {
+            initProductDetail();
+        };
     }, [initProductDetail]);
 
     useEffect(() => {

@@ -38,7 +38,8 @@ export enum LoadingStatus {
     INIT,
     LOADING,
     FINISH,
-    ERROR
+    ERROR,
+    NO_DATA
 }
 
 export const loadingStatusAtom = atom({

@@ -64,7 +64,8 @@ export default function HomeScreen() {
         handleSearchResults,
         handleSortChange,
         handleSearchButtonClick,
-        handleBackButtonClick
+        handleBackButtonClick,
+        hasError
     } = useProductSearch();
 
     useFocusEffect(
@@ -96,6 +97,7 @@ export default function HomeScreen() {
     }, [scrollResetTrigger]);
 
     useEffect(() => {
+        if (hasError) return;
         let timer = setTimeout(() => {
             const ref = isSearching ? searchLoadingRef : searchResultRef;
             if (ref.current) {
@@ -112,7 +114,7 @@ export default function HomeScreen() {
         return () => {
             clearTimeout(timer);
         };
-    }, [isSearching]);
+    }, [isSearching, hasError]);
 
     useEffect(() => {
         const randomCategoryId = CATEGORIES[Math.floor(CATEGORIES.length * Math.random())];
@@ -216,11 +218,9 @@ export default function HomeScreen() {
                             {SORTERS.map((sort, idx) => (
                                 <Pressable
                                     key={`sort-${sort}`}
-                                    onPress={() => handleSortChange(sort)}
                                     accessible
-                                    accessibilityRole="button"
                                     accessibilityLabel={
-                                        sort === searchSorter ? `선택됨 ${SORTER_NAME[idx]}` : SORTER_NAME[idx]
+                                        sort === searchSorter ? `${SORTER_NAME[idx]}` : SORTER_NAME[idx]
                                     }
                                 >
                                     <DefaultText style={sort === searchSorter ? style.selectedSorter : style.sorter}>
@@ -265,12 +265,11 @@ function useStyle(colorScheme: ColorScheme) {
         Container: {
             flex: 1,
             backgroundColor: theme.background.primary,
-            paddingHorizontal: 12
+            paddingHorizontal: 20
         },
         Header: {
-            paddingTop: insets.top,
-            height: 55 + insets.top,
-            paddingBottom: 8
+            paddingTop: insets.top + 18,
+            paddingBottom: 32
         },
         searchContainer: {
             flexDirection: 'row',

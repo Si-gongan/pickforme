@@ -123,7 +123,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
                     const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
 
                     const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
-                    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length * 10 : 0;
+                    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length : 0;
 
                     const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
                     const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;

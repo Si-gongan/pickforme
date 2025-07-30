@@ -12,7 +12,7 @@ export default function useStyle() {
         MainProductSectionTitle: {
             fontSize: 18,
             fontWeight: 'bold',
-            marginBottom: 23,
+            marginBottom: 18,
             color: theme.text.primary
         },
         MainProductSectionListContent: {

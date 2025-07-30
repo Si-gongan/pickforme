@@ -21,7 +21,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>3.3.2</string>
+    <string>3.3.3</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -30,14 +30,14 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>com.sigonggan.pickforme</string>
-          <string>com.googleusercontent.apps.618404683764-e4rl4qllc10k93lgs2bv7vbv9j1lruu7</string>          
-          <string>exp+pickformeapp</string>
+          <string>com.googleusercontent.apps.951645615132-o03i09hk60vq00vl25ri2vu8uoohdq7l</string>
           <string>kakaoa48d1b07defd794b769579746e2bb995</string>
+          <string>exp+pickformeapp</string>
         </array>
-      </dict>      
+      </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>8</string>
     <key>KAKAO_APP_KEY</key>
     <string>a48d1b07defd794b769579746e2bb995</string>
     <key>LSApplicationQueriesSchemes</key>
