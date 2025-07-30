@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 // import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -24,6 +24,8 @@ export default function RootLayout() {
         SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf')
     });
 
+    const startTimeRef = useRef<number>(0);
+
     const { isTotalLoading } = useInitializationAndRouting(fontLoaded);
 
     useScreenTracking();
@@ -31,9 +33,22 @@ export default function RootLayout() {
 
     // 앱 시작 시 자동으로 업데이트 확인
     useEffect(() => {
+        if (startTimeRef.current === 0) {
+            startTimeRef.current = Date.now();
+        }
+
         async function finalizeLoad() {
             if (!isTotalLoading && fontLoaded) {
                 await checkAndFetchUpdates();
+
+                const end = Date.now();
+                const MINIMUM_LOAD_TIME = 1000;
+                const remainingTime = MINIMUM_LOAD_TIME - (end - startTimeRef.current);
+
+                if (remainingTime > 0) {
+                    await new Promise(resolve => setTimeout(resolve, remainingTime));
+                }
+
                 await SplashScreen.hideAsync();
             }
         }
