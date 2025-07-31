@@ -10,6 +10,7 @@ import { PopupService } from '@/services/popup';
 import { UserPointAPI } from '@/stores/user/apis';
 import { AxiosResponse } from 'axios';
 import { UserPoint } from '@/stores/user/types';
+import { checkAndFetchUpdates } from '@/utils/updates';
 
 export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const user = useAtomValue(userAtom);
@@ -17,8 +18,18 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const setting = useAtomValue(settingAtom);
     const [isUserLoading, setIsUserLoading] = useState(true);
     const [isSettingLoading, setIsSettingLoading] = useState(true);
+    const [isUpdateLoading, setIsUpdateLoading] = useState(true);
     const isInitialized = useRef(false);
+    const startTimeRef = useRef<number>(0);
     const router = useRouter();
+    const isTotalLoading = isUserLoading || isSettingLoading || isUpdateLoading;
+
+    // 앱 시작 시간 기록
+    useEffect(() => {
+        if (startTimeRef.current === 0) {
+            startTimeRef.current = Date.now();
+        }
+    }, []);
 
     // 유저 데이터 로딩
     useEffect(() => {
@@ -74,25 +85,53 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
         setClientToken(user.token);
     }, [user, isUserLoading]);
 
+    // 업데이트 확인
+    useEffect(() => {
+        const handleUpdates = async () => {
+            try {
+                await checkAndFetchUpdates();
+            } catch (error) {
+                console.error('업데이트 확인 실패:', error);
+            } finally {
+                setIsUpdateLoading(false);
+            }
+        };
+
+        handleUpdates();
+    }, []);
+
     // 초기화 및 라우팅 처리
     useEffect(() => {
-        if (fontLoaded && !isUserLoading && !isSettingLoading && !isInitialized.current) {
+        if (!isTotalLoading && !isInitialized.current) {
             isInitialized.current = true;
 
-            // 라우팅 처리
-            if (!user?.token) {
-                router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
-            } else {
-                router.push('/(tabs)');
-            }
-        }
-    }, [fontLoaded, isUserLoading, isSettingLoading, user, setting]);
+            const finalizeLoad = async () => {
+                const end = Date.now();
+                const MINIMUM_LOAD_TIME = 700;
+                const remainingTime = MINIMUM_LOAD_TIME - (end - startTimeRef.current);
 
-    const isTotalLoading = isUserLoading || isSettingLoading || !fontLoaded;
+                if (remainingTime > 0) {
+                    await new Promise(resolve => setTimeout(resolve, remainingTime));
+                }
+
+                await SplashScreen.hideAsync();
+
+                // 라우팅 처리
+                if (!user?.token) {
+                    router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
+                } else {
+                    router.push('/(tabs)');
+                }
+            };
+
+            finalizeLoad();
+        }
+    }, [isTotalLoading, user, setting]);
 
     return {
         isUserLoading,
         isSettingLoading,
+        isUpdateLoading,
         isTotalLoading
     };
 };
