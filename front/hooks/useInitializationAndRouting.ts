@@ -10,17 +10,26 @@ import { PopupService } from '@/services/popup';
 import { UserPointAPI } from '@/stores/user/apis';
 import { AxiosResponse } from 'axios';
 import { UserPoint } from '@/stores/user/types';
+import { checkAndFetchUpdates } from '@/utils/updates';
 
 export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const user = useAtomValue(userAtom);
     const setUser = useSetAtom(userAtom);
     const setting = useAtomValue(settingAtom);
     const [isUserLoading, setIsUserLoading] = useState(true);
-    const [isPopupLoading, setIsPopupLoading] = useState(true);
     const [isSettingLoading, setIsSettingLoading] = useState(true);
-    const [isHansiryunPopup, setIsHansiryunPopup] = useState(false);
+    const [isUpdateLoading, setIsUpdateLoading] = useState(true);
     const isInitialized = useRef(false);
+    const startTimeRef = useRef<number>(0);
     const router = useRouter();
+    const isTotalLoading = isUserLoading || isSettingLoading || isUpdateLoading;
+
+    // 앱 시작 시간 기록
+    useEffect(() => {
+        if (startTimeRef.current === 0) {
+            startTimeRef.current = Date.now();
+        }
+    }, []);
 
     // 유저 데이터 로딩
     useEffect(() => {
@@ -66,50 +75,63 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
         checkSetting();
     }, []);
 
-    // 팝업 데이터 로딩
     useEffect(() => {
         if (isUserLoading) return;
 
         if (!user?.token || !user?._id) {
-            setIsPopupLoading(false);
             return;
         }
 
         setClientToken(user.token);
-
-        PopupService.checkHansiryunPopup()
-            .then(hasPopup => {
-                setIsHansiryunPopup(hasPopup);
-            })
-            .catch(error => {
-                console.error('팝업 체크 에러:', error);
-            })
-            .finally(() => {
-                setIsPopupLoading(false);
-            });
     }, [user, isUserLoading]);
+
+    // 업데이트 확인
+    useEffect(() => {
+        const handleUpdates = async () => {
+            try {
+                await checkAndFetchUpdates();
+            } catch (error) {
+                console.error('업데이트 확인 실패:', error);
+            } finally {
+                setIsUpdateLoading(false);
+            }
+        };
+
+        handleUpdates();
+    }, []);
 
     // 초기화 및 라우팅 처리
     useEffect(() => {
-        if (fontLoaded && !isUserLoading && !isPopupLoading && !isSettingLoading && !isInitialized.current) {
+        if (!isTotalLoading && !isInitialized.current) {
             isInitialized.current = true;
 
-            // 라우팅 처리
-            if (!user?.token) {
-                router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
-            } else {
-                router.push('/(tabs)');
-            }
-        }
-    }, [fontLoaded, isUserLoading, isPopupLoading, isSettingLoading, user, setting, isHansiryunPopup]);
+            const finalizeLoad = async () => {
+                const end = Date.now();
+                const MINIMUM_LOAD_TIME = 700;
+                const remainingTime = MINIMUM_LOAD_TIME - (end - startTimeRef.current);
 
-    const isTotalLoading = isUserLoading || isPopupLoading || isSettingLoading || !fontLoaded;
+                if (remainingTime > 0) {
+                    await new Promise(resolve => setTimeout(resolve, remainingTime));
+                }
+
+                await SplashScreen.hideAsync();
+
+                // 라우팅 처리
+                if (!user?.token) {
+                    router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
+                } else {
+                    router.push('/(tabs)');
+                }
+            };
+
+            finalizeLoad();
+        }
+    }, [isTotalLoading, user, setting]);
 
     return {
         isUserLoading,
-        isPopupLoading,
         isSettingLoading,
-        isHansiryunPopup,
+        isUpdateLoading,
         isTotalLoading
     };
 };
