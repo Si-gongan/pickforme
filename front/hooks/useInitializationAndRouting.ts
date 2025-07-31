@@ -16,9 +16,7 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const setUser = useSetAtom(userAtom);
     const setting = useAtomValue(settingAtom);
     const [isUserLoading, setIsUserLoading] = useState(true);
-    const [isPopupLoading, setIsPopupLoading] = useState(true);
     const [isSettingLoading, setIsSettingLoading] = useState(true);
-    const [isHansiryunPopup, setIsHansiryunPopup] = useState(false);
     const isInitialized = useRef(false);
     const router = useRouter();
 
@@ -66,32 +64,19 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
         checkSetting();
     }, []);
 
-    // 팝업 데이터 로딩
     useEffect(() => {
         if (isUserLoading) return;
 
         if (!user?.token || !user?._id) {
-            setIsPopupLoading(false);
             return;
         }
 
         setClientToken(user.token);
-
-        PopupService.checkHansiryunPopup()
-            .then(hasPopup => {
-                setIsHansiryunPopup(hasPopup);
-            })
-            .catch(error => {
-                console.error('팝업 체크 에러:', error);
-            })
-            .finally(() => {
-                setIsPopupLoading(false);
-            });
     }, [user, isUserLoading]);
 
     // 초기화 및 라우팅 처리
     useEffect(() => {
-        if (fontLoaded && !isUserLoading && !isPopupLoading && !isSettingLoading && !isInitialized.current) {
+        if (fontLoaded && !isUserLoading && !isSettingLoading && !isInitialized.current) {
             isInitialized.current = true;
 
             // 라우팅 처리
@@ -101,15 +86,13 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
                 router.push('/(tabs)');
             }
         }
-    }, [fontLoaded, isUserLoading, isPopupLoading, isSettingLoading, user, setting, isHansiryunPopup]);
+    }, [fontLoaded, isUserLoading, isSettingLoading, user, setting]);
 
-    const isTotalLoading = isUserLoading || isPopupLoading || isSettingLoading || !fontLoaded;
+    const isTotalLoading = isUserLoading || isSettingLoading || !fontLoaded;
 
     return {
         isUserLoading,
-        isPopupLoading,
         isSettingLoading,
-        isHansiryunPopup,
         isTotalLoading
     };
 };
