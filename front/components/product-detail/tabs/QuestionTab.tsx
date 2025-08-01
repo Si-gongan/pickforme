@@ -7,6 +7,8 @@ import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../../../hooks/useColorScheme';
 import { ProductDetailState } from '../../../stores/product/types';
 import { TABS, formatDate, formatTime } from '../../../utils/common';
+import { getRequestsAtom } from '@/stores/request/atoms';
+import { useSetAtom } from 'jotai';
 
 interface QuestionTabProps {
     question: string;
@@ -38,6 +40,8 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     const inputRef = useRef<TextInput>(null);
     const loadingRef = useRef<RNView>(null);
     const answerRef = useRef<RNView>(null);
+    const managerAnswerRef = useRef<RNView>(null);
+    const getRequests = useSetAtom(getRequestsAtom);
 
     const markdownStyles = StyleSheet.create({
         text: {
@@ -48,22 +52,34 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     });
 
     useEffect(() => {
+        getRequests();
+    }, []);
+
+    // 로딩 상태로 변경시 로딩 인디케이터에 포커스
+    useEffect(() => {
         if (loadingStatus[tab] === 1 && loadingRef.current) {
             focusOnRef(loadingRef);
         }
     }, [loadingStatus[tab]]);
 
+    // AI 답변이 완료되면 답변 영역에 포커스
     useEffect(() => {
         if (loadingStatus[tab] === 2 && productDetail?.answer && answerRef.current) {
             focusOnRef(answerRef);
         }
     }, [loadingStatus[tab], productDetail?.answer]);
 
+    // 질문 입력창에 포커스
     useEffect(() => {
+        const latestRequest = productRequests?.[0];
+
         if (isTabPressed && inputRef.current) {
             focusOnRef(inputRef);
+        } else if (latestRequest?.answer?.text && managerAnswerRef.current) {
+            // 탭을 누르지 않고 딥 링크 등으로 질문 탭으로 이동했을 때 매니저 답변에 포커스
+            focusOnRef(managerAnswerRef);
         }
-    }, [isTabPressed]);
+    }, [isTabPressed, productRequests]);
 
     return (
         <View style={styles.detailWrap}>
@@ -140,7 +156,9 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
                 <>
                     <View style={styles.seperator}></View>
                     <View accessible={true} accessibilityLabel="매니저 답변">
-                        <Text style={styles.boldText}>매니저 답변</Text>
+                        <Text style={styles.boldText} ref={managerAnswerRef}>
+                            매니저 답변
+                        </Text>
                     </View>
 
                     <View style={styles.seperator}></View>

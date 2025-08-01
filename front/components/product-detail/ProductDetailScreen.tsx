@@ -39,12 +39,14 @@ import { useTabData } from '@/hooks/product-detail/useTabData';
 import { useWebViewReviews } from '../webview-reviews';
 import { useWebViewDetail } from '../webview-detail';
 import { useWebViewFallback } from '@/hooks/useWebViewFallback';
+import { TABS } from '@/utils/common';
 
 interface ProductDetailScreenProps {}
 
 const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
-    const { productUrl: productUrlBase, url: urlBase } = useLocalSearchParams();
+    const { productUrl: productUrlBase, url: urlBase, tab: tabBase } = useLocalSearchParams();
     const productUrl = decodeURIComponent((productUrlBase || urlBase)?.toString() ?? '');
+    const initialTab = (tabBase?.toString() as TABS) ?? TABS.CAPTION;
 
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -74,7 +76,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
     // 커스텀 훅들
     const { product, productRequests, request, wishlistItem, isLocal } = useProductData({ productUrl });
-    const { tab, isTabPressed, handlePressTab, handleRegenerate } = useProductTabs();
+    const { tab, isTabPressed, handlePressTab, handleRegenerate } = useProductTabs(initialTab);
     const { handleClickBuy, handleClickWish, handleClickSend, handleClickRequest, handleClickContact } =
         useProductActions({ product, productUrl, wishlistItem, question, setQuestion });
 
