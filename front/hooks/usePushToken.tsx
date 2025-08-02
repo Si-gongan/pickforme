@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { useRouter } from 'expo-router';
@@ -19,6 +19,7 @@ const usePushToken = () => {
     const userData = useAtomValue(userAtom);
     const setPushToken = useSetAtom(setPushTokenAtom);
     const router = useRouter();
+    const initialPushRouteRef = useRef<string | null>(null);
 
     React.useEffect(() => {
         const notificationListener = Notifications.addNotificationReceivedListener(notification => {
@@ -29,7 +30,7 @@ const usePushToken = () => {
             // notification 누른경우
             const data = response.notification.request.content.data;
             if (data.url) {
-                router.push(data.url);
+                initialPushRouteRef.current = data.url;
             }
         });
 
@@ -53,7 +54,7 @@ const usePushToken = () => {
         }
     }, [userData?._id]);
 
-    return null;
+    return { initialPushRouteRef };
 };
 
 async function registerForPushNotifications() {
