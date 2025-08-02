@@ -342,15 +342,8 @@ class CoupangCrawlerService extends EventEmitter {
   private scheduleCleanupIfIdle() {
     // 큐가 비어있고 처리 중인 요청이 없으면 자동 정리 스케줄링
     if (this.queue.length === 0 && this.processingCount === 0) {
-      console.log('📅 모든 요청 완료. 30초 후 브라우저 정리 예정...');
-
-      this.cleanupTimer = setTimeout(() => {
-        // 타이머 실행 시점에 다시 한번 확인
-        if (this.queue.length === 0 && this.processingCount === 0) {
-          console.log('🧹 유휴 상태로 브라우저 자동 정리 시작...');
-          void this.cleanup();
-        }
-      }, 30000); // 30초 후 정리
+      console.log('🧹 유휴 상태 확인됨. 브라우저 즉시 정리 시작...');
+      void this.cleanup();
     }
   }
 
