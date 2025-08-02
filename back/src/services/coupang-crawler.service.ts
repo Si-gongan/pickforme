@@ -267,7 +267,7 @@ class CoupangCrawlerService extends EventEmitter {
     }, productId);
     data.reviews = reviews;
     if (!data.name) {
-      throw new Error('상품 이름을 찾을 수 없습니다.');
+      throw new Error('상품 정보를 가져오는데 실패했습니다.');
     }
     console.log(`✅ 크롤링 완료: ${request.url}`);
     return data;
