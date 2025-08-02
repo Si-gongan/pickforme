@@ -49,10 +49,10 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
         try {
             if (Platform.OS === 'android') {
                 // Android의 경우 구글 플레이 스토어로 이동
-                await Linking.openURL('https://play.google.com/store/account/subscriptions');
+                await Linking.openURL('https://play.google.com/store/account/orderhistory');
             } else {
                 // iOS의 경우 앱스토어 설정으로 이동
-                await Linking.openURL('https://apps.apple.com/account/subscriptions');
+                await Linking.openURL('https://reportaproblem.apple.com');
             }
         } catch (error) {
             console.error('구독 해지 처리 중 에러 발생:', error);
