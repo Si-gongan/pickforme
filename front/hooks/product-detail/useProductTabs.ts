@@ -3,8 +3,8 @@ import { useSetAtom } from 'jotai';
 import { TABS } from '../../utils/common';
 import { getProductCaptionAtom, getProductReportAtom, getProductReviewAtom } from '../../stores/product/atoms';
 
-export const useProductTabs = () => {
-    const [tab, setTab] = useState<TABS>(TABS.CAPTION);
+export const useProductTabs = (initialTab: TABS = TABS.CAPTION) => {
+    const [tab, setTab] = useState<TABS>(initialTab);
     const [isTabPressed, setIsTabPressed] = useState(false);
 
     const getProductCaption = useSetAtom(getProductCaptionAtom);

@@ -12,7 +12,6 @@ export const addRequestAtom = atom(null, async (get, set, request: RequestParams
     if (!userData) {
         return;
     }
-    console.log('userData.point::', userData.point);
 
     if (userData.point !== undefined && userData.point < 1) {
         // 구독

@@ -15,21 +15,21 @@ router.post('/answer', async (ctx) => {
     throw new Error('Request 존재하지 않음');
   }
 
-  if (!request.answer) {
-    const deeplink = `/product-detail?productUrl=${encodeURIComponent(request!.product.url)}`;
+  const deeplink = `/product-detail?productUrl=${encodeURIComponent(request!.product.url)}&tab=question`;
 
-    const user = await db.User.findById(request!.userId);
-    if (user && user.pushToken && user.push.service === 'on') {
-      sendPush({
-        to: user.pushToken,
-        body:
-          request!.type === RequestType.QUESTION
-            ? `'${request!.product.name.slice(0, 13)}...' 상품에 대한 매니저 답변이 도착했습니다.`
-            : '매니저 답변이 도착했습니다.',
-        data: { url: deeplink },
-      });
-    }
+  const user = await db.User.findById(request!.userId);
+
+  if (user && user.pushToken && user.push.service === 'on') {
+    sendPush({
+      to: user.pushToken,
+      body:
+        request!.type === RequestType.QUESTION
+          ? `'${request!.product.name.slice(0, 13)}...' 상품에 대한 매니저 답변이 도착했습니다.`
+          : '매니저 답변이 도착했습니다.',
+      data: { url: deeplink },
+    });
   }
+
   request!.answer = body.answer;
   request!.status = RequestStatus.SUCCESS;
   await request!.save();

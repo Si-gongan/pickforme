@@ -42,7 +42,11 @@ export default function InfoScreen() {
         function () {
             console.log('(info)제출된 정보:', payload);
 
-            onSetting(payload);
+            onSetting({
+                ...setting,
+                ...payload,
+                isReady: true
+            });
         },
         [payload, onSetting]
     );

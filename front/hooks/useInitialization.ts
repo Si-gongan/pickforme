@@ -5,14 +5,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom, settingAtom } from '@stores';
 import { setClientToken } from '../utils/axios';
-import { GetPopupAPI } from '../stores/auth';
-import { PopupService } from '@/services/popup';
 import { UserPointAPI } from '@/stores/user/apis';
 import { AxiosResponse } from 'axios';
 import { UserPoint } from '@/stores/user/types';
 import { checkAndFetchUpdates } from '@/utils/updates';
 
-export const useInitializationAndRouting = (fontLoaded: boolean) => {
+export const useInitialization = (fontLoaded: boolean) => {
     const user = useAtomValue(userAtom);
     const setUser = useSetAtom(userAtom);
     const setting = useAtomValue(settingAtom);
@@ -22,7 +20,10 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
     const isInitialized = useRef(false);
     const startTimeRef = useRef<number>(0);
     const router = useRouter();
-    const isTotalLoading = isUserLoading || isSettingLoading || isUpdateLoading;
+    const isTotalLoading = isUserLoading || isSettingLoading || isUpdateLoading || !fontLoaded;
+
+    const isUserLoggedIn = user?.token && user?._id;
+    const isSettingReady = setting?.isReady;
 
     // 앱 시작 시간 기록
     useEffect(() => {
@@ -115,13 +116,6 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
                 }
 
                 await SplashScreen.hideAsync();
-
-                // 라우팅 처리
-                if (!user?.token) {
-                    router.push(setting?.isReady ? '/(tabs)' : '/(onboarding)');
-                } else {
-                    router.push('/(tabs)');
-                }
             };
 
             finalizeLoad();
@@ -129,9 +123,8 @@ export const useInitializationAndRouting = (fontLoaded: boolean) => {
     }, [isTotalLoading, user, setting]);
 
     return {
-        isUserLoading,
-        isSettingLoading,
-        isUpdateLoading,
-        isTotalLoading
+        isTotalLoading,
+        isUserLoggedIn,
+        isSettingReady
     };
 };
