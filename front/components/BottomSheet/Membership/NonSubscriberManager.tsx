@@ -6,7 +6,7 @@ import { useAtom } from 'jotai';
 
 import { isShowNonSubscriberManagerModalAtom, settingAtom, membershipModalTypeAtom } from '@stores';
 import { View, Text, Button_old as Button } from '@components';
-import { Props, styles } from '../Base';
+import { Props, createStyles } from '../Base';
 import { Colors } from '@constants';
 import useColorScheme from '../../../hooks/useColorScheme';
 
@@ -23,6 +23,7 @@ const NonSubscriberManagerBottomSheet: React.FC<Props> = () => {
 
     const colorScheme = useColorScheme();
     const localStyles = useLocalStyles(colorScheme);
+    const styles = createStyles(colorScheme);
 
     const onClose = () => setVisible(false);
 
