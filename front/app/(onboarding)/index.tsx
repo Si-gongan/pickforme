@@ -24,9 +24,9 @@ export default function OnBoardingInfoScreen() {
 
     const handleStart = () => {
         if (user?._id) {
-            router.push('/(tabs)');
+            router.replace('/(tabs)');
         } else {
-            router.push('/login');
+            router.replace('/login');
         }
     };
 
