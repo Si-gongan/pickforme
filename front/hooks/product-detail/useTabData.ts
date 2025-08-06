@@ -2,13 +2,13 @@
 import { useSetAtom } from 'jotai';
 import { getProductCaptionAtom, getProductReportAtom, getProductReviewAtom } from '@/stores/product/atoms';
 import { TABS } from '@/utils/common';
-import { ProductDetailState, ProductReview } from '@/stores/product/types';
+import { Product, ProductDetailState, ProductReview } from '@/stores/product/types';
 import { useEffect } from 'react';
 import { LoadingStatus } from '@/stores/product/atoms';
 
 interface UseTabDataProps {
     tab: TABS;
-    productDetail: ProductDetailState | void;
+    productDetail: ProductDetailState | undefined;
     productReview: string[];
     productUrl: string;
     loadingStatus: {
@@ -19,33 +19,29 @@ interface UseTabDataProps {
     };
 }
 
+// 각 탭별로 필요한 데이터를 체크하는 함수
+export const checkRequiredData = (tab: TABS, product: Product | undefined, productReview: string[]): boolean => {
+    if (!product) return false;
+
+    switch (tab) {
+        case TABS.CAPTION:
+            return !!(product.name && product.thumbnail);
+        case TABS.REPORT:
+            return !!(product.name && product.detail_images && product.detail_images.length > 0);
+        case TABS.REVIEW:
+            return !!(productReview.length > 0 && product.name);
+        default:
+            return false;
+    }
+};
+
 export const useTabData = ({ tab, productDetail, productReview, productUrl, loadingStatus }: UseTabDataProps) => {
     const getProductCaption = useSetAtom(getProductCaptionAtom);
     const getProductReport = useSetAtom(getProductReportAtom);
     const getProductReview = useSetAtom(getProductReviewAtom);
 
-    // 각 탭별로 필요한 데이터를 체크하는 함수
-    const checkRequiredData = (tab: TABS, productDetail: ProductDetailState | void): boolean => {
-        if (!productDetail) return false;
-
-        switch (tab) {
-            case TABS.CAPTION:
-                return !!(productDetail.product?.name && productDetail.product?.thumbnail);
-            case TABS.REPORT:
-                return !!(
-                    productDetail.product?.name &&
-                    productDetail.product?.detail_images &&
-                    productDetail.product.detail_images.length > 0
-                );
-            case TABS.REVIEW:
-                return !!(productReview.length > 0 && productDetail.product?.name);
-            default:
-                return false;
-        }
-    };
-
     // 각 탭별로 데이터가 있는지 체크하는 함수
-    const hasTabData = (tab: TABS, productDetail: ProductDetailState | void): boolean => {
+    const hasTabData = (tab: TABS, productDetail: ProductDetailState | undefined): boolean => {
         if (!productDetail) return false;
 
         switch (tab) {
@@ -84,7 +80,7 @@ export const useTabData = ({ tab, productDetail, productReview, productUrl, load
             return;
         }
 
-        if (!checkRequiredData(tab, productDetail)) {
+        if (!checkRequiredData(tab, productDetail?.product, productReview)) {
             // console.log(`${tab} 탭에 필요한 데이터가 없습니다.`);
             return;
         }

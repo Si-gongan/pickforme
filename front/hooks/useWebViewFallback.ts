@@ -4,13 +4,15 @@ import { CoupangCrawlAPI } from '@/stores/product/apis';
 import { useState, useRef, useEffect } from 'react';
 import { Product } from '@/stores/product/types';
 import { TABS } from '@/utils/common';
+import { logCrawlProcessResult } from '@/utils/crawlLog';
 
 interface UseWebViewFallbackProps {
     productUrl: string;
     onComplete?: (data: { canLoadReport: boolean; canLoadReview: boolean; canLoadCaption: boolean }) => void;
+    requestId: string;
 }
 
-export const useWebViewFallback = ({ productUrl, onComplete }: UseWebViewFallbackProps) => {
+export const useWebViewFallback = ({ productUrl, onComplete, requestId }: UseWebViewFallbackProps) => {
     const setProduct = useSetAtom(setProductAtom);
     const setProductReview = useSetAtom(setProductReviewAtom);
     const currentProductReview = useAtomValue(productReviewAtom);
@@ -19,11 +21,14 @@ export const useWebViewFallback = ({ productUrl, onComplete }: UseWebViewFallbac
     const [hasError, setHasError] = useState(false);
     const hasCalledRef = useRef(false);
 
+    const startDate = useRef(new Date());
+
     // productUrl이 변경될 때 호출 상태 리셋
     useEffect(() => {
         hasCalledRef.current = false;
         setHasError(false);
         setIsLoading(false);
+        startDate.current = new Date();
     }, [productUrl]);
 
     // 각 탭별로 필요한 데이터가 있는지 체크하는 함수 (useTabData.ts 참고)
@@ -98,6 +103,23 @@ export const useWebViewFallback = ({ productUrl, onComplete }: UseWebViewFallbac
         try {
             const response = await CoupangCrawlAPI(productUrl);
 
+            const durationMs = new Date().getTime() - startDate.current.getTime();
+
+            logCrawlProcessResult({
+                requestId,
+                productUrl,
+                processType: 'server',
+                success: true,
+                durationMs,
+                fields: {
+                    name: !!response.data.data.name,
+                    detail_images:
+                        Array.isArray(response.data.data.detail_images) && response.data.data.detail_images.length > 0,
+                    thumbnail: !!response.data.data.thumbnail,
+                    reviews: Array.isArray(response.data.data.reviews) && response.data.data.reviews.length > 0
+                }
+            });
+
             if (response && response.data && response.data.success) {
                 // 서버 응답에서 상품 정보 추출
                 const serverData = response.data.data;
@@ -144,6 +166,7 @@ export const useWebViewFallback = ({ productUrl, onComplete }: UseWebViewFallbac
 
                     // 완료 콜백 호출 - 각 탭의 요구사항에 따라 판단
                     const tabStatus = getTabDataStatus(serverData);
+
                     onComplete?.(tabStatus);
                 } else {
                     console.error('서버 크롤링 결과에 필수 상품 정보가 없습니다');
@@ -164,6 +187,22 @@ export const useWebViewFallback = ({ productUrl, onComplete }: UseWebViewFallbac
         } catch (error) {
             console.error('서버 크롤링 중 예외 발생:', error);
             setHasError(true);
+
+            const durationMs = new Date().getTime() - startDate.current.getTime();
+
+            logCrawlProcessResult({
+                requestId,
+                productUrl,
+                processType: 'server',
+                success: false,
+                durationMs,
+                fields: {
+                    name: false,
+                    detail_images: false,
+                    thumbnail: false,
+                    reviews: false
+                }
+            });
 
             // 에러가 발생해도 완료 콜백 호출 - 기존 데이터만으로 판단
             const tabStatus = getTabDataStatusOnError();
