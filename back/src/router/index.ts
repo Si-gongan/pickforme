@@ -12,6 +12,7 @@ import logRouter from './log';
 import productRouter from './product';
 import popupRouter from './popup';
 import coupangRouter from './coupang';
+import crawlReportRouter from './crawl-report';
 import db from '../models';
 import { log } from 'utils/logger';
 
@@ -29,6 +30,7 @@ const router = new Router();
   productRouter,
   popupRouter,
   coupangRouter,
+  crawlReportRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
 });

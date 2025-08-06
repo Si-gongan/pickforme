@@ -25,6 +25,9 @@ const Header: React.FC = () => {
           <Link href="/purchase/purchase-failure">Purchase Failures</Link>
         </NavItem>
         <NavItem>
+          <Link href="/crawl-log">Crawl Log</Link>
+        </NavItem>
+        <NavItem>
           <Link href="/login">Login</Link>
         </NavItem>
       </NavList>

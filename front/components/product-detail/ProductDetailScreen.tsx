@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, ScrollView, Alert } from 'react-native';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { router, useLocalSearchParams } from 'expo-router';
 import Modal from 'react-native-modal';
+import 'react-native-get-random-values';
 
 import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
@@ -40,6 +41,8 @@ import { useWebViewReviews } from '../webview-reviews';
 import { useWebViewDetail } from '../webview-detail';
 import { useWebViewFallback } from '@/hooks/useWebViewFallback';
 import { TABS } from '@/utils/common';
+import { v4 as uuidv4 } from 'uuid';
+import { logCrawlProcessResult } from '@/utils/crawlLog';
 
 interface ProductDetailScreenProps {}
 
@@ -47,6 +50,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { productUrl: productUrlBase, url: urlBase, tab: tabBase } = useLocalSearchParams();
     const productUrl = decodeURIComponent((productUrlBase || urlBase)?.toString() ?? '');
     const initialTab = (tabBase?.toString() as TABS) ?? TABS.CAPTION;
+
+    const requestId = useRef(uuidv4());
+    const startDate = useRef(new Date());
 
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -83,6 +89,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // 웹뷰에서 정보를 가져오는 것이 실패했을 때 서버측 크롤러 API 호출
     const { handleWebViewError, isLoading: isFallbackLoading } = useWebViewFallback({
         productUrl,
+        requestId: requestId.current,
         // 서버 크롤링까지 마치면 이제 크롤링은 끝난 상황. 이제 최종적으로 각 탭에 필요한 데이터가 있는지 확인하고 그에 따라 loading status 업데이트
         onComplete: ({ canLoadReport, canLoadReview, canLoadCaption }) => {
             const updates: {
@@ -117,10 +124,40 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
+            const durationMs = new Date().getTime() - startDate.current.getTime();
+
+            logCrawlProcessResult({
+                requestId: requestId.current,
+                productUrl,
+                processType: 'webview-detail',
+                success: false,
+                durationMs,
+                fields: {
+                    name: false,
+                    thumbnail: false,
+                    detail_images: false
+                }
+            });
+
             handleWebViewError(); // 서버 API 호출
         },
         onMessage: data => {
+            const durationMs = new Date().getTime() - startDate.current.getTime();
+
             setProduct(data);
+
+            logCrawlProcessResult({
+                requestId: requestId.current,
+                productUrl,
+                processType: 'webview-detail',
+                success: true,
+                durationMs,
+                fields: {
+                    name: !!data.name,
+                    thumbnail: !!data.thumbnail,
+                    detail_images: Array.isArray(data?.detail_images) && data.detail_images.length > 0
+                }
+            });
         }
     });
 
@@ -130,8 +167,34 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             if (data && data.length > 0) {
                 setProductReview(data);
             }
+
+            const durationMs = new Date().getTime() - startDate.current.getTime();
+
+            logCrawlProcessResult({
+                requestId: requestId.current,
+                productUrl,
+                processType: 'webview-review',
+                success: true,
+                durationMs,
+                fields: {
+                    reviews: Array.isArray(data) && data.length > 0
+                }
+            });
         },
         onError: () => {
+            const durationMs = new Date().getTime() - startDate.current.getTime();
+
+            logCrawlProcessResult({
+                requestId: requestId.current,
+                productUrl,
+                processType: 'webview-review',
+                success: false,
+                durationMs,
+                fields: {
+                    reviews: false
+                }
+            });
+
             handleWebViewError(); // 서버 API 호출
         }
     });
