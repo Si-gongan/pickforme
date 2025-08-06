@@ -147,7 +147,7 @@ export default function HomeScreen() {
                             accessible
                             accessibilityLabel="검색어 입력창"
                             onChangeText={handleSearchTextChange}
-                            placeholder="찾고 싶은 상품 키워드 또는 링크를 입력해 보세요"
+                            placeholder="찾고 싶은 상품 키워드 또는 쿠팡 링크를 입력해 보세요"
                             placeholderTextColor={Colors[colorScheme].text.placeholder}
                         />
                         {!!searchText.length && (

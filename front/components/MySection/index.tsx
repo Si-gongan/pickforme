@@ -22,6 +22,7 @@ export default function MySection({ title, items, role }: IMySectionProps) {
                                 onPress={item.onPress || (() => {})}
                                 disabled={false}
                                 accessibilityRole={sectionRole}
+                                style={style.MySectionMenu}
                             >
                                 {item.name}
                             </Text>
