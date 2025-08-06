@@ -19,8 +19,6 @@ import {
     AppleAuthenticationScope,
     signInAsync as appleSignInAsync
 } from 'expo-apple-authentication';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAtom } from 'jotai';
 
 import { useServiceLogin } from '@services';
 import useColorScheme from '../../hooks/useColorScheme';
@@ -29,17 +27,15 @@ import useStyle from './style';
 import { PopupService } from '@/services/popup';
 import { isShowLoginModalAtom } from '@stores';
 
-export default function LoginForm() {
+export default function LoginForm({ onLoginSuccess }: { onLoginSuccess?: () => void }) {
     const style = useStyle();
     const colorScheme = useColorScheme();
     const contentRef = useRef<Text>(null);
-    const router = useRouter();
-    const [isShowLoginModal, setIsShowLoginModal] = useAtom(isShowLoginModalAtom);
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
         onSuccess: async () => {
+            onLoginSuccess?.();
             await PopupService.resetFirstLogin();
-            router.replace('/(tabs)');
         }
     });
 

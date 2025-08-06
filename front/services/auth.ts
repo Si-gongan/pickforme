@@ -62,8 +62,8 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         },
         onSuccess: async function (response) {
             if (response.status === 200) {
-                await onLogin(response.data);
                 onSuccess?.();
+                await onLogin(response.data);
             }
         },
         onError: function (error) {
@@ -78,8 +78,8 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         },
         onSuccess: async function (response) {
             if (response.status === 200) {
-                await onLogin(response.data);
                 onSuccess?.();
+                await onLogin(response.data);
             }
         },
         onError: function (error) {
@@ -94,8 +94,8 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         },
         onSuccess: async function (response) {
             if (response.status === 200) {
-                await onLogin(response.data);
                 onSuccess?.();
+                await onLogin(response.data);
             }
         },
         onError: function (error) {
