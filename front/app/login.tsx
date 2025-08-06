@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAtomValue } from 'jotai';
@@ -16,29 +16,42 @@ export default function LoginScreen() {
 
     const user = useAtomValue(userAtom);
 
+    // 방금 로그인 하고 나서 밑에 있는 router.back() 을 호출하지 않기 위해 사용.
+    const hasUserJustLoggedIn = useRef(false);
+
     useEffect(
         function () {
             if (user?._id && router.canGoBack()) {
-                router.back();
+                // 방금 로그인 했을때는 router.back하지 않도록.
+                if (hasUserJustLoggedIn.current) {
+                    hasUserJustLoggedIn.current = false;
+                } else {
+                    router.back();
+                }
             }
         },
         [user?._id, router]
     );
 
+    const onLoginSuccess = () => {
+        hasUserJustLoggedIn.current = true;
+        router.replace('/(tabs)');
+    };
+
     return (
         <View style={style.LoginScreenContainer} onAccessibilityEscape={() => router.back()}>
             <Pressable
-                onPress={() => router.push('/(tabs)')}
+                onPress={() => router.back()}
                 accessible
                 accessibilityRole="button"
                 accessibilityLabel="뒤로가기"
                 style={{ marginTop: 100, marginLeft: 20 }}
-                onAccessibilityEscape={() => router.push('/(tabs)')}
+                onAccessibilityEscape={() => router.back()}
             >
                 <BackIcon size={48} color={Colors[colorScheme].text.primary} />
             </Pressable>
             <View style={style.LoginScreenContent}>
-                <LoginForm />
+                <LoginForm onLoginSuccess={onLoginSuccess} />
             </View>
         </View>
     );

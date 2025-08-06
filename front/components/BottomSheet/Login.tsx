@@ -1,5 +1,4 @@
 import { StyleSheet, View, Pressable, Text, Image } from 'react-native';
-import { useRouter } from 'expo-router';
 import BottomSheet from 'react-native-modal';
 import { useAtom } from 'jotai';
 
@@ -11,7 +10,6 @@ import Colors from '@/constants/Colors';
 import BackIcon from '@/assets/icons/BackIcon';
 
 const LoginBottomSheet: React.FC<Props> = () => {
-    const router = useRouter();
     const colorScheme = useColorScheme();
 
     const [visible, setVisible] = useAtom(isShowLoginModalAtom);
@@ -33,6 +31,10 @@ const LoginBottomSheet: React.FC<Props> = () => {
             resizeMode: 'contain'
         }
     });
+
+    const onLoginSuccess = () => {
+        setVisible(false);
+    };
 
     const onClose = () => setVisible(false);
 
@@ -57,7 +59,7 @@ const LoginBottomSheet: React.FC<Props> = () => {
                     {/* <Image style={localStyles.backButtonImage} source={BackImage} /> */}
                     <BackIcon size={32} color={Colors[colorScheme].text.primary} opacity={1} />
                 </Pressable>
-                <LoginForm />
+                <LoginForm onLoginSuccess={onLoginSuccess} />
             </View>
         </BottomSheet>
     );
