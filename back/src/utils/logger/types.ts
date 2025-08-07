@@ -10,7 +10,18 @@ export type LogContext =
   | 'PRODUCT'
   | 'SYSTEM'
   | 'SCHEDULER'
-  | 'COUPANG';
+  | 'COUPANG'
+  | 'COMMON' // 공통/일반적인 로직
+  | 'API' // API 관련
+  | 'DATABASE' // 데이터베이스 관련
+  | 'CACHE' // 캐시 관련
+  | 'VALIDATION' // 유효성 검증
+  | 'MIDDLEWARE' // 미들웨어
+  | 'SERVICE' // 서비스 레이어
+  | 'CONTROLLER' // 컨트롤러
+  | 'UTIL' // 유틸리티 함수
+  | 'EXTERNAL' // 외부 API 호출
+  | 'CRAWL'; // 크롤링 관련
 
 export type LogSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
