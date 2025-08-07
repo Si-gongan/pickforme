@@ -40,8 +40,23 @@ class IAPValidator {
     await this.initialized;
     const validationResult = await iap
       .validate(receipt)
-      .then(async (validatedData) => {
+      .then(async (validatedData: any) => {
         // validatedData: the actual content of the validated receipt (also contains the original receipt)
+
+        const all = validatedData.latest_receipt_info ?? [];
+
+        const target = all.find((item: any) => item.product_id === productId);
+
+        // 없으면 아예 구독한 적 없음
+        if (!target) return null;
+
+        // 환불되었는지 확인
+        if (target.cancellation_date) return null;
+
+        // 만료되었는지 확인
+        const expires = Number(target.expires_date_ms || 0);
+        if (expires !== 0 && expires < Date.now()) return null;
+
         const options = {
           ignoreCanceled: true, // Apple ONLY: purchaseData will NOT contain cancceled items
           ignoreExpired: true, // purchaseData will NOT contain exipired subscription items
