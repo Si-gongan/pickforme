@@ -94,112 +94,67 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     };
 
     const getProductDetailInjectionCode = () => {
-        if (platform === 'coupang') {
-            return `(function() {
-                try {
-                    const getImageSrc = (img) => {
-                        return img?.getAttribute('data-src') || 
-                               img?.getAttribute('srcset') || 
-                               img?.src || '';
-                    };
-
-                    const url = window.location.href;
-                    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
-                    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
-                    
-                    // 일반 가격이 있는지 먼저 확인
-                    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
-                    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
-                    
-                    // 일반 가격이 있으면 그것을 사용하고, 없으면 와우할인가 사용
-                    const price = regularPriceElement 
-                        ? parseInt(regularPriceElement.innerText.replace(/[^0-9]/g, ''))
-                        : parseInt((wowPriceElement?.innerText || '').replace(/[^0-9]/g, ''));
-                    
-                    const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
-                    const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
-                    
-                    const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
-                    const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
-
-                    const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
-                    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length : 0;
-
-                    const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
-                    const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
-
-                    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
-                    const detail_images = [];
-                    elements.forEach(element => {
-                        const imgElement = element.querySelector('img');
-                        if (imgElement) {
-                            const src = getImageSrc(imgElement);
-                            if (src) {
-                                detail_images.push(src);
-                            }
-                        }
-                    });
-
-                    const payload = JSON.stringify({
-                        content: {
-                            thumbnail, 
-                            name, 
-                            price, 
-                            origin_price, 
-                            discount_rate, 
-                            ratings, 
-                            reviews,
-                            detail_images
-                        }
-                    });
-                    window.ReactNativeWebView.postMessage(payload);
-                } catch (e) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-                }
-            })();`;
-        } else {
-            return `(function() {
-        try {
-          const url = window.location.href;
-          const thumbnail = document.querySelector('meta[property="og:image"]')?.content || '';
-          const name = document.querySelector('meta[property="og:title"]')?.content || '';
-          const price = parseInt((document.querySelector('meta[property="product:price:amount"]')?.content || '').replace(/[^0-9]/g, '')) || 0;
-          
-          const origin_price = parseInt((document.querySelector('meta[property="product:original_price:amount"]')?.content || '').replace(/[^0-9]/g, ''));
-          
-          const discount_rate = parseInt((document.querySelector('meta[property="product:discount_rate"]')?.content || '').replace(/[^0-9]/g, ''));
-          
-          const ratings = parseFloat((document.querySelector('meta[property="product:rating"]')?.content || '').replace(/[^0-9]/g, ''));
-
-          const reviews = parseInt((document.querySelector('meta[property="product:review_count"]')?.content || '').replace(/[^0-9]/g, ''));
-
-          const minWidth = 375 * 0.9;
-          const elements = document.querySelectorAll('img');
-          const detail_images = [];
-          elements.forEach(element => {
-            if (element.width >= minWidth) {
-              detail_images.push(element.src);
+        return `(function() {
+          try {
+            const getInt = (txt) => parseInt((txt || '').replace(/[^0-9]/g, '')) || 0;
+            const getImageSrc = (img) =>
+              img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
+      
+            const name = document.querySelector('.product-title span')?.innerText || '';
+            const brand = document.querySelector('.brand-info div')?.innerText || '';
+      
+            const sales = document.querySelector('.price-amount.sales-price-amount');
+            const final = document.querySelector('.price-amount.final-price-amount');
+            const priceText = sales?.innerText || final?.innerText || '';
+            const price = getInt(priceText);
+      
+            const origin = document.querySelector('.price-amount.original-price-amount');
+            const origin_price = getInt(origin?.innerText || '');
+      
+            const discountElem = document.querySelector('.original-price > div > div');
+            const percentMatch = discountElem?.innerText?.match(/\\d+/);
+            const discount_rate = percentMatch ? parseInt(percentMatch[0]) : 0;
+      
+            const rating = document.querySelector('.rating-star-container span');
+            let ratings = 0;
+            if (rating?.style?.width) {
+              const widthPercent = parseFloat(rating.style.width);
+              ratings = Math.round((widthPercent / 100) * 5 * 2) / 2;
             }
-          });
-
-          const payload = JSON.stringify({
-            content: {
-              thumbnail, 
-              name, 
-              price, 
-              origin_price, 
-              discount_rate, 
-              ratings, 
-              reviews,
-              detail_images
-        }
-          });
-          window.ReactNativeWebView.postMessage(payload);
-        } catch (e) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-        }
-      })();`;
-        }
+      
+            const reviewText = document.querySelector('.rating-count-txt')?.innerText || '';
+            const reviews = getInt(reviewText);
+      
+            const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
+            const thumbnail = getImageSrc(thumb)?.replace(/^\\/\\//, 'https://') || '';
+      
+            const detail_images = Array.from(
+              document.querySelectorAll('.subType-IMAGE img, .subType-TEXT img')
+            )
+              .map((img) => getImageSrc(img))
+              .filter(Boolean)
+              .map((src) => src.replace(/^\\/\\//, 'https://'));
+      
+            const payload = {
+              content: {
+                name,
+                brand,
+                price,
+                origin_price,
+                discount_rate,
+                ratings,
+                reviews,
+                thumbnail,
+                detail_images,
+                url: window.location.href
+              }
+            };
+      
+            window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+          } catch (e) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
+          }
+        })();`;
     };
 
     const runJavaScript = (code: string) => {

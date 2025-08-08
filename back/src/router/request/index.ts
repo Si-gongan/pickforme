@@ -1,9 +1,9 @@
 import Router from '@koa/router';
-import db from 'models';
 import requireAuth from 'middleware/jwt';
 import client from 'utils/axios';
 import slack from 'utils/slack';
 import { RequestType } from 'models/request';
+import db from 'models';
 
 const router = new Router({
   prefix: '/request',
