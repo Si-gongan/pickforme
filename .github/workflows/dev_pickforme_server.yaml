@@ -1,6 +1,9 @@
 name: Deploy PickForMe Server to Dev
 
 on:
+  push:
+    branches:
+      - develop
   workflow_dispatch:
 
 jobs:
