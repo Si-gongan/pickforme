@@ -62,10 +62,15 @@ router.post('/crawl', async (ctx) => {
     };
 
     // 에러 로그 기록
-    void log.error(error instanceof Error ? error.message : '쿠팡 크롤링 실패', 'COUPANG', 'HIGH', {
-      originalInput: (ctx.request.body as any)?.url,
-      error: error instanceof Error ? error.stack : error,
-    });
+    void log.error(
+      error instanceof Error ? error.message : '쿠팡 크롤링 실패',
+      'COUPANG',
+      'MEDIUM',
+      {
+        originalInput: (ctx.request.body as any)?.url,
+        error: error instanceof Error ? error.stack : error,
+      }
+    );
   }
 });
 
