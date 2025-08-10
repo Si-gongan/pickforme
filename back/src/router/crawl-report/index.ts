@@ -12,20 +12,28 @@ router.get('/list', async (ctx) => {
   const {
     page = '1',
     limit = '20',
-    productUrl,
-    requestId,
-    processType,
+    productUrl = '',
+    requestId = '',
+    processType = '',
     success,
   } = ctx.query as Record<string, string>;
 
-  const pageNum = Math.max(parseInt(page, 10), 1);
-  const limitNum = Math.max(parseInt(limit, 10), 1);
+  // 안전 파싱
+  const toInt = (v: string, fallback: number) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
+  const pageNum = toInt(page, 1);
+  const limitNum = toInt(limit, 20);
 
   const query: Record<string, any> = {};
 
-  if (productUrl) query.productUrl = productUrl;
-  if (requestId) query.requestId = requestId;
-  if (processType) query.processType = processType;
+  // 빈 문자열/공백 무시
+  if (productUrl.trim()) query.productUrl = productUrl.trim();
+  if (requestId.trim()) query.requestId = requestId.trim();
+  if (processType.trim()) query.processType = processType.trim();
+
+  // success는 명시적 true/false만 반영
   if (success === 'true') query.success = true;
   if (success === 'false') query.success = false;
 
@@ -42,7 +50,102 @@ router.get('/list', async (ctx) => {
     total,
     page: pageNum,
     limit: limitNum,
+    totalPages: Math.max(Math.ceil(total / limitNum), 1),
     results: logs,
+  };
+});
+
+// routes/crawlReport.ts (추가)
+router.get('/list-grouped', async (ctx) => {
+  const {
+    page = '1',
+    limit = '20',
+    productUrl = '',
+    requestId = '',
+    processType = '', // 선택: 필터 필요하면 유지
+    success, // 선택: true/false
+  } = ctx.query as Record<string, string>;
+
+  const toInt = (v: string, fb: number) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : fb;
+  };
+  const pageNum = toInt(page, 1);
+  const limitNum = toInt(limit, 20);
+
+  const match: any = {};
+  if (productUrl.trim()) match.productUrl = productUrl.trim();
+  if (requestId.trim()) match.requestId = requestId.trim();
+  if (processType.trim()) match.processType = processType.trim();
+  if (success === 'true') match.success = true;
+  if (success === 'false') match.success = false;
+
+  // 1) 최신 로그 우선 정렬
+  // 2) (requestId, processType)별 최신 1개만 추출
+  // 3) requestId 단위로 묶어서 processes 맵 구성
+  // 4) requestId별 최신 createdAt으로 정렬
+  // 5) facet: total(고유 requestId 개수) + 페이지 슬라이스
+  const pipeline: any[] = [
+    { $match: match },
+    { $sort: { createdAt: -1 } },
+    {
+      $group: {
+        _id: { requestId: '$requestId', process: '$processType' },
+        logId: { $first: '$_id' },
+        requestId: { $first: '$requestId' },
+        productUrl: { $first: '$productUrl' },
+        processType: { $first: '$processType' },
+        success: { $first: '$success' },
+        durationMs: { $first: '$durationMs' },
+        createdAt: { $first: '$createdAt' },
+      },
+    },
+    {
+      $group: {
+        _id: '$requestId',
+        requestId: { $first: '$requestId' },
+        productUrl: { $first: '$productUrl' },
+        lastCreatedAt: { $max: '$createdAt' },
+        processes: {
+          $push: {
+            k: '$processType',
+            v: {
+              logId: '$logId',
+              success: '$success',
+              durationMs: '$durationMs',
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        requestId: 1,
+        productUrl: 1,
+        lastCreatedAt: 1,
+        processes: { $arrayToObject: '$processes' },
+      },
+    },
+    { $sort: { lastCreatedAt: -1 } },
+    {
+      $facet: {
+        paged: [{ $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }],
+        totalCount: [{ $count: 'total' }],
+      },
+    },
+  ];
+
+  const [agg] = await CrawlLogModel.aggregate(pipeline).allowDiskUse(true);
+  const results = agg?.paged ?? [];
+  const total = (agg?.totalCount?.[0]?.total as number) ?? 0;
+
+  ctx.body = {
+    total,
+    page: pageNum,
+    limit: limitNum,
+    totalPages: Math.max(Math.ceil(total / limitNum), 1),
+    results,
   };
 });
 
