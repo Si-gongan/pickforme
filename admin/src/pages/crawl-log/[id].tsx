@@ -26,17 +26,9 @@ function checkRequiredData(tab: TABS, product: Record<string, any>): boolean {
     case "CAPTION":
       return !!(product.name && product.thumbnail);
     case "REPORT":
-      return !!(
-        product.name &&
-        Array.isArray(product.detail_images) &&
-        product.detail_images.length > 0
-      );
+      return !!(product.name && product.detail_images);
     case "REVIEW":
-      return !!(
-        product.name &&
-        Array.isArray(product.reviews) &&
-        product.reviews.length > 0
-      );
+      return !!(product.name && product.reviews);
     default:
       return false;
   }
@@ -72,22 +64,16 @@ export default function CrawlLogDetailPage() {
           if (!log?.fields) return acc;
 
           for (const [key, val] of Object.entries(log.fields)) {
-            if (val === undefined || val === null) {
-              // undefined/null이면 무시
-              continue;
-            }
-            if (Array.isArray(val)) {
-              // 배열이면 하나라도 요소가 있을 때만 덮어씀
-              if (val.length > 0) {
-                acc[key] = val;
-              }
-            } else {
-              // 일반 값은 그냥 덮어씀
+            if (val === undefined || val === null) continue;
+
+            if (!acc[key] && val) {
               acc[key] = val;
             }
           }
           return acc;
         }, {} as Record<string, any>);
+
+        console.log(mergedFields);
 
         // 탭 생성 성공 여부 판단
         const tabs: TABS[] = ["CAPTION", "REPORT", "REVIEW"];
