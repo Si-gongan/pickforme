@@ -1,3 +1,4 @@
+// pages/crawl-log/index.tsx
 import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { Table, Tag, Button, Tooltip, Space } from "antd";
@@ -6,57 +7,51 @@ import axios from "@/utils/axios";
 
 type ProcessType = "webview-detail" | "webview-review" | "server";
 
-interface CrawlLog {
-  _id: string;
-  requestId: string;
-  productUrl: string;
-  processType: ProcessType;
+interface ProcessCell {
   success: boolean;
   durationMs: number;
-  createdAt: string;
+  logId: string;
 }
-
 interface GroupedLog {
   requestId: string;
   productUrl: string;
-  processes: Partial<
-    Record<ProcessType, { success: boolean; durationMs: number; logId: string }>
-  >;
+  processes: Partial<Record<ProcessType, ProcessCell>>;
+  // 서버에서 lastCreatedAt을 같이 내려주면 정렬/표시에도 활용 가능
+  // lastCreatedAt?: string;
+}
+
+interface ListResp {
+  results: GroupedLog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages?: number;
 }
 
 export default function CrawlLogListPage() {
-  const [groupedLogs, setGroupedLogs] = useState<GroupedLog[]>([]);
+  const [data, setData] = useState<ListResp>({
+    results: [],
+    total: 0,
+    page: 1,
+    limit: 20,
+  });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (page = 1, limit = 20) => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/crawl-logs/list");
-      const logs: CrawlLog[] = data.results;
-
-      const grouped: Record<string, GroupedLog> = {};
-
-      for (const log of logs) {
-        const { requestId, productUrl, processType, success, durationMs, _id } =
-          log;
-
-        if (!grouped[requestId]) {
-          grouped[requestId] = {
-            requestId,
-            productUrl,
-            processes: {},
-          };
-        }
-
-        grouped[requestId].processes[processType] = {
-          success,
-          durationMs,
-          logId: _id,
-        };
-      }
-
-      setGroupedLogs(Object.values(grouped));
+      // ✅ 서버: /crawl-logs/list-grouped (requestId 단위 페이지네이션)
+      const { data } = await axios.get<ListResp>("/crawl-logs/list-grouped", {
+        params: { page, limit },
+      });
+      setData({
+        results: data.results ?? [],
+        total: data.total ?? 0,
+        page: data.page ?? page,
+        limit: data.limit ?? limit,
+        totalPages: data.totalPages,
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -65,20 +60,15 @@ export default function CrawlLogListPage() {
   };
 
   useEffect(() => {
-    fetchLogs();
+    fetchLogs(1, 20);
   }, []);
 
-  const renderProcess = (
-    processData:
-      | { success: boolean; durationMs: number; logId: string }
-      | undefined
-  ) => {
-    if (!processData) return <Tag>-</Tag>;
-
+  const renderProcess = (p?: ProcessCell) => {
+    if (!p) return <Tag>-</Tag>;
     return (
-      <Tooltip title={`${processData.durationMs}ms`}>
-        <Tag color={processData.success ? "green" : "red"}>
-          {processData.success ? "성공" : "실패"}
+      <Tooltip title={`${p.durationMs}ms`}>
+        <Tag color={p.success ? "green" : "red"}>
+          {p.success ? "성공" : "실패"}
         </Tag>
       </Tooltip>
     );
@@ -136,7 +126,10 @@ export default function CrawlLogListPage() {
           <h1>크롤링 요청 로그</h1>
         </TitleSection>
         <ButtonGroup>
-          <Button onClick={fetchLogs} loading={loading}>
+          <Button
+            onClick={() => fetchLogs(data.page, data.limit)}
+            loading={loading}
+          >
             🔄 새로고침
           </Button>
           <Button onClick={() => router.push("/crawl-log/stats")}>통계</Button>
@@ -147,9 +140,15 @@ export default function CrawlLogListPage() {
         <Table
           rowKey="requestId"
           columns={columns}
-          dataSource={groupedLogs}
+          dataSource={data.results}
           loading={loading}
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            current: data.page,
+            pageSize: data.limit,
+            total: data.total,
+            showSizeChanger: true,
+            onChange: (page, pageSize) => fetchLogs(page, pageSize),
+          }}
         />
       </TableSection>
     </Container>
@@ -192,13 +191,11 @@ const TableSection = styled.div`
   .ant-table {
     border-radius: 8px;
   }
-
   .ant-table-thead > tr > th {
     background: #fafafa;
     border-bottom: 1px solid #f0f0f0;
     padding: 16px;
   }
-
   .ant-table-tbody > tr > td {
     padding: 16px;
   }
