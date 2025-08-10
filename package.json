@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently --names \"front,back,ai,mongo\" --prefix-colors \"cyan,green,magenta,yellow\" \"npm run front-client\" \"npm run back\" \"npm run ai-server\" \"npm run mongod\"",
+    "dev": "concurrently --names \"front,back,ai,mongo, admin\" --prefix-colors \"cyan,green,magenta,yellow,blue\" \"npm run front-client\" \"npm run back\" \"npm run ai-server\" \"npm run mongod\" \"npm run admin \"",
     "server": "concurrently --names \"back,ai,mongo,admin\" --prefix-colors \"green,magenta,yellow,blue\" \"npm run back\" \"npm run ai-server\" \"npm run mongod\" \"npm run admin\"",
     "front-client": "cd front && npm run start",
     "back": "cd back && npm run dev",
