@@ -12,20 +12,28 @@ router.get('/list', async (ctx) => {
   const {
     page = '1',
     limit = '20',
-    productUrl,
-    requestId,
-    processType,
+    productUrl = '',
+    requestId = '',
+    processType = '',
     success,
   } = ctx.query as Record<string, string>;
 
-  const pageNum = Math.max(parseInt(page, 10), 1);
-  const limitNum = Math.max(parseInt(limit, 10), 1);
+  // 안전 파싱
+  const toInt = (v: string, fallback: number) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
+  const pageNum = toInt(page, 1);
+  const limitNum = toInt(limit, 20);
 
   const query: Record<string, any> = {};
 
-  if (productUrl) query.productUrl = productUrl;
-  if (requestId) query.requestId = requestId;
-  if (processType) query.processType = processType;
+  // 빈 문자열/공백 무시
+  if (productUrl.trim()) query.productUrl = productUrl.trim();
+  if (requestId.trim()) query.requestId = requestId.trim();
+  if (processType.trim()) query.processType = processType.trim();
+
+  // success는 명시적 true/false만 반영
   if (success === 'true') query.success = true;
   if (success === 'false') query.success = false;
 
@@ -42,7 +50,102 @@ router.get('/list', async (ctx) => {
     total,
     page: pageNum,
     limit: limitNum,
+    totalPages: Math.max(Math.ceil(total / limitNum), 1),
     results: logs,
+  };
+});
+
+// routes/crawlReport.ts (추가)
+router.get('/list-grouped', async (ctx) => {
+  const {
+    page = '1',
+    limit = '20',
+    productUrl = '',
+    requestId = '',
+    processType = '', // 선택: 필터 필요하면 유지
+    success, // 선택: true/false
+  } = ctx.query as Record<string, string>;
+
+  const toInt = (v: string, fb: number) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : fb;
+  };
+  const pageNum = toInt(page, 1);
+  const limitNum = toInt(limit, 20);
+
+  const match: any = {};
+  if (productUrl.trim()) match.productUrl = productUrl.trim();
+  if (requestId.trim()) match.requestId = requestId.trim();
+  if (processType.trim()) match.processType = processType.trim();
+  if (success === 'true') match.success = true;
+  if (success === 'false') match.success = false;
+
+  // 1) 최신 로그 우선 정렬
+  // 2) (requestId, processType)별 최신 1개만 추출
+  // 3) requestId 단위로 묶어서 processes 맵 구성
+  // 4) requestId별 최신 createdAt으로 정렬
+  // 5) facet: total(고유 requestId 개수) + 페이지 슬라이스
+  const pipeline: any[] = [
+    { $match: match },
+    { $sort: { createdAt: -1 } },
+    {
+      $group: {
+        _id: { requestId: '$requestId', process: '$processType' },
+        logId: { $first: '$_id' },
+        requestId: { $first: '$requestId' },
+        productUrl: { $first: '$productUrl' },
+        processType: { $first: '$processType' },
+        success: { $first: '$success' },
+        durationMs: { $first: '$durationMs' },
+        createdAt: { $first: '$createdAt' },
+      },
+    },
+    {
+      $group: {
+        _id: '$requestId',
+        requestId: { $first: '$requestId' },
+        productUrl: { $first: '$productUrl' },
+        lastCreatedAt: { $max: '$createdAt' },
+        processes: {
+          $push: {
+            k: '$processType',
+            v: {
+              logId: '$logId',
+              success: '$success',
+              durationMs: '$durationMs',
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        requestId: 1,
+        productUrl: 1,
+        lastCreatedAt: 1,
+        processes: { $arrayToObject: '$processes' },
+      },
+    },
+    { $sort: { lastCreatedAt: -1 } },
+    {
+      $facet: {
+        paged: [{ $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }],
+        totalCount: [{ $count: 'total' }],
+      },
+    },
+  ];
+
+  const [agg] = await CrawlLogModel.aggregate(pipeline).allowDiskUse(true);
+  const results = agg?.paged ?? [];
+  const total = (agg?.totalCount?.[0]?.total as number) ?? 0;
+
+  ctx.body = {
+    total,
+    page: pageNum,
+    limit: limitNum,
+    totalPages: Math.max(Math.ceil(total / limitNum), 1),
+    results,
   };
 });
 
@@ -97,80 +200,207 @@ router.post('/', async (ctx) => {
  * GET /crawl-logs/stats
  * 크롤링 전체 통계 (어드민용)
  */
-router.get('/stats', async (ctx) => {
+// routes/crawlReport.ts (발췌: /stats 교체)
+
+function isValidTimeZone(tz: string) {
   try {
-    const logs = await CrawlLogModel.find(
-      {},
-      {
-        processType: 1,
-        success: 1,
-        createdAt: 1,
-      }
-    ).lean();
-
-    const formatDate = (d: Date) => new Date(d).toISOString().slice(0, 10);
-
-    const today = formatDate(new Date());
-
-    const stats = {
-      todayStats: {} as Record<
-        string,
-        { total: number; success: number; fail: number; successRate: number }
-      >,
-      byDateAndProcess: {} as Record<
-        string,
-        Record<string, { total: number; success: number; fail: number; successRate: number }>
-      >,
-    };
-
-    for (const l of logs) {
-      const date = formatDate(l.createdAt);
-      const process = l.processType;
-
-      // === todayStats 계산 ===
-      if (date === today) {
-        if (!stats.todayStats[process]) {
-          stats.todayStats[process] = { total: 0, success: 0, fail: 0, successRate: 0 };
-        }
-        stats.todayStats[process].total++;
-        stats.todayStats[process][l.success ? 'success' : 'fail']++;
-      }
-
-      // === byDateAndProcess 계산 ===
-      if (!stats.byDateAndProcess[date]) {
-        stats.byDateAndProcess[date] = {};
-      }
-      if (!stats.byDateAndProcess[date][process]) {
-        stats.byDateAndProcess[date][process] = {
-          total: 0,
-          success: 0,
-          fail: 0,
-          successRate: 0,
-        };
-      }
-      stats.byDateAndProcess[date][process].total++;
-      stats.byDateAndProcess[date][process][l.success ? 'success' : 'fail']++;
-    }
-
-    // successRate 추가 계산
-    for (const p in stats.todayStats) {
-      const { success, total } = stats.todayStats[p];
-      stats.todayStats[p].successRate = total ? (success / total) * 100 : 0;
-    }
-
-    for (const date in stats.byDateAndProcess) {
-      for (const p in stats.byDateAndProcess[date]) {
-        const { success, total } = stats.byDateAndProcess[date][p];
-        stats.byDateAndProcess[date][p].successRate = total ? (success / total) * 100 : 0;
-      }
-    }
-
-    ctx.body = stats;
-  } catch (err) {
-    console.error('crawl-logs/stats error:', err);
-    ctx.status = 500;
-    ctx.body = { message: 'Failed to fetch stats' };
+    new Intl.DateTimeFormat('en-US', { timeZone: tz }).format(new Date());
+    return true;
+  } catch {
+    return false;
   }
+}
+
+/** YYYY-MM-DD → 해당 타임존의 UTC 경계로 변환 */
+function toZonedRange(tz: string, from?: string, to?: string) {
+  const now = new Date();
+
+  // 기본: 오늘 하루
+  const baseFrom =
+    from ?? new Intl.DateTimeFormat('en-CA', { timeZone: tz, dateStyle: 'short' }).format(now); // yyyy-mm-dd
+  const baseTo = to ?? baseFrom;
+
+  // 로컬 시작/끝(Date string → 현지 자정)
+  const startLocal = new Date(`${baseFrom}T00:00:00`);
+  const endLocal = new Date(`${baseTo}T23:59:59.999`);
+
+  // 현지 시간을 해당 tz로 포맷 후, 그 순간의 UTC 시간을 역산하는 방식은 JS 단독으로 까다로워
+  // MongoDB에서 타임존을 다룰 거라 여기선 '문자' 경계만 관리하고, 실제 필터는 $dateToString 로컬날짜와 비교함.
+  // → createdAt 자체는 아래 파이프라인에서 tz 기준 로컬 날짜로 변환 후 필터되지 않고,
+  //   여기서는 대략적 범위를 위한 넉넉한 UTC 가드만 둡니다.
+  // 안전하게 과도 필터링을 피하기 위해 3일 버퍼(앞/뒤)를 둡니다.
+  const guardStart = new Date(startLocal.getTime() - 3 * 86400000);
+  const guardEnd = new Date(endLocal.getTime() + 3 * 86400000);
+
+  return { baseFrom, baseTo, guardStart, guardEnd };
+}
+
+router.get('/stats', async (ctx) => {
+  const tz = (ctx.query.tz as string) || 'Asia/Seoul';
+  const from = ctx.query.from as string | undefined; // YYYY-MM-DD
+  const to = ctx.query.to as string | undefined;
+
+  if (!isValidTimeZone(tz)) {
+    ctx.status = 400;
+    ctx.body = { message: `Invalid timezone: ${tz}` };
+    return;
+  }
+
+  const { baseFrom, baseTo, guardStart, guardEnd } = toZonedRange(tz, from, to);
+
+  // 파이프라인:
+  // 1) 대략적 UTC 가드로 1차 제한
+  // 2) 로컬 날짜(localDate: tz 기준 "%Y-%m-%d") 생성
+  // 3) facet으로
+  //   a) 날짜/프로세스별 합계, 성공수, 평균 소요시간
+  //   b) 날짜별 웹뷰 두 프로세스의 분모(= requestId 합집합 개수)
+  // 4) 결과를 Node에서 후처리: 웹뷰 두 프로세스의 분모 동일화, 성공률 재계산
+  const pipeline: any[] = [
+    { $match: { createdAt: { $gte: guardStart, $lte: guardEnd } } },
+    {
+      $addFields: {
+        localDate: {
+          $dateToString: { date: '$createdAt', format: '%Y-%m-%d', timezone: tz },
+        },
+      },
+    },
+    {
+      $match: {
+        localDate: { $gte: baseFrom, $lte: baseTo },
+      },
+    },
+    {
+      $facet: {
+        processCounts: [
+          {
+            $group: {
+              _id: { date: '$localDate', process: '$processType' },
+              total: { $sum: 1 },
+              success: {
+                $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] },
+              },
+              fail: {
+                $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] },
+              },
+              avgDurationMs: { $avg: '$durationMs' },
+            },
+          },
+        ],
+        webviewDenoms: [
+          { $match: { processType: { $in: ['webview-detail', 'webview-review'] } } },
+          {
+            $group: {
+              _id: { date: '$localDate' },
+              reqs: { $addToSet: '$requestId' }, // 날짜별 requestId 합집합
+            },
+          },
+          { $project: { _id: 0, date: '$_id.date', denom: { $size: '$reqs' } } },
+        ],
+        todayStatsRaw: [
+          { $match: { localDate: baseTo } }, // 선택 범위의 '끝' 날짜를 오늘 섹션으로 보여줌 (일반적으로 from=to=오늘)
+          {
+            $group: {
+              _id: '$processType',
+              total: { $sum: 1 },
+              success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
+              fail: { $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] } },
+              avgDurationMs: { $avg: '$durationMs' },
+            },
+          },
+        ],
+        todayWebviewDenom: [
+          {
+            $match: {
+              localDate: baseTo,
+              processType: { $in: ['webview-detail', 'webview-review'] },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              reqs: { $addToSet: '$requestId' },
+            },
+          },
+          { $project: { _id: 0, denom: { $size: '$reqs' } } },
+        ],
+      },
+    },
+  ];
+
+  const [agg] = await CrawlLogModel.aggregate(pipeline).allowDiskUse(true);
+
+  const webviewDenomByDate = new Map<string, number>();
+  for (const w of agg.webviewDenoms as Array<{ date: string; denom: number }>) {
+    webviewDenomByDate.set(w.date, w.denom);
+  }
+  const byDateAndProcess: Record<
+    string,
+    Record<
+      string,
+      { total: number; success: number; fail: number; successRate: number; avgDurationMs: number }
+    >
+  > = {};
+
+  for (const row of agg.processCounts as Array<{
+    _id: { date: string; process: string };
+    total: number;
+    success: number;
+    fail: number;
+    avgDurationMs: number;
+  }>) {
+    const date = row._id.date;
+    const process = row._id.process;
+    if (!byDateAndProcess[date]) byDateAndProcess[date] = {};
+
+    const isWebview = process === 'webview-detail' || process === 'webview-review';
+    const denom = isWebview ? (webviewDenomByDate.get(date) ?? 0) : row.total;
+    const successRate = denom ? (row.success / denom) * 100 : 0;
+
+    byDateAndProcess[date][process] = {
+      total: isWebview ? denom : row.total, // 표기상 total은 분모로 노출
+      success: row.success,
+      fail: isWebview ? Math.max(denom - row.success, 0) : row.fail, // 웹뷰는 누락분을 실패로 간주(요구사항상 분모 동일화)
+      successRate,
+      avgDurationMs: row.avgDurationMs ?? 0,
+    };
+  }
+
+  // 오늘(= 범위의 끝 날짜) 섹션 조정: 웹뷰 분모 동일화 + 성공률 재계산
+  const todayStats: Record<
+    string,
+    { total: number; success: number; fail: number; successRate: number; avgDurationMs: number }
+  > = {};
+  const todayDenom = (agg.todayWebviewDenom?.[0]?.denom as number | undefined) ?? 0;
+
+  for (const row of agg.todayStatsRaw as Array<{
+    _id: string;
+    total: number;
+    success: number;
+    fail: number;
+    avgDurationMs: number;
+  }>) {
+    const process = row._id;
+    const isWebview = process === 'webview-detail' || process === 'webview-review';
+    const denom = isWebview ? todayDenom : row.total;
+    const successRate = denom ? (row.success / denom) * 100 : 0;
+
+    todayStats[process] = {
+      total: denom,
+      success: row.success,
+      fail: isWebview ? Math.max(denom - row.success, 0) : row.fail,
+      successRate,
+      avgDurationMs: row.avgDurationMs ?? 0,
+    };
+  }
+
+  ctx.body = {
+    todayStats,
+    byDateAndProcess,
+    meta: {
+      tz,
+      range: { from: baseFrom, to: baseTo },
+    },
+  };
 });
 
 /**

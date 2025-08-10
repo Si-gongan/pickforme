@@ -69,7 +69,24 @@ export default function CrawlLogDetailPage() {
 
         // 모든 필드 합치기
         const mergedFields = Object.values(grouped).reduce((acc, log) => {
-          return { ...acc, ...log?.fields };
+          if (!log?.fields) return acc;
+
+          for (const [key, val] of Object.entries(log.fields)) {
+            if (val === undefined || val === null) {
+              // undefined/null이면 무시
+              continue;
+            }
+            if (Array.isArray(val)) {
+              // 배열이면 하나라도 요소가 있을 때만 덮어씀
+              if (val.length > 0) {
+                acc[key] = val;
+              }
+            } else {
+              // 일반 값은 그냥 덮어씀
+              acc[key] = val;
+            }
+          }
+          return acc;
         }, {} as Record<string, any>);
 
         // 탭 생성 성공 여부 판단
