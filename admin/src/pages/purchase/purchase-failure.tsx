@@ -10,6 +10,7 @@ import {
   message,
   Tag,
   Tooltip,
+  Typography,
 } from "antd";
 import {
   ReloadOutlined,
@@ -113,21 +114,71 @@ export default function PurchaseFailures() {
       title: "유저 ID",
       dataIndex: "userId",
       key: "userId",
+      width: 180,
+      render: (val: any) => (
+        <Typography.Text
+          ellipsis
+          style={{ maxWidth: 160, display: "inline-block" }}
+        >
+          {String(val ?? "")}
+        </Typography.Text>
+      ),
     },
     {
       title: "상품 ID",
       dataIndex: "productId",
       key: "productId",
+      width: 220,
+      render: (val: any) => (
+        <Typography.Text
+          ellipsis
+          style={{ maxWidth: 200, display: "inline-block" }}
+        >
+          {String(val ?? "")}
+        </Typography.Text>
+      ),
     },
     {
       title: "에러 메시지",
       dataIndex: "errorMessage",
       key: "errorMessage",
+      width: 520, // 필요 시 조절
+      render: (val: any) => {
+        const text =
+          typeof val === "string" ? val : val ? JSON.stringify(val) : "";
+        return (
+          <Tooltip
+            title={
+              // 긴 문자열 줄바꿈/띄어쓰기 보존
+              <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                {text}
+              </div>
+            }
+            // ✅ 여기서 가로폭 확실히 늘려줌
+            overlayStyle={{ maxWidth: "60vw" }} // 바깥 박스 폭 제한
+            overlayInnerStyle={{ whiteSpace: "normal" }} // 내부 줄바꿈 허용(보조)
+            mouseEnterDelay={0.15}
+          >
+            <Typography.Text
+              ellipsis
+              style={{
+                maxWidth: 500,
+                display: "inline-block",
+                verticalAlign: "middle",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {text}
+            </Typography.Text>
+          </Tooltip>
+        );
+      },
     },
     {
       title: "상태",
       dataIndex: "status",
       key: "status",
+      width: 120,
       render: (status: string) => (
         <Tag color={status === "RESOLVED" ? "green" : "red"}>
           {status === "RESOLVED" ? "RESOLVED" : "FAILED"}
@@ -138,7 +189,10 @@ export default function PurchaseFailures() {
       title: "발생 시각",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (text: string) => new Date(text).toLocaleString(),
+      width: 200,
+      render: (text: string) => (
+        <Typography.Text>{new Date(text).toLocaleString()}</Typography.Text>
+      ),
     },
     {
       title: (
@@ -150,8 +204,9 @@ export default function PurchaseFailures() {
         </Space>
       ),
       key: "action",
+      width: 260,
       render: (_: any, record: any) => (
-        <Space>
+        <Space wrap>
           <Button
             type="link"
             icon={<ReloadOutlined />}
@@ -208,17 +263,23 @@ export default function PurchaseFailures() {
         </Form.Item>
       </Form>
 
-      <Table
-        columns={columns}
-        dataSource={failures}
-        rowKey="_id"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-      />
+      {/* 가로 스크롤 컨테이너 */}
+      <div style={{ width: "100%", overflowX: "auto" }}>
+        <Table
+          columns={columns}
+          dataSource={failures}
+          rowKey="_id"
+          loading={loading}
+          pagination={{ pageSize: 10 }}
+          tableLayout="fixed"
+          scroll={{ x: "max-content" }} // 표 내부에서만 가로 스크롤
+        />
+      </div>
     </Container>
   );
 }
 
 const Container = styled.div`
   padding: 24px;
+  max-width: 100%;
 `;
