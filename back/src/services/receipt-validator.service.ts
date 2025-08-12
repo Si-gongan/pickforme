@@ -75,6 +75,7 @@ class ReceiptValidatorService {
     };
   }
 
+  // 현재는 비갱신구독상품 전용임. 갱신구독상품도 추가할 경우 lineItems에 필터링 추가 필요.
   private async validateAndroidPurchase(
     receipt: AndroidReceipt
   ): Promise<IUnifiedPurchaseData | null> {
@@ -98,19 +99,39 @@ class ReceiptValidatorService {
     const item = data.lineItems?.[0];
     if (!item) return null;
 
-    const isExpired = data.subscriptionState === 'SUBSCRIPTION_STATE_EXPIRED';
-    if (isExpired) return null;
+    const state = data.subscriptionState;
+    const expiryMs = item.expiryTime ? Date.parse(item.expiryTime as string) : null;
+    const now = Date.now();
 
-    // 추후에는 만료되었음을 판단하는 로직을 더 추가해야 함.
-    // const now = Date.now();
-    // const expiryTime = item.expiryTime ? new Date(item.expiryTime).getTime() : null;
+    const isExpiredByTime = expiryMs !== null && !Number.isNaN(expiryMs) && now >= expiryMs;
 
-    // // subscriptionState가 active 아니고, expiryTime 기준으로도 만료되었으면 expired 처리
-    // const state = data.subscriptionState;
-    // const isEffectivelyExpired =
-    //   state === 'SUBSCRIPTION_STATE_EXPIRED' || (expiryTime !== null && now >= expiryTime);
+    if (isExpiredByTime) return null;
 
-    // if (isEffectivelyExpired) return null;
+    switch (state) {
+      case 'SUBSCRIPTION_STATE_ACTIVE':
+      // 정책: 유예기간엔 허용(대다수 서비스). 필요시 차단으로 변경 가능
+      case 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD':
+        break;
+
+      // 비갱신 구독상품의 경우에는 해당상태 조건이 없으나, 예외 케이스 처리를 위해 추가해둠.
+      // https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.subscriptionsv2?hl=ko
+      case 'SUBSCRIPTION_STATE_ON_HOLD':
+      case 'SUBSCRIPTION_STATE_PAUSED':
+      case 'SUBSCRIPTION_STATE_EXPIRED':
+      case 'SUBSCRIPTION_STATE_PENDING':
+      case 'SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED':
+      case 'SUBSCRIPTION_STATE_UNSPECIFIED':
+      case 'SUBSCRIPTION_STATE_CANCELED':
+        return null;
+      default:
+        break;
+    }
+
+    // 비갱신 구독상품의 경우에는 해당상태 조건이 없으나, 예외 케이스 처리를 위해 추가해둠.
+    const canceledCtx: any = (data as any).canceledStateContext;
+    if (canceledCtx?.subscriptionRevoked) {
+      return null;
+    }
 
     const purchaseDate = data.startTime ? new Date(data.startTime).getTime() : receipt.purchaseTime;
     const expirationDate = item.expiryTime ? new Date((item as any).expiryTime).getTime() : null;
