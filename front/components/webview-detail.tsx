@@ -32,65 +32,65 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
         }
     };
 
-    const convertUrl = (url: string) => {
-        let convertedUrl = '';
+    const convertUrl = (input: string) => {
+        try {
+            let raw = input?.trim() || '';
+            let finalUrl = '';
 
-        // 쿠팡 URL 처리
-        if (url.includes('coupang')) {
+            if (!raw.includes('coupang')) {
+                setPlatform('general');
+                setUrl(raw);
+                return;
+            }
+
             setPlatform('coupang');
 
-            // 쿠팡 앱 링크 처리 (link.coupang.com)
-            if (url.includes('link.coupang.com')) {
-                resolveRedirectUrl(url).then(redirectUrl => {
-                    convertUrl(redirectUrl);
-                });
+            if (raw.includes('link.coupang.com')) {
+                resolveRedirectUrl(raw).then(redirectUrl => convertUrl(redirectUrl));
                 return;
             }
 
-            // 쿠팡 제품 ID 추출
-            let productId = null;
+            if (raw.startsWith('//')) raw = 'https:' + raw;
+            if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
 
-            // 패턴 1: productId= 쿼리 파라미터
-            if (url.includes('productId=')) {
-                productId = url.split('productId=')[1]?.split('&')[0];
+            let u: URL;
+            try {
+                u = new URL(raw);
+            } catch {
+                setUrl(raw);
+                return;
             }
-            // 패턴 2: products/ 경로 사용 (모바일 및 데스크톱)
-            else if (url.includes('coupang.com/vp/products/') || url.includes('coupang.com/vm/products/')) {
-                let idPart = url.split('products/')[1] || '';
-                productId = idPart.split(/[\?#]/)[0]; // 쿼리스트링이나 해시 태그 제거
-            }
-            // 패턴 3: 검색 결과 패턴 (itemId로 시작하는 경우)
-            else if (url.includes('/su/') && url.includes('/items/')) {
-                const itemMatch = url.match(/\/items\/([0-9]+)/);
-                if (itemMatch && itemMatch[1]) productId = itemMatch[1];
-            }
+
+            const q = u.searchParams;
+            let productId =
+                q.get('productId') ||
+                (u.pathname.match(/\/products\/(\d+)/)?.[1] ?? null) ||
+                (u.pathname.includes('/su/') && u.pathname.match(/\/items\/(\d+)/)?.[1]) ||
+                null;
 
             if (!productId) {
-                console.error('쿠팡 제품 ID를 찾을 수 없습니다. 원본 URL 그대로 사용:', url);
+                console.error('쿠팡 제품 ID를 찾을 수 없습니다. 원본 URL 그대로 사용:', raw);
                 setPlatform('general');
-                setUrl(url);
+                setUrl(raw);
                 return;
             }
 
-            // 추가 파라미터 추출
-            const itemId = url.split('itemId=')[1]?.split('&')[0];
-            const vendorItemId = url.split('vendorItemId=')[1]?.split('&')[0];
+            const itemId = q.get('itemId') || undefined;
+            const vendorItemId = q.get('vendorItemId') || undefined;
 
-            // 최종 모바일 URL 구성
-            convertedUrl = `https://m.coupang.com/vm/products/${productId}`;
-            if (itemId) {
-                convertedUrl += `?itemId=${itemId}`;
-            }
-            if (vendorItemId) {
-                convertedUrl += itemId ? `&vendorItemId=${vendorItemId}` : `?vendorItemId=${vendorItemId}`;
-            }
-        } else {
-            // 쿠팡 이외의 URL 처리
+            const params = new URLSearchParams();
+            if (itemId) params.set('itemId', itemId);
+            if (vendorItemId) params.set('vendorItemId', vendorItemId);
+
+            const qs = params.toString();
+            finalUrl = `https://www.coupang.com/vp/products/${productId}${qs ? `?${qs}` : ''}`;
+
+            setUrl(finalUrl);
+        } catch (e) {
+            console.error('[convertUrl] Error:', e);
             setPlatform('general');
-            convertedUrl = url;
+            setUrl(input);
         }
-
-        setUrl(convertedUrl);
     };
 
     const getProductDetailInjectionCode = () => {
@@ -218,6 +218,9 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             ref={webViewRef}
             source={{ uri: url }}
             onMessage={handleMessage}
+            onNavigationStateChange={event => {
+                console.log('onNavigationStateChange 최종 url', event.url);
+            }}
             onLoadEnd={() => runJavaScript(getProductDetailInjectionCode())}
             onError={handleError}
             style={{ opacity: 0, height: 0 }}
