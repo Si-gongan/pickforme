@@ -26,17 +26,9 @@ function checkRequiredData(tab: TABS, product: Record<string, any>): boolean {
     case "CAPTION":
       return !!(product.name && product.thumbnail);
     case "REPORT":
-      return !!(
-        product.name &&
-        Array.isArray(product.detail_images) &&
-        product.detail_images.length > 0
-      );
+      return !!(product.name && product.detail_images);
     case "REVIEW":
-      return !!(
-        product.name &&
-        Array.isArray(product.reviews) &&
-        product.reviews.length > 0
-      );
+      return !!(product.name && product.reviews);
     default:
       return false;
   }
@@ -69,8 +61,19 @@ export default function CrawlLogDetailPage() {
 
         // 모든 필드 합치기
         const mergedFields = Object.values(grouped).reduce((acc, log) => {
-          return { ...acc, ...log?.fields };
+          if (!log?.fields) return acc;
+
+          for (const [key, val] of Object.entries(log.fields)) {
+            if (val === undefined || val === null) continue;
+
+            if (!acc[key] && val) {
+              acc[key] = val;
+            }
+          }
+          return acc;
         }, {} as Record<string, any>);
+
+        console.log(mergedFields);
 
         // 탭 생성 성공 여부 판단
         const tabs: TABS[] = ["CAPTION", "REPORT", "REVIEW"];
