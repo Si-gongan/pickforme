@@ -305,18 +305,24 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             const data = JSON.parse(event.nativeEvent.data);
 
             if (data.error) {
-                console.log('🚀 ~ handleMessage ~ data.error:', stage, data.error);
+                // console.log('🚀 ~ handleMessage ~ data.error:', stage, data.error);
                 handleError();
                 return;
             }
 
-            if (data.content?.name && data.content?.detail_images?.length > 0) {
-                if (isSuccess.current) return;
-                console.log('🚀 ~ handleMessage ~ data.content:', stage, data.content);
+            if (data.content?.name) {
+                if (
+                    isSuccess.current &&
+                    (data.content?.detail_images?.length == 0 ||
+                        data.content.name == '' ||
+                        data.content.thumbnail == '')
+                )
+                    return;
+                // console.log('🚀 ~ handleMessage ~ data.content:', stage, data.content);
                 isSuccess.current = true;
                 onMessage({ ...data.content, url: productUrl });
             } else {
-                console.log('🚀 ~ handleMessage ~ no name', stage, data.content);
+                // console.log('🚀 ~ handleMessage ~ no name', stage, data.content);
                 handleError();
             }
         } catch (error) {
