@@ -111,3 +111,16 @@ export const convertToCoupangReviewUrl = async (url: string): Promise<string> =>
         throw error;
     }
 };
+
+export const parseCoupangIdsFromUrl = (s?: string) => {
+    if (!s) return {};
+    try {
+        const u = new URL(s);
+        const productId = u.pathname.match(/\/products\/(\d+)/)?.[1];
+        const itemId = u.searchParams.get('itemId') || undefined;
+        const vendorItemId = u.searchParams.get('vendorItemId') || undefined;
+        return { productId, itemId, vendorItemId };
+    } catch {
+        return {};
+    }
+};
