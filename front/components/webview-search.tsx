@@ -1,13 +1,7 @@
-// 목적: 상품 검색 결과를 가져오기 위한 웹뷰입니다.
-// 기능:
-// 검색 키워드를 받아 쿠팡 모바일 검색 페이지를 숨겨진 웹뷰로 불러옵니다.
-// 검색 결과 페이지에서 상품 목록을 추출하여 각 상품의 이름, 썸네일, 가격, 원가, 할인율, 평점, 리뷰 수, URL 등의 정보를 추출합니다.
-// 추출된 상품 목록은 Product[] 배열로 변환되어 onMessage 콜백을 통해 부모 컴포넌트로 전달됩니다.
-// 특징: 검색 결과 페이지에서 상품 요소를 찾지 못할 경우 최대 5번까지 재시도하는 로직이 포함되어 있습니다.
-
-import React, { useRef, useState, useEffect } from 'react';
-import { WebView, WebViewMessageEvent } from 'react-native-webview';
+// WebViewSearch.tsx
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { View } from 'react-native';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { Product } from '../stores/product/types';
 
 interface WebViewProps {
@@ -17,56 +11,126 @@ interface WebViewProps {
 }
 
 const searchProductInjectionCode = `
-(function() {
-    async function scrapeProducts() {
-        try {
-            let productElements = document.querySelectorAll('.sdw-similar-product-go-to-sdp-click');
-            
-            if (productElements.length === 0) {
-                throw new Error('Failed to find products');
-            }
-            
-            const products = Array.from(productElements).map((product) => {
-                const name = product.querySelector('.title')?.innerText || '';
-                const thumbnail = product.querySelector('img')?.src || '';
-                const priceText = product.querySelector('.discount-price')?.querySelector('strong')?.textContent || '0';
-                const price = parseInt(priceText.replace(/[^0-9]/g, ''), 10);
-                const originPriceDoc = product.querySelector('.price');
-                const originPriceText = originPriceDoc?.textContent || priceText;
-                const origin_price = parseInt(originPriceText.replace(/[^0-9]/g, ''), 10);
-                const discountRateDoc = product.querySelector('.percentage')?.textContent || '0';
-                const discount_rate = parseInt(discountRateDoc.replace(/[^0-9]/g, ''), 10);
-                const ratings = parseFloat(product.querySelector('.rating')?.textContent || '0') * 20;
-                const reviews = parseInt(product.querySelector('.rating-total-count')?.textContent.replace(/[^0-9]/g, '') || '0', 10);
-                const productId = product.getAttribute('data-product-id') || '';
-                const itemId = product.getAttribute('data-item-id') || '';
-                const vendorItemId = product.getAttribute('data-vendor-item-id') || '';
-                const url = 'https://m.coupang.com/vm/products/' + productId + '?itemId=' + itemId + '&vendorItemId=' + vendorItemId;
+(function () {
+  // ---------- utils ----------
+  const toNumber = (txt='') => {
+    const n = (txt+'').replace(/[^0-9]/g,'');
+    return n ? parseInt(n,10) : 0;
+  };
 
-                return {
-                    name,
-                    thumbnail,
-                    price,
-                    origin_price,
-                    discount_rate,
-                    ratings,
-                    reviews,
-                    url
-                };
-            });
-            
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ content: products }));
-            }
-        } catch (e) {
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-            }
-        }
+  const getStar5 = (li) => {
+    // desktop 별점은 style="width: 100%" 로 표기됨 (100% = 5.0)
+    const star = li.querySelector('.ProductRating_star__RGSlV');
+    if (!star) return 0;
+    const m = /width:\\s*([0-9.]+)%/.exec(star.getAttribute('style') || '');
+    const pct = m ? parseFloat(m[1]) : 0;
+    return +(pct / 20).toFixed(2); // 0~5
+  };
+
+  const absUrl = (href) => {
+    try { return new URL(href, location.origin).href; } catch (e) { return ''; }
+  };
+
+  const parseIdsFromHref = (href) => {
+    try {
+      const u = new URL(href, location.origin);
+      const q = u.searchParams;
+      return {
+        productId: (u.pathname.match(/\\/vp\\/products\\/(\\d+)/) || [])[1] || '',
+        itemId: q.get('itemId') || '',
+        vendorItemId: q.get('vendorItemId') || ''
+      };
+    } catch (e) {
+      return { productId: '', itemId: '', vendorItemId: '' };
     }
+  };
 
-    scrapeProducts();
-    return true;
+  // ---------- scraper ----------
+  function collect() {
+    const list = document.querySelectorAll('#product-list > li.ProductUnit_productUnit__Qd6sv');
+    if (!list.length) return [];
+
+    const items = [];
+    list.forEach((li) => {
+      // 광고/위젯/베스트셀러 스킵
+      if (li.classList.contains('best-seller')) return;
+      if (li.querySelector('.AdMark_adMark__KPMsC')) return;
+
+      const a = li.querySelector('a[href]');
+      if (!a) return;
+
+      const name = (li.querySelector('.ProductUnit_productName__gre7e')?.textContent || '').trim();
+      const thumbnail = li.querySelector('figure img')?.getAttribute('src') || '';
+      const discount_rate = toNumber(li.querySelector('.PriceInfo_discountRate__EsQ8I')?.textContent || '0');
+      const origin_price = toNumber(li.querySelector('.PriceInfo_basePrice__8BQ32')?.textContent || '0');
+      const price = toNumber(li.querySelector('.Price_priceValue__A4KOr')?.textContent || '0');
+      const reviews = toNumber(li.querySelector('.ProductRating_ratingCount__R0Vhz')?.textContent || '0');
+      const rating5 = getStar5(li);                 // 0~5
+      const ratings = Math.round(rating5 * 20);     // 0~100 (기존 구조와 호환)
+
+      const href = a.getAttribute('href') || '';
+      const url = absUrl(href);
+      const { productId, itemId, vendorItemId } = parseIdsFromHref(href);
+
+      items.push({
+        name,
+        thumbnail,
+        price,
+        origin_price,
+        discount_rate,
+        ratings,
+        reviews,
+        url,
+        productId,
+        itemId,
+        vendorItemId,
+      });
+    });
+
+    return items;
+  }
+
+  function post(payload) {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+    }
+  }
+
+  // ---------- wait & observe ----------
+  let tries = 0;
+  const maxTries = 8;
+  const pollDelay = 700;
+
+  function tryScrape() {
+    const products = collect();
+    if (products.length) {
+      post({ content: products });
+      obs && obs.disconnect();
+      return true;
+    }
+    return false;
+  }
+
+  // 즉시 한 번 시도
+  if (tryScrape()) { return true; }
+
+  // 폴링
+  const timer = setInterval(() => {
+    tries++;
+    if (tryScrape() || tries >= maxTries) {
+      clearInterval(timer);
+    } else {
+      // 무한스크롤 추가로 더 필요하면 아래 라인 주석 해제
+      // window.scrollTo(0, document.body.scrollHeight);
+    }
+  }, pollDelay);
+
+  // DOM 변경 감지
+  const root = document.querySelector('#product-list') || document.body;
+  const obs = new MutationObserver(() => { tryScrape(); });
+  obs.observe(root, { childList: true, subtree: true });
+
+  true;
 })();
 `;
 
@@ -74,27 +138,35 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
     const webViewRef = useRef<WebView>(null);
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
-    const url = `https://m.coupang.com/nm/search?q=${keyword}&page=1`;
+
+    // 데스크톱 검색 페이지로 고정
+    const url = `https://www.coupang.com/np/search?q=${encodeURIComponent(keyword)}&page=1`;
+
+    const safeInject = useCallback(() => {
+        // CSR 환경을 고려해 약간 지연 후 인젝션
+        setTimeout(() => {
+            webViewRef.current?.injectJavaScript(searchProductInjectionCode);
+        }, 800);
+    }, []);
 
     const handleMessage = (event: WebViewMessageEvent) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
-            if (data.error) {
-                if (retryCount < maxRetries) {
-                    setRetryCount(retryCount + 1);
-                    handleExecuteSearch();
-                }
+            if (data?.error) {
+                handleError(data.error);
                 return;
             }
-            onMessage(data.content);
+            if (Array.isArray(data?.content)) {
+                onMessage(data.content);
+            }
         } catch (error) {
             console.error('Failed to parse WebView message:', error);
         }
     };
 
-    const handleError = (event: any) => {
+    const handleError = (_err: any) => {
         if (retryCount < maxRetries) {
-            setRetryCount(retryCount + 1);
+            setRetryCount(c => c + 1);
             setTimeout(() => {
                 handleExecuteSearch();
             }, 1000);
@@ -102,6 +174,7 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
     };
 
     const handleExecuteSearch = () => {
+        // 첫 로드 시에도 reload로 통일 (캐시/CSR 상태 초기화)
         webViewRef.current?.reload();
     };
 
@@ -119,26 +192,32 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
             <WebView
                 ref={webViewRef}
                 source={{ uri: url }}
+                // 데스크톱 DOM을 강제하기 위해 UA를 데스크톱으로 설정
+                userAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
                 onMessage={handleMessage}
-                onLoadEnd={() => {
+                onNavigationStateChange={() => {
+                    // 라우팅/페이지 변경 시에도 재주입
                     setTimeout(() => {
                         webViewRef.current?.injectJavaScript(searchProductInjectionCode);
-                    }, 1000);
+                    }, 500);
                 }}
+                onLoadStart={() => {
+                    // ReactNativeWebView 존재 보장 (일부 환경에서 방어적)
+                    webViewRef.current?.injectJavaScript(`
+            window.ReactNativeWebView = window.ReactNativeWebView || {};
+            true;
+          `);
+                }}
+                onLoadEnd={safeInject}
                 onError={handleError}
-                style={{ opacity: 0, height: 0 }}
                 cacheEnabled={false}
                 cacheMode="LOAD_NO_CACHE"
-                renderToHardwareTextureAndroid={true}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                startInLoadingState={true}
-                onLoadStart={() => {
-                    webViewRef.current?.injectJavaScript(`
-                        window.ReactNativeWebView = window.ReactNativeWebView || {};
-                        true;
-                    `);
-                }}
+                renderToHardwareTextureAndroid
+                javaScriptEnabled
+                domStorageEnabled
+                startInLoadingState
+                // 숨김용 웹뷰
+                style={{ opacity: 0.01, height: 1 }}
             />
         </View>
     );
