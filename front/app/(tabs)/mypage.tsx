@@ -232,8 +232,7 @@ function useStyle(colorScheme: ColorScheme) {
     return StyleSheet.create({
         MyContainer: {
             flex: 1,
-            backgroundColor: theme.background.primary,
-            marginBottom: insets.bottom
+            backgroundColor: theme.background.primary
         },
         MyContent: {
             flex: 1,
@@ -241,7 +240,7 @@ function useStyle(colorScheme: ColorScheme) {
         },
         MyScrollView: {
             paddingTop: 20,
-            paddingBottom: 96,
+            paddingBottom: 20,
             paddingHorizontal: 20,
             backgroundColor: theme.background.primary
         }

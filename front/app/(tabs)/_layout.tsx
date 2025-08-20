@@ -30,7 +30,7 @@ export default function TabLayout() {
                     },
                     tabBarStyle: Platform.select({
                         ios: {
-                            position: 'absolute',
+                            // position: 'absolute',
                             backgroundColor: Colors?.[colorScheme]?.button.primary.background,
                             borderTopWidth: 0,
                             elevation: 0,
