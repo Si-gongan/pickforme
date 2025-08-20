@@ -249,7 +249,7 @@ export default function HomeScreen() {
                 </>
             ) : (
                 // 메인 상품 목록
-                <View style={{ flex: 1, marginBottom: insets.bottom + 60 }}>
+                <View style={{ flex: 1, marginBottom: insets.bottom }}>
                     <MainProductList ref={mainListRef} data={mainProducts} category={currentCategory} />
                 </View>
             )}

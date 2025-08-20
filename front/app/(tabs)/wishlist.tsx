@@ -446,6 +446,7 @@ const useStyles = (colorScheme: ColorScheme) => {
             width: '100%',
             flex: 1,
             paddingTop: 50,
+            paddingBottom: 20,
             backgroundColor: theme.background.primary
         },
         title: {
