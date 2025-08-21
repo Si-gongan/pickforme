@@ -71,7 +71,7 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
                         <View style={styles.ProductCardContentRow}>
                             <View style={styles.ProductCardTitleColumn}>
                                 <Text style={[styles.ProductCardReviews, { fontWeight: '400' }]} accessible>
-                                    리뷰 {data.reviews || 0}개 평점 {Math.floor(((data.ratings || 0) / 20) * 10) / 10}점
+                                    리뷰 {data.reviews || 0}개 평점 {data.ratings || 0}점
                                 </Text>
                             </View>
                             <View
