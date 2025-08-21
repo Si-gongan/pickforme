@@ -121,54 +121,68 @@ const getMobileInjectionCode = (productId?: string, itemId?: string, vendorItemI
 };
 
 const getDesktopInjectionCode = () => {
-    return `(() => {\n${POST_SHIM}
-      try {
-        const getInt = (txt) => parseInt((txt || '').replace(/[^0-9]/g, '')) || 0;
-        const getImageSrc = (img) => img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
+    return `(function() {
+                try {
+                    const getImageSrc = (img) => {
+                        return img?.getAttribute('data-src') || 
+                               img?.getAttribute('srcset') || 
+                               img?.src || '';
+                    };
 
-        const name = document.querySelector('.product-title span')?.innerText || '';
-        const brand = document.querySelector('.brand-info div')?.innerText || '';
+                    const url = window.location.href;
+                    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
+                    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
+                    
+                    // 일반 가격이 있는지 먼저 확인
+                    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
+                    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
+                    
+                    // 일반 가격이 있으면 그것을 사용하고, 없으면 와우할인가 사용
+                    const price = regularPriceElement 
+                        ? parseInt(regularPriceElement.innerText.replace(/[^0-9]/g, ''))
+                        : parseInt((wowPriceElement?.innerText || '').replace(/[^0-9]/g, ''));
+                    
+                    const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
+                    const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
+                    
+                    const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
+                    const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
 
-        const sales = document.querySelector('.price-amount.sales-price-amount');
-        const final = document.querySelector('.price-amount.final-price-amount');
-        const priceText = sales?.innerText || final?.innerText || '';
-        const price = getInt(priceText);
+                    const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
+                    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length / 2 : 0;
 
-        const origin = document.querySelector('.price-amount.original-price-amount');
-        const origin_price = getInt(origin?.innerText || '');
+                    const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
+                    const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
 
-        const discountElem = document.querySelector('.original-price > div > div');
-        const percentMatch = discountElem?.innerText?.match(/\\d+/);
-        const discount_rate = percentMatch ? parseInt(percentMatch[0]) : 0;
+                    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
+                    const detail_images = [];
+                    elements.forEach(element => {
+                        const imgElement = element.querySelector('img');
+                        if (imgElement) {
+                            const src = getImageSrc(imgElement);
+                            if (src) {
+                                detail_images.push(src);
+                            }
+                        }
+                    });
 
-        const rating = document.querySelector('.rating-star-container span');
-        let ratings = 0;
-        if (rating?.style?.width) {
-          const widthPercent = parseFloat(rating.style.width);
-          ratings = Math.round((widthPercent / 100) * 5 * 2) / 2;
-        }
-
-        const reviewText = document.querySelector('.rating-count-txt')?.innerText || '';
-        const reviews = getInt(reviewText);
-
-        const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
-        const thumbnail = (getImageSrc(thumb) || '').replace(/^\\/\\//, 'https://');
-
-        const detail_images = Array.from(
-          document.querySelectorAll('.subType-IMAGE img, .subType-TEXT img')
-        )
-          .map((img) => getImageSrc(img))
-          .filter(Boolean)
-          .map((src) => src.replace(/^\\/\\//, 'https://'));
-
-        __post({
-          content: { name, brand, price, origin_price, discount_rate, ratings, reviews, thumbnail, detail_images, url: window.location.href }
-        });
-      } catch (e) {
-        __post({ error: e && e.message ? e.message : 'desktop extract error' });
-      }
-      true; // Important for WKWebView
-    })();`;
+                    const payload = JSON.stringify({
+                        content: {
+                            thumbnail, 
+                            name, 
+                            price, 
+                            origin_price, 
+                            discount_rate, 
+                            ratings, 
+                            reviews,
+                            detail_images
+                        }
+                    });
+                    window.ReactNativeWebView.postMessage(payload);
+                } catch (e) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
+                }
+            })();`;
 };
 
 export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProps): JSX.Element | null => {
@@ -177,7 +191,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     const [_, setPlatform] = useState<string>('');
     const [retryCount, setRetryCount] = useState<number>(0);
     const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
-    const desktopMaxRetries = 0;
+    const desktopMaxRetries = 1;
     const mobileMaxRetries = 3;
 
     const [stage, setStage] = useState<Stage>('desktop');
@@ -248,7 +262,8 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             if (vendorItemId) params.set('vendorItemId', vendorItemId);
 
             const qs = params.toString();
-            finalUrl = `https://www.coupang.com/vp/products/${productId}${qs ? `?${qs}` : ''}`;
+            // finalUrl = `https://www.coupang.com/vp/products/${productId}${qs ? `?${qs}` : ''}`;
+            finalUrl = `https://m.coupang.com/vm/products/${productId}/`;
 
             // ★ 추가: 모바일 URL/ID 저장
             setIds({ productId: productId || undefined, itemId, vendorItemId });
@@ -351,7 +366,9 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
         console.log('[inject once] stage=', stage, 'url=', url, 'retryCount=', retryCount);
         if (webViewRef.current) {
             if (stage === 'desktop') {
-                runJavaScript(getDesktopInjectionCode());
+                setTimeout(() => {
+                    runJavaScript(getDesktopInjectionCode());
+                }, 1000);
             } else {
                 runJavaScript(getMobileInjectionCode(ids.productId, ids.itemId, ids.vendorItemId));
             }
