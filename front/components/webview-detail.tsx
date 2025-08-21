@@ -157,13 +157,13 @@ const getDesktopInjectionCode = () => {
                     const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
                     const detail_images = [];
                     elements.forEach(element => {
-                        const imgElement = element.querySelector('img');
-                        if (imgElement) {
+                        const imgElements = element.querySelectorAll('img');
+                        imgElements.forEach(imgElement => {
                             const src = getImageSrc(imgElement);
                             if (src) {
                                 detail_images.push(src);
                             }
-                        }
+                        });
                     });
 
                     const payload = JSON.stringify({
