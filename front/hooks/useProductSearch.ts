@@ -11,7 +11,7 @@ import { SearchCoupangAPI } from '../stores/product/apis';
 
 interface UseProductSearchProps {}
 
-const TIMEOUT_DURATION = 10000;
+const TIMEOUT_DURATION = 5000;
 
 export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     const router = useRouter();
@@ -94,19 +94,28 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                 timeoutRef.current = setTimeout(async () => {
                     console.log('웹뷰 검색에 실패했습니다. 서버 크롤링 검색을 시도합니다.');
 
-                    // 2. Fallback: 서버 크롤링 검색
-                    const coupangRes = await SearchCoupangAPI(keyword);
+                    try {
+                        // 2. Fallback: 서버 크롤링 검색
+                        const coupangRes = await SearchCoupangAPI(keyword);
 
-                    if (
-                        coupangRes &&
-                        coupangRes.data &&
-                        coupangRes.data.success &&
-                        Array.isArray(coupangRes.data.data)
-                    ) {
-                        console.log('서버 크롤링 검색 성공');
-                        handleSearchResults(coupangRes.data.data);
-                        return;
-                    } else {
+                        if (
+                            coupangRes &&
+                            coupangRes.data &&
+                            coupangRes.data.success &&
+                            Array.isArray(coupangRes.data.data)
+                        ) {
+                            console.log('서버 크롤링 검색 성공');
+                            handleSearchResults(coupangRes.data.data);
+                            return;
+                        } else {
+                            console.log('서버 크롤링 검색 실패 - 응답 데이터가 올바르지 않음');
+                            setIsSearching(false);
+                            setHasError(true);
+                            setSearchResult({ count: 0, page: 1, products: [] });
+                            Alert.alert('일시적으로 검색에 실패했습니다. 다시 검색해 주세요');
+                        }
+                    } catch (searchError) {
+                        console.log('서버 크롤링 검색 중 에러 발생:', searchError);
                         setIsSearching(false);
                         setHasError(true);
                         setSearchResult({ count: 0, page: 1, products: [] });
