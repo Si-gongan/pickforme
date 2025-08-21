@@ -349,7 +349,7 @@ function useStyle(colorScheme: ColorScheme) {
             paddingVertical: 20
         },
         searchList: {
-            paddingHorizontal: 20
+            // paddingHorizontal: 20
         },
         seperator: {
             height: 12,
