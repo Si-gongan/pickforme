@@ -45,7 +45,7 @@ const searchProductInjectionCode = `
     }
   };
 
-  // ---------- scraper ----------
+  // ---------- scraper ----------'
   function collect() {
     const list = document.querySelectorAll('#product-list > li.ProductUnit_productUnit__Qd6sv');
     if (!list.length) return [];
@@ -59,12 +59,12 @@ const searchProductInjectionCode = `
       const a = li.querySelector('a[href]');
       if (!a) return;
 
-      const name = (li.querySelector('.ProductUnit_productName__gre7e')?.textContent || '').trim();
+      const name = (li.querySelector('.ProductUnit_productNameV2__cV9cw')?.textContent || '').trim();
       const thumbnail = li.querySelector('figure img')?.getAttribute('src') || '';
       const discount_rate = toNumber(li.querySelector('.PriceInfo_discountRate__EsQ8I')?.textContent || '0');
       const origin_price = toNumber(li.querySelector('.PriceInfo_basePrice__8BQ32')?.textContent || '0');
       const price = toNumber(li.querySelector('.Price_priceValue__A4KOr')?.textContent || '0');
-      const reviews = toNumber(li.querySelector('.ProductRating_ratingCount__R0Vhz')?.textContent || '0');
+      const reviews = toNumber(li.querySelector('.ProductRating_ratingCount__R0Vhz')?.textContent || 0');
       const rating5 = getStar5(li);                 // 0~5
       const ratings = Math.round(rating5 * 20);     // 0~100 (기존 구조와 호환)
 
@@ -157,6 +157,7 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
                 return;
             }
             if (Array.isArray(data?.content)) {
+                // console.log('🚀 ~ handleMessage ~ data.content:', data.content);
                 onMessage(data.content);
             }
         } catch (error) {
