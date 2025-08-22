@@ -186,7 +186,12 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
     const response = result.value;
 
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
-    if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
+    if (
+        response &&
+        response.data &&
+        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url).productId ===
+            parseCoupangIdsFromUrl(product.url).productId
+    ) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
         set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.FINISH });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -212,7 +217,12 @@ export const getProductReportAtom = atom(null, async (get, set) => {
 
     const response = result.value;
     // 데이터가 존재하고, 현재 접속해있는 상품 페이지와 일치할 경우 업데이트
-    if (response && response.data && get(productDetailAtom)?.product?.url === product.url) {
+    if (
+        response &&
+        response.data &&
+        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url).productId ===
+            parseCoupangIdsFromUrl(product.url).productId
+    ) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
         set(loadingStatusAtom, {
             ...get(loadingStatusAtom),

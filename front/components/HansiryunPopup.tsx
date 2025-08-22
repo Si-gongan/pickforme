@@ -32,7 +32,7 @@ interface HansiryunPopupProps {
 export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps) {
     // Early return before any hooks
     if (!visible) return null;
-    
+
     const user = useAtomValue(userAtom);
     const colorScheme = useColorScheme();
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -132,7 +132,7 @@ export default function HansiryunPopup({ visible, onClose }: HansiryunPopupProps
                 InteractionManager.runAfterInteractions(() => {
                     setTimeout(() => {
                         AccessibilityInfo.setAccessibilityFocus(node);
-                    }, 500);
+                    }, 1000);
                 });
             }
         }
