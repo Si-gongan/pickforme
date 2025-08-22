@@ -1,5 +1,5 @@
 // pages/crawl-log-stats.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Card,
@@ -34,9 +34,18 @@ interface ProcessStats {
   avgDurationMs?: number;
 }
 
+interface TabStats {
+  total: number;
+  success: number;
+  fail: number;
+  successRate: number;
+}
+
 interface StatsResponse {
   todayStats: Record<string, ProcessStats>;
   byDateAndProcess: Record<string, Record<string, ProcessStats>>;
+  todayTabStats: Record<string, TabStats>;
+  byDateAndTab: Record<string, Record<string, TabStats>>;
   meta?: { tz: string; range: { from: string; to: string } };
 }
 
@@ -50,7 +59,7 @@ export default function CrawlLogStatsPage() {
   ]);
   const router = useRouter();
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
@@ -65,11 +74,11 @@ export default function CrawlLogStatsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tz, range]);
 
   useEffect(() => {
     fetchStats();
-  }, []); // 최초 1회
+  }, [fetchStats]); // fetchStats dependency 추가
 
   const processColumns = [
     { title: "프로세스", dataIndex: "name", key: "name" },
@@ -100,9 +109,40 @@ export default function CrawlLogStatsPage() {
     },
   ];
 
+  const tabColumns = [
+    { title: "탭", dataIndex: "name", key: "name" },
+    { title: "분모(전체)", dataIndex: "total", key: "total" },
+    {
+      title: "성공",
+      dataIndex: "success",
+      key: "success",
+      render: (val: number) => <Tag color="green">{val}</Tag>,
+    },
+    {
+      title: "실패",
+      dataIndex: "fail",
+      key: "fail",
+      render: (val: number) => <Tag color="red">{val}</Tag>,
+    },
+    {
+      title: "성공률",
+      dataIndex: "successRate",
+      key: "successRate",
+      render: (val: number) => `${val.toFixed(2)}%`,
+    },
+  ];
+
   const todayProcessData = useMemo(() => {
     if (!stats) return [];
     return Object.entries(stats.todayStats).map(([name, v]) => ({
+      name,
+      ...v,
+    }));
+  }, [stats]);
+
+  const todayTabData = useMemo(() => {
+    if (!stats?.todayTabStats) return [];
+    return Object.entries(stats.todayTabStats).map(([name, v]) => ({
       name,
       ...v,
     }));
@@ -116,6 +156,18 @@ export default function CrawlLogStatsPage() {
         webviewDetail: processes["webview-detail"]?.successRate ?? 0,
         webviewReview: processes["webview-review"]?.successRate ?? 0,
         server: processes["server"]?.successRate ?? 0,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [stats]);
+
+  const tabChartData = useMemo(() => {
+    if (!stats?.byDateAndTab) return [];
+    return Object.entries(stats.byDateAndTab)
+      .map(([date, tabs]) => ({
+        date,
+        CAPTION: tabs["CAPTION"]?.successRate ?? 0,
+        REPORT: tabs["REPORT"]?.successRate ?? 0,
+        REVIEW: tabs["REVIEW"]?.successRate ?? 0,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [stats]);
@@ -174,7 +226,7 @@ export default function CrawlLogStatsPage() {
             </Typography.Paragraph>
           </StatsCard>
 
-          <ChartCard title="일자별 성공률(%)" loading={loading}>
+          <ChartCard title="일자별 프로세스 성공률(%)" loading={loading}>
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -207,6 +259,61 @@ export default function CrawlLogStatsPage() {
                   dataKey="server"
                   name="Server"
                   stroke="#9254de"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <StatsCard
+            title="선택한 '끝 날짜' 기준 탭별 생성 성공률"
+            loading={loading}
+          >
+            <Table
+              rowKey="name"
+              columns={tabColumns}
+              dataSource={todayTabData}
+              pagination={false}
+            />
+            <Typography.Paragraph type="secondary" style={{ marginTop: 8 }}>
+              * CAPTION: name + thumbnail 필요 | REPORT: name + detail_images
+              필요 | REVIEW: name + reviews 필요
+            </Typography.Paragraph>
+          </StatsCard>
+
+          <ChartCard title="일자별 탭별 생성 성공률(%)" loading={loading}>
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={tabChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip
+                  formatter={(value, name) => {
+                    if (typeof value === "number") {
+                      return [`${value.toFixed(2)}%`, name];
+                    }
+                    return [value, name];
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="CAPTION"
+                  name="CAPTION"
+                  stroke="#ff7300"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="REPORT"
+                  name="REPORT"
+                  stroke="#00c851"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="REVIEW"
+                  name="REVIEW"
+                  stroke="#e91e63"
                   strokeWidth={2}
                 />
               </LineChart>
