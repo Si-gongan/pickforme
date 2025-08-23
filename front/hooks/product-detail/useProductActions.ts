@@ -45,11 +45,26 @@ export const useProductActions = ({
 
     // 구매하기
     const handleClickBuy = useCallback(async () => {
+        logEvent('product_detail_buy_click', {
+            screen: 'ProductDetailScreen',
+            item_id: productUrl,
+            item_name: productDetail?.product?.name,
+            category: 'product_detail'
+        });
+
         await WebBrowser.openBrowserAsync(product.url);
     }, [product.url]);
 
     // 위시리스트 토글
     const handleClickWish = useCallback(async () => {
+        logEvent('product_detail_wishlist_toggle', {
+            screen: 'ProductDetailScreen',
+            item_id: productUrl,
+            item_name: productDetail?.product?.name,
+            category: 'product_detail',
+            action: wishlistItem ? 'remove' : 'add'
+        });
+
         if (wishlistItem) {
             setWishlist(wishlist.filter(wishProduct => wishProduct !== wishlistItem));
             setTimeout(() => {
@@ -94,6 +109,7 @@ export const useProductActions = ({
         logEvent('question_send', {
             screen: 'ProductDetailScreen',
             item_id: productUrl,
+            type: 'ai_question',
             item_name: productDetail?.product?.name,
             question: question,
             category: 'product_detail'
@@ -117,6 +133,16 @@ export const useProductActions = ({
         await getSubscription();
 
         setMembershipModalType('MANAGER');
+
+        logEvent('question_send', {
+            screen: 'ProductDetailScreen',
+            item_id: productUrl,
+            type: 'manager_question',
+            item_name: productDetail?.product?.name,
+            question: question,
+            category: 'product_detail'
+        });
+
         if (userData && userData.point !== undefined && userData.point <= 0) {
             setIsShowNonSubscriberManagerModal(true);
         } else {

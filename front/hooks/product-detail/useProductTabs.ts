@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useSetAtom } from 'jotai';
 import { TABS } from '../../utils/common';
 import { getProductCaptionAtom, getProductReportAtom, getProductReviewAtom } from '../../stores/product/atoms';
+import { logEvent } from '@/services/firebase';
 
 export const useProductTabs = (initialTab: TABS = TABS.CAPTION) => {
     const [tab, setTab] = useState<TABS>(initialTab);
@@ -13,6 +14,12 @@ export const useProductTabs = (initialTab: TABS = TABS.CAPTION) => {
 
     const handlePressTab = useCallback((nextTab: TABS) => {
         // 어떤 탭이든 클릭하면 true로 설정
+        logEvent('tab_click', {
+            screen: 'ProductDetailScreen',
+            tab: nextTab,
+            category: 'product_detail'
+        });
+
         setIsTabPressed(true);
         setTab(nextTab);
     }, []);
