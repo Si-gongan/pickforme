@@ -2,6 +2,7 @@
 import Router from '@koa/router';
 import CrawlLogModel from 'models/crawl-log';
 import { log } from 'utils/logger';
+import { isValidTimeZone, toZonedRange, checkRequiredData } from './utils';
 const router = new Router({ prefix: '/crawl-logs' });
 
 /**
@@ -200,40 +201,6 @@ router.post('/', async (ctx) => {
  * GET /crawl-logs/stats
  * 크롤링 전체 통계 (어드민용)
  */
-// routes/crawlReport.ts (발췌: /stats 교체)
-
-function isValidTimeZone(tz: string) {
-  try {
-    new Intl.DateTimeFormat('en-US', { timeZone: tz }).format(new Date());
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** YYYY-MM-DD → 해당 타임존의 UTC 경계로 변환 */
-function toZonedRange(tz: string, from?: string, to?: string) {
-  const now = new Date();
-
-  // 기본: 오늘 하루
-  const baseFrom =
-    from ?? new Intl.DateTimeFormat('en-CA', { timeZone: tz, dateStyle: 'short' }).format(now); // yyyy-mm-dd
-  const baseTo = to ?? baseFrom;
-
-  // 로컬 시작/끝(Date string → 현지 자정)
-  const startLocal = new Date(`${baseFrom}T00:00:00`);
-  const endLocal = new Date(`${baseTo}T23:59:59.999`);
-
-  // 현지 시간을 해당 tz로 포맷 후, 그 순간의 UTC 시간을 역산하는 방식은 JS 단독으로 까다로워
-  // MongoDB에서 타임존을 다룰 거라 여기선 '문자' 경계만 관리하고, 실제 필터는 $dateToString 로컬날짜와 비교함.
-  // → createdAt 자체는 아래 파이프라인에서 tz 기준 로컬 날짜로 변환 후 필터되지 않고,
-  //   여기서는 대략적 범위를 위한 넉넉한 UTC 가드만 둡니다.
-  // 안전하게 과도 필터링을 피하기 위해 3일 버퍼(앞/뒤)를 둡니다.
-  const guardStart = new Date(startLocal.getTime() - 3 * 86400000);
-  const guardEnd = new Date(endLocal.getTime() + 3 * 86400000);
-
-  return { baseFrom, baseTo, guardStart, guardEnd };
-}
 
 router.get('/stats', async (ctx) => {
   const tz = (ctx.query.tz as string) || 'Asia/Seoul';
@@ -479,9 +446,95 @@ router.get('/stats', async (ctx) => {
     }
   }
 
+  // 탭별 성공률 계산
+  const calculateTabStats = async (targetDate: string) => {
+    // 1. 각 requestId별로 모든 프로세스의 fields를 병합
+    const requestData = await CrawlLogModel.aggregate([
+      { $match: { createdAt: { $gte: guardStart, $lte: guardEnd } } },
+      {
+        $addFields: {
+          localDate: {
+            $dateToString: { date: '$createdAt', format: '%Y-%m-%d', timezone: tz },
+          },
+        },
+      },
+      { $match: { localDate: targetDate } },
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: { requestId: '$requestId', process: '$processType' },
+          fields: { $first: '$fields' },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id.requestId',
+          requestId: { $first: '$_id.requestId' },
+          allFields: { $push: '$fields' },
+        },
+      },
+    ]);
+
+    // 2. 각 requestId의 fields를 병합하고 탭별 성공 여부 판정
+    const tabStats = { CAPTION: 0, REPORT: 0, REVIEW: 0 };
+    const totalRequests = requestData.length;
+
+    for (const item of requestData) {
+      // 모든 fields를 병합
+      const mergedFields = item.allFields.reduce((acc: any, fields: any) => {
+        if (!fields) return acc;
+        for (const [key, val] of Object.entries(fields)) {
+          if (val !== undefined && val !== null && !acc[key] && val) {
+            acc[key] = val;
+          }
+        }
+        return acc;
+      }, {});
+
+      // 각 탭별로 성공 여부 판정
+      const tabs = ['CAPTION', 'REPORT', 'REVIEW'] as const;
+      for (const tab of tabs) {
+        if (checkRequiredData(tab, mergedFields)) {
+          tabStats[tab]++;
+        }
+      }
+    }
+
+    // 성공률 계산
+    const tabStatsWithRates = Object.entries(tabStats).reduce(
+      (acc, [tab, successCount]) => {
+        acc[tab] = {
+          total: totalRequests,
+          success: successCount,
+          fail: totalRequests - successCount,
+          successRate: totalRequests > 0 ? (successCount / totalRequests) * 100 : 0,
+        };
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+
+    return tabStatsWithRates;
+  };
+
+  // 오늘 탭별 성공률
+  const todayTabStats = await calculateTabStats(baseTo);
+
+  // 기간별 탭별 성공률
+  const byDateAndTab: Record<string, any> = {};
+
+  // 날짜별로 탭 통계 계산
+  const dateKeys = Object.keys(byDateAndProcess);
+  for (const date of dateKeys) {
+    const tabStatsForDate = await calculateTabStats(date);
+    byDateAndTab[date] = tabStatsForDate;
+  }
+
   ctx.body = {
     todayStats,
     byDateAndProcess,
+    todayTabStats,
+    byDateAndTab,
     meta: { tz, range: { from: baseFrom, to: baseTo } },
   };
 });
