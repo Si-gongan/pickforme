@@ -1,3 +1,3 @@
 export interface IServiceProps {
-    onSuccess?(): void;
+    onSuccess?({ isRegister }: { isRegister: boolean }): void;
 }
