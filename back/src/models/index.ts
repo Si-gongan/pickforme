@@ -13,6 +13,7 @@ import DiscoverSection from './discoverSection';
 import Log from './log';
 import Item from './item';
 import Popup from './popup';
+import SearchLog from './searchLog';
 
 import dotenv from 'dotenv';
 import { log } from 'utils/logger';
@@ -54,6 +55,7 @@ const db = {
   Item,
   Popup,
   PurchaseFailure,
+  SearchLog,
 };
 
 export default db;
