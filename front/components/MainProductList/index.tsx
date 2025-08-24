@@ -24,8 +24,8 @@ export interface MainProductListRef {
 }
 
 const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ data, category }, ref) => {
-    const [randomCount, onRandomCount] = useState<number>(5);
-    const [specialCount, onSpecialCount] = useState<number>(5);
+    const [randomCount, setRandomCount] = useState<number>(5);
+    const [specialCount, setSpecialCount] = useState<number>(5);
 
     const style = useStyle();
 
@@ -34,14 +34,14 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
             let newCount = 0;
             switch (type) {
                 case 'special':
-                    onSpecialCount(function (prev) {
+                    setSpecialCount(function (prev) {
                         newCount = Math.min(prev + 5, data.special.length);
                         return newCount;
                     });
 
                     break;
                 case 'random':
-                    onRandomCount(function (prev) {
+                    setRandomCount(function (prev) {
                         newCount = Math.min(prev + 5, data.random.length);
                         return newCount;
                     });
@@ -109,7 +109,7 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                                 return <ProductCard data={item} />;
                             }}
                         />
-                        {data.random.length > randomCount && (
+                        {data.random.length >= randomCount + 5 && (
                             <View style={style.MainProductSectionListFooter}>
                                 <MoreButton
                                     onPress={function () {
@@ -142,7 +142,7 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                                 return <ProductCard data={item} />;
                             }}
                         />
-                        {data.random.length > randomCount && (
+                        {data.special.length >= specialCount + 5 && (
                             <View style={style.MainProductSectionListFooter}>
                                 <MoreButton
                                     onPress={function () {
