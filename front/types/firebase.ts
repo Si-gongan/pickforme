@@ -21,7 +21,9 @@ export type AnalyticsEventName =
     | 'subscription_request'
     | 'subscription_request_success'
     | 'subscription_unsubscribe'
-    | 'subscription_request_error';
+    | 'subscription_request_error'
+    | 'main_products_request'
+    | 'main_products_response';
 
 // | 'login'
 // | 'signup'
