@@ -114,9 +114,17 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     // URL 검색 처리
     const handleUrlSearch = useCallback(
         async (url: string) => {
+            const requestId = uuid();
             try {
                 // url 검색 시에는 검색창으로 가는게 아니라 상품 상세 페이지로 가야함
                 const sanitizedUrl = sanitizeUrl(url);
+
+                await logEvent('link_search_attempt', {
+                    request_id: requestId,
+                    url: sanitizedUrl,
+                    domain: 'coupang',
+                    source: 'url_input'
+                });
 
                 const response = await GetProductAPI(sanitizedUrl);
 
@@ -132,7 +140,11 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                 setHasError(true);
                 setSearchResult({ count: 0, page: 1, products: [] });
             } finally {
-                router.push(`/product-detail?productUrl=${encodeURIComponent(sanitizeUrl(url))}`);
+                router.push(
+                    `/product-detail?productUrl=${encodeURIComponent(
+                        sanitizeUrl(url)
+                    )}&source=link&requestId=${requestId}`
+                );
             }
         },
         [router]
@@ -146,7 +158,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
 
                 requestIdRef.current = uuid();
 
-                await logEvent('search_submit', {
+                await logEvent('keyword_search_submit', {
                     request_id: requestIdRef.current,
                     keyword: keywordRef.current!,
                     sorter: searchSorter,
@@ -160,7 +172,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
 
                     try {
                         if (requestIdRef.current) {
-                            await logEvent('search_timeout', {
+                            await logEvent('keyword_search_timeout', {
                                 request_id: requestIdRef.current,
                                 keyword: keywordRef.current!,
                                 after_ms: Date.now() - startedAt,
@@ -193,7 +205,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
 
                             // 2) GA: 서버 경로 완료 로깅 (결과 수신 후)
                             if (requestIdRef.current) {
-                                await logEvent('search_complete', {
+                                await logEvent('keyword_search_complete', {
                                     request_id: requestIdRef.current,
                                     keyword: keywordRef.current!,
                                     results_count: fetched.length ?? 0,
@@ -210,7 +222,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                             setSearchResult({ count: 0, page: 1, products: [] });
 
                             if (requestIdRef.current) {
-                                await logEvent('search_complete', {
+                                await logEvent('keyword_search_complete', {
                                     request_id: requestIdRef.current,
                                     keyword: keywordRef.current!,
                                     results_count: 0,
@@ -243,7 +255,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                         Alert.alert('일시적으로 검색에 실패했습니다. 다시 검색해 주세요');
 
                         if (requestIdRef.current) {
-                            await logEvent('search_complete', {
+                            await logEvent('keyword_search_complete', {
                                 request_id: requestIdRef.current,
                                 keyword: keywordRef.current!,
                                 results_count: 0,
@@ -322,7 +334,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
             } = {}
         ) => {
             if (!opts.skipLog) {
-                logEvent('search_complete', {
+                logEvent('keyword_search_complete', {
                     request_id: requestIdRef.current,
                     keyword: keywordRef.current!,
                     results_count: products?.length ?? 0,

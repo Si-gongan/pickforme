@@ -22,6 +22,7 @@ interface UseProductActionsProps {
     wishlistItem: Product | undefined;
     question: string;
     setQuestion: (question: string) => void;
+    requestId: string;
 }
 
 export const useProductActions = ({
@@ -29,6 +30,7 @@ export const useProductActions = ({
     productUrl,
     wishlistItem,
     question,
+    requestId,
     setQuestion
 }: UseProductActionsProps) => {
     const [wishlist, setWishlist] = useAtom(wishProductsAtom);
@@ -47,13 +49,15 @@ export const useProductActions = ({
     const handleClickBuy = useCallback(async () => {
         logEvent('product_detail_buy_click', {
             screen: 'ProductDetailScreen',
-            item_id: productUrl,
+            url: productUrl,
             item_name: productDetail?.product?.name,
-            category: 'product_detail'
+            item_price: productDetail?.product?.price,
+            category: 'product_detail',
+            request_id: requestId
         });
 
         await WebBrowser.openBrowserAsync(product.url);
-    }, [product.url]);
+    }, [product.url, productDetail?.product?.name, productDetail?.product?.price, requestId]);
 
     // 위시리스트 토글
     const handleClickWish = useCallback(async () => {
