@@ -26,15 +26,20 @@ import { KakaoImage, GoogleImage } from '@assets';
 import useStyle from './style';
 import { PopupService } from '@/services/popup';
 import { isShowLoginModalAtom } from '@stores';
+import { logEvent } from '@/services/firebase';
 
-export default function LoginForm({ onLoginSuccess }: { onLoginSuccess?: () => void }) {
+export default function LoginForm({
+    onLoginSuccess
+}: {
+    onLoginSuccess?: ({ isRegister }: { isRegister: boolean }) => void;
+}) {
     const style = useStyle();
     const colorScheme = useColorScheme();
     const contentRef = useRef<Text>(null);
 
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
-        onSuccess: async () => {
-            onLoginSuccess?.();
+        onSuccess: async ({ isRegister }) => {
+            onLoginSuccess?.({ isRegister });
             await PopupService.resetFirstLogin();
         }
     });
@@ -55,6 +60,9 @@ export default function LoginForm({ onLoginSuccess }: { onLoginSuccess?: () => v
     const onLoginWithKakao = useCallback(
         async function () {
             try {
+                logEvent('login_attempt', {
+                    method: 'kakao'
+                });
                 const token = await login();
                 mutateKakaoLogin({ accessToken: token.accessToken });
             } catch (error) {
@@ -67,6 +75,9 @@ export default function LoginForm({ onLoginSuccess }: { onLoginSuccess?: () => v
     const onLoginWithApple = useCallback(
         async function () {
             try {
+                logEvent('login_attempt', {
+                    method: 'apple'
+                });
                 const credential = await appleSignInAsync({
                     requestedScopes: [AppleAuthenticationScope.FULL_NAME, AppleAuthenticationScope.EMAIL]
                 });
@@ -82,6 +93,9 @@ export default function LoginForm({ onLoginSuccess }: { onLoginSuccess?: () => v
     const onLoginWithGoogle = useCallback(
         async function () {
             try {
+                logEvent('login_attempt', {
+                    method: 'google'
+                });
                 await mutateGoogleLogin();
             } catch (error) {
                 console.error('구글 로그인 에러:', error);

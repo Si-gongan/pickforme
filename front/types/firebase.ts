@@ -1,5 +1,21 @@
 // 이벤트 이름 타입 정의
-export type AnalyticsEventName = 'button_click' | 'question_send';
+export type AnalyticsEventName =
+    | 'button_click'
+    | 'question_send'
+    | 'login_success'
+    | 'login_attempt'
+    | 'register_success'
+    | 'home_item_click'
+    | 'search_item_click'
+    | 'search_mode_view'
+    | 'search_mode_engagement'
+    | 'search_submit'
+    | 'search_complete'
+    | 'search_timeout'
+    | 'product_detail_wishlist_toggle'
+    | 'product_detail_tab_click'
+    | 'product_detail_buy_click';
+
 // | 'login'
 // | 'signup'
 // | 'logout'

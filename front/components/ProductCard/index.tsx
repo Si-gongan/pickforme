@@ -6,6 +6,7 @@ import { getNumberComma } from '@utils';
 import useStyle from './style';
 import type { ForwardedRef } from 'react';
 import type { IProductCardProps } from './type';
+import { logEvent } from '@/services/firebase';
 
 export default forwardRef(function ProductCard({ data, type = '' }: IProductCardProps, ref: ForwardedRef<View>) {
     const router = useRouter();
@@ -41,6 +42,17 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
     );
 
     const onPress = useCallback(function () {
+        if (type === 'search') {
+            logEvent('search_item_click', {
+                item_id: data.url,
+                item_name: data.name
+            });
+        } else {
+            logEvent('home_item_click', {
+                item_id: data.url,
+                item_name: data.name
+            });
+        }
         router.push(`/product-detail?url=${encodeURIComponent(data.url)}`);
     }, []);
 

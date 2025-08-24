@@ -62,7 +62,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         },
         onSuccess: async function (response) {
             if (response.status === 200) {
-                onSuccess?.();
+                onSuccess?.({ isRegister: response.data.isRegister });
                 await onLogin(response.data);
             }
         },
@@ -78,7 +78,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         },
         onSuccess: async function (response) {
             if (response.status === 200) {
-                onSuccess?.();
+                onSuccess?.({ isRegister: response.data.isRegister });
                 await onLogin(response.data);
             }
         },
@@ -94,7 +94,7 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         },
         onSuccess: async function (response) {
             if (response.status === 200) {
-                onSuccess?.();
+                onSuccess?.({ isRegister: response.data.isRegister });
                 await onLogin(response.data);
             }
         },

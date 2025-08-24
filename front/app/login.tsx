@@ -8,6 +8,7 @@ import Colors from '../constants/Colors';
 import { LoginForm, BackHeader } from '@components';
 import { userAtom } from '@stores';
 import BackIcon from '@/assets/icons/BackIcon';
+import { logEvent } from '@/services/firebase';
 
 export default function LoginScreen() {
     const colorScheme = useColorScheme();
@@ -33,8 +34,13 @@ export default function LoginScreen() {
         [user?._id, router]
     );
 
-    const onLoginSuccess = () => {
+    const onLoginSuccess = ({ isRegister }: { isRegister: boolean }) => {
         hasUserJustLoggedIn.current = true;
+        if (isRegister) {
+            logEvent('register_success');
+        } else {
+            logEvent('login_success');
+        }
         router.replace('/(tabs)');
     };
 

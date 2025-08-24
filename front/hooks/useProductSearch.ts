@@ -1,15 +1,28 @@
 // hooks/useProductSearch.ts
 import { searchResultAtom } from '@/stores/product/atoms';
 import { useRouter } from 'expo-router';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback, useRef, useState, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import { GetProductAPI } from '../stores/product/apis';
 import { Product } from '../stores/product/types';
 import { sanitizeUrl } from '../utils/url';
 import { SearchCoupangAPI } from '../stores/product/apis';
+import { logEvent } from '@/services/firebase';
+import { v4 as uuid } from 'uuid';
+import { client } from '@/utils';
 
 interface UseProductSearchProps {}
+
+type SearchLogPayload = {
+    requestId: string;
+    keyword: string;
+    source: 'webview' | 'server';
+    success: boolean;
+    durationMs: number;
+    resultCount: number;
+    errorMsg?: string;
+};
 
 const TIMEOUT_DURATION = 5000;
 
@@ -21,9 +34,47 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     const [isSearchMode, setIsSearchMode] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // ✅ 요청 단위 식별자 & 타이머
+    const requestIdRef = useRef<string | null>(null);
+    const searchStartAtRef = useRef<number | null>(null);
+    const searchModeStartAtRef = useRef<number | null>(null);
+    const keywordRef = useRef<string | null>(null);
+
     // Jotai atoms
     const [searchSorter, setSearchSorter] = useState('scoreDesc');
     const setSearchResult = useSetAtom(searchResultAtom);
+
+    // 추가: 검색 모드 PV/체류시간
+    useEffect(() => {
+        if (isSearchMode) {
+            searchModeStartAtRef.current = Date.now();
+            logEvent('search_mode_view', { route: 'HomeScreen' });
+        } else if (searchModeStartAtRef.current) {
+            const dwell = Date.now() - searchModeStartAtRef.current;
+            logEvent('search_mode_engagement', { engagement_ms: dwell });
+            searchModeStartAtRef.current = null;
+        }
+
+        const sub = AppState.addEventListener('change', state => {
+            if (state !== 'active' && searchModeStartAtRef.current) {
+                const dwell = Date.now() - searchModeStartAtRef.current;
+                logEvent('search_mode_engagement', { engagement_ms: dwell });
+                searchModeStartAtRef.current = null;
+            }
+        });
+        return () => sub.remove();
+    }, [isSearchMode]);
+
+    // 훅 내부: 공통 로그 함수 (분리된 fetch)
+    const postSearchLog = useCallback(async (payload: SearchLogPayload) => {
+        try {
+            console.log('postSearchLog', payload);
+            client.post('/search-logs', payload);
+        } catch (e) {
+            // 로그 실패는 UX 영향 주지 않도록 조용히 경고만
+            console.warn('[search-log] post failed:', e);
+        }
+    }, []);
 
     // 타임아웃 제거 함수
     const clearSearchTimeout = useCallback(() => {
@@ -36,6 +87,9 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     // 검색 상태 초기화
     const resetSearchState = useCallback(() => {
         clearSearchTimeout();
+        requestIdRef.current = null;
+        searchStartAtRef.current = null;
+        searchModeStartAtRef.current = null;
         setIsSearching(false);
         setHasError(false);
         setSearchResult({ count: 0, page: 1, products: [] });
@@ -90,36 +144,124 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
             try {
                 setIsSearching(true);
 
+                requestIdRef.current = uuid();
+
+                await logEvent('search_submit', {
+                    request_id: requestIdRef.current,
+                    keyword: keywordRef.current!,
+                    sorter: searchSorter,
+                    source: 'webview'
+                });
+                searchStartAtRef.current = Date.now();
+
                 // 검색 시작 후 5초 타임아웃 설정
                 timeoutRef.current = setTimeout(async () => {
-                    console.log('웹뷰 검색에 실패했습니다. 서버 크롤링 검색을 시도합니다.');
+                    const startedAt = searchStartAtRef.current ?? Date.now();
 
                     try {
-                        // 2. Fallback: 서버 크롤링 검색
+                        if (requestIdRef.current) {
+                            await logEvent('search_timeout', {
+                                request_id: requestIdRef.current,
+                                keyword: keywordRef.current!,
+                                after_ms: Date.now() - startedAt,
+                                reason: 'webview_timeout'
+                            });
+                        }
+
+                        await postSearchLog({
+                            requestId: requestIdRef.current!,
+                            keyword: keywordRef.current!,
+                            source: 'webview',
+                            success: false,
+                            durationMs: Date.now() - startedAt,
+                            resultCount: 0,
+                            errorMsg: 'webview search timeout'
+                        });
+                    } catch {}
+
+                    try {
+                        // 1) 서버 크롤링 검색 (fallback)
                         const coupangRes = await SearchCoupangAPI(keyword);
 
-                        if (
-                            coupangRes &&
-                            coupangRes.data &&
-                            coupangRes.data.success &&
-                            Array.isArray(coupangRes.data.data)
-                        ) {
-                            console.log('서버 크롤링 검색 성공');
-                            handleSearchResults(coupangRes.data.data);
-                            return;
+                        const fetched: Product[] = Array.isArray(coupangRes?.data?.data) ? coupangRes.data.data : [];
+                        const durationMs = Date.now() - startedAt;
+                        const success = fetched.length > 0;
+
+                        if (success) {
+                            // 서버 경로에서는 여기서 handleSearchResults 호출(웹뷰 경로와 중복 로깅 방지하려면
+                            // handleSearchResults 안에서 'source: webview'만 찍히도록 유지)
+
+                            // 2) GA: 서버 경로 완료 로깅 (결과 수신 후)
+                            if (requestIdRef.current) {
+                                await logEvent('search_complete', {
+                                    request_id: requestIdRef.current,
+                                    keyword: keywordRef.current!,
+                                    results_count: fetched.length ?? 0,
+                                    duration_ms: durationMs,
+                                    success,
+                                    source: 'server'
+                                });
+                            }
+
+                            handleSearchResults(fetched, { skipLog: true });
                         } else {
-                            console.log('서버 크롤링 검색 실패 - 응답 데이터가 올바르지 않음');
                             setIsSearching(false);
                             setHasError(true);
                             setSearchResult({ count: 0, page: 1, products: [] });
+
+                            if (requestIdRef.current) {
+                                await logEvent('search_complete', {
+                                    request_id: requestIdRef.current,
+                                    keyword: keywordRef.current!,
+                                    results_count: 0,
+                                    duration_ms: durationMs,
+                                    success: false,
+                                    source: 'server'
+                                });
+                            }
+
                             Alert.alert('일시적으로 검색에 실패했습니다. 다시 검색해 주세요');
                         }
+
+                        await postSearchLog({
+                            requestId: requestIdRef.current!,
+                            keyword: keywordRef.current!,
+                            source: 'server',
+                            success,
+                            durationMs: Date.now() - startedAt,
+                            resultCount: fetched.length ?? 0,
+                            errorMsg: success ? undefined : 'invalid server search response'
+                        });
                     } catch (searchError) {
                         console.log('서버 크롤링 검색 중 에러 발생:', searchError);
+
+                        const durationMs = Date.now() - startedAt;
+
                         setIsSearching(false);
                         setHasError(true);
                         setSearchResult({ count: 0, page: 1, products: [] });
                         Alert.alert('일시적으로 검색에 실패했습니다. 다시 검색해 주세요');
+
+                        if (requestIdRef.current) {
+                            await logEvent('search_complete', {
+                                request_id: requestIdRef.current,
+                                keyword: keywordRef.current!,
+                                results_count: 0,
+                                duration_ms: durationMs,
+                                success: false,
+                                source: 'server'
+                            });
+                        }
+
+                        await postSearchLog({
+                            requestId: requestIdRef.current!,
+                            keyword: keywordRef.current!,
+                            source: 'server',
+                            success: false,
+                            durationMs: Date.now() - startedAt,
+                            resultCount: 0,
+                            errorMsg: 'server search error'
+                        });
                     }
                 }, TIMEOUT_DURATION);
             } catch (error) {
@@ -128,13 +270,15 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                 setSearchResult({ count: 0, page: 1, products: [] });
             }
         },
-        [setSearchResult, clearSearchTimeout]
+        [setSearchResult, postSearchLog, searchSorter]
     );
 
     // 검색 실행
     const executeSearch = useCallback(
         async (text: string) => {
             resetSearchState();
+
+            keywordRef.current = text;
 
             if (!text.trim()) {
                 return;
@@ -148,7 +292,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                 await handleKeywordSearch(text);
             }
         },
-        [searchText, hasError, handleUrlSearch, handleKeywordSearch, resetSearchState]
+        [handleUrlSearch, handleKeywordSearch, resetSearchState]
     );
 
     // 검색어 변경 처리
@@ -171,7 +315,32 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     );
 
     const handleSearchResults = useCallback(
-        (products: Product[]) => {
+        (
+            products: Product[],
+            opts: {
+                skipLog?: boolean;
+            } = {}
+        ) => {
+            if (!opts.skipLog) {
+                logEvent('search_complete', {
+                    request_id: requestIdRef.current,
+                    keyword: keywordRef.current!,
+                    results_count: products?.length ?? 0,
+                    duration_ms: Date.now() - (searchStartAtRef.current ?? Date.now()),
+                    success: (products?.length ?? 0) > 0,
+                    source: 'webview'
+                });
+
+                postSearchLog({
+                    requestId: requestIdRef.current!,
+                    keyword: keywordRef.current!,
+                    source: 'webview',
+                    success: (products?.length ?? 0) > 0,
+                    durationMs: Date.now() - (searchStartAtRef.current ?? Date.now()),
+                    resultCount: products.length
+                });
+            }
+
             clearSearchTimeout();
             setIsSearching(false);
             setHasError(false);
