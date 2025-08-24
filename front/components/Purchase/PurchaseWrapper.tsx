@@ -31,6 +31,7 @@ import { Product, ProductType } from '@/stores/purchase/types';
 import { isShowSubscriptionModalAtom } from '@/stores/auth';
 import { Colors } from '@constants';
 import useColorScheme from '@/hooks/useColorScheme';
+import { logEvent } from '@/services/firebase';
 
 // 타입 정의 개선
 type IAPProduct = Omit<IAPProductB, 'type'>;
@@ -197,6 +198,11 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             return false;
         }
 
+        logEvent('subscription_request', {
+            sku,
+            offerToken
+        });
+
         try {
             // 구독 처리 상태로 변경
             setSubscriptionLoading(true);
@@ -208,8 +214,20 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
             // 구독 요청 실행
             await performSubscriptionRequest(sku, offerToken);
+
+            logEvent('subscription_request_success', {
+                sku,
+                offerToken
+            });
+
             return true;
         } catch (error) {
+            logEvent('subscription_request_error', {
+                sku,
+                offerToken,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+
             return handleSubscriptionError(error as Error);
         }
     };

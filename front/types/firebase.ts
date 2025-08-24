@@ -9,12 +9,19 @@ export type AnalyticsEventName =
     | 'search_item_click'
     | 'search_mode_view'
     | 'search_mode_engagement'
-    | 'search_submit'
-    | 'search_complete'
-    | 'search_timeout'
+    | 'keyword_search_submit'
+    | 'link_search_attempt'
+    | 'link_search_complete'
+    | 'link_search_page_view'
+    | 'keyword_search_complete'
+    | 'keyword_search_timeout'
     | 'product_detail_wishlist_toggle'
     | 'product_detail_tab_click'
-    | 'product_detail_buy_click';
+    | 'product_detail_buy_click'
+    | 'subscription_request'
+    | 'subscription_request_success'
+    | 'subscription_unsubscribe'
+    | 'subscription_request_error';
 
 // | 'login'
 // | 'signup'
