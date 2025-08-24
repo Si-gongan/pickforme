@@ -2,7 +2,7 @@
  * 홈 화면 메인 상품 노출
  * - 기본적으로 랜덤 카테고리 상품 노출
  */
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { FlatList, ScrollView, Text, View } from 'react-native';
 
 import MoreButton from '../MoreButton';
@@ -63,6 +63,11 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
             }
         }
     }));
+
+    useEffect(() => {
+        setRandomCount(5);
+        setSpecialCount(5);
+    }, [category, data.random.length, data.special.length]);
 
     return (
         <>
