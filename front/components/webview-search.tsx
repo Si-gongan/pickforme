@@ -59,7 +59,26 @@ const searchProductInjectionCode = `
       const a = li.querySelector('a[href]');
       if (!a) return;
 
-      const name = (li.querySelector('.ProductUnit_productNameV2__cV9cw')?.textContent || '').trim();
+      const pickName = (li) => {
+     // 1) productName 접두사 부분일치 (V2/V3/해시 무관)
+     const el =
+       li.querySelector('[class*="ProductUnit_productName"]') ||
+       li.querySelector('[class*="productName"]') ||
+       li.querySelector('a[aria-label]') ||
+       li.querySelector('a[title]');
+
+     // 2) textContent가 비면 innerText도 시도 (visibility/line-clamp 이슈)
+     const txt =
+       (el && (el.textContent || el.innerText)) ||
+       // 3) 앵커 속성 폴백
+       li.querySelector('a')?.getAttribute('aria-label') ||
+       li.querySelector('a')?.getAttribute('title') ||
+       '';
+
+     return (txt || '').trim();
+   };
+
+      const name = pickName(li);
       const thumbnail = li.querySelector('figure img')?.getAttribute('src') || '';
       const discount_rate = toNumber(li.querySelector('.PriceInfo_discountRate__EsQ8I')?.textContent || '0');
       const origin_price = toNumber(li.querySelector('.PriceInfo_basePrice__8BQ32')?.textContent || '0');
