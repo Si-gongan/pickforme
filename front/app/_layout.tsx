@@ -13,6 +13,7 @@ import { useScreenTracking } from '@/hooks/useScreenTracking';
 import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscription';
 import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
 import usePushToken from '@/hooks/usePushToken';
+import { ensureInstallTime, startNewSession } from '@/services/firebase';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -69,6 +70,11 @@ export default function RootLayout() {
             }
         }
     }, [isTotalLoading, isUserLoggedIn, isSettingReady, initialPushRouteRef, pathname]);
+
+    useEffect(() => {
+        ensureInstallTime();
+        startNewSession();
+    }, []);
 
     // 로딩 중이면 아무것도 렌더링 하지 않음
     if (isTotalLoading) {

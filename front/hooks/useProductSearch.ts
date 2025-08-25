@@ -8,7 +8,7 @@ import { GetProductAPI } from '../stores/product/apis';
 import { Product } from '../stores/product/types';
 import { sanitizeUrl } from '../utils/url';
 import { SearchCoupangAPI } from '../stores/product/apis';
-import { logEvent } from '@/services/firebase';
+import { logEvent, maybeLogFirstAction } from '@/services/firebase';
 import { v4 as uuid } from 'uuid';
 import { client } from '@/utils';
 
@@ -310,6 +310,9 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     // 검색어 변경 처리
     const handleSearchTextChange = useCallback(
         (text: string) => {
+            if (text.trim().length == 1) {
+                maybeLogFirstAction('search_text_change');
+            }
             setSearchText(text);
         },
         [setSearchText]

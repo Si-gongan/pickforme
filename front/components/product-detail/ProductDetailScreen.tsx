@@ -43,7 +43,7 @@ import { useWebViewFallback } from '@/hooks/useWebViewFallback';
 import { TABS } from '@/utils/common';
 import { v4 as uuidv4 } from 'uuid';
 import { logCrawlProcessResult } from '@/utils/crawlLog';
-import { logEvent } from '@/services/firebase';
+import { logEvent, logViewItemDetail } from '@/services/firebase';
 
 interface ProductDetailScreenProps {}
 
@@ -306,6 +306,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             });
         }
     }, [isFromLink, productUrl]);
+
+    useEffect(() => {
+        if (!product) return;
+
+        logViewItemDetail({
+            item_id: productUrl,
+            item_name: product?.name,
+            category: 'product_detail',
+            price: product?.price
+        });
+    }, [productUrl]);
 
     // 모달 관리
     const toggleRequestModal = () => {

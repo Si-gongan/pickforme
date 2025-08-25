@@ -9,6 +9,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import { searchTextAtom, searchQueryAtom, currentCategoryAtom, scrollResetTriggerAtom } from '../../stores/search';
 import { getMainProductsAtom } from '../../stores/product/atoms';
 import { categoryName, CATEGORIES } from '@/constants/Categories';
+import { maybeLogFirstAction } from '@/services/firebase';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
@@ -112,20 +113,81 @@ export default function TabLayout() {
                         title: 'WishList',
                         tabBarLabel: '위시리스트',
                         tabBarAccessibilityLabel: '위시리스트 탭',
-                        tabBarIcon: function ({ color, focused }) {
-                            return <WishListIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
+                        tabBarButton: props => {
+                            const safeProps = Object.fromEntries(
+                                Object.entries(props).map(([k, v]) => [k, v === null ? undefined : v])
+                            );
+                            const isSelected = props['aria-selected'] ?? false;
+
+                            return (
+                                <TouchableOpacity
+                                    {...safeProps}
+                                    onPress={e => {
+                                        maybeLogFirstAction('tab_wishlist_press');
+                                        props.onPress?.(e);
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                                        <WishListIcon
+                                            size={28}
+                                            color={Colors?.[colorScheme]?.button.primary.text ?? 'white'}
+                                            opacity={isSelected ? 1 : 0.5}
+                                        />
+                                        <Text
+                                            style={{
+                                                color: Colors?.[colorScheme]?.button.primary.text ?? 'white',
+                                                fontSize: 11,
+                                                opacity: isSelected ? 1 : 0.5
+                                            }}
+                                        >
+                                            위시리스트
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            );
                         }
                     }}
                 />
 
+                {/* 마이페이지 탭 */}
                 <Tabs.Screen
                     name="mypage"
                     options={{
                         title: 'My',
                         tabBarLabel: '마이페이지',
                         tabBarAccessibilityLabel: '마이페이지 탭',
-                        tabBarIcon: function ({ color, focused }) {
-                            return <MyIcon size={28} color={'white'} opacity={focused ? 1 : 0.5} />;
+                        tabBarButton: props => {
+                            const safeProps = Object.fromEntries(
+                                Object.entries(props).map(([k, v]) => [k, v === null ? undefined : v])
+                            );
+                            const isSelected = props['aria-selected'] ?? false;
+
+                            return (
+                                <TouchableOpacity
+                                    {...safeProps}
+                                    onPress={e => {
+                                        maybeLogFirstAction('tab_mypage_press');
+                                        props.onPress?.(e);
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                                        <MyIcon
+                                            size={28}
+                                            color={Colors?.[colorScheme]?.button.primary.text ?? 'white'}
+                                            opacity={isSelected ? 1 : 0.5}
+                                        />
+                                        <Text
+                                            style={{
+                                                color: Colors?.[colorScheme]?.button.primary.text ?? 'white',
+                                                fontSize: 11,
+                                                opacity: isSelected ? 1 : 0.5
+                                            }}
+                                        >
+                                            마이페이지
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            );
                         }
                     }}
                 />

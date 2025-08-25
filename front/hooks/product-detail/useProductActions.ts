@@ -14,7 +14,7 @@ import { userAtom } from '@stores';
 import useCheckLogin from '../useCheckLogin';
 import { Product } from '../../stores/product/types';
 import { checkIsExpired } from '../../utils/common';
-import { logEvent } from '@/services/firebase';
+import { logClickBuy, logEvent } from '@/services/firebase';
 
 interface UseProductActionsProps {
     product: Product;
@@ -47,6 +47,13 @@ export const useProductActions = ({
 
     // 구매하기
     const handleClickBuy = useCallback(async () => {
+        logClickBuy({
+            item_id: productUrl,
+            item_name: productDetail?.product?.name,
+            category: 'product_detail',
+            price: productDetail?.product?.price
+        });
+
         logEvent('product_detail_buy_click', {
             screen: 'ProductDetailScreen',
             url: productUrl,
