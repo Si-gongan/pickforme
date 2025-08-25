@@ -27,6 +27,7 @@ import {
 import { Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { resolveRedirectUrl, sanitizeUrl, normalizeUrl, parseCoupangIdsFromUrl } from '../../utils/url';
+import { logEvent } from '@/services/firebase';
 
 export const mainProductsAtom = atom<MainProductsState>({
     special: [],
@@ -59,12 +60,21 @@ export const setScrapedProductsAtom = atom(null, async (get, set, products: Prod
 });
 
 export const getMainProductsAtom = atom(null, async (get, set, categoryId: string) => {
+    logEvent('main_products_request', {
+        categoryId
+    });
+
     const result = await attempt(() => GetMainProductsAPI(categoryId));
 
     if (!result.ok) {
         console.error('상품 목록 가져오기 실패:', result.error);
         return;
     }
+
+    logEvent('main_products_response', {
+        categoryId,
+        result: result.ok
+    });
 
     const response = result.value;
     if (response && response.data) {

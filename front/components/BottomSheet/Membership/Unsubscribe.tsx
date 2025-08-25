@@ -24,6 +24,7 @@ import { Colors } from '@constants';
 import { Props, styles } from '../Base';
 
 import type { ColorScheme } from '@hooks';
+import { logEvent } from '@/services/firebase';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -46,6 +47,7 @@ const UnsubscribeBottomSheet: React.FC<Props> = () => {
 
     const handleClickNo = async () => {
         onClose();
+        logEvent('subscription_unsubscribe');
         try {
             if (Platform.OS === 'android') {
                 // Android의 경우 구글 플레이 스토어로 이동
