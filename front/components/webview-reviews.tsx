@@ -35,7 +35,7 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
 
     // ----- 추가: 워치독(무응답 시 reload) -----
     const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const [reloadAttempt, setReloadAttempt] = useState(0);
+    const reloadAttempt = useRef(0);
     const WATCHDOG_MS = 2000; // onLoadEnd/onError가 X초간 없으면 reload
     const MAX_RELOADS = 2; // 무한 루프 방지
 
@@ -60,8 +60,8 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
         clearWatchdog();
         watchdogTimerRef.current = setTimeout(() => {
             // 제한 시간 경과: 이벤트가 아무것도 안 왔음 → reload 시도
-            if (webViewRef.current && reloadAttempt < MAX_RELOADS) {
-                setReloadAttempt(prev => prev + 1);
+            if (webViewRef.current && reloadAttempt.current < MAX_RELOADS) {
+                reloadAttempt.current++;
                 try {
                     console.log('========== watchdog reload ==========');
 
@@ -71,8 +71,6 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                     setHasErrorOccurred(true);
                     onError?.();
                 }
-                // reload 후에도 다시 감시 계속
-                armWatchdog();
             } else {
                 // 리로드 한도 초과 → 최종 에러 처리
                 clearWatchdog();
@@ -166,7 +164,7 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
         setScrollDownCount(0);
         setHasErrorOccurred(false);
         setAccumulatedReviews([]);
-        setReloadAttempt(0);
+        reloadAttempt.current = 0;
         clearWatchdog();
         parseUrl(productUrl).catch(error => {
             console.error('URL 파싱 중 오류:', error);
