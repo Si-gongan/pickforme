@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 import SearchLogModel from 'models/searchLog';
+import { isValidTimeZone, toZonedRange } from './utils';
 
 const router = new Router({ prefix: '/search-logs' });
 
@@ -14,14 +15,6 @@ router.post('/', async (ctx) => {
     resultCount: number;
     errorMsg?: string;
   };
-
-  console.log('requestId', requestId);
-  console.log('keyword', keyword);
-  console.log('source', source);
-  console.log('success', success);
-  console.log('durationMs', durationMs);
-  console.log('resultCount', resultCount);
-  console.log('errorMsg', errorMsg);
 
   if (
     !requestId ||
@@ -87,29 +80,181 @@ router.get('/list', async (ctx) => {
   };
 });
 
-// (선택) 일/소스별 성공률·평균시간
+/**
+ * 통계 API (업데이트)
+ * - todayBySource: 오늘(KST) source별 요약(횟수/성공/성공률/평균시간/평균결과수)
+ * - byDateAndSource: 기간 내 일별×source 성공률/평균시간
+ * - failureReasonsToday: 오늘 실패 원인 분포
+ * - failureReasonsRange: 기간 전체 실패 원인 분포
+ * - meta: tz, from, to
+ */
+/**
+ * GET /search-logs/stats
+ * - todayBySource: 오늘(KST) 소스별 요약(횟수/성공/실패/성공률/평균시간/평균결과수)
+ * - byDateAndSource: 기간 내 일자×소스 성공률/평균시간/평균결과수
+ * - failureReasonsWebviewToday: 웹뷰 실패 원인 분포(오늘) — timeout / no_results / other
+ * - failureReasonsWebviewRange: 웹뷰 실패 원인 분포(기간 전체)
+ */
 router.get('/stats', async (ctx) => {
   const tz = (ctx.query.tz as string) || 'Asia/Seoul';
-  const pipeline = [
+  const from = ctx.query.from as string | undefined;
+  const to = ctx.query.to as string | undefined;
+  if (!isValidTimeZone(tz)) {
+    ctx.status = 400;
+    ctx.body = { message: `Invalid timezone: ${tz}` };
+    return;
+  }
+
+  let baseFrom: string, baseTo: string, guardStart: Date, guardEnd: Date;
+  try {
+    ({ baseFrom, baseTo, guardStart, guardEnd } = toZonedRange(tz, from, to));
+  } catch (e: any) {
+    ctx.status = 400;
+    ctx.body = { message: e?.message || 'invalid range' };
+    return;
+  }
+
+  const pipeline: any[] = [
+    { $match: { createdAt: { $gte: guardStart, $lte: guardEnd } } },
     {
       $addFields: {
         localDate: { $dateToString: { date: '$createdAt', format: '%Y-%m-%d', timezone: tz } },
       },
     },
+    { $match: { localDate: { $gte: baseFrom, $lte: baseTo } } },
     {
-      $group: {
-        _id: { date: '$localDate', source: '$source' },
-        total: { $sum: 1 },
-        success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
-        avgDurationMs: { $avg: '$durationMs' },
-        avgResultCount: { $avg: '$resultCount' },
+      $facet: {
+        /** ✅ (A) 선택한 기간 전체 요약(소스별) */
+        rangeBySource: [
+          {
+            $group: {
+              _id: '$source',
+              total: { $sum: 1 },
+              success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
+              fail: { $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] } },
+              avgDurationMs: { $avg: '$durationMs' },
+              avgResultCount: { $avg: '$resultCount' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              source: '$_id',
+              total: 1,
+              success: 1,
+              fail: 1,
+              successRate: {
+                $cond: [
+                  { $gt: ['$total', 0] },
+                  { $multiply: [{ $divide: ['$success', '$total'] }, 100] },
+                  0,
+                ],
+              },
+              avgDurationMs: 1,
+              avgResultCount: 1,
+            },
+          },
+        ],
+
+        /** (B) 일자×소스 */
+        byDateAndSource: [
+          {
+            $group: {
+              _id: { date: '$localDate', source: '$source' },
+              total: { $sum: 1 },
+              success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
+              fail: { $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] } },
+              avgDurationMs: { $avg: '$durationMs' },
+              avgResultCount: { $avg: '$resultCount' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              date: '$_id.date',
+              source: '$_id.source',
+              total: 1,
+              success: 1,
+              fail: 1,
+              successRate: {
+                $cond: [
+                  { $gt: ['$total', 0] },
+                  { $multiply: [{ $divide: ['$success', '$total'] }, 100] },
+                  0,
+                ],
+              },
+              avgDurationMs: 1,
+              avgResultCount: 1,
+            },
+          },
+          { $sort: { date: 1, source: 1 } },
+        ],
+
+        /** (C) 웹뷰 실패 원인 - 오늘 */
+        failureReasonsWebviewToday: [
+          { $match: { localDate: baseTo, source: 'webview', success: false } },
+          {
+            $project: {
+              category: {
+                $switch: {
+                  branches: [
+                    {
+                      case: {
+                        $regexMatch: { input: { $ifNull: ['$errorMsg', ''] }, regex: /timeout/i },
+                      },
+                      then: 'timeout',
+                    },
+                    { case: { $eq: ['$resultCount', 0] }, then: 'no_results' },
+                  ],
+                  default: 'other',
+                },
+              },
+            },
+          },
+          { $group: { _id: '$category', count: { $sum: 1 } } },
+          { $project: { _id: 0, reason: '$_id', count: 1 } },
+          { $sort: { count: -1 } },
+        ],
+
+        /** (D) 웹뷰 실패 원인 - 기간 전체 */
+        failureReasonsWebviewRange: [
+          { $match: { source: 'webview', success: false } },
+          {
+            $project: {
+              category: {
+                $switch: {
+                  branches: [
+                    {
+                      case: {
+                        $regexMatch: { input: { $ifNull: ['$errorMsg', ''] }, regex: /timeout/i },
+                      },
+                      then: 'timeout',
+                    },
+                    { case: { $eq: ['$resultCount', 0] }, then: 'no_results' },
+                  ],
+                  default: 'other',
+                },
+              },
+            },
+          },
+          { $group: { _id: '$category', count: { $sum: 1 } } },
+          { $project: { _id: 0, reason: '$_id', count: 1 } },
+          { $sort: { count: -1 } },
+        ],
       },
     },
-    { $sort: { '_id.date': -1, '_id.source': 1 } },
   ];
 
-  const rows = await SearchLogModel.aggregate(pipeline as any);
-  ctx.body = { byDateAndSource: rows };
+  const [agg] = await SearchLogModel.aggregate(pipeline as any).allowDiskUse(true);
+
+  ctx.body = {
+    /** ✅ 변경: 오늘 요약 대신 기간 요약을 제공 */
+    rangeBySource: agg?.rangeBySource ?? [],
+    byDateAndSource: agg?.byDateAndSource ?? [],
+    failureReasonsWebviewToday: agg?.failureReasonsWebviewToday ?? [],
+    failureReasonsWebviewRange: agg?.failureReasonsWebviewRange ?? [],
+    meta: { tz, range: { from: baseFrom, to: baseTo } },
+  };
 });
 
 export default router;

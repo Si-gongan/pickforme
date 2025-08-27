@@ -14,7 +14,6 @@ export default function CrawlLogHomePage() {
         <Typography.Title level={2} style={{ margin: 0 }}>
           크롤링 로그 대시보드
         </Typography.Title>
-        {/* 제목 옆(중복) 버튼 없음 */}
       </TopBar>
 
       <Grid>
@@ -33,11 +32,16 @@ export default function CrawlLogHomePage() {
             <li>Request ID 클릭 시 상세 타임라인</li>
           </Desc>
 
-          {/* ✅ 카드 본문 버튼 유지 */}
           <Space size={12}>
             <Link href="/crawl-log/search">
-              <Button type="primary" icon={<SearchOutlined />}>
+              <Button type="default" icon={<SearchOutlined />}>
                 검색 로그 보기
+              </Button>
+            </Link>
+            {/* ✅ 통계 버튼 추가 */}
+            <Link href="/crawl-log/search/stats">
+              <Button type="primary" icon={<BarChartOutlined />}>
+                통계 바로가기
               </Button>
             </Link>
           </Space>
@@ -58,7 +62,6 @@ export default function CrawlLogHomePage() {
             <li>Request ID별 이력 드릴다운</li>
           </Desc>
 
-          {/* ✅ 카드 본문 버튼 유지 / actions(바로가기) 제거 */}
           <Space size={12}>
             <Link href="/crawl-log/product-detail">
               <Button icon={<ProfileOutlined />}>상품 상세 로그 보기</Button>
