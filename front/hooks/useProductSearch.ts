@@ -337,12 +337,14 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
             } = {}
         ) => {
             if (!opts.skipLog) {
+                const ok = (products?.length ?? 0) > 0;
+
                 logEvent('keyword_search_complete', {
                     request_id: requestIdRef.current,
                     keyword: keywordRef.current!,
                     results_count: products?.length ?? 0,
                     duration_ms: Date.now() - (searchStartAtRef.current ?? Date.now()),
-                    success: (products?.length ?? 0) > 0,
+                    success: ok,
                     source: 'webview'
                 });
 
@@ -350,9 +352,10 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                     requestId: requestIdRef.current!,
                     keyword: keywordRef.current!,
                     source: 'webview',
-                    success: (products?.length ?? 0) > 0,
+                    success: ok,
                     durationMs: Date.now() - (searchStartAtRef.current ?? Date.now()),
-                    resultCount: products.length
+                    resultCount: products.length,
+                    errorMsg: ok ? undefined : 'no_results'
                 });
             }
 

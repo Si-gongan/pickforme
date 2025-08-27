@@ -183,6 +183,15 @@ export default function SearchLogListPage() {
           >
             🔄 새로고침
           </Button>
+          <Button
+            type="primary"
+            onClick={() => router.push("/crawl-log/search/stats")}
+          >
+            통계 바로가기
+          </Button>
+          <Button type="default" onClick={() => router.back()}>
+            뒤로가기
+          </Button>
         </Space>
       </TopBar>
 
