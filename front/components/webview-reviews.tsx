@@ -30,10 +30,11 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
     const [injectionCode, setInjectionCode] = useState<string>('');
     const [accumulatedReviews, setAccumulatedReviews] = useState<string[]>([]);
     const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
+    const [retryCount, setRetryCount] = useState<number>(0);
+    const [scrollDownCount, setScrollDownCount] = useState<number>(0);
 
+    // 최대 재시도 횟수
     const maxRetries = 3;
-    let retryCount = 0;
-    let scrollDownCount = 0;
 
     const handleErrorOnce = () => {
         if (!hasErrorOccurred) {
@@ -123,8 +124,8 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
     };
 
     useEffect(() => {
-        retryCount = 0;
-        scrollDownCount = 0;
+        setRetryCount(0);
+        setScrollDownCount(0);
         setHasErrorOccurred(false);
         setAccumulatedReviews([]);
         parseUrl(productUrl)
@@ -139,8 +140,6 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
     const handleMessage = (event: WebViewMessageEvent) => {
         const data = event.nativeEvent.data;
 
-        // console.log('WebView message in webview-reviews:', data.length);
-
         try {
             const parsedData = JSON.parse(data);
 
@@ -150,7 +149,7 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
 
                 if (!parsedData.scrollChanged && scrollDownCount < 11) {
                     scrollDown();
-                    scrollDownCount++;
+                    setScrollDownCount(count => count + 1);
                     return;
                 }
 
@@ -171,7 +170,7 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
             }
 
             // 일반 컨텐츠 처리
-            if (parsedData.content && (parsedData.content.length > 0 || retryCount >= maxRetries)) {
+            if (parsedData.content && parsedData.content.length > 0) {
                 const newReviews = parsedData.content.filter((review: string) => !accumulatedReviews.includes(review));
 
                 if (newReviews.length > 0) {
@@ -180,25 +179,18 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                     onMessage(updatedReviews); // 전체 리뷰 전달
                 }
             } else {
-                retryCount++;
-                if (retryCount >= maxRetries) {
-                    handleErrorOnce();
-                } else {
-                    runJavaScript();
-                }
+                console.log('handleMessage', retryCount);
+                handleError();
             }
         } catch (error) {
             console.error('Failed to parse JSON:', error);
-            retryCount++;
-            if (retryCount >= maxRetries) {
-                handleErrorOnce();
-            } else {
-                runJavaScript();
-            }
+            handleError();
         }
     };
 
-    const handleError = (event: any) => {
+    const handleError = () => {
+        console.log('handleError', retryCount);
+        setRetryCount(retryCount => retryCount + 1);
         if (retryCount >= maxRetries) {
             handleErrorOnce();
         } else {
@@ -207,14 +199,13 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
     };
 
     const component = (
-        <View style={{ width: '100%', height: 0 }}>
+        <View style={{ width: '100%', height: 300 }}>
             <WebView
                 ref={webViewRef}
                 source={{ uri: reviewWebviewUrl }}
                 onMessage={handleMessage}
                 onLoadEnd={runJavaScript}
                 onError={handleError}
-                style={{ opacity: 0, height: 0 }} // 화면을 숨김
                 cacheEnabled={false}
                 cacheMode="LOAD_NO_CACHE"
                 renderToHardwareTextureAndroid={true}
