@@ -8,6 +8,7 @@ import {
 } from '@react-native-firebase/analytics';
 import { getApp } from '@react-native-firebase/app';
 import { AnalyticsEventName, AnalyticsScreenName, AnalyticsEventParams } from '../types/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Analytics 인스턴스
 const app = getApp();
@@ -22,6 +23,98 @@ if (!isProd) {
     analytics = getAnalytics(app);
     setAnalyticsCollectionEnabled(analytics, true); // 명시적으로 활성화
     console.log('✅ Firebase Analytics enabled (production)');
+}
+
+const INSTALL_TIME_KEY = 'install_time_ms';
+const SESSION_STARTED_AT_KEY = 'session_started_at_ms';
+const FIRST_ACTION_LOGGED_KEY = 'first_action_logged';
+
+// 앱 최초 설치 시간 확보
+export async function ensureInstallTime() {
+    const v = await AsyncStorage.getItem(INSTALL_TIME_KEY);
+    if (!v) {
+        const now = Date.now();
+        await AsyncStorage.setItem(INSTALL_TIME_KEY, String(now));
+        return now;
+    }
+    return Number(v);
+}
+
+export async function startNewSession() {
+    const startedAt = Date.now();
+    await AsyncStorage.setItem(SESSION_STARTED_AT_KEY, String(startedAt));
+    await AsyncStorage.setItem(FIRST_ACTION_LOGGED_KEY, 'false');
+
+    if (isProd && analytics) {
+        await firebaseLogEvent(analytics, 'session_start_custom', {
+            session_started_at_ms: startedAt
+        });
+    }
+}
+
+export async function maybeLogFirstAction(actionName: string) {
+    if (!isProd || !analytics) return;
+
+    const sessionStartedAtStr = await AsyncStorage.getItem(SESSION_STARTED_AT_KEY);
+    if (!sessionStartedAtStr) return;
+    const sessionStartedAt = Number(sessionStartedAtStr);
+
+    const elapsed_ms = Date.now() - sessionStartedAt;
+
+    const firstActionLogged = await AsyncStorage.getItem(FIRST_ACTION_LOGGED_KEY);
+    if (firstActionLogged) return;
+
+    await firebaseLogEvent(analytics, 'first_action', {
+        action_name: actionName,
+        elapsed_ms
+    });
+
+    // 필요하다면 세션당 1회만 찍도록 flag 저장
+    await AsyncStorage.setItem(FIRST_ACTION_LOGGED_KEY, 'true');
+}
+
+export async function logClickBuy(params: {
+    item_id: string | number;
+    item_name?: string;
+    category?: string;
+    price?: number;
+}) {
+    if (!isProd || !analytics) return;
+
+    const sessionStartedAtStr = await AsyncStorage.getItem(SESSION_STARTED_AT_KEY);
+    const sessionStartedAt = sessionStartedAtStr ? Number(sessionStartedAtStr) : Date.now();
+    const elapsed_ms = Date.now() - sessionStartedAt;
+
+    await firebaseLogEvent(analytics, 'click_buy', {
+        item_id: String(params.item_id),
+        item_name: params.item_name,
+        category: params.category,
+        price: params.price,
+        elapsed_ms_since_session: elapsed_ms // ★ 앱 실행 시점과의 차이
+    });
+}
+
+async function isWithin24hOfInstall() {
+    const install = await ensureInstallTime();
+    return Date.now() - install <= 24 * 60 * 60 * 1000;
+}
+
+export async function logViewItemDetail(params: {
+    item_id: string | number;
+    item_name?: string;
+    category?: string;
+    price?: number;
+}) {
+    if (!isProd || !analytics) return;
+    const within_24h = await isWithin24hOfInstall();
+
+    await firebaseLogEvent(analytics, 'view_item_detail', {
+        item_id: String(params.item_id),
+        item_name: params.item_name,
+        category: params.category,
+        price: params.price,
+        within_24h // ★ 설치기준 전환율에 쓰는 핵심 필드
+    });
 }
 
 // 이벤트 로깅

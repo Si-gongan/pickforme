@@ -14,7 +14,7 @@ import { userAtom } from '@stores';
 import useCheckLogin from '../useCheckLogin';
 import { Product } from '../../stores/product/types';
 import { checkIsExpired } from '../../utils/common';
-import { logEvent } from '@/services/firebase';
+import { logClickBuy, logEvent } from '@/services/firebase';
 
 interface UseProductActionsProps {
     product: Product;
@@ -22,6 +22,7 @@ interface UseProductActionsProps {
     wishlistItem: Product | undefined;
     question: string;
     setQuestion: (question: string) => void;
+    requestId: string;
 }
 
 export const useProductActions = ({
@@ -29,6 +30,7 @@ export const useProductActions = ({
     productUrl,
     wishlistItem,
     question,
+    requestId,
     setQuestion
 }: UseProductActionsProps) => {
     const [wishlist, setWishlist] = useAtom(wishProductsAtom);
@@ -45,15 +47,24 @@ export const useProductActions = ({
 
     // 구매하기
     const handleClickBuy = useCallback(async () => {
-        logEvent('product_detail_buy_click', {
-            screen: 'ProductDetailScreen',
+        logClickBuy({
             item_id: productUrl,
             item_name: productDetail?.product?.name,
-            category: 'product_detail'
+            category: 'product_detail',
+            price: productDetail?.product?.price
+        });
+
+        logEvent('product_detail_buy_click', {
+            screen: 'ProductDetailScreen',
+            url: productUrl,
+            item_name: productDetail?.product?.name,
+            item_price: productDetail?.product?.price,
+            category: 'product_detail',
+            request_id: requestId
         });
 
         await WebBrowser.openBrowserAsync(product.url);
-    }, [product.url]);
+    }, [product.url, productDetail?.product?.name, productDetail?.product?.price, requestId]);
 
     // 위시리스트 토글
     const handleClickWish = useCallback(async () => {
