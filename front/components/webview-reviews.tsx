@@ -6,9 +6,9 @@
 // 중복 리뷰는 제거하고 새로운 리뷰만 누적하여 전달합니다.
 // 특징: 스크롤 다운 시 새로운 리뷰를 감지하여 기존 리뷰와 합쳐서 전달하는 메커니즘이 있습니다.
 
-import React, { useRef, useState, useEffect, ReactElement } from 'react';
+import React, { useRef, useState, useEffect, ReactElement, useCallback } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { convertToCoupangReviewUrl } from '@/utils/url';
 
 interface WebViewProps {
@@ -30,10 +30,17 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
     const [injectionCode, setInjectionCode] = useState<string>('');
     const [accumulatedReviews, setAccumulatedReviews] = useState<string[]>([]);
     const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
+    const [retryCount, setRetryCount] = useState<number>(0);
+    const [scrollDownCount, setScrollDownCount] = useState<number>(0);
 
+    // ----- 추가: 워치독(무응답 시 reload) -----
+    const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const reloadAttempt = useRef(0);
+    const WATCHDOG_MS = 2000; // onLoadEnd/onError가 X초간 없으면 reload
+    const MAX_RELOADS = 2; // 무한 루프 방지
+
+    // 최대 재시도 횟수
     const maxRetries = 3;
-    let retryCount = 0;
-    let scrollDownCount = 0;
 
     const handleErrorOnce = () => {
         if (!hasErrorOccurred) {
@@ -41,6 +48,36 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
             onError?.();
         }
     };
+
+    const clearWatchdog = useCallback(() => {
+        if (watchdogTimerRef.current) {
+            clearTimeout(watchdogTimerRef.current);
+            watchdogTimerRef.current = null;
+        }
+    }, []);
+
+    const armWatchdog = useCallback(() => {
+        clearWatchdog();
+        watchdogTimerRef.current = setTimeout(() => {
+            // 제한 시간 경과: 이벤트가 아무것도 안 왔음 → reload 시도
+            if (webViewRef.current && reloadAttempt.current < MAX_RELOADS) {
+                reloadAttempt.current++;
+                try {
+                    console.log('========== watchdog reload ==========');
+
+                    webViewRef.current.reload();
+                } catch (e) {
+                    // reload 자체가 실패하면 최종 에러 처리
+                    setHasErrorOccurred(true);
+                    onError?.();
+                }
+            } else {
+                // 리로드 한도 초과 → 최종 에러 처리
+                clearWatchdog();
+                handleErrorOnce();
+            }
+        }, WATCHDOG_MS);
+    }, [clearWatchdog, reloadAttempt, handleErrorOnce]);
 
     const parseUrl = async (url: string) => {
         try {
@@ -123,34 +160,30 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
     };
 
     useEffect(() => {
-        retryCount = 0;
-        scrollDownCount = 0;
+        setRetryCount(0);
+        setScrollDownCount(0);
         setHasErrorOccurred(false);
         setAccumulatedReviews([]);
-        parseUrl(productUrl)
-            .then(() => {
-                runJavaScript();
-            })
-            .catch(error => {
-                console.error('URL 파싱 중 오류:', error);
-            });
+        reloadAttempt.current = 0;
+        clearWatchdog();
+        parseUrl(productUrl).catch(error => {
+            console.error('URL 파싱 중 오류:', error);
+        });
     }, [productUrl]);
 
     const handleMessage = (event: WebViewMessageEvent) => {
         const data = event.nativeEvent.data;
-
-        // console.log('WebView message in webview-reviews:', data.length);
 
         try {
             const parsedData = JSON.parse(data);
 
             // 스크롤 결과 처리
             if (parsedData.type === 'scrollResult') {
-                console.log('스크롤 결과:', parsedData.scrollChanged);
+                clearWatchdog();
 
                 if (!parsedData.scrollChanged && scrollDownCount < 11) {
                     scrollDown();
-                    scrollDownCount++;
+                    setScrollDownCount(count => count + 1);
                     return;
                 }
 
@@ -171,7 +204,9 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
             }
 
             // 일반 컨텐츠 처리
-            if (parsedData.content && (parsedData.content.length > 0 || retryCount >= maxRetries)) {
+            if (parsedData.content && parsedData.content.length > 0) {
+                clearWatchdog();
+
                 const newReviews = parsedData.content.filter((review: string) => !accumulatedReviews.includes(review));
 
                 if (newReviews.length > 0) {
@@ -180,25 +215,19 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                     onMessage(updatedReviews); // 전체 리뷰 전달
                 }
             } else {
-                retryCount++;
-                if (retryCount >= maxRetries) {
-                    handleErrorOnce();
-                } else {
-                    runJavaScript();
-                }
+                console.log('handleMessage', retryCount);
+                handleError();
             }
         } catch (error) {
             console.error('Failed to parse JSON:', error);
-            retryCount++;
-            if (retryCount >= maxRetries) {
-                handleErrorOnce();
-            } else {
-                runJavaScript();
-            }
+            handleError();
         }
     };
 
-    const handleError = (event: any) => {
+    const handleError = () => {
+        clearWatchdog();
+
+        setRetryCount(retryCount => retryCount + 1);
         if (retryCount >= maxRetries) {
             handleErrorOnce();
         } else {
@@ -212,9 +241,14 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                 ref={webViewRef}
                 source={{ uri: reviewWebviewUrl }}
                 onMessage={handleMessage}
-                onLoadEnd={runJavaScript}
+                onLoadStart={() => {
+                    armWatchdog();
+                }}
+                onLoadEnd={() => {
+                    clearWatchdog();
+                    runJavaScript();
+                }}
                 onError={handleError}
-                style={{ opacity: 0, height: 0 }} // 화면을 숨김
                 cacheEnabled={false}
                 cacheMode="LOAD_NO_CACHE"
                 renderToHardwareTextureAndroid={true}
