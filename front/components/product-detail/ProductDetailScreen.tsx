@@ -3,7 +3,6 @@ import { StyleSheet, ScrollView, Alert } from 'react-native';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { router, useLocalSearchParams } from 'expo-router';
 import Modal from 'react-native-modal';
-import 'react-native-get-random-values';
 
 import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';

@@ -277,43 +277,76 @@ class CoupangCrawlerService extends EventEmitter {
   private async searchProduct(request: CrawlRequest, page: Page): Promise<any> {
     console.log(`🔍 검색 시작 (검색어): ${request.searchText}`);
     const searchUrl = `https://www.coupang.com/np/search?q=${encodeURIComponent(request.searchText!)}`;
+
     await page.goto(searchUrl, { waitUntil: 'networkidle', timeout: 30000 });
-    await page.waitForSelector('li.ProductUnit_productUnit__Qd6sv', { timeout: 10000 });
-    const products = await page.evaluate(() => {
+
+    // li의 class 중에 "ProductUnit_" 접두사가 포함된 항목을 기다림
+    const liSelector = 'li[class^="ProductUnit_"], li[class*=" ProductUnit_"]';
+    await page.waitForSelector(liSelector, { timeout: 10000 });
+
+    const products = await page.evaluate((liSel) => {
       function getInt(txt: string) {
         return parseInt((txt || '').replace(/[^0-9]/g, ''), 10) || 0;
       }
       function getFloat(txt: string) {
         return parseFloat((txt || '').replace(/[^0-9.]/g, '')) || 0;
       }
-      return Array.from(document.querySelectorAll('li.ProductUnit_productUnit__Qd6sv')).map(
-        (li) => {
-          const aTag = li.querySelector('a');
-          const url = aTag ? 'https://www.coupang.com' + aTag.getAttribute('href') : '';
-          const name =
-            (li.querySelector('.ProductUnit_productName__gre7e') as HTMLElement)?.innerText || '';
-          const thumbnail = (li.querySelector('img') as HTMLImageElement)?.src || '';
-          const price = getInt(
-            (li.querySelector('.Price_priceValue__A4KOr') as HTMLElement)?.innerText || ''
-          );
-          const originPrice = getInt(
-            (li.querySelector('.PriceInfo_basePrice__8BQ32') as HTMLElement)?.innerText || ''
-          );
-          const discountRate = getInt(
-            (li.querySelector('.PriceInfo_discountRate__EsQ8I') as HTMLElement)?.innerText || ''
-          );
-          let ratings = 0;
-          const starDiv = li.querySelector('.ProductRating_star__RGSlV') as HTMLElement;
-          if (starDiv && starDiv.style.width) {
-            ratings = Math.round((parseFloat(starDiv.style.width) / 100) * 5 * 2) / 2;
+
+      // 접두사 기반 셀렉터 유틸 (단일)
+      const qs = (root: ParentNode, prefix: string) =>
+        root.querySelector<HTMLElement>(`[class^="${prefix}"], [class*=" ${prefix}"]`);
+
+      // 접두사 기반 셀렉터 유틸 (복수)
+      const qsa = (root: ParentNode, prefix: string) =>
+        Array.from(
+          root.querySelectorAll<HTMLElement>(`[class^="${prefix}"], [class*=" ${prefix}"]`)
+        );
+
+      return Array.from(document.querySelectorAll<HTMLElement>(liSel)).map((li) => {
+        // 링크/URL
+        const aTag = li.querySelector<HTMLAnchorElement>('a');
+        const href = aTag?.getAttribute('href') || '';
+        const url = href ? (href.startsWith('http') ? href : 'https://www.coupang.com' + href) : '';
+
+        // 제목
+        const name = qs(li, 'ProductUnit_productName')?.innerText?.trim() || '';
+
+        // 썸네일 (li 안 첫 번째 img 우선)
+        const thumbnail = li.querySelector<HTMLImageElement>('img')?.src || '';
+
+        // 가격 영역
+        const priceText = qs(li, 'Price_priceValue__')?.innerText || '';
+        const price = getInt(priceText);
+
+        const originPriceText = qs(li, 'PriceInfo_basePrice__')?.innerText || '';
+        const originPrice = getInt(originPriceText);
+
+        const discountRateText = qs(li, 'PriceInfo_discountRate__')?.innerText || '';
+        const discountRate = getInt(discountRateText);
+
+        // 별점 (width 퍼센트 → 5점 환산, 0.5 단위 반올림)
+        let ratings = 0;
+        const starDiv = qs(li, 'ProductRating_star__') as HTMLElement | null;
+        if (starDiv) {
+          // inline style 또는 style 속성 문자열에서 width 추출
+          const widthStr =
+            starDiv.style?.width ||
+            (starDiv.getAttribute('style') || '').match(/width:\s*([\d.]+)%/)?.[1] ||
+            '';
+          const pct = parseFloat(widthStr);
+          if (!Number.isNaN(pct)) {
+            ratings = Math.round((pct / 100) * 5 * 2) / 2;
           }
-          const reviews = getInt(
-            (li.querySelector('.ProductRating_ratingCount__R0Vhz') as HTMLElement)?.innerText || ''
-          );
-          return { name, thumbnail, price, originPrice, discountRate, ratings, reviews, url };
         }
-      );
-    });
+
+        // 리뷰 수
+        const reviewText = qs(li, 'ProductRating_ratingCount__')?.innerText || '';
+        const reviews = getInt(reviewText);
+
+        return { name, thumbnail, price, originPrice, discountRate, ratings, reviews, url };
+      });
+    }, liSelector);
+
     return products;
   }
 
