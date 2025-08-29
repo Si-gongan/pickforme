@@ -1,12 +1,12 @@
 import Router from '@koa/router';
-import SearchLogModel from 'models/searchLog';
+import SearchLogModel, { FieldStats } from 'models/searchLog';
 import { isValidTimeZone, toZonedRange } from './utils';
 
 const router = new Router({ prefix: '/search-logs' });
 
 router.post('/', async (ctx) => {
-  const { requestId, keyword, source, success, durationMs, resultCount, errorMsg } = ctx.request
-    .body as {
+  const { requestId, keyword, source, success, durationMs, resultCount, errorMsg, fieldStats } = ctx
+    .request.body as {
     requestId: string;
     keyword: string;
     source: 'webview' | 'server';
@@ -14,6 +14,7 @@ router.post('/', async (ctx) => {
     durationMs: number;
     resultCount: number;
     errorMsg?: string;
+    fieldStats?: FieldStats;
   };
 
   if (
@@ -36,6 +37,7 @@ router.post('/', async (ctx) => {
     durationMs,
     resultCount: resultCount ?? 0,
     errorMsg,
+    fieldStats,
   });
 
   ctx.body = { message: '검색 로그 저장 완료' };
@@ -99,12 +101,14 @@ router.get('/stats', async (ctx) => {
   const tz = (ctx.query.tz as string) || 'Asia/Seoul';
   const from = ctx.query.from as string | undefined;
   const to = ctx.query.to as string | undefined;
+
   if (!isValidTimeZone(tz)) {
     ctx.status = 400;
     ctx.body = { message: `Invalid timezone: ${tz}` };
     return;
   }
 
+  // ✅ 먼저 안전한 범위를 계산
   let baseFrom: string, baseTo: string, guardStart: Date, guardEnd: Date;
   try {
     ({ baseFrom, baseTo, guardStart, guardEnd } = toZonedRange(tz, from, to));
@@ -114,6 +118,61 @@ router.get('/stats', async (ctx) => {
     return;
   }
 
+  // ✅ 필드 충족률 집계 (fieldStats 있는 문서만)
+  const fieldStatsAgg = await SearchLogModel.aggregate([
+    { $match: { createdAt: { $gte: guardStart, $lte: guardEnd }, fieldStats: { $exists: true } } },
+    {
+      $addFields: {
+        ymd: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: tz } },
+      },
+    },
+    { $match: { ymd: { $gte: baseFrom, $lte: baseTo } } },
+    {
+      $group: {
+        _id: { date: '$ymd', source: '$source' },
+        total: { $sum: { $ifNull: ['$fieldStats.total', 0] } },
+        title: { $sum: { $ifNull: ['$fieldStats.title', 0] } },
+        thumbnail: { $sum: { $ifNull: ['$fieldStats.thumbnail', 0] } },
+        price: { $sum: { $ifNull: ['$fieldStats.price', 0] } },
+        originPrice: { $sum: { $ifNull: ['$fieldStats.originPrice', 0] } },
+        discountRate: { $sum: { $ifNull: ['$fieldStats.discountRate', 0] } },
+        ratings: { $sum: { $ifNull: ['$fieldStats.ratings', 0] } },
+        reviews: { $sum: { $ifNull: ['$fieldStats.reviews', 0] } },
+        url: { $sum: { $ifNull: ['$fieldStats.url', 0] } },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  // ✅ ratio 뿐 아니라 "몇 개/전체"도 같이 내려주기(num/den)
+  const fieldCompletenessByDate: Array<{
+    date: string;
+    source: 'webview' | 'server';
+    field: string;
+    ratio: number;
+    num: number;
+    den: number;
+  }> = [];
+
+  for (const row of fieldStatsAgg) {
+    const den = row.total || 0;
+    const date = row._id.date;
+    const source = row._id.source;
+    const pct = (n: number) => (den > 0 ? (n / den) * 100 : 0);
+    const push = (field: string, num: number) =>
+      fieldCompletenessByDate.push({ date, source, field, ratio: pct(num), num, den });
+
+    push('title', row.title);
+    push('thumbnail', row.thumbnail);
+    push('price', row.price);
+    push('originPrice', row.originPrice);
+    push('discountRate', row.discountRate);
+    push('ratings', row.ratings);
+    push('reviews', row.reviews);
+    push('url', row.url);
+  }
+
+  // ✅ 나머지 통계 파이프라인도 동일한 범위를 사용
   const pipeline: any[] = [
     { $match: { createdAt: { $gte: guardStart, $lte: guardEnd } } },
     {
@@ -124,7 +183,7 @@ router.get('/stats', async (ctx) => {
     { $match: { localDate: { $gte: baseFrom, $lte: baseTo } } },
     {
       $facet: {
-        /** ✅ (A) 선택한 기간 전체 요약(소스별) */
+        /** (A) 선택한 기간 전체 요약(소스별) */
         rangeBySource: [
           {
             $group: {
@@ -156,7 +215,7 @@ router.get('/stats', async (ctx) => {
           },
         ],
 
-        /** (B) 일자×소스 */
+        /** (B) 일자 × 소스 */
         byDateAndSource: [
           {
             $group: {
@@ -200,7 +259,10 @@ router.get('/stats', async (ctx) => {
                   branches: [
                     {
                       case: {
-                        $regexMatch: { input: { $ifNull: ['$errorMsg', ''] }, regex: /timeout/i },
+                        $regexMatch: {
+                          input: { $ifNull: ['$errorMsg', ''] },
+                          regex: /timeout/i,
+                        },
                       },
                       then: 'timeout',
                     },
@@ -226,7 +288,10 @@ router.get('/stats', async (ctx) => {
                   branches: [
                     {
                       case: {
-                        $regexMatch: { input: { $ifNull: ['$errorMsg', ''] }, regex: /timeout/i },
+                        $regexMatch: {
+                          input: { $ifNull: ['$errorMsg', ''] },
+                          regex: /timeout/i,
+                        },
                       },
                       then: 'timeout',
                     },
@@ -245,12 +310,12 @@ router.get('/stats', async (ctx) => {
     },
   ];
 
-  const [agg] = await SearchLogModel.aggregate(pipeline as any).allowDiskUse(true);
+  const [agg] = await SearchLogModel.aggregate(pipeline).allowDiskUse(true);
 
   ctx.body = {
-    /** ✅ 변경: 오늘 요약 대신 기간 요약을 제공 */
     rangeBySource: agg?.rangeBySource ?? [],
     byDateAndSource: agg?.byDateAndSource ?? [],
+    fieldCompletenessByDate, // ✅ 이제 채워짐
     failureReasonsWebviewToday: agg?.failureReasonsWebviewToday ?? [],
     failureReasonsWebviewRange: agg?.failureReasonsWebviewRange ?? [],
     meta: { tz, range: { from: baseFrom, to: baseTo } },
