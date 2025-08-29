@@ -14,6 +14,19 @@ import { client } from '@/utils';
 
 interface UseProductSearchProps {}
 
+// ---- types ----
+type FieldStats = {
+    total: number;
+    title: number;
+    thumbnail: number;
+    price: number;
+    originPrice: number;
+    discountRate: number;
+    ratings: number;
+    reviews: number;
+    url: number;
+};
+
 type SearchLogPayload = {
     requestId: string;
     keyword: string;
@@ -22,7 +35,34 @@ type SearchLogPayload = {
     durationMs: number;
     resultCount: number;
     errorMsg?: string;
+    fieldStats?: FieldStats;
 };
+
+// ---- util: 제품 배열에서 필드 충족 카운트 계산 ----
+function computeFieldStats(products: Product[]): FieldStats {
+    const total = products?.length ?? 0;
+    const has = (v: any) => v !== undefined && v !== null && `${v}`.trim() !== '' && !Number.isNaN(v);
+    let title = 0,
+        thumbnail = 0,
+        price = 0,
+        originPrice = 0,
+        discountRate = 0,
+        ratings = 0,
+        reviews = 0,
+        url = 0;
+
+    for (const p of products || []) {
+        if (has(p.name)) title++;
+        if (has(p.thumbnail)) thumbnail++;
+        if (has(p.price)) price++;
+        if (has(p.origin_price)) originPrice++;
+        if (has(p.discount_rate)) discountRate++;
+        if (has(p.ratings)) ratings++;
+        if (has(p.reviews)) reviews++;
+        if (has(p.url)) url++;
+    }
+    return { total, title, thumbnail, price, originPrice, discountRate, ratings, reviews, url };
+}
 
 const TIMEOUT_DURATION = 5000;
 
@@ -68,7 +108,6 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     // 훅 내부: 공통 로그 함수 (분리된 fetch)
     const postSearchLog = useCallback(async (payload: SearchLogPayload) => {
         try {
-            console.log('postSearchLog', payload);
             client.post('/search-logs', payload);
         } catch (e) {
             // 로그 실패는 UX 영향 주지 않도록 조용히 경고만
@@ -187,7 +226,8 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                             success: false,
                             durationMs: Date.now() - startedAt,
                             resultCount: 0,
-                            errorMsg: 'webview search timeout'
+                            errorMsg: 'webview search timeout',
+                            fieldStats: computeFieldStats([])
                         });
                     } catch {}
 
@@ -198,6 +238,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                         const fetched: Product[] = Array.isArray(coupangRes?.data?.data) ? coupangRes.data.data : [];
                         const durationMs = Date.now() - startedAt;
                         const success = fetched.length > 0;
+                        const fieldStats = computeFieldStats(fetched);
 
                         if (success) {
                             // 서버 경로에서는 여기서 handleSearchResults 호출(웹뷰 경로와 중복 로깅 방지하려면
@@ -242,7 +283,8 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                             success,
                             durationMs: Date.now() - startedAt,
                             resultCount: fetched.length ?? 0,
-                            errorMsg: success ? undefined : 'invalid server search response'
+                            errorMsg: success ? undefined : 'invalid server search response',
+                            fieldStats
                         });
                     } catch (searchError) {
                         console.log('서버 크롤링 검색 중 에러 발생:', searchError);
@@ -272,7 +314,8 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                             success: false,
                             durationMs: Date.now() - startedAt,
                             resultCount: 0,
-                            errorMsg: 'server search error'
+                            errorMsg: 'server search error',
+                            fieldStats: computeFieldStats([])
                         });
                     }
                 }, TIMEOUT_DURATION);
@@ -338,6 +381,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
         ) => {
             if (!opts.skipLog) {
                 const ok = (products?.length ?? 0) > 0;
+                const fieldStats = computeFieldStats(products);
 
                 logEvent('keyword_search_complete', {
                     request_id: requestIdRef.current,
@@ -346,6 +390,8 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                     duration_ms: Date.now() - (searchStartAtRef.current ?? Date.now()),
                     success: ok,
                     source: 'webview'
+                }).catch(e => {
+                    console.error('logEvent failed:', e);
                 });
 
                 postSearchLog({
@@ -355,7 +401,10 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                     success: ok,
                     durationMs: Date.now() - (searchStartAtRef.current ?? Date.now()),
                     resultCount: products.length,
-                    errorMsg: ok ? undefined : 'no_results'
+                    errorMsg: ok ? undefined : 'no_results',
+                    fieldStats
+                }).catch(e => {
+                    console.error('postSearchLog failed:', e);
                 });
             }
 

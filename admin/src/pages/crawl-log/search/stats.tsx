@@ -55,10 +55,17 @@ type ByDateRow = {
 
 type ReasonRow = { reason: string; count: number };
 
+type FieldCompletenessRow = {
+  date: string; // 'YYYY-MM-DD'
+  source: SourceKind;
+  field: string; // 'title' | 'thumbnail' | ...
+  ratio: number; // 0~100
+};
+
 type StatsResponse = {
-  /** ✅ 변경: todayBySource → rangeBySource */
   rangeBySource: SummaryRow[];
   byDateAndSource: ByDateRow[];
+  fieldCompletenessByDate: FieldCompletenessRow[];
   failureReasonsWebviewToday: ReasonRow[];
   failureReasonsWebviewRange: ReasonRow[];
   meta?: { tz: string; range: { from: string; to: string } };
@@ -76,6 +83,18 @@ const COLORS = [
   "#2f54eb",
   "#eb8a90",
 ];
+
+// 필드 정의(여기 순서대로 Line 생성)
+const FIELD_DEF = [
+  { key: "title", label: "제목" },
+  { key: "thumbnail", label: "썸네일" },
+  { key: "price", label: "가격" },
+  { key: "originPrice", label: "원가" },
+  { key: "discountRate", label: "할인율" },
+  { key: "ratings", label: "평점" },
+  { key: "reviews", label: "리뷰수" },
+  { key: "url", label: "URL" },
+] as const;
 
 export default function SearchLogStatsPage() {
   const router = useRouter();
@@ -129,7 +148,7 @@ export default function SearchLogStatsPage() {
     fetchStats();
   }, [fetchStats]);
 
-  /** ✅ 상단 테이블: 선택한 기간 전체 요약 */
+  // 상단 요약
   const summaryRows = useMemo(() => stats?.rangeBySource ?? [], [stats]);
 
   const summaryColumns = [
@@ -179,6 +198,33 @@ export default function SearchLogStatsPage() {
       a.date < b.date ? -1 : 1
     );
   }, [stats]);
+
+  // 소스별 필드 충족률 데이터 생성
+  const buildFieldChartData = (
+    rows: FieldCompletenessRow[] | undefined,
+    source: SourceKind
+  ) => {
+    if (!rows?.length) return [];
+    const byDate: Record<string, any> = {};
+    for (const r of rows) {
+      if (r.source !== source) continue;
+      const d = byDate[r.date] ?? { date: r.date };
+      d[`${r.field}Rate`] = r.ratio; // e.g., titleRate
+      byDate[r.date] = d;
+    }
+    return Object.values(byDate).sort((a: any, b: any) =>
+      a.date < b.date ? -1 : 1
+    );
+  };
+
+  const webviewFieldData = useMemo(
+    () => buildFieldChartData(stats?.fieldCompletenessByDate, "webview"),
+    [stats]
+  );
+  const serverFieldData = useMemo(
+    () => buildFieldChartData(stats?.fieldCompletenessByDate, "server"),
+    [stats]
+  );
 
   // 파이차트: 웹뷰 실패 원인 (오늘/기간)
   const pieToday = useMemo(
@@ -237,7 +283,7 @@ export default function SearchLogStatsPage() {
 
       {stats && (
         <ContentSection>
-          {/* ✅ 변경된 카드: '선택한 기간 전체 요약' */}
+          {/* 기간 전체 요약 */}
           <StatsCard title="선택한 기간 전체 요약 (소스별)" loading={loading}>
             <Table
               rowKey={(r) => r.source}
@@ -247,6 +293,7 @@ export default function SearchLogStatsPage() {
             />
           </StatsCard>
 
+          {/* 일자별 성공률 */}
           <ChartCard title="일자별 성공률(%)" loading={loading}>
             <ResponsiveContainer width="100%" height={360}>
               <LineChart data={lineData}>
@@ -279,6 +326,74 @@ export default function SearchLogStatsPage() {
             </ResponsiveContainer>
           </ChartCard>
 
+          {/* 필드별 충족률: 웹뷰 / 서버 나란히 */}
+          <TwoCol>
+            <ChartCard title="필드별 충족률(%) · Webview" loading={loading}>
+              {webviewFieldData.length === 0 ? (
+                <Typography.Text type="secondary">
+                  데이터가 없습니다.
+                </Typography.Text>
+              ) : (
+                <ResponsiveContainer width="100%" height={360}>
+                  <LineChart data={webviewFieldData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip
+                      formatter={(v) =>
+                        typeof v === "number" ? `${v.toFixed(1)}%` : (v as any)
+                      }
+                    />
+                    <Legend />
+                    {FIELD_DEF.map((f) => (
+                      <Line
+                        key={f.key}
+                        type="monotone"
+                        dataKey={`${f.key}Rate`}
+                        name={f.label}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </ChartCard>
+
+            <ChartCard title="필드별 충족률(%) · Server" loading={loading}>
+              {serverFieldData.length === 0 ? (
+                <Typography.Text type="secondary">
+                  데이터가 없습니다.
+                </Typography.Text>
+              ) : (
+                <ResponsiveContainer width="100%" height={360}>
+                  <LineChart data={serverFieldData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip
+                      formatter={(v) =>
+                        typeof v === "number" ? `${v.toFixed(1)}%` : (v as any)
+                      }
+                    />
+                    <Legend />
+                    {FIELD_DEF.map((f) => (
+                      <Line
+                        key={f.key}
+                        type="monotone"
+                        dataKey={`${f.key}Rate`}
+                        name={f.label}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </ChartCard>
+          </TwoCol>
+
+          {/* 실패 원인 파이차트 */}
           <TwoCol>
             <ChartCard title="웹뷰 실패 원인 - 오늘(KST)" loading={loading}>
               {sumCount(pieToday) === 0 ? (
