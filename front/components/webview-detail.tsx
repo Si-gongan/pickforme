@@ -292,9 +292,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
         const maxRetries = stage === 'desktop' ? desktopMaxRetries : mobileMaxRetries;
         if (retryCount < maxRetries) {
             setRetryCount(retryCount => retryCount + 1);
-            setTimeout(() => {
-                runJavaScript(getDesktopInjectionCode());
-            }, 1000);
+            webViewRef.current?.reload();
         } else {
             if (stage === 'desktop' && mobileUrl) {
                 console.log('change to mobile');
@@ -386,8 +384,10 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             onLoadEnd={() => {
                 if (stage === 'desktop') {
                     setIsDesktopReady(true);
+                    runJavaScript(getDesktopInjectionCode());
                 } else {
                     setIsMobileReady(true);
+                    runJavaScript(getMobileInjectionCode(ids.productId, ids.itemId, ids.vendorItemId));
                 }
             }}
             onError={() => {
