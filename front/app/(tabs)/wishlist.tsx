@@ -19,7 +19,7 @@ import { useFocusEffect } from '@react-navigation/core';
 import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 
-import { useWebViewDetail } from '../../components/webview-detail';
+import { useWebViewDetail } from '../../components/Webview/detail/webview-detail';
 // import { mainProductsAtom } from '../../stores/product/atoms';
 
 enum TABS {
