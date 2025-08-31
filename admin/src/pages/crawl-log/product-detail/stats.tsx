@@ -41,11 +41,21 @@ interface TabStats {
   successRate: number;
 }
 
+interface AttemptStats {
+  total: number;
+  success: number;
+  fail: number;
+  successRate: number;
+  avgDurationMs?: number;
+}
+
 interface StatsResponse {
   todayStats: Record<string, ProcessStats>;
   byDateAndProcess: Record<string, Record<string, ProcessStats>>;
   todayTabStats: Record<string, TabStats>;
   byDateAndTab: Record<string, Record<string, TabStats>>;
+  todayAttemptStats: Record<string, AttemptStats>;
+  byDateAndAttempt: Record<string, Record<string, AttemptStats>>;
   meta?: { tz: string; range: { from: string; to: string } };
 }
 
@@ -132,6 +142,35 @@ export default function CrawlLogStatsPage() {
     },
   ];
 
+  const attemptColumns = [
+    { title: "Attempt 단계", dataIndex: "name", key: "name" },
+    { title: "분모(전체)", dataIndex: "total", key: "total" },
+    {
+      title: "성공",
+      dataIndex: "success",
+      key: "success",
+      render: (val: number) => <Tag color="green">{val}</Tag>,
+    },
+    {
+      title: "실패",
+      dataIndex: "fail",
+      key: "fail",
+      render: (val: number) => <Tag color="red">{val}</Tag>,
+    },
+    {
+      title: "성공률",
+      dataIndex: "successRate",
+      key: "successRate",
+      render: (val: number) => `${val.toFixed(2)}%`,
+    },
+    {
+      title: "평균 소요시간",
+      dataIndex: "avgDurationMs",
+      key: "avgDurationMs",
+      render: (val?: number) => (val ? `${Math.round(val)} ms` : "-"),
+    },
+  ];
+
   const todayProcessData = useMemo(() => {
     if (!stats) return [];
     return Object.entries(stats.todayStats).map(([name, v]) => ({
@@ -143,6 +182,14 @@ export default function CrawlLogStatsPage() {
   const todayTabData = useMemo(() => {
     if (!stats?.todayTabStats) return [];
     return Object.entries(stats.todayTabStats).map(([name, v]) => ({
+      name,
+      ...v,
+    }));
+  }, [stats]);
+
+  const todayAttemptData = useMemo(() => {
+    if (!stats?.todayAttemptStats) return [];
+    return Object.entries(stats.todayAttemptStats).map(([name, v]) => ({
       name,
       ...v,
     }));
@@ -168,6 +215,18 @@ export default function CrawlLogStatsPage() {
         CAPTION: tabs["CAPTION"]?.successRate ?? 0,
         REPORT: tabs["REPORT"]?.successRate ?? 0,
         REVIEW: tabs["REVIEW"]?.successRate ?? 0,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [stats]);
+
+  const attemptChartData = useMemo(() => {
+    if (!stats?.byDateAndAttempt) return [];
+    return Object.entries(stats.byDateAndAttempt)
+      .map(([date, attempts]) => ({
+        date,
+        "desktop-1": attempts["desktop-1"]?.successRate ?? 0,
+        "mobile-vm": attempts["mobile-vm"]?.successRate ?? 0,
+        "mobile-mlp": attempts["mobile-mlp"]?.successRate ?? 0,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [stats]);
@@ -314,6 +373,61 @@ export default function CrawlLogStatsPage() {
                   dataKey="REVIEW"
                   name="REVIEW"
                   stroke="#e91e63"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <StatsCard
+            title="선택한 '끝 날짜' 기준 웹뷰 Attempt별 성공률"
+            loading={loading}
+          >
+            <Table
+              rowKey="name"
+              columns={attemptColumns}
+              dataSource={todayAttemptData}
+              pagination={false}
+            />
+            <Typography.Paragraph type="secondary" style={{ marginTop: 8 }}>
+              * desktop-1: 데스크톱 첫 번째 시도 | mobile-vm: 모바일 VM |
+              mobile-mlp: 모바일 MLP
+            </Typography.Paragraph>
+          </StatsCard>
+
+          <ChartCard title="일자별 웹뷰 Attempt별 성공률(%)" loading={loading}>
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={attemptChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip
+                  formatter={(value, name) => {
+                    if (typeof value === "number") {
+                      return [`${value.toFixed(2)}%`, name];
+                    }
+                    return [value, name];
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="desktop-1"
+                  name="Desktop-1"
+                  stroke="#ff4d4f"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="mobile-vm"
+                  name="Mobile-VM"
+                  stroke="#1890ff"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="mobile-mlp"
+                  name="Mobile-MLP"
+                  stroke="#52c41a"
                   strokeWidth={2}
                 />
               </LineChart>

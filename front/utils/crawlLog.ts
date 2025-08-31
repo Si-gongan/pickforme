@@ -12,6 +12,7 @@ interface LogCrawlProcessResultParams {
     success: boolean;
     durationMs: number;
     fields: Partial<Record<CrawlFieldKeys, boolean>>;
+    attemptLabel?: string;
 }
 
 export const logCrawlProcessResult = async ({
@@ -20,7 +21,8 @@ export const logCrawlProcessResult = async ({
     processType,
     success,
     durationMs,
-    fields
+    fields,
+    attemptLabel
 }: LogCrawlProcessResultParams) => {
     try {
         const payload = {
@@ -30,6 +32,7 @@ export const logCrawlProcessResult = async ({
             success,
             durationMs,
             fields,
+            attemptLabel,
             timestamp: new Date().toISOString()
         };
 

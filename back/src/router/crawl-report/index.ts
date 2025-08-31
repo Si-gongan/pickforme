@@ -96,7 +96,7 @@ router.get('/list-grouped', async (ctx) => {
         requestId: { $first: '$requestId' },
         productUrl: { $first: '$productUrl' },
         processType: { $first: '$processType' },
-        success: { $first: '$success' },
+        success: { $max: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
         durationMs: { $first: '$durationMs' },
         createdAt: { $first: '$createdAt' },
       },
@@ -155,13 +155,15 @@ router.get('/list-grouped', async (ctx) => {
  * 크롤링 결과 저장
  */
 router.post('/', async (ctx) => {
-  const { requestId, productUrl, processType, success, durationMs, fields } = ctx.request.body as {
+  const { requestId, productUrl, processType, success, durationMs, fields, attemptLabel } = ctx
+    .request.body as {
     requestId: string;
     productUrl: string;
     processType: string;
     success: boolean;
     durationMs: number;
     fields: Record<string, boolean>;
+    attemptLabel?: string;
   };
 
   if (!requestId || !productUrl || !processType || typeof success !== 'boolean' || !durationMs) {
@@ -178,6 +180,7 @@ router.post('/', async (ctx) => {
       success,
       durationMs,
       fields: fields ?? {},
+      attemptLabel,
     });
 
     await crawlLog.save();
@@ -318,6 +321,38 @@ router.get('/stats', async (ctx) => {
             },
           },
           { $project: { _id: 0, process: '$_id', successUnique: 1 } },
+        ],
+        // Attempt별 통계 (webview-detail만)
+        attemptStats: [
+          { $match: { processType: 'webview-detail', attemptLabel: { $exists: true, $ne: null } } },
+          {
+            $group: {
+              _id: { date: '$localDate', attempt: '$attemptLabel' },
+              total: { $sum: 1 },
+              success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
+              fail: { $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] } },
+              avgDurationMs: { $avg: '$durationMs' },
+            },
+          },
+        ],
+        // 오늘의 Attempt별 통계
+        todayAttemptStats: [
+          {
+            $match: {
+              localDate: baseTo,
+              processType: 'webview-detail',
+              attemptLabel: { $exists: true, $ne: null },
+            },
+          },
+          {
+            $group: {
+              _id: '$attemptLabel',
+              total: { $sum: 1 },
+              success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
+              fail: { $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] } },
+              avgDurationMs: { $avg: '$durationMs' },
+            },
+          },
         ],
       },
     },
@@ -530,11 +565,79 @@ router.get('/stats', async (ctx) => {
     byDateAndTab[date] = tabStatsForDate;
   }
 
+  // ====== Attempt별 통계 처리 ======
+  const byDateAndAttempt: Record<
+    string,
+    Record<
+      string,
+      {
+        total: number;
+        success: number;
+        fail: number;
+        successRate: number;
+        avgDurationMs: number;
+      }
+    >
+  > = {};
+
+  for (const row of (agg.attemptStats as Array<{
+    _id: { date: string; attempt: string };
+    total: number;
+    success: number;
+    fail: number;
+    avgDurationMs: number;
+  }>) ?? []) {
+    const date = row._id.date;
+    const attempt = row._id.attempt;
+    if (!byDateAndAttempt[date]) byDateAndAttempt[date] = {};
+
+    const successRate = row.total ? (row.success / row.total) * 100 : 0;
+    byDateAndAttempt[date][attempt] = {
+      total: row.total,
+      success: row.success,
+      fail: row.fail,
+      successRate,
+      avgDurationMs: row.avgDurationMs ?? 0,
+    };
+  }
+
+  // 오늘의 Attempt별 통계
+  const todayAttemptStats: Record<
+    string,
+    {
+      total: number;
+      success: number;
+      fail: number;
+      successRate: number;
+      avgDurationMs: number;
+    }
+  > = {};
+
+  for (const row of (agg.todayAttemptStats as Array<{
+    _id: string;
+    total: number;
+    success: number;
+    fail: number;
+    avgDurationMs: number;
+  }>) ?? []) {
+    const attempt = row._id;
+    const successRate = row.total ? (row.success / row.total) * 100 : 0;
+    todayAttemptStats[attempt] = {
+      total: row.total,
+      success: row.success,
+      fail: row.fail,
+      successRate,
+      avgDurationMs: row.avgDurationMs ?? 0,
+    };
+  }
+
   ctx.body = {
     todayStats,
     byDateAndProcess,
     todayTabStats,
     byDateAndTab,
+    todayAttemptStats,
+    byDateAndAttempt,
     meta: { tz, range: { from: baseFrom, to: baseTo } },
   };
 });

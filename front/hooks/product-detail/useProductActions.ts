@@ -15,6 +15,7 @@ import useCheckLogin from '../useCheckLogin';
 import { Product } from '../../stores/product/types';
 import { checkIsExpired } from '../../utils/common';
 import { logClickBuy, logEvent } from '@/services/firebase';
+import { client } from '@/utils';
 
 interface UseProductActionsProps {
     product: Product;
@@ -63,7 +64,35 @@ export const useProductActions = ({
             request_id: requestId
         });
 
-        await WebBrowser.openBrowserAsync(product.url);
+        try {
+            const response: {
+                data: {
+                    success: boolean;
+                    data: {
+                        landingUrl: string;
+                        originalUrl: string;
+                        shortenUrl: string;
+                    };
+                };
+                status: number;
+            } = await client.post(
+                '/coupang/deeplink',
+                { urls: [product.url] },
+                {
+                    timeout: 5000
+                }
+            );
+
+            const { landingUrl, originalUrl, shortenUrl } = response.data.data;
+
+            if (!landingUrl || !originalUrl || !shortenUrl) {
+                throw new Error('쿠팡 링크 변환 중 오류가 발생했습니다.');
+            }
+
+            await WebBrowser.openBrowserAsync(landingUrl);
+        } catch (error) {
+            await WebBrowser.openBrowserAsync(product.url);
+        }
     }, [product.url, productDetail?.product?.name, productDetail?.product?.price, requestId]);
 
     // 위시리스트 토글
