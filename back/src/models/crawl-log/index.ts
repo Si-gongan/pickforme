@@ -11,6 +11,7 @@ export interface CrawlLogDocument extends mongoose.Document {
   success: boolean;
   durationMs: number;
   fields: Partial<Record<ProductField, boolean>>;
+  attemptLabel?: string; // 웹뷰 attempt 단계 (desktop-1, mobile-vm, mobile-mlp 등)
   createdAt: Date;
 }
 
@@ -26,6 +27,7 @@ const CrawlLogSchema = new mongoose.Schema<CrawlLogDocument>(
     success: { type: Boolean, required: true },
     durationMs: { type: Number, required: true },
     fields: { type: mongoose.Schema.Types.Mixed, default: {} },
+    attemptLabel: { type: String, required: false }, // optional
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

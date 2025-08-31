@@ -147,26 +147,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
-            const durationMs = new Date().getTime() - startDate.current.getTime();
-
-            logCrawlProcessResult({
-                requestId: requestId.current,
-                productUrl,
-                processType: 'webview-detail',
-                success: false,
-                durationMs,
-                fields: {
-                    name: false,
-                    thumbnail: false,
-                    detail_images: false
-                }
-            });
-
             handleWebViewError(); // 서버 API 호출
         },
         onMessage: data => {
-            const durationMs = new Date().getTime() - startDate.current.getTime();
-
             setProduct(data);
 
             // ✅ 이미지 충족 판정: 썸네일 or 상세이미지 배열
@@ -174,23 +157,22 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 !!data?.thumbnail || (Array.isArray(data?.detail_images) && data.detail_images.length > 0);
             linkSearchDetailOkRef.current = hasDetail;
 
-            logCrawlProcessResult({
-                requestId: requestId.current,
-                productUrl,
-                processType: 'webview-detail',
-                success: true,
-                durationMs,
-                fields: {
-                    name: !!data.name,
-                    thumbnail: !!data.thumbnail,
-                    detail_images: Array.isArray(data?.detail_images) && data.detail_images.length > 0
-                }
-            });
-
             // 리뷰가 이미 OK였다면 여기서 완료
             if (linkSearchReviewOkRef.current) {
                 tryFinalizeLinkSearchComplete('webview');
             }
+        },
+        onAttemptLog: ({ attemptLabel, success, durationMs, fields }) => {
+            // 각 attempt별로 로그 기록
+            logCrawlProcessResult({
+                requestId: requestId.current,
+                productUrl,
+                processType: 'webview-detail',
+                success,
+                durationMs,
+                fields,
+                attemptLabel
+            });
         }
     });
 

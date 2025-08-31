@@ -18,6 +18,12 @@ interface WebViewProps {
     productUrl: string;
     onMessage: (data: Product) => void;
     onError?: () => void;
+    onAttemptLog?: (data: {
+        attemptLabel: string;
+        success: boolean;
+        durationMs: number;
+        fields: Record<string, boolean>;
+    }) => void;
 }
 
 type Ids = { productId?: string; itemId?: string; vendorItemId?: string };
@@ -34,7 +40,12 @@ const FIRST_INJECT_DELAY_MS = 800; // 최초 주입 딜레이(로딩 안정화)
 const RETRY_DELAY_MS = 1000; // 재시도 간격
 
 /** ===== 메인 훅 ===== */
-export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProps): JSX.Element | null => {
+export const useWebViewDetail = ({
+    productUrl,
+    onMessage,
+    onError,
+    onAttemptLog
+}: WebViewProps): JSX.Element | null => {
     const webViewRef = useRef<WebView>(null);
 
     // 전략 큐 + 진행 상태
@@ -50,6 +61,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     const idsRef = useRef<Ids>({});
     const successRef = useRef(false);
     const erroredRef = useRef(false);
+    const attemptStartTimeRef = useRef<number>(Date.now());
 
     // 현재 시도
     const currentAttempt = attempts[currentIdx];
@@ -67,6 +79,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
             successRef.current = false;
             erroredRef.current = false;
             idsRef.current = {};
+            attemptStartTimeRef.current = Date.now(); // 초기 attempt 시작 시간 기록
 
             const extracted = await extractFromUrl(productUrl);
 
@@ -155,12 +168,28 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
                 } catch {}
             }, RETRY_DELAY_MS);
         } else {
+            // 이 attempt 실패 로그 기록
+            if (onAttemptLog && currentAttempt) {
+                const durationMs = Date.now() - attemptStartTimeRef.current;
+                onAttemptLog({
+                    attemptLabel: currentAttempt.label,
+                    success: false,
+                    durationMs,
+                    fields: {
+                        name: false,
+                        thumbnail: false,
+                        detail_images: false
+                    }
+                });
+            }
+
             // 다음 시도
             if (currentIdx + 1 < attempts.length) {
                 setCurrentIdx(i => i + 1);
                 setRetryCount(0);
                 setIsReady(false);
                 setHasInjected(false);
+                attemptStartTimeRef.current = Date.now(); // 다음 attempt 시작 시간 기록
             } else {
                 // 모든 시도 실패
                 erroredRef.current = true;
@@ -173,6 +202,22 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     const triggerSuccess = (payload: Product) => {
         if (successRef.current) return;
         successRef.current = true;
+
+        // 성공 attempt 로그 기록
+        if (onAttemptLog && currentAttempt) {
+            const durationMs = Date.now() - attemptStartTimeRef.current;
+            onAttemptLog({
+                attemptLabel: currentAttempt.label,
+                success: true,
+                durationMs,
+                fields: {
+                    name: !!payload.name,
+                    thumbnail: !!payload.thumbnail,
+                    detail_images: Array.isArray(payload?.detail_images) && payload.detail_images.length > 0
+                }
+            });
+        }
+
         onMessage(payload);
     };
 
