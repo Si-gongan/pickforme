@@ -193,17 +193,24 @@ export default function CrawlLogDetailPage() {
             .filter(Boolean)
             .sort((a, b) => {
               // 1순위: processType 순서 (webview-detail -> webview-review -> server)
-              const processOrder = ['webview-detail', 'webview-review', 'server'];
+              const processOrder = [
+                "webview-detail",
+                "webview-review",
+                "server",
+              ];
               const aProcessIndex = processOrder.indexOf(a.processType);
               const bProcessIndex = processOrder.indexOf(b.processType);
-              
+
               if (aProcessIndex !== bProcessIndex) {
                 return aProcessIndex - bProcessIndex;
               }
-              
+
               // 2순위: 생성 시간 순서
-              return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            })
+              return (
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+              );
+            })}
           loading={loading}
           pagination={false}
         />
