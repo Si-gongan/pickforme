@@ -204,7 +204,7 @@ export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProp
     };
 
     return currentAttempt ? (
-        <View style={{ width: '100%', height: 300 }}>
+        <View style={{ width: '100%', height: 0 }}>
             <WebView
                 ref={webViewRef}
                 source={{ uri: currentAttempt.url }}
