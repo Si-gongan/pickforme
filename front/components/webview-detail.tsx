@@ -1,11 +1,12 @@
-// 목적: 상품 상세 정보를 가져오기 위한 웹뷰입니다.
-// 기능:
-// 쿠팡 상품 URL을 받아 모바일 웹 페이지를 숨겨진 웹뷰로 불러옵니다.
-// 웹 페이지에서 JavaScript를 실행하여 상품명, 가격, 할인율, 평점, 리뷰 수, 썸네일, 상세 이미지 등의 정보를 추출합니다.
-// 추출된 정보는 Product 객체로 변환되어 onMessage 콜백을 통해 부모 컴포넌트로 전달됩니다.
-// 특징: 쿠팡 링크를 다양한 패턴(모바일, 데스크톱, 앱 링크 등)에서 일관된 형식으로 변환하는 기능도 포함되어 있습니다.
+// 목적: 상품 상세 정보를 가져오기 위한 웹뷰 (전략 큐 기반 리팩터)
+// 특징:
+// - productUrl → 다양한 시도(데스크톱/모바일/대안) 전략을 큐에 쌓고 순차 실행
+// - 각 시도는 url + injection + maxRetries 로 구성
+// - onLoadEnd → isReady=true 되면 "해당 시도 1회만" injection
+// - handleMessage/handleError 에서 성공/실패를 판정하여 재시도 또는 다음 시도로 이동
+// - isReady / hasInjected / retryCount / stage 전부 단일화
 
-import React, { useRef, useState, useEffect, ReactElement } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useRef as useRefAlias, ReactElement } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { View } from 'react-native';
 import { Product } from '../stores/product/types';
@@ -17,33 +18,37 @@ interface WebViewProps {
     onError?: () => void;
 }
 
-type Stage = 'desktop' | 'mobile';
+/** ===== 공통 유틸 ===== */
 
-// --- Common JS shim to safely post to RN bridge ---
-const POST_SHIM = `
-  const __post = (obj) => {
-    try {
-      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-        window.ReactNativeWebView.postMessage(JSON.stringify(obj));
-      } else {
-        window.name = "__RNWV__" + JSON.stringify(obj);
-        console.log('RNWV-fallback', obj);
-      }
-    } catch (e) {
-      console.log('RNWV-post-error', e && e.message);
-    }
-  };
-  // Try to flush pending payload from window.name if bridge is ready now
-  try {
-    if (window.name && window.name.startsWith('__RNWV__') && window.ReactNativeWebView?.postMessage) {
-      const payload = window.name.replace('__RNWV__', '');
-      window.ReactNativeWebView.postMessage(payload);
-      window.name = '';
-    }
-  } catch (_) {}
-`;
+type Ids = { productId?: string; itemId?: string; vendorItemId?: string };
 
-const buildMobileUrl = (productId?: string, itemId?: string, vendorItemId?: string) => {
+type Attempt = {
+    label: string; // 디버깅용 태그
+    url: string; // 이 시도에서 열 주소
+    getInjection: (ids: Ids) => string; // 이 시도에서 주입할 JS
+    maxRetries?: number; // 개별 오버라이드 (기본값 사용 가능)
+};
+
+const DEFAULT_MAX_RETRIES = 2; // 통일된 기본 재시도 횟수
+const FIRST_INJECT_DELAY_MS = 800; // 최초 주입 딜레이(로딩 안정화)
+const RETRY_DELAY_MS = 1000; // 재시도 간격
+
+type ExtractResult =
+    | { kind: 'coupang'; ids: Ids; canonicalDesktop: string; mobileVM: string; mobileMLP: string }
+    | { kind: 'general'; url: string };
+
+// --- URL 구성 ---
+const buildDesktop = (productId?: string, itemId?: string, vendorItemId?: string) => {
+    if (!productId) return '';
+    const sp = new URLSearchParams();
+    if (itemId) sp.set('itemId', itemId);
+    if (vendorItemId) sp.set('vendorItemId', vendorItemId);
+    const qs = sp.toString();
+    return `https://www.coupang.com/vp/products/${productId}${qs ? `?${qs}` : ''}`;
+};
+const buildMobileVM = (productId: string) => `https://m.coupang.com/vm/products/${productId}/`;
+
+const buildMobileMLP = (productId?: string, itemId?: string, vendorItemId?: string) => {
     if (!productId) return '';
     const sp = new URLSearchParams({
         flowId: '2',
@@ -57,347 +62,476 @@ const buildMobileUrl = (productId?: string, itemId?: string, vendorItemId?: stri
     return `https://m.coupang.com/vm/mlp/mweb/mlp-landing?${sp.toString()}`;
 };
 
-const getMobileInjectionCode = (productId?: string, itemId?: string, vendorItemId?: string) => {
+// 공통 POST 함수와 쿼리 실행 프레임워크
+const COMMON_FRAMEWORK = `
+
+  // 중복 선언 방지를 위한 체크
+  if (typeof window.__post === 'undefined') {
+    window.__post = (obj) => {
+      try {
+        if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+          window.ReactNativeWebView.postMessage(JSON.stringify(obj));
+        } else {
+          window.name = "__RNWV__" + JSON.stringify(obj);
+          console.log('RNWV-fallback', obj);
+        }
+      } catch (e) {
+        console.log('RNWV-post-error', e && e.message);
+      }
+    };
+  }
+  
+  // Try to flush pending payload from window.name if bridge is ready now
+  try {
+    if (window.name && window.name.startsWith('__RNWV__') && window.ReactNativeWebView?.postMessage) {
+      const payload = window.name.replace('__RNWV__', '');
+      window.ReactNativeWebView.postMessage(payload);
+      window.name = '';
+    }
+  } catch (_) {}
+
+  // 쿼리 실행 및 결과 전송 함수 (동기/비동기 모두 지원)
+  if (typeof window.executeQuery === 'undefined') {
+    window.executeQuery = async (queryFunction) => {
+      try {
+        const result = await queryFunction();
+        if (result && result.name) {
+          window.__post({ content: { ...result, url: location.href } });
+        } else {
+          window.__post({ error: 'No valid data found' });
+        }
+      } catch (e) {
+        window.__post({ error: (e && e.message) || 'Query execution error' });
+      }
+    };
+  }
+`;
+// --- 쿼리 함수들 ---
+const DESKTOP_QUERY = `
+  if (typeof window.desktopQuery === 'undefined') {
+    window.desktopQuery = () => {
+    const getImageSrc = (img) =>
+      img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
+    
+    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
+    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText?.trim() || '';
+
+    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
+    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
+    const price = (regularPriceElement
+      ? regularPriceElement.innerText
+      : (wowPriceElement?.innerText || '')).replace(/[^0-9]/g,'');
+    const priceInt = parseInt(price || '0');
+
+    const originPriceEl = document.querySelector('.PriceInfo_originalPrice__t8M_9');
+    const origin_price = originPriceEl ? parseInt(originPriceEl.innerText.replace(/[^0-9]/g,'')) : priceInt;
+
+    const discountRateEl = document.querySelector('.PriceInfo_discountRate__pfqd9');
+    const discount_rate = discountRateEl ? parseInt(discountRateEl.innerText.replace(/[^0-9]/g,'')) : 0;
+
+    const ratingsWrap = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
+    const ratings = ratingsWrap ? (ratingsWrap.querySelectorAll('.yellow-600').length / 2) : 0;
+
+    const reviewsWrap = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
+    const reviews = reviewsWrap ? parseInt(reviewsWrap.querySelector('span')?.innerText.replace(/[^0-9]/g,'')||'0') : 0;
+
+    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
+    const detail_images = [];
+    elements.forEach(element => {
+      element.querySelectorAll('img').forEach(img => {
+        const src = getImageSrc(img);
+        if (src) detail_images.push(src);
+      });
+    });
+
+    return { thumbnail, name, price: priceInt, origin_price, discount_rate, ratings, reviews, detail_images };
+    };
+  }
+`;
+const MOBILE_QUERY = `
+  if (typeof window.mobileQuery === 'undefined') {
+    window.mobileQuery = () => {
+    const getImageSrc = (img) =>
+      img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
+    
+    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
+    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
+    
+    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
+    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
+    
+    const price = regularPriceElement 
+      ? parseInt(regularPriceElement.innerText.replace(/[^0-9]/g, ''))
+      : parseInt((wowPriceElement?.innerText || '').replace(/[^0-9]/g, ''));
+    
+    const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
+    const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
+    
+    const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
+    const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
+
+    const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
+    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length / 2 : 0;
+
+    const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
+    const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
+
+    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
+    const detail_images = [];
+    elements.forEach(element => {
+      const imgElement = element.querySelector('img');
+      if (imgElement) {
+        const src = getImageSrc(imgElement);
+        if (src) detail_images.push(src);
+      }
+    });
+
+    return { thumbnail, name, price, origin_price, discount_rate, ratings, reviews, detail_images };
+    };
+  }
+`;
+// 모바일 2 쿼리 (detail_images API 호출 포함) - Promise 반환
+const MOBILE_QUERY_2 = (btfUrl: string) => `
+  if (typeof window.mobile2Query === 'undefined') {
+    window.mobile2Query = async () => {
+    const getInt = (t) => parseInt((t||'').replace(/[^0-9]/g,''))||0;
+    const norm = (s) => {
+      if (!s) return '';
+      if (s.startsWith('//')) return 'https:' + s;
+      return s.replace(/^\\/\\//,'https://');
+    };
+    const isImageUrl = (u) => /(\\.jpg|\\.jpeg|\\.png|\\.webp)(\\?|$)/i.test(u || '');
+
+    const name = document.querySelector('.product_titleText__mfTNb')?.textContent?.trim() || '';
+    const brand = '';
+    const price = getInt(document.querySelector('.product_finalPrice__Drw1b')?.textContent || '');
+    const origin_price = getInt(document.querySelector('.product_originalPrice__sgo9Z')?.textContent || '');
+    const discount_rate = getInt(document.querySelector('.product_discountRateNew__I02mK .product_digits__fiOrT')?.textContent || '');
+    const halves = document.querySelectorAll('.rds-rating .yellow-600').length;
+    const ratings = Math.round((halves/2)*2)/2;
+    const reviews = getInt(document.querySelector('.rds-rating__content span')?.textContent || '');
+    const thumbnail = norm(document.querySelector('.product_productImage__gAKd0 img')?.getAttribute('src') || '');
+
+    // 기본 데이터 구성
+    const baseData = { name, brand, price, origin_price, discount_rate, ratings, reviews, thumbnail };
+    
+    // API 호출이 없으면 빈 detail_images로 반환
+    const btfUrl = '${btfUrl}';
+    if (!btfUrl) {
+      return { ...baseData, detail_images: [] };
+    }
+
+    // API 호출로 detail_images 가져오기
+    try {
+      const response = await fetch(btfUrl, { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error('btf http ' + response.status);
+      }
+      
+      const json = await response.json();
+      const set = new Set();
+      
+      if (Array.isArray(json.details)) {
+        json.details.forEach(detail => {
+          const list = Array.isArray(detail?.vendorItemContentDescriptions) ? detail.vendorItemContentDescriptions : [];
+          list.forEach(desc => {
+            const raw = (desc && typeof desc.content === 'string') ? desc.content.trim() : '';
+            if (!raw) return;
+            const url = norm(raw);
+            if (isImageUrl(url)) set.add(url);
+          });
+        });
+      }
+      
+      const detail_images = Array.from(set);
+      return { ...baseData, detail_images };
+      
+    } catch (error) {
+      // API 실패 시에도 기본 데이터는 반환
+      console.warn('BTF API failed:', error);
+      return { ...baseData, detail_images: [] };
+    }
+    };
+  }
+`;
+
+// --- Injection 코드들 ---
+const getDesktopInjectionCode = () => {
+    return `${COMMON_FRAMEWORK}
+    ${DESKTOP_QUERY}
+    window.executeQuery(window.desktopQuery);
+    true;`;
+};
+
+const getMobileInjectionCode = () => {
+    return `${COMMON_FRAMEWORK}
+    ${MOBILE_QUERY}
+    window.executeQuery(window.mobileQuery);
+    true;`;
+};
+
+const getMobileInjectionCode2 = (ids: Ids) => {
+    const { productId, itemId, vendorItemId } = ids || {};
     const qp: string[] = [];
     if (productId) qp.push('productId=' + encodeURIComponent(productId));
     if (vendorItemId) qp.push('vendorItemId=' + encodeURIComponent(vendorItemId));
     if (itemId) qp.push('itemId=' + encodeURIComponent(itemId));
     const btfUrl = qp.length ? `https://www.coupang.com/next-api/products/btf?${qp.join('&')}` : '';
 
-    return `(() => {\n${POST_SHIM}
-      const getInt = (t) => parseInt((t||'').replace(/[^0-9]/g,''))||0;
-      const norm = (s) => {
-        if (!s) return '';
-        if (s.startsWith('//')) return 'https:' + s;
-        return s.replace(/^\\/\\//,'https://');
-      };
-      const isImageUrl = (u) => /(\\.jpg|\\.jpeg|\\.png|\\.webp)(\\?|$)/i.test(u || '');
-
-      try {
-        // ---- Mobile DOM parsing ----
-        const name = document.querySelector('.product_titleText__mfTNb')?.textContent?.trim() || '';
-        const brand = '';
-        const price = getInt(document.querySelector('.product_finalPrice__Drw1b')?.textContent || '');
-        const origin_price = getInt(document.querySelector('.product_originalPrice__sgo9Z')?.textContent || '');
-        const discount_rate = getInt(document.querySelector('.product_discountRateNew__I02mK .product_digits__fiOrT')?.textContent || '');
-        const halves = document.querySelectorAll('.rds-rating .yellow-600').length;
-        const ratings = Math.round((halves/2)*2)/2;
-        const reviews = getInt(document.querySelector('.rds-rating__content span')?.textContent || '');
-        const thumbnail = norm(document.querySelector('.product_productImage__gAKd0 img')?.getAttribute('src') || '');
-
-        const finish = (detail_images) => {
-          __post({
-            content: { name, brand, price, origin_price, discount_rate, ratings, reviews, thumbnail, detail_images: (detail_images||[]), url: location.href }
-          });
-        };
-
-        if (!${JSON.stringify(!!btfUrl)} || !${JSON.stringify(btfUrl)}) { finish([]); return true; }
-
-        fetch(${JSON.stringify(btfUrl)}, { credentials: 'include' })
-          .then(r => r.ok ? r.json() : Promise.reject(new Error('btf http '+r.status)))
-          .then(json => {
-            const set = new Set();
-            if (Array.isArray(json.details)) {
-              json.details.forEach(detail => {
-                const list = Array.isArray(detail?.vendorItemContentDescriptions)
-                  ? detail.vendorItemContentDescriptions : [];
-                list.forEach(desc => {
-                  const raw = (desc && typeof desc.content === 'string') ? desc.content.trim() : '';
-                  if (!raw) return;
-                  const url = norm(raw);
-                  if (isImageUrl(url)) set.add(url);
-                });
-              });
-            }
-            const images = Array.from(set);
-            finish(images);
-          })
-          .catch(()=> finish([]));
-      } catch (e) {
-        __post({ error: (e && e.message) || 'mobile extract error' });
-      }
-      true; // Important for WKWebView
-    })();`;
+    return `${COMMON_FRAMEWORK}
+    ${MOBILE_QUERY_2(btfUrl)}
+    window.executeQuery(window.mobile2Query);
+    true;`;
 };
 
-const getDesktopInjectionCode = () => {
-    return `(function() {
-                try {
-                    const getImageSrc = (img) => {
-                        return img?.getAttribute('data-src') || 
-                               img?.getAttribute('srcset') || 
-                               img?.src || '';
-                    };
+/** Coupang 여부/ID 추출 및 표준 링크 만들기 */
+const extractFromUrl = async (rawInput: string): Promise<ExtractResult> => {
+    let raw = rawInput?.trim() || '';
+    if (!raw) return { kind: 'general', url: raw };
 
-                    const url = window.location.href;
-                    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
-                    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
-                    
-                    // 일반 가격이 있는지 먼저 확인
-                    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
-                    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
-                    
-                    // 일반 가격이 있으면 그것을 사용하고, 없으면 와우할인가 사용
-                    const price = regularPriceElement 
-                        ? parseInt(regularPriceElement.innerText.replace(/[^0-9]/g, ''))
-                        : parseInt((wowPriceElement?.innerText || '').replace(/[^0-9]/g, ''));
-                    
-                    const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
-                    const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
-                    
-                    const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
-                    const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
+    // link.coupang.com → 최종 리디렉트 따라가기
+    if (raw.includes('link.coupang.com')) {
+        try {
+            const redirectUrl = await resolveRedirectUrl(raw);
+            return extractFromUrl(redirectUrl);
+        } catch {
+            return { kind: 'general', url: raw };
+        }
+    }
 
-                    const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
-                    const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length / 2 : 0;
+    if (raw.startsWith('//')) raw = 'https:' + raw;
+    if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
 
-                    const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
-                    const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
+    let u: URL;
+    try {
+        u = new URL(raw);
+    } catch {
+        return { kind: 'general', url: raw };
+    }
 
-                    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
-                    const detail_images = [];
-                    elements.forEach(element => {
-                        const imgElements = element.querySelectorAll('img');
-                        imgElements.forEach(imgElement => {
-                            const src = getImageSrc(imgElement);
-                            if (src) {
-                                detail_images.push(src);
-                            }
-                        });
-                    });
+    if (!u.hostname.includes('coupang')) {
+        return { kind: 'general', url: raw };
+    }
 
-                    const payload = JSON.stringify({
-                        content: {
-                            thumbnail, 
-                            name, 
-                            price, 
-                            origin_price, 
-                            discount_rate, 
-                            ratings, 
-                            reviews,
-                            detail_images
-                        }
-                    });
-                    window.ReactNativeWebView.postMessage(payload);
-                } catch (e) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
-                }
-            })();`;
+    const q = u.searchParams;
+    const productId =
+        q.get('productId') ||
+        (u.pathname.match(/\/products\/(\d+)/)?.[1] ?? null) ||
+        (u.pathname.includes('/su/') && u.pathname.match(/\/items\/(\d+)/)?.[1]) ||
+        null;
+
+    if (!productId) {
+        return { kind: 'general', url: raw };
+    }
+
+    const itemId = q.get('itemId') || undefined;
+    const vendorItemId = q.get('vendorItemId') || undefined;
+
+    // 표준 데스크톱/모바일 URL들
+    const canonicalDesktop = buildDesktop(productId, itemId, vendorItemId);
+    const mobileVM = buildMobileVM(productId);
+    const mobileMLP = buildMobileMLP(productId, itemId, vendorItemId);
+
+    return {
+        kind: 'coupang',
+        ids: { productId: productId || undefined, itemId, vendorItemId },
+        canonicalDesktop,
+        mobileVM,
+        mobileMLP
+    };
 };
 
+/** ===== 메인 훅 ===== */
 export const useWebViewDetail = ({ productUrl, onMessage, onError }: WebViewProps): JSX.Element | null => {
     const webViewRef = useRef<WebView>(null);
-    const [url, setUrl] = useState<string>('');
-    const [_, setPlatform] = useState<string>('');
-    const [retryCount, setRetryCount] = useState<number>(0);
-    const [hasErrorOccurred, setHasErrorOccurred] = useState<boolean>(false);
-    const desktopMaxRetries = 1;
-    const mobileMaxRetries = 3;
 
-    const [stage, setStage] = useState<Stage>('desktop');
-    const [mobileUrl, setMobileUrl] = useState<string>('');
-    const [ids, setIds] = useState<{ productId?: string; itemId?: string; vendorItemId?: string }>({});
+    // 전략 큐 + 진행 상태
+    const [attempts, setAttempts] = useState<Attempt[]>([]);
+    const [currentIdx, setCurrentIdx] = useState(0);
+    const [retryCount, setRetryCount] = useState(0);
 
-    const [isDesktopReady, setIsDesktopReady] = useState<boolean>(false);
-    const [isMobileReady, setIsMobileReady] = useState<boolean>(false);
-    const isSuccess = useRef<boolean>(false);
+    // 단일 Ready/Inject 상태
+    const [isReady, setIsReady] = useState(false);
+    const [hasInjected, setHasInjected] = useState(false);
 
-    const handleErrorOnce = () => {
-        if (!hasErrorOccurred) {
-            setHasErrorOccurred(true);
-            onError?.();
-        }
-    };
+    // 컨텍스트
+    const idsRef = useRef<Ids>({});
+    const successRef = useRef(false);
+    const erroredRef = useRef(false);
 
-    const convertUrl = (input: string) => {
-        console.log('--------------------------------크롤링 시작--------------------------------', productUrl);
+    // 현재 시도
+    const currentAttempt = attempts[currentIdx];
 
-        try {
-            let raw = input?.trim() || '';
-            let finalUrl = '';
+    /** productUrl 변경 시: 전략 큐 구성 */
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            // 모든 상태 초기화
+            setAttempts([]);
+            setCurrentIdx(0);
+            setRetryCount(0);
+            setIsReady(false);
+            setHasInjected(false);
+            successRef.current = false;
+            erroredRef.current = false;
+            idsRef.current = {};
 
-            if (!raw.includes('coupang')) {
-                setPlatform('general');
-                setUrl(raw);
-                return;
-            }
+            const extracted = await extractFromUrl(productUrl);
 
-            setPlatform('coupang');
+            if (cancelled) return;
 
-            if (raw.includes('link.coupang.com')) {
-                resolveRedirectUrl(raw).then(redirectUrl => convertUrl(redirectUrl));
-                return;
-            }
-
-            if (raw.startsWith('//')) raw = 'https:' + raw;
-            if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
-
-            let u: URL;
-            try {
-                u = new URL(raw);
-            } catch {
-                setUrl(raw);
-                return;
-            }
-
-            const q = u.searchParams;
-            let productId =
-                q.get('productId') ||
-                (u.pathname.match(/\/products\/(\d+)/)?.[1] ?? null) ||
-                (u.pathname.includes('/su/') && u.pathname.match(/\/items\/(\d+)/)?.[1]) ||
-                null;
-
-            if (!productId) {
-                console.error('쿠팡 제품 ID를 찾을 수 없습니다. 원본 URL 그대로 사용:', raw);
-                setPlatform('general');
-                setUrl(raw);
-                return;
-            }
-
-            const itemId = q.get('itemId') || undefined;
-            const vendorItemId = q.get('vendorItemId') || undefined;
-
-            const params = new URLSearchParams();
-            if (itemId) params.set('itemId', itemId);
-            if (vendorItemId) params.set('vendorItemId', vendorItemId);
-
-            const qs = params.toString();
-            // finalUrl = `https://www.coupang.com/vp/products/${productId}${qs ? `?${qs}` : ''}`;
-            finalUrl = `https://m.coupang.com/vm/products/${productId}/`;
-
-            // ★ 추가: 모바일 URL/ID 저장
-            setIds({ productId: productId || undefined, itemId, vendorItemId });
-            setMobileUrl(buildMobileUrl(productId || undefined, itemId, vendorItemId));
-            setStage('desktop'); // 항상 데스크탑부터
-            setUrl(finalUrl);
-        } catch (e) {
-            console.error('[convertUrl] Error:', e);
-            setPlatform('general');
-            setUrl(input);
-        }
-    };
-
-    const runJavaScript = (code: string) => {
-        if (webViewRef.current && code) {
-            webViewRef.current.injectJavaScript(code);
-        }
-    };
-
-    const handleError = () => {
-        if (isSuccess.current) return;
-        if (hasErrorOccurred) return;
-
-        console.error('handleError--------------------------------', retryCount, stage);
-
-        const maxRetries = stage === 'desktop' ? desktopMaxRetries : mobileMaxRetries;
-        if (retryCount < maxRetries) {
-            setRetryCount(retryCount => retryCount + 1);
-            setTimeout(() => {
-                runJavaScript(getDesktopInjectionCode());
-            }, 1000);
-        } else {
-            if (stage === 'desktop' && mobileUrl) {
-                console.log('change to mobile');
-
-                // ★ 데스크탑 실패 → 모바일로 한 번 더!
-                setStage('mobile');
-                setRetryCount(0);
-                setUrl(mobileUrl);
-                setTimeout(() => {
-                    runJavaScript(getMobileInjectionCode(ids.productId, ids.itemId, ids.vendorItemId));
-                }, 1000);
+            if (extracted.kind === 'general') {
+                // 쿠팡이 아니면, "그냥 그 URL 열고 간단 주입" 시도 하나만 구성
+                setAttempts([
+                    {
+                        label: 'general',
+                        url: extracted.url,
+                        getInjection: () => `(function(){ try {
+              window.ReactNativeWebView?.postMessage(JSON.stringify({ error: 'non-coupang url' }));
+            } catch(e) { window.ReactNativeWebView?.postMessage(JSON.stringify({ error: String(e&&e.message||e) })); } })();`,
+                        maxRetries: 0
+                    }
+                ]);
             } else {
-                // 모바일도 실패 → onError
-                console.log('--------------------------------크롤링 실패--------------------------------');
+                // 쿠팡: 데스크톱 → 모바일(두 가지) 순으로 시도
+                idsRef.current = extracted.ids;
+                const queue: Attempt[] = [
+                    {
+                        label: 'desktop-1',
+                        url: extracted.canonicalDesktop,
+                        getInjection: () => getDesktopInjectionCode(),
+                        maxRetries: 1
+                    },
+                    {
+                        label: 'mobile-vm',
+                        url: extracted.mobileVM,
+                        getInjection: (ids: Ids) => getMobileInjectionCode(),
+                        maxRetries: 2
+                    },
+                    {
+                        label: 'mobile-mlp',
+                        url: extracted.mobileMLP,
+                        getInjection: (ids: Ids) => getMobileInjectionCode2(ids),
+                        maxRetries: 2
+                    }
+                ].filter(a => !!a.url);
+                setAttempts(queue);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [productUrl]);
 
-                handleErrorOnce();
+    /** onLoadEnd → Ready → (시도당 단 1회) 주입 */
+    useEffect(() => {
+        if (!currentAttempt) return;
+        if (!isReady) return;
+        if (hasInjected) return;
+        // 최초 주입 딜레이 후 1회만
+        const t = setTimeout(() => {
+            try {
+                console.log('link changed, injecting javascript code....', currentAttempt.label);
+
+                const code = currentAttempt.getInjection(idsRef.current);
+                webViewRef.current?.injectJavaScript(code);
+                setHasInjected(true);
+            } catch (e) {
+                // 주입 자체가 실패하면 즉시 실패 처리
+                triggerFailure();
+            }
+        }, FIRST_INJECT_DELAY_MS);
+        return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isReady, hasInjected, currentAttempt?.label]);
+
+    /** 실패 처리 (재시도 또는 다음 시도 이동) */
+    const triggerFailure = () => {
+        if (successRef.current || erroredRef.current) return;
+
+        console.log('triggerFailure -----', currentAttempt?.label, retryCount);
+
+        const max = currentAttempt?.maxRetries ?? DEFAULT_MAX_RETRIES;
+        if (retryCount < max) {
+            // 재주입
+            setRetryCount(c => c + 1);
+            setTimeout(() => {
+                try {
+                    webViewRef.current?.reload();
+                    const code = currentAttempt!.getInjection(idsRef.current);
+                    webViewRef.current?.injectJavaScript(code);
+                } catch {}
+            }, RETRY_DELAY_MS);
+        } else {
+            // 다음 시도
+            if (currentIdx + 1 < attempts.length) {
+                setCurrentIdx(i => i + 1);
+                setRetryCount(0);
+                setIsReady(false);
+                setHasInjected(false);
+            } else {
+                // 모든 시도 실패
+                erroredRef.current = true;
+                onError?.();
             }
         }
     };
 
+    /** 성공 처리 */
+    const triggerSuccess = (payload: Product) => {
+        if (successRef.current) return;
+        successRef.current = true;
+        onMessage(payload);
+    };
+
+    /** 메시지 핸들러: 성공/실패 판정 */
     const handleMessage = (event: WebViewMessageEvent) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
-
             if (data.error) {
-                // console.log('🚀 ~ handleMessage ~ data.error:', stage, data.error);
-                handleError();
+                // 시도 실패 → 재시도/다음시도
+                triggerFailure();
                 return;
             }
 
-            if (data.content?.name) {
-                if (
-                    isSuccess.current &&
-                    (data.content?.detail_images?.length == 0 ||
-                        data.content.name == '' ||
-                        data.content.thumbnail == '')
-                )
+            const content = data.content;
+            if (content?.name) {
+                // (옵션) 불완전한 payload 거르기
+                if (successRef.current && (!content.detail_images?.length || !content.name || !content.thumbnail)) {
                     return;
-                // console.log('🚀 ~ handleMessage ~ data.content:', stage, data.content);
-                isSuccess.current = true;
-                onMessage({ ...data.content, url: productUrl });
+                }
+                // 원본 productUrl로 치환
+                triggerSuccess({ ...content, url: productUrl });
             } else {
-                // console.log('🚀 ~ handleMessage ~ no name', stage, data.content);
-                handleError();
+                triggerFailure();
             }
-        } catch (error) {
-            console.error('Failed to parse WebView message:', error);
+        } catch {
+            // 파싱 실패도 실패로 처리
+            triggerFailure();
         }
     };
 
-    useEffect(() => {
-        setUrl('');
-        setRetryCount(0);
-        setHasErrorOccurred(false);
-
-        setIsDesktopReady(false);
-        setIsMobileReady(false);
-        isSuccess.current = false;
-
-        convertUrl(productUrl);
-    }, [productUrl]);
-
-    useEffect(() => {
-        const stageReady = stage === 'desktop' ? isDesktopReady : isMobileReady;
-        if (!stageReady) return;
-
-        if (retryCount > 0) return;
-
-        console.log('[inject once] stage=', stage, 'url=', url, 'retryCount=', retryCount);
-        if (webViewRef.current) {
-            if (stage === 'desktop') {
-                setTimeout(() => {
-                    runJavaScript(getDesktopInjectionCode());
-                }, 1000);
-            } else {
-                runJavaScript(getMobileInjectionCode(ids.productId, ids.itemId, ids.vendorItemId));
-            }
-        }
-    }, [stage, url, retryCount, isDesktopReady, isMobileReady]);
-
-    return url ? (
-        <WebView
-            ref={webViewRef}
-            source={{ uri: url }}
-            onMessage={handleMessage}
-            onNavigationStateChange={event => {
-                // console.log('onNavigationStateChange 최종 url', event.url);
-            }}
-            onLoadEnd={() => {
-                if (stage === 'desktop') {
-                    setIsDesktopReady(true);
-                } else {
-                    setIsMobileReady(true);
-                }
-            }}
-            onError={() => {
-                handleError();
-            }}
-            style={{ flex: 1 }}
-            cacheEnabled={false}
-            cacheMode="LOAD_NO_CACHE"
-            renderToHardwareTextureAndroid={true}
-            mediaPlaybackRequiresUserAction={true}
-        />
+    return currentAttempt ? (
+        <View style={{ width: '100%', height: 0 }}>
+            <WebView
+                ref={webViewRef}
+                source={{ uri: currentAttempt.url }}
+                onMessage={handleMessage}
+                onLoadStart={() => {
+                    // ReactNativeWebView 객체 보장
+                    webViewRef.current?.injectJavaScript(`
+                        window.ReactNativeWebView = window.ReactNativeWebView || {};
+                        true;
+                    `);
+                }}
+                onLoadEnd={() => setIsReady(true)}
+                onError={() => triggerFailure()}
+                cacheEnabled={false}
+                cacheMode="LOAD_NO_CACHE"
+                renderToHardwareTextureAndroid
+                mediaPlaybackRequiresUserAction
+                style={{ flex: 1 }}
+            />
+        </View>
     ) : null;
 };
