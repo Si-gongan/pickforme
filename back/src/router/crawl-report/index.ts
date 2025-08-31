@@ -96,7 +96,7 @@ router.get('/list-grouped', async (ctx) => {
         requestId: { $first: '$requestId' },
         productUrl: { $first: '$productUrl' },
         processType: { $first: '$processType' },
-        success: { $first: '$success' },
+        success: { $max: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
         durationMs: { $first: '$durationMs' },
         createdAt: { $first: '$createdAt' },
       },
