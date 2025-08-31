@@ -37,7 +37,7 @@ import { useTabData } from '@/hooks/product-detail/useTabData';
 
 // 웹뷰 관련
 import { useWebViewReviews } from '../webview-reviews';
-import { useWebViewDetail } from '../webview-detail';
+import { useWebViewDetail } from '../Webview/detail/webview-detail';
 import { useWebViewFallback } from '@/hooks/useWebViewFallback';
 import { TABS } from '@/utils/common';
 import { v4 as uuidv4 } from 'uuid';
