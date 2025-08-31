@@ -2,6 +2,7 @@ import Router from '@koa/router';
 import coupangCrawlerService from '../../services/coupang-crawler.service';
 import { log } from 'utils/logger';
 import { extractAndValidateCoupangUrl } from 'utils/coupang';
+import client from 'utils/axios';
 
 const router = new Router({
   prefix: '/coupang',
@@ -92,6 +93,41 @@ router.post('/search', async (ctx) => {
       message: error instanceof Error ? error.message : '검색 중 오류 발생',
     };
   }
+});
+
+router.post('/deeplink', async (ctx) => {
+  const { urls } = ctx.request.body as { urls: string[] };
+
+  if (!urls || !Array.isArray(urls) || urls.length === 0) {
+    ctx.status = 400;
+    ctx.body = { success: false, message: 'URLs가 필요합니다.' };
+    return;
+  }
+
+  if (urls.length !== 1) {
+    ctx.status = 400;
+    ctx.body = { success: false, message: 'URLs는 하나만 전달해야 합니다.' };
+    return;
+  }
+
+  const response = await client.post('/coupang/deeplink', { urls });
+
+  const { urls: result } = response.data;
+
+  if (
+    !result ||
+    response.status !== 200 ||
+    result.length === 0 ||
+    !result[0].originalUrl ||
+    !result[0].shortenUrl ||
+    !result[0].landingUrl
+  ) {
+    ctx.status = 500;
+    ctx.body = { success: false, message: 'URL 변환 중 오류가 발생했습니다.' };
+    return;
+  }
+
+  ctx.body = { success: true, data: result[0] };
 });
 
 // 크롤러 상태 확인
