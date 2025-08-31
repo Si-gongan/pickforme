@@ -155,15 +155,13 @@ router.get('/list-grouped', async (ctx) => {
  * 크롤링 결과 저장
  */
 router.post('/', async (ctx) => {
-  const { requestId, productUrl, processType, success, durationMs, fields, attemptLabel } = ctx
-    .request.body as {
+  const { requestId, productUrl, processType, success, durationMs, fields } = ctx.request.body as {
     requestId: string;
     productUrl: string;
     processType: string;
     success: boolean;
     durationMs: number;
     fields: Record<string, boolean>;
-    attemptLabel?: string;
   };
 
   if (!requestId || !productUrl || !processType || typeof success !== 'boolean' || !durationMs) {
@@ -180,7 +178,6 @@ router.post('/', async (ctx) => {
       success,
       durationMs,
       fields: fields ?? {},
-      attemptLabel,
     });
 
     await crawlLog.save();
