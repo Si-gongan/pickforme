@@ -52,26 +52,29 @@ export const DESKTOP_QUERY = `
     const getImageSrc = (img) =>
       img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
     
+    // 접두사 기반 클래스 선택자 헬퍼 함수
+    const getByClassPrefix = (prefix) => document.querySelector('[class*="' + prefix + '"]');
+    
     const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
-    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText?.trim() || '';
+    const name = getByClassPrefix('ProductInfo_title')?.innerText?.trim() || '';
 
-    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
-    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
+    const regularPriceElement = getByClassPrefix('PriceInfo_salePrice');
+    const wowPriceElement = getByClassPrefix('PriceInfo_finalPrice');
     const price = (regularPriceElement
       ? regularPriceElement.innerText
       : (wowPriceElement?.innerText || '')).replace(/[^0-9]/g,'');
     const priceInt = parseInt(price || '0');
 
-    const originPriceEl = document.querySelector('.PriceInfo_originalPrice__t8M_9');
+    const originPriceEl = getByClassPrefix('PriceInfo_originalPrice');
     const origin_price = originPriceEl ? parseInt(originPriceEl.innerText.replace(/[^0-9]/g,'')) : priceInt;
 
-    const discountRateEl = document.querySelector('.PriceInfo_discountRate__pfqd9');
+    const discountRateEl = getByClassPrefix('PriceInfo_discountRate');
     const discount_rate = discountRateEl ? parseInt(discountRateEl.innerText.replace(/[^0-9]/g,'')) : 0;
 
     const ratingsWrap = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
     const ratings = ratingsWrap ? (ratingsWrap.querySelectorAll('.yellow-600').length / 2) : 0;
 
-    const reviewsWrap = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
+    const reviewsWrap = getByClassPrefix('ProductBadges_productBadgesCount');
     const reviews = reviewsWrap ? parseInt(reviewsWrap.querySelector('span')?.innerText.replace(/[^0-9]/g,'')||'0') : 0;
 
     const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
@@ -95,26 +98,29 @@ export const MOBILE_QUERY = `
     const getImageSrc = (img) =>
       img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
     
-    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
-    const name = document.querySelector('.ProductInfo_title__fLscZ')?.innerText || '';
+    // 접두사 기반 클래스 선택자 헬퍼 함수
+    const getByClassPrefix = (prefix) => document.querySelector('[class*="' + prefix + '"]');
     
-    const regularPriceElement = document.querySelector('.PriceInfo_salePrice___kVQC');
-    const wowPriceElement = document.querySelector('.PriceInfo_finalPrice__qniie');
+    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
+    const name = getByClassPrefix('ProductInfo_title')?.innerText || '';
+    
+    const regularPriceElement = getByClassPrefix('PriceInfo_salePrice');
+    const wowPriceElement = getByClassPrefix('PriceInfo_finalPrice');
     
     const price = regularPriceElement 
       ? parseInt(regularPriceElement.innerText.replace(/[^0-9]/g, ''))
       : parseInt((wowPriceElement?.innerText || '').replace(/[^0-9]/g, ''));
     
-    const origin_price_doc = document.querySelector('.PriceInfo_originalPrice__t8M_9');
+    const origin_price_doc = getByClassPrefix('PriceInfo_originalPrice');
     const origin_price = origin_price_doc ? parseInt(origin_price_doc.innerText.replace(/[^0-9]/g, '')) : price;
     
-    const discount_rate_doc = document.querySelector('.PriceInfo_discountRate__pfqd9');
+    const discount_rate_doc = getByClassPrefix('PriceInfo_discountRate');
     const discount_rate = discount_rate_doc ? parseInt(discount_rate_doc.innerText.replace(/[^0-9]/g, '')) : 0;
 
     const ratings_doc = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
     const ratings = ratings_doc ? ratings_doc.querySelectorAll('.yellow-600').length / 2 : 0;
 
-    const reviews_doc = document.querySelector('.ProductBadges_productBadgesCount__yOwDf');
+    const reviews_doc = getByClassPrefix('ProductBadges_productBadgesCount');
     const reviews = reviews_doc ? parseInt(reviews_doc.querySelector('span').innerText.replace(/[^0-9]/g, '')) : 0;
 
     const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
@@ -143,16 +149,19 @@ export const MOBILE_QUERY_2 = (btfUrl: string) => `
       return s.replace(/^\\/\\//,'https://');
     };
     const isImageUrl = (u) => /(\\.jpg|\\.jpeg|\\.png|\\.webp)(\\?|$)/i.test(u || '');
+    
+    // 접두사 기반 클래스 선택자 헬퍼 함수
+    const getByClassPrefix = (prefix) => document.querySelector('[class*="' + prefix + '"]');
 
-    const name = document.querySelector('.product_titleText__mfTNb')?.textContent?.trim() || '';
+    const name = getByClassPrefix('product_titleText')?.textContent?.trim() || '';
     const brand = '';
-    const price = getInt(document.querySelector('.product_finalPrice__Drw1b')?.textContent || '');
-    const origin_price = getInt(document.querySelector('.product_originalPrice__sgo9Z')?.textContent || '');
-    const discount_rate = getInt(document.querySelector('.product_discountRateNew__I02mK .product_digits__fiOrT')?.textContent || '');
+    const price = getInt(getByClassPrefix('product_finalPrice')?.textContent || '');
+    const origin_price = getInt(getByClassPrefix('product_originalPrice')?.textContent || '');
+    const discount_rate = getInt(getByClassPrefix('product_discountRateNew')?.querySelector('[class*="product_digits"]')?.textContent || '');
     const halves = document.querySelectorAll('.rds-rating .yellow-600').length;
     const ratings = Math.round((halves/2)*2)/2;
     const reviews = getInt(document.querySelector('.rds-rating__content span')?.textContent || '');
-    const thumbnail = norm(document.querySelector('.product_productImage__gAKd0 img')?.getAttribute('src') || '');
+    const thumbnail = norm(getByClassPrefix('product_productImage')?.querySelector('img')?.getAttribute('src') || '');
 
     // 기본 데이터 구성
     const baseData = { name, brand, price, origin_price, discount_rate, ratings, reviews, thumbnail };
