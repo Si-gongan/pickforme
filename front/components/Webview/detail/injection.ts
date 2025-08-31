@@ -159,8 +159,11 @@ export const MOBILE_QUERY_2 = (btfUrl: string) => `
     const price = getInt(getByClassPrefix('product_finalPrice')?.textContent || '');
     const origin_price = getInt(getByClassPrefix('product_originalPrice')?.textContent || '');
     const discount_rate = getInt(getByClassPrefix('product_discountRateNew')?.querySelector('[class*="product_digits"]')?.textContent || '');
-    const halves = document.querySelectorAll('.rds-rating .yellow-600').length;
-    const ratings = Math.round((halves/2)*2)/2;
+    
+    // 수정된 코드 (메인 상품 영역만 타겟)
+    const mainProduct = document.querySelector('.main-product_mainProduct__qWD0i');
+    const halves = mainProduct ? mainProduct.querySelectorAll('.rds-rating .yellow-600').length : 0;
+    const ratings = halves / 2;
     const reviews = getInt(document.querySelector('.rds-rating__content span')?.textContent || '');
     const thumbnail = norm(getByClassPrefix('product_productImage')?.querySelector('img')?.getAttribute('src') || '');
 
