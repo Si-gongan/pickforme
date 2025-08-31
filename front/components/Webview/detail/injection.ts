@@ -49,44 +49,45 @@ export const COMMON_FRAMEWORK = `
 export const DESKTOP_QUERY = `
   if (typeof window.desktopQuery === 'undefined') {
     window.desktopQuery = () => {
-    const getImageSrc = (img) =>
-      img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
-    
-    // 접두사 기반 클래스 선택자 헬퍼 함수
-    const getByClassPrefix = (prefix) => document.querySelector('[class*="' + prefix + '"]');
-    
-    const thumbnail = getImageSrc(document.querySelector('.rds-img img')) || '';
-    const name = getByClassPrefix('ProductInfo_title')?.innerText?.trim() || '';
+    const getInt = (txt) => parseInt((txt || '').replace(/[^0-9]/g, '')) || 0;
+    const getImageSrc = (img) => img?.getAttribute('data-src') || img?.getAttribute('srcset') || img?.src || '';
 
-    const regularPriceElement = getByClassPrefix('PriceInfo_salePrice');
-    const wowPriceElement = getByClassPrefix('PriceInfo_finalPrice');
-    const price = (regularPriceElement
-      ? regularPriceElement.innerText
-      : (wowPriceElement?.innerText || '')).replace(/[^0-9]/g,'');
-    const priceInt = parseInt(price || '0');
+    const name = document.querySelector('.product-title span')?.innerText || '';
+    const brand = document.querySelector('.brand-info div')?.innerText || '';
 
-    const originPriceEl = getByClassPrefix('PriceInfo_originalPrice');
-    const origin_price = originPriceEl ? parseInt(originPriceEl.innerText.replace(/[^0-9]/g,'')) : priceInt;
+    const sales = document.querySelector('.price-amount.sales-price-amount');
+    const final = document.querySelector('.price-amount.final-price-amount');
+    const priceText = sales?.innerText || final?.innerText || '';
+    const price = getInt(priceText);
 
-    const discountRateEl = getByClassPrefix('PriceInfo_discountRate');
-    const discount_rate = discountRateEl ? parseInt(discountRateEl.innerText.replace(/[^0-9]/g,'')) : 0;
+    const origin = document.querySelector('.price-amount.original-price-amount');
+    const origin_price = getInt(origin?.innerText || '');
 
-    const ratingsWrap = document.querySelector('#MWEB_PRODUCT_DETAIL_PRODUCT_BADGES');
-    const ratings = ratingsWrap ? (ratingsWrap.querySelectorAll('.yellow-600').length / 2) : 0;
+    const discountElem = document.querySelector('.original-price > div > div');
+    const percentMatch = discountElem?.innerText?.match(/\\d+/);
+    const discount_rate = percentMatch ? parseInt(percentMatch[0]) : 0;
 
-    const reviewsWrap = getByClassPrefix('ProductBadges_productBadgesCount');
-    const reviews = reviewsWrap ? parseInt(reviewsWrap.querySelector('span')?.innerText.replace(/[^0-9]/g,'')||'0') : 0;
+    const rating = document.querySelector('.rating-star-container span');
+    let ratings = 0;
+    if (rating?.style?.width) {
+      const widthPercent = parseFloat(rating.style.width);
+      ratings = Math.round((widthPercent / 100) * 5 * 2) / 2;
+    }
 
-    const elements = document.querySelectorAll('.subType-IMAGE, .subType-TEXT');
-    const detail_images = [];
-    elements.forEach(element => {
-      element.querySelectorAll('img').forEach(img => {
-        const src = getImageSrc(img);
-        if (src) detail_images.push(src);
-      });
-    });
+    const reviewText = document.querySelector('.rating-count-txt')?.innerText || '';
+    const reviews = getInt(reviewText);
 
-    return { thumbnail, name, price: priceInt, origin_price, discount_rate, ratings, reviews, detail_images };
+    const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
+    const thumbnail = (getImageSrc(thumb) || '').replace(/^\\/\\//, 'https://');
+
+    const detail_images = Array.from(
+      document.querySelectorAll('.subType-IMAGE img, .subType-TEXT img')
+    )
+      .map((img) => getImageSrc(img))
+      .filter(Boolean)
+      .map((src) => src.replace(/^\\/\\//, 'https://'));
+
+    return { name, brand, price, origin_price, discount_rate, ratings, reviews, thumbnail, detail_images };
     };
   }
 `;
