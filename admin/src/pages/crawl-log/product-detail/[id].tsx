@@ -16,9 +16,10 @@ interface CrawlLog {
   durationMs: number;
   createdAt: string;
   fields?: Record<string, any>;
+  attemptLabel?: string; // 웹뷰 attempt 단계
 }
 
-type GroupedLogs = Partial<Record<ProcessType, CrawlLog>>;
+type GroupedLogs = Partial<Record<ProcessType, CrawlLog[]>>; // 각 processType별로 배열로 저장
 type TabStatus = Partial<Record<TABS, boolean>>;
 
 function checkRequiredData(tab: TABS, product: Record<string, any>): boolean {
@@ -54,24 +55,29 @@ export default function CrawlLogDetailPage() {
 
         const grouped: GroupedLogs = {};
         for (const log of data) {
-          grouped[log.processType] = log;
+          if (!grouped[log.processType]) {
+            grouped[log.processType] = [];
+          }
+          grouped[log.processType]!.push(log);
         }
         setGroupedLogs(grouped);
         setProductUrl(data[0]?.productUrl ?? "");
 
         // 모든 필드 합치기
-        const mergedFields = Object.values(grouped).reduce((acc, log) => {
-          if (!log?.fields) return acc;
+        const mergedFields = Object.values(grouped)
+          .flat()
+          .reduce((acc, log) => {
+            if (!log?.fields) return acc;
 
-          for (const [key, val] of Object.entries(log.fields)) {
-            if (val === undefined || val === null) continue;
+            for (const [key, val] of Object.entries(log.fields)) {
+              if (val === undefined || val === null) continue;
 
-            if (!acc[key] && val) {
-              acc[key] = val;
+              if (!acc[key] && val) {
+                acc[key] = val;
+              }
             }
-          }
-          return acc;
-        }, {} as Record<string, any>);
+            return acc;
+          }, {} as Record<string, any>);
 
         console.log(mergedFields);
 
@@ -99,6 +105,13 @@ export default function CrawlLogDetailPage() {
       dataIndex: "processType",
       key: "processType",
       render: (type: ProcessType) => <Tag color="blue">{type}</Tag>,
+    },
+    {
+      title: "Attempt 단계",
+      dataIndex: "attemptLabel",
+      key: "attemptLabel",
+      render: (label?: string) =>
+        label ? <Tag color="purple">{label}</Tag> : "-",
     },
     {
       title: "성공 여부",
@@ -130,6 +143,12 @@ export default function CrawlLogDetailPage() {
         ) : (
           "-"
         ),
+    },
+    {
+      title: "생성 시간",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (createdAt: string) => new Date(createdAt).toLocaleString(),
     },
   ];
 
@@ -169,7 +188,22 @@ export default function CrawlLogDetailPage() {
         <Table
           rowKey="_id"
           columns={columns}
-          dataSource={Object.values(groupedLogs).filter(Boolean)}
+          dataSource={Object.values(groupedLogs)
+            .flat()
+            .filter(Boolean)
+            .sort((a, b) => {
+              // 1순위: processType 순서 (webview-detail -> webview-review -> server)
+              const processOrder = ['webview-detail', 'webview-review', 'server'];
+              const aProcessIndex = processOrder.indexOf(a.processType);
+              const bProcessIndex = processOrder.indexOf(b.processType);
+              
+              if (aProcessIndex !== bProcessIndex) {
+                return aProcessIndex - bProcessIndex;
+              }
+              
+              // 2순위: 생성 시간 순서
+              return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            })
           loading={loading}
           pagination={false}
         />
