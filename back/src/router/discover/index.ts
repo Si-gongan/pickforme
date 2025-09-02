@@ -3,6 +3,8 @@ import db from 'models';
 import client from 'utils/axios';
 import requireAuth from 'middleware/jwt';
 import { getCachedBestCategory, getCachedGoldbox } from 'services/coupang-api.service';
+import { validateProductData } from '../utils';
+import { log } from 'utils/logger';
 
 const router = new Router({
   prefix: '/discover',
@@ -85,29 +87,51 @@ router.put('/product', async (ctx) => {
   const {
     body: { product },
   } = <any>ctx.request;
-  const item = await db.Item.findOne({
-    url: product.url,
-  });
-  // item 업데이트
-  if (item) {
-    await db.Item.updateOne(
-      {
-        url: product.url,
-      },
-      {
-        $set: product,
-      }
-    );
-    // console.log('update item');
+
+  // Product 데이터 validation
+  const validationResult = validateProductData(product);
+
+  if (!validationResult.isValid) {
+    ctx.status = validationResult.status;
+    ctx.body = {
+      errorMessage: validationResult.errorMessage,
+    };
+    return;
   }
-  // item 생성
-  else {
-    await db.Item.create(product);
-    // console.log('create item');
+
+  try {
+    const item = await db.Item.findOne({
+      url: product.url,
+    });
+    // item 업데이트
+    if (item) {
+      await db.Item.updateOne(
+        {
+          url: product.url,
+        },
+        {
+          $set: product,
+        }
+      );
+      // console.log('update item');
+    }
+    // item 생성
+    else {
+      await db.Item.create(product);
+      // console.log('create item');
+    }
+    ctx.body = {
+      product,
+    };
+  } catch (error) {
+    await log.error('Product 데이터 저장 중 오류가 발생했습니다.', 'API', 'MEDIUM', {
+      error: error,
+    });
+    ctx.status = 500;
+    ctx.body = {
+      errorMessage: '데이터 저장 중 오류가 발생했습니다.',
+    };
   }
-  ctx.body = {
-    product,
-  };
 });
 
 router.post('/product/detail/caption', async (ctx) => {
