@@ -77,7 +77,7 @@ export const DESKTOP_QUERY = `
     const reviewText = document.querySelector('.rating-count-txt')?.innerText || '';
     const reviews = getInt(reviewText);
 
-    const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
+    const thumb = document.querySelector('.swiper-wrapper .swiper-slide img');
     const thumbnail = (getImageSrc(thumb) || '').replace(/^\\/\\//, 'https://');
 
     const detail_images = Array.from(
