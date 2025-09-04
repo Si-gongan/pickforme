@@ -121,6 +121,30 @@ export default function SearchLogListPage() {
     );
   };
 
+  // KST 기준으로 날짜를 포맷팅하는 함수
+  const formatKSTDate = (isoString: string) => {
+    try {
+      const date = new Date(isoString);
+      // KST는 UTC+9
+      const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
+      const year = kstDate.getUTCFullYear();
+      const month = kstDate.getUTCMonth() + 1;
+      const day = kstDate.getUTCDate();
+      const hours = kstDate.getUTCHours();
+      const minutes = kstDate.getUTCMinutes();
+      const seconds = kstDate.getUTCSeconds();
+
+      return `${year}년 ${month}월 ${day}일 ${hours
+        .toString()
+        .padStart(2, "0")}시 ${minutes.toString().padStart(2, "0")}분 ${seconds
+        .toString()
+        .padStart(2, "0")}초`;
+    } catch (e) {
+      return "-";
+    }
+  };
+
   const columns = [
     {
       title: "Request ID",
@@ -145,6 +169,16 @@ export default function SearchLogListPage() {
       align: "center" as const,
       render: (_: any, record: GroupedRow) =>
         renderProcess(record.processes["server"]),
+    },
+    {
+      title: "생성일시",
+      key: "createdAt",
+      width: 220,
+      render: (_: any, record: GroupedRow) => (
+        <span style={{ fontSize: "13px", color: "#666" }}>
+          {record.lastCreatedAt ? formatKSTDate(record.lastCreatedAt) : "-"}
+        </span>
+      ),
     },
     {
       title: "상세",
