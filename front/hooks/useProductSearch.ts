@@ -64,7 +64,7 @@ function computeFieldStats(products: Product[]): FieldStats {
     return { total, title, thumbnail, price, originPrice, discountRate, ratings, reviews, url };
 }
 
-const TIMEOUT_DURATION = 5000;
+const TIMEOUT_DURATION = 10000;
 
 export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     const router = useRouter();
