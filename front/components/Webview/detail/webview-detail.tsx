@@ -108,15 +108,15 @@ export const useWebViewDetail = ({
                         maxRetries: 1
                     },
                     {
-                        label: 'mobile-vm',
-                        url: extracted.mobileVM,
-                        getInjection: (ids: Ids) => getMobileInjectionCode(),
-                        maxRetries: 2
-                    },
-                    {
                         label: 'mobile-mlp',
                         url: extracted.mobileMLP,
                         getInjection: (ids: Ids) => getMobileInjectionCode2(ids),
+                        maxRetries: 2
+                    },
+                    {
+                        label: 'mobile-vm',
+                        url: extracted.mobileVM,
+                        getInjection: (ids: Ids) => getMobileInjectionCode(),
                         maxRetries: 2
                     }
                 ].filter(a => !!a.url);
