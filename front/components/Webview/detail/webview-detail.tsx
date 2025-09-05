@@ -263,6 +263,23 @@ export const useWebViewDetail = ({
                 }}
                 onLoadEnd={() => setIsReady(true)}
                 onError={() => triggerFailure()}
+                onShouldStartLoadWithRequest={request => {
+                    // 외부 앱 스킴 차단 (coupang://, intent://, market:// 등)
+                    const url = request.url.toLowerCase();
+                    if (
+                        url.startsWith('coupang://') ||
+                        url.startsWith('intent://') ||
+                        url.startsWith('market://') ||
+                        url.startsWith('play.google.com') ||
+                        url.startsWith('itunes.apple.com') ||
+                        url.includes('://launch')
+                    ) {
+                        console.log('Blocked external app scheme:', request.url);
+                        return false; // 차단
+                    }
+                    // HTTP/HTTPS만 허용
+                    return url.startsWith('http://') || url.startsWith('https://');
+                }}
                 cacheEnabled={false}
                 cacheMode="LOAD_NO_CACHE"
                 renderToHardwareTextureAndroid
