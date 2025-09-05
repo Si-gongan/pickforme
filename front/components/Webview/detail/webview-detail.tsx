@@ -261,7 +261,7 @@ export const useWebViewDetail = ({
                         true;
                     `);
                 }}
-                onLoadEnd={() => setIsReady(true)}
+                onLoad={() => setIsReady(true)}
                 onError={() => triggerFailure()}
                 cacheEnabled={false}
                 cacheMode="LOAD_NO_CACHE"
