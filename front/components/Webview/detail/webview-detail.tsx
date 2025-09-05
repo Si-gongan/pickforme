@@ -111,7 +111,7 @@ export const useWebViewDetail = ({
                         label: 'mobile-mlp',
                         url: extracted.mobileMLP,
                         getInjection: (ids: Ids) => getMobileInjectionCode2(ids),
-                        maxRetries: 2
+                        maxRetries: 3
                     },
                     {
                         label: 'mobile-vm',
@@ -160,11 +160,11 @@ export const useWebViewDetail = ({
         if (retryCount < max) {
             // 재주입
             setRetryCount(c => c + 1);
+            setIsReady(false);
+            setHasInjected(false);
             setTimeout(() => {
                 try {
                     webViewRef.current?.reload();
-                    const code = currentAttempt!.getInjection(idsRef.current);
-                    webViewRef.current?.injectJavaScript(code);
                 } catch {}
             }, RETRY_DELAY_MS);
         } else {
