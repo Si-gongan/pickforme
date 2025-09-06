@@ -1,5 +1,13 @@
 import React, { useRef, useEffect } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, AccessibilityInfo, findNodeHandle, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Pressable,
+    StyleSheet,
+    AccessibilityInfo,
+    findNodeHandle,
+    View,
+    Platform
+} from 'react-native';
 import type { View as RNView } from 'react-native';
 import { useAtomValue } from 'jotai';
 import { productDetailAtom, LoadingStatus } from '../../stores/product/atoms';
@@ -13,6 +21,7 @@ import CaptionTab from './tabs/CaptionTab';
 import ReportTab from './tabs/ReportTab';
 import ReviewTab from './tabs/ReviewTab';
 import QuestionTab from './tabs/QuestionTab';
+import { focusOnRef } from '@/utils/accessibility';
 
 interface TabContentProps {
     tab: TABS;
@@ -57,18 +66,21 @@ const TabContent: React.FC<TabContentProps> = ({
 
     // NO_DATA 메시지 ref
     const noDataRef = useRef<RNView>(null);
+    // 로딩 상태 ref
+    const loadingRef = useRef<RNView>(null);
 
-    // 탭이 바뀌거나, loading 상태가 바뀌었을때 -> 해당 탭의 상태가 NO_DATA면 포커스 이동.
+    // 탭이 바뀌거나, loading 상태가 바뀌었을때 포커스 이동
     useEffect(() => {
-        if (loadingStatus[tab] === LoadingStatus.NO_DATA && noDataRef.current) {
-            const node = findNodeHandle(noDataRef.current);
-            if (node) {
-                setTimeout(() => {
-                    AccessibilityInfo.setAccessibilityFocus(node);
-                }, 500);
+        if (isTabPressed) {
+            const delay = Platform.OS === 'android' ? 800 : 500;
+
+            if (loadingStatus[tab] === LoadingStatus.NO_DATA && noDataRef.current) {
+                focusOnRef(noDataRef, delay);
+            } else if ((loadingStatus[tab] === 0 || loadingStatus[tab] === 1) && loadingRef.current) {
+                focusOnRef(loadingRef, delay);
             }
         }
-    }, [loadingStatus[tab], tab]);
+    }, [loadingStatus[tab], tab, isTabPressed]);
 
     // 1. Question 탭 처리
     if (tab === TABS.QUESTION) {
@@ -92,7 +104,12 @@ const TabContent: React.FC<TabContentProps> = ({
     if (loadingStatus[tab] === 0 || loadingStatus[tab] === 1) {
         return (
             <View style={styles.detailWrap}>
-                <View style={styles.indicatorWrap} accessible accessibilityLabel={loadingMessages[tab]}>
+                <View
+                    style={styles.indicatorWrap}
+                    ref={loadingRef}
+                    accessible
+                    accessibilityLabel={loadingMessages[tab]}
+                >
                     <ActivityIndicator />
                     <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
                 </View>
