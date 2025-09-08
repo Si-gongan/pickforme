@@ -120,9 +120,20 @@ export default function MyScreen() {
 
     const onLogout = useCallback(
         function () {
-            onUser({});
-            changeToken(undefined);
-            Alert.alert('로그아웃 되었습니다.');
+            Alert.alert('로그아웃', '로그아웃하시겠습니까?', [
+                {
+                    text: '아니요',
+                    style: 'cancel'
+                },
+                {
+                    text: '예',
+                    onPress: () => {
+                        onUser({});
+                        changeToken(undefined);
+                        Alert.alert('로그아웃 되었습니다.');
+                    }
+                }
+            ]);
         },
         [onUser]
     );
