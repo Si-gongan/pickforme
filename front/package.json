@@ -25,7 +25,22 @@
         "lint": "expo lint"
     },
     "jest": {
-        "preset": "jest-expo"
+        "preset": "jest-expo",
+        "setupFilesAfterEnv": [
+            "<rootDir>/__tests__/setup.ts"
+        ],
+        "transformIgnorePatterns": [
+            "node_modules/(?!(react-native|@react-native|expo|@expo|@react-navigation|react-native-webview|jotai|expo-modules-core|@react-native-seoul|react-native-get-random-values)/)"
+        ],
+        "testMatch": [
+            "**/__tests__/**/*.test.tsx",
+            "**/__tests__/**/*.test.ts"
+        ],
+        "moduleNameMapper": {
+            "^@/(.*)$": "<rootDir>/$1",
+            "^@components$": "<rootDir>/components",
+            "^@constants$": "<rootDir>/constants"
+        }
     },
     "dependencies": {
         "@expo/cli": "~0.22.0",
@@ -84,6 +99,8 @@
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",
+        "@testing-library/jest-native": "^5.4.3",
+        "@testing-library/react-native": "^13.3.3",
         "@types/jest": "^29.5.12",
         "@types/react": "~18.3.12",
         "@types/react-test-renderer": "^18.3.0",
