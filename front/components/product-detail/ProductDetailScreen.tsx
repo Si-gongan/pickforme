@@ -425,8 +425,8 @@ const useStyles = (colorScheme: 'light' | 'dark') =>
         },
 
         a11yHidden: {
-            width: 1,
-            height: 1
+            width: 3,
+            height: 3
         }
     });
 
