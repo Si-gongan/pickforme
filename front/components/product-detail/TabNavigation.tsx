@@ -9,33 +9,63 @@ interface TabNavigationProps {
     tab: TABS;
     handlePressTab: (tab: TABS) => void;
     isLocal: boolean;
+    /** 'all' = 전체(기본), 'left' = 활성 탭 포함 왼쪽, 'right' = 활성 이후 오른쪽 */
+    group?: 'all' | 'left' | 'right';
+    type?: 'hidden' | 'visible';
 }
 
-const TabNavigation: React.FC<TabNavigationProps> = ({ tab, handlePressTab, isLocal }) => {
+const TabNavigation: React.FC<TabNavigationProps> = ({
+    tab,
+    handlePressTab,
+    isLocal,
+    group = 'all',
+    type = 'visible'
+}) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
 
+    // 1) 전체 탭 목록
+    const allTabs = Object.values(TABS).filter(TAB => !(isLocal && TAB === TABS.QUESTION));
+    // 2) 활성 index
+    const activeIndex = Math.max(
+        0,
+        allTabs.findIndex(TAB => TAB === tab)
+    );
+    // 3) group에 따라 보여줄 탭 선택
+    const visibleTabs =
+        group === 'left'
+            ? allTabs.slice(0, activeIndex + 1)
+            : group === 'right'
+            ? allTabs.slice(activeIndex + 1)
+            : allTabs;
+
     return (
         <View style={styles.tabWrap}>
-            {Object.values(TABS).map(TAB =>
-                isLocal && TAB === TABS.QUESTION ? null : (
-                    <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
-                        <Button
-                            style={[styles.tabButton, tab === TAB && styles.tabButtonActive]}
-                            textStyle={[styles.tabButtonText, tab === TAB && styles.tabButtonTextActive]}
-                            variant="text"
-                            title={tabName[TAB]}
-                            size="medium"
-                            color={tab === TAB ? 'primary' : 'tertiary'}
-                            onPress={() => handlePressTab(TAB)}
-                            accessible
-                            accessibilityLabel={`${tabName[TAB]} 탭`}
-                            accessibilityRole="button"
-                            selected={tab === TAB}
-                        />
-                    </View>
-                )
-            )}
+            {visibleTabs.map(TAB => (
+                <View style={styles.tab} key={`Requests-Tab-${TAB}`}>
+                    <Button
+                        style={
+                            type === 'visible' ? [styles.tabButton, tab === TAB && styles.tabButtonActive] : undefined
+                        }
+                        textStyle={
+                            type === 'visible'
+                                ? [styles.tabButtonText, tab === TAB && styles.tabButtonTextActive]
+                                : undefined
+                        }
+                        variant="text"
+                        title={tabName[TAB]}
+                        size="medium"
+                        color={tab === TAB ? 'primary' : 'tertiary'}
+                        onPress={() => {
+                            handlePressTab(TAB);
+                        }}
+                        accessible
+                        accessibilityLabel={`${tabName[TAB]} 탭`}
+                        accessibilityRole="tab"
+                        selected={tab === TAB}
+                    />
+                </View>
+            ))}
         </View>
     );
 };

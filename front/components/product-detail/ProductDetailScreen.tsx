@@ -336,7 +336,25 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                     <View>
                         <ProductInfo product={product} />
 
-                        <TabNavigation tab={tab} handlePressTab={handlePressTab} isLocal={isLocal} />
+                        {/* 👁️ 보이는 탭 헤더 (스크린리더에는 숨김) */}
+                        <View
+                            style={styles.visualHeader}
+                            accessibilityElementsHidden
+                            importantForAccessibility="no-hide-descendants"
+                        >
+                            <TabNavigation tab={tab} handlePressTab={handlePressTab} isLocal={isLocal} group="all" />
+                        </View>
+
+                        {/* 🦻 접근성(읽기) 순서용: 왼쪽 탭들 */}
+                        <View style={styles.a11yHidden}>
+                            <TabNavigation
+                                tab={tab}
+                                handlePressTab={handlePressTab}
+                                isLocal={isLocal}
+                                group="left"
+                                type="hidden"
+                            />
+                        </View>
 
                         <TabContent
                             tab={tab}
@@ -350,6 +368,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             handleLoadMore={handleLoadMore}
                             isTabPressed={isTabPressed}
                         />
+
+                        {/* 🦻 접근성(읽기) 순서용: 오른쪽 탭들 */}
+                        <View style={styles.a11yHidden}>
+                            <TabNavigation
+                                tab={tab}
+                                handlePressTab={handlePressTab}
+                                isLocal={isLocal}
+                                group="right"
+                                type="hidden"
+                            />
+                        </View>
                     </View>
                 ) : (
                     <View style={styles.inner}>
@@ -389,6 +418,15 @@ const useStyles = (colorScheme: 'light' | 'dark') =>
         modalStyle: {
             justifyContent: 'flex-end',
             margin: 0
+        },
+        // 화면에 보이는 헤더 (탭 한 줄)
+        visualHeader: {
+            backgroundColor: Colors[colorScheme].background.primary
+        },
+
+        a11yHidden: {
+            width: 1,
+            height: 1
         }
     });
 
