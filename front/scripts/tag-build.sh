@@ -13,7 +13,7 @@ if [ -z "$ENV" ] || [ -z "$PLATFORM" ] || [ -z "$VERSION" ] || [ -z "$BUILD" ] |
   exit 1
 fi
 
-TAG="$ENV-$PLATFORM-v$VERSION+$BUILD+r$RUNTIME"
+TAG="app-$ENV-$PLATFORM-v$VERSION+$BUILD+r$RUNTIME"
 
 git tag $TAG
 git push origin $TAG
