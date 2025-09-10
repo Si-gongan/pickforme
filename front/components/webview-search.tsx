@@ -1,5 +1,5 @@
 // WebViewSearch.tsx
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { Product } from '../stores/product/types';
@@ -153,13 +153,27 @@ const searchProductInjectionCode = `
 })();
 `;
 
-export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps) => {
+const shouldBlock = (url: string) => {
+    const u = url.toLowerCase();
+    return (
+        u.startsWith('coupang://') ||
+        u.startsWith('intent://') ||
+        u.startsWith('market://') ||
+        u.includes('://launch') ||
+        u.includes('play.google.com') ||
+        u.includes('itunes.apple.com') ||
+        u.includes('apps.apple.com')
+    );
+};
+
+const buildUrl = (kw: string) => `https://www.coupang.com/np/search?q=${encodeURIComponent(kw)}&page=1`;
+
+const _WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps) => {
     const webViewRef = useRef<WebView>(null);
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
 
-    // 데스크톱 검색 페이지로 고정
-    const url = `https://www.coupang.com/np/search?q=${encodeURIComponent(keyword)}&page=1`;
+    const [uri, setUri] = useState<string>('');
 
     const safeInject = useCallback(() => {
         // CSR 환경을 고려해 약간 지연 후 인젝션
@@ -194,8 +208,12 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
     };
 
     const handleExecuteSearch = () => {
-        // 첫 로드 시에도 reload로 통일 (캐시/CSR 상태 초기화)
-        webViewRef.current?.reload();
+        const next = buildUrl(keyword);
+        if (next !== uri) {
+            setUri(next); // ← 네비게이션 발생 (URL 변경)
+        } else {
+            webViewRef.current?.reload(); // ← 같은 URL이면 새로고침만
+        }
     };
 
     useEffect(() => {
@@ -205,21 +223,21 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
         }
     }, [isSearching, keyword]);
 
-    if (!isSearching || !keyword) return null;
-
     return (
         <View style={{ width: '100%', height: 0 }}>
             <WebView
                 ref={webViewRef}
-                source={{ uri: url }}
+                source={{ uri: uri }}
                 // 데스크톱 DOM을 강제하기 위해 UA를 데스크톱으로 설정
                 userAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
                 onMessage={handleMessage}
-                onNavigationStateChange={() => {
-                    // 라우팅/페이지 변경 시에도 재주입
-                    setTimeout(() => {
-                        webViewRef.current?.injectJavaScript(searchProductInjectionCode);
-                    }, 500);
+                onShouldStartLoadWithRequest={req => {
+                    if (shouldBlock(req.url)) {
+                        // 콘솔만 남기고 네비게이션 차단
+                        console.log('[webview] blocked external scheme:', req.url);
+                        return false;
+                    }
+                    return true;
                 }}
                 onLoadStart={() => {
                     // ReactNativeWebView 존재 보장 (일부 환경에서 방어적)
@@ -237,8 +255,10 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
                 domStorageEnabled
                 startInLoadingState
                 // 숨김용 웹뷰
-                style={{ opacity: 0.01, height: 1 }}
+                // style={{ opacity: 0.01, height: 1 }}
             />
         </View>
     );
 };
+
+export const WebViewSearch = memo(_WebViewSearch);
