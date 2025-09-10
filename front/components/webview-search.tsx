@@ -20,11 +20,43 @@ const searchProductInjectionCode = `
 
   const getStar5 = (li) => {
     // desktop 별점은 style="width: 100%" 로 표기됨 (100% = 5.0)
-    const star = li.querySelector('.ProductRating_star__RGSlV');
+    const star = li.querySelector('[class*="ProductRating_star"]');
     if (!star) return 0;
     const m = /width:\\s*([0-9.]+)%/.exec(star.getAttribute('style') || '');
     const pct = m ? parseFloat(m[1]) : 0;
     return +(pct / 20).toFixed(2); // 0~5
+  };
+
+  const getPriceInfo = (li) => {
+    // 새로운 가격 구조: PriceArea_priceArea__NntJz
+    const priceArea = li.querySelector('[class*="PriceArea_priceArea"]');
+    if (priceArea) {
+      // 현재 가격: fw-text-[20px]/[24px] fw-font-bold 클래스가 있는 div
+      const currentPriceEl = priceArea.querySelector('div[class*="fw-text-[20px]"]');
+      const currentPrice = currentPriceEl ? toNumber(currentPriceEl.textContent) : 0;
+      
+      // 원가: del 태그 안의 가격
+      const originPriceEl = priceArea.querySelector('del');
+      const originPrice = originPriceEl ? toNumber(originPriceEl.textContent) : 0;
+      
+      // 할인율 계산
+      const discountRate = originPrice > 0 && currentPrice > 0 
+        ? Math.round(((originPrice - currentPrice) / originPrice) * 100)
+        : 0;
+      
+      return {
+        price: currentPrice,
+        origin_price: originPrice,
+        discount_rate: discountRate
+      };
+    }
+    
+    // 기존 가격 구조 (fallback)
+    return {
+      price: toNumber(li.querySelector('[class*="Price_priceValue"]')?.textContent || '0'),
+      origin_price: toNumber(li.querySelector('[class*="PriceInfo_basePrice"]')?.textContent || '0'),
+      discount_rate: toNumber(li.querySelector('[class*="PriceInfo_discountRate"]')?.textContent || '0')
+    };
   };
 
   const absUrl = (href) => {
@@ -47,14 +79,14 @@ const searchProductInjectionCode = `
 
   // ---------- scraper ----------'
   function collect() {
-    const list = document.querySelectorAll('#product-list > li.ProductUnit_productUnit__Qd6sv');
+    const list = document.querySelectorAll('#product-list > li[class*="ProductUnit_productUnit"]');
     if (!list.length) return [];
 
     const items = [];
     list.forEach((li) => {
       // 광고/위젯/베스트셀러 스킵
       if (li.classList.contains('best-seller')) return;
-      if (li.querySelector('.AdMark_adMark__KPMsC')) return;
+      if (li.querySelector('[class*="AdMark_adMark"]')) return;
 
       const a = li.querySelector('a[href]');
       if (!a) return;
@@ -80,10 +112,8 @@ const searchProductInjectionCode = `
 
       const name = pickName(li);
       const thumbnail = li.querySelector('figure img')?.getAttribute('src') || '';
-      const discount_rate = toNumber(li.querySelector('.PriceInfo_discountRate__EsQ8I')?.textContent || '0');
-      const origin_price = toNumber(li.querySelector('.PriceInfo_basePrice__8BQ32')?.textContent || '0');
-      const price = toNumber(li.querySelector('.Price_priceValue__A4KOr')?.textContent || '0');
-      const reviews = toNumber(li.querySelector('.ProductRating_ratingCount__R0Vhz')?.textContent || '0');
+      const { price, origin_price, discount_rate } = getPriceInfo(li);
+      const reviews = toNumber(li.querySelector('[class*="ProductRating_ratingCount"]')?.textContent || '0');
       const rating5 = getStar5(li);                 // 0~5
       const ratings = Math.round(rating5 * 2) / 2;  // 0~5 (0.5점 단위)
 
