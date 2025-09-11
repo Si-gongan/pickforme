@@ -5,6 +5,12 @@ import requireAuth from 'middleware/jwt';
 import { getCachedBestCategory, getCachedGoldbox } from 'services/coupang-api.service';
 import { validateProductData } from '../utils';
 import { log } from 'utils/logger';
+import {
+  getAIAnswer,
+  getProductCaption,
+  getProductReport,
+  getReviewSummary,
+} from 'services/product/product-ai.service';
 
 const router = new Router({
   prefix: '/discover',
@@ -160,15 +166,18 @@ router.post('/product/detail/caption', async (ctx) => {
     return;
   }
   // AI 서버에 이미지 설명 요청
-  const { data } = await client
-    .post('/test/product-caption', {
-      product,
-    })
-    .catch(() => ({
-      data: {},
-    }));
+  const data = await getProductCaption(product);
+
+  if (!data) {
+    ctx.status = 500;
+    ctx.body = {
+      caption: '',
+    };
+    return;
+  }
+
   ctx.body = {
-    caption: data.caption,
+    caption: data,
   };
 
   // update item
@@ -179,7 +188,7 @@ router.post('/product/detail/caption', async (ctx) => {
       },
       {
         $set: {
-          caption: data.caption,
+          caption: data,
         },
       }
     );
@@ -200,9 +209,11 @@ router.post('/product/detail/report', async (ctx) => {
     };
     return;
   }
+
   const item = await db.Item.findOne({
     url: product.url,
   });
+
   if (item && item.report) {
     ctx.body = {
       report: item.report,
@@ -210,15 +221,18 @@ router.post('/product/detail/report', async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/ai-report', {
-      product,
-    })
-    .catch(() => ({
-      data: {},
-    }));
+  const data = await getProductReport(product);
+
+  if (!data) {
+    ctx.status = 500;
+    ctx.body = {
+      report: '',
+    };
+    return;
+  }
+
   ctx.body = {
-    report: data.report,
+    report: data,
   };
 
   // update item
@@ -229,7 +243,7 @@ router.post('/product/detail/report', async (ctx) => {
       },
       {
         $set: {
-          report: data.report,
+          report: data,
         },
       }
     );
@@ -260,16 +274,18 @@ router.post('/product/detail/review', async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/review-summary', {
-      product,
-      reviews,
-    })
-    .catch(() => ({
-      data: {},
-    }));
+  const data = await getReviewSummary({ product, reviews });
+
+  if (!data) {
+    ctx.status = 500;
+    ctx.body = {
+      review: {},
+    };
+    return;
+  }
+
   ctx.body = {
-    review: data.summary,
+    review: data,
   };
 
   // update item
@@ -280,7 +296,7 @@ router.post('/product/detail/review', async (ctx) => {
       },
       {
         $set: {
-          review: data.summary,
+          review: data,
         },
       }
     );
@@ -316,15 +332,15 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/ai-answer', {
-      product,
-      reviews,
-      question,
-    })
-    .catch(() => ({
-      data: {},
-    }));
+  const data = await getAIAnswer(product, reviews, question);
+
+  if (!data) {
+    ctx.status = 500;
+    ctx.body = {
+      answer: '',
+    };
+    return;
+  }
   ctx.body = data;
   ctx.status = 200;
 });
