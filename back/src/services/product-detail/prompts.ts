@@ -48,27 +48,6 @@ export const createAIReportPrompt = (productName: string): string => `
 `;
 
 /**
- * [고객 질문 답변] 시각장애인 고객의 질문에 답변하기 위한 프롬프트입니다.
- */
-export const createAIAnswerPrompt = (
-  question: string,
-  reviewsText: string,
-  productInfo: object
-): string => `
-  쇼핑몰 상품에 대해 시각장애인 고객의 질문에 주어진 정보를 이용해 친절히 답변해줘.
-  고객의 질문에 간결히, 정확하게 답변해줘. 
-
-  [상품 정보]
-  ${JSON.stringify(productInfo)}
-  [리뷰]
-  ${reviewsText}
-  [고객 질문]
-  ${question}
-
-  (주어진 상품 이미지와 상세 설명 이미지 목록을 종합적으로 참고하여 답변해주세요.)
-`;
-
-/**
  * [리뷰 요약] 상품 리뷰를 JSON 형식으로 요약하기 위한 프롬프트입니다.
  */
 export const createReviewSummaryPrompt = (productName: string, reviewsText: string): string => `
@@ -83,4 +62,32 @@ export const createReviewSummaryPrompt = (productName: string, reviewsText: stri
   If each best review exceeds two sentences, "output only the most important TWO sentences" in that review.
   Use the Korean.
   [JSON answer]
+`;
+
+/**
+ * [고객 질문 답변] 3부분 프롬프트 - Part 1: 상품 정보와 리뷰
+ */
+export const createAIAnswerPrompt1 = (reviewsText: string, productInfo: object): string => `
+쇼핑몰 상품에 대해 시각장애인 고객의 질문에 주어진 정보를 이용해 친절히 답변해줘.
+[상품 정보]
+${JSON.stringify(productInfo)}
+[리뷰]
+${reviewsText}
+[상품 이미지]
+`;
+
+/**
+ * [고객 질문 답변] 3부분 프롬프트 - Part 2: 상세 설명 이미지
+ */
+export const createAIAnswerPrompt2 = (): string => `
+[상품 상세 설명 이미지 목록]
+`;
+
+/**
+ * [고객 질문 답변] 3부분 프롬프트 - Part 3: 질문과 답변 요청
+ */
+export const createAIAnswerPrompt3 = (question: string): string => `
+고객의 질문에 간결히, 정확하게 답변해줘. 
+[질문]
+${question}
 `;

@@ -160,16 +160,24 @@ export const getAIAnswer = async (
   try {
     const reviewsText =
       request.reviews.length > 0 ? request.reviews.join('\n- ').slice(0, 3000) : '';
-    const prompt = Prompts.createAIAnswerPrompt(question, reviewsText, request.product);
 
-    const imagesBase64 = await convertUrlsToBase64([
-      request.product.thumbnail,
-      ...request.product.detail_images,
-    ]);
+    // 3부분으로 나뉜 프롬프트 생성
+    const prompt1 = Prompts.createAIAnswerPrompt1(reviewsText, request.product);
+    const prompt2 = Prompts.createAIAnswerPrompt2();
+    const prompt3 = Prompts.createAIAnswerPrompt3(question);
 
+    // 이미지들을 base64로 변환
+    const thumbnailBase64 = await convertUrlsToBase64([request.product.thumbnail]);
+    const detailImagesBase64 = await convertUrlsToBase64(request.product.detail_images);
+
+    // Python 서버와 동일한 순서로 content 구성
+    // PROMPT1 -> 썸네일 이미지 -> PROMPT2 -> 상세 이미지들 -> PROMPT3
     const contentParts: ContentPart[] = [
-      { type: 'text', text: prompt },
-      ...imagesBase64.map((img): ContentPart => ({ type: 'image', image: img })),
+      { type: 'text', text: prompt1 },
+      { type: 'image', image: thumbnailBase64[0] }, // 썸네일 이미지
+      { type: 'text', text: prompt2 },
+      ...detailImagesBase64.map((img): ContentPart => ({ type: 'image', image: img })), // 상세 이미지들
+      { type: 'text', text: prompt3 },
     ];
 
     const messages: AIProviderMessage[] = [
