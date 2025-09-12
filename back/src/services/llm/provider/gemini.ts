@@ -13,11 +13,27 @@ export class GeminiProvider {
   private ai: GoogleGenAI;
 
   constructor() {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
+    const googleApiKey = process.env.GOOGLE_AI_API_KEY;
+    if (!googleApiKey) {
       throw new Error('GOOGLE_AI_API_KEY environment variable is required');
     }
-    this.ai = new GoogleGenAI({ apiKey });
+    // Helicone API 키 확인 추가
+    const heliconeApiKey = process.env.HELICONE_API_KEY;
+    if (!heliconeApiKey) {
+      throw new Error('HELICONE_API_KEY environment variable is required');
+    }
+
+    // GoogleGenAI 클라이언트 초기화 시 Helicone 프록시 설정 추가
+    this.ai = new GoogleGenAI({
+      apiKey: googleApiKey,
+      httpOptions: {
+        baseUrl: 'https://gateway.helicone.ai',
+        headers: {
+          'Helicone-Auth': `Bearer ${heliconeApiKey}`,
+          'Helicone-Target-URL': 'https://generativelanguage.googleapis.com',
+        },
+      },
+    });
   }
 
   /**

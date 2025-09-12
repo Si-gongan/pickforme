@@ -20,11 +20,24 @@ export class GPTProvider {
   private openai: OpenAI;
 
   constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
       throw new Error('OPENAI_API_KEY environment variable is required');
     }
-    this.openai = new OpenAI({ apiKey });
+    // Helicone API 키 확인 추가
+    const heliconeApiKey = process.env.HELICONE_API_KEY;
+    if (!heliconeApiKey) {
+      throw new Error('HELICONE_API_KEY environment variable is required');
+    }
+
+    // OpenAI 클라이언트 초기화 시 Helicone 프록시 설정 추가
+    this.openai = new OpenAI({
+      apiKey: openaiApiKey,
+      baseURL: 'https://oai.helicone.ai/v1', // OpenAI용 Helicone 프록시 URL
+      defaultHeaders: {
+        'Helicone-Auth': `Bearer ${heliconeApiKey}`,
+      },
+    });
   }
 
   /**
