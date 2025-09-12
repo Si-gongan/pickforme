@@ -5,6 +5,19 @@ import requireAuth from 'middleware/jwt';
 import { getCachedBestCategory, getCachedGoldbox } from 'services/coupang-api.service';
 import { validateProductData } from '../utils';
 import { log } from 'utils/logger';
+import {
+  getAIAnswer,
+  getProductCaption,
+  getProductReport,
+  getReviewSummary,
+} from 'services/product-detail/ai.service';
+import { validateRequest } from 'middleware/validation';
+import {
+  ProductCaptionRequestSchema,
+  ProductReportRequestSchema,
+  ProductReviewRequestSchema,
+  AIAnswerRequestSchema,
+} from './validation';
 
 const router = new Router({
   prefix: '/discover',
@@ -134,59 +147,66 @@ router.put('/product', async (ctx) => {
   }
 });
 
-router.post('/product/detail/caption', async (ctx) => {
-  const {
-    body: { product },
-  } = <any>ctx.request;
-  // 외부 입점 상품인지 체크
-  const section = await db.DiscoverSection.findOne({
-    'products.url': product.url,
-  });
-  if (section) {
-    ctx.body = {
-      caption: section.products.find((sectionProduct: any) => product.url === sectionProduct.url)
-        .caption,
-    };
-    return;
-  }
-  // 이미 저장된 상품 정보인지 체크
-  const item = await db.Item.findOne({
-    url: product.url,
-  });
-  if (item && item.caption) {
-    ctx.body = {
-      caption: item.caption,
-    };
-    return;
-  }
-  // AI 서버에 이미지 설명 요청
-  const { data } = await client
-    .post('/test/product-caption', {
-      product,
-    })
-    .catch(() => ({
-      data: {},
-    }));
-  ctx.body = {
-    caption: data.caption,
-  };
+router.post(
+  '/product/detail/caption',
+  validateRequest(ProductCaptionRequestSchema),
+  async (ctx) => {
+    const {
+      body: { product },
+    } = <any>ctx.request;
+    // 외부 입점 상품인지 체크
+    const section = await db.DiscoverSection.findOne({
+      'products.url': product.url,
+    });
+    if (section) {
+      ctx.body = {
+        caption: section.products.find((sectionProduct: any) => product.url === sectionProduct.url)
+          .caption,
+      };
+      return;
+    }
+    // 이미 저장된 상품 정보인지 체크
+    const item = await db.Item.findOne({
+      url: product.url,
+    });
+    if (item && item.caption) {
+      ctx.body = {
+        caption: item.caption,
+      };
+      return;
+    }
+    // AI 서버에 이미지 설명 요청
+    const data = await getProductCaption(product);
 
-  // update item
-  if (item) {
-    await db.Item.updateOne(
-      {
-        url: product.url,
-      },
-      {
-        $set: {
-          caption: data.caption,
+    if (!data) {
+      ctx.status = 500;
+      ctx.body = {
+        caption: '',
+      };
+      return;
+    }
+
+    ctx.body = {
+      caption: data,
+    };
+
+    // update item
+    if (item) {
+      await db.Item.updateOne(
+        {
+          url: product.url,
         },
-      }
-    );
+        {
+          $set: {
+            caption: data,
+          },
+        }
+      );
+    }
   }
-});
+);
 
-router.post('/product/detail/report', async (ctx) => {
+router.post('/product/detail/report', validateRequest(ProductReportRequestSchema), async (ctx) => {
   const {
     body: { product },
   } = <any>ctx.request;
@@ -200,9 +220,11 @@ router.post('/product/detail/report', async (ctx) => {
     };
     return;
   }
+
   const item = await db.Item.findOne({
     url: product.url,
   });
+
   if (item && item.report) {
     ctx.body = {
       report: item.report,
@@ -210,15 +232,18 @@ router.post('/product/detail/report', async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/ai-report', {
-      product,
-    })
-    .catch(() => ({
-      data: {},
-    }));
+  const data = await getProductReport(product);
+
+  if (!data) {
+    ctx.status = 500;
+    ctx.body = {
+      report: '',
+    };
+    return;
+  }
+
   ctx.body = {
-    report: data.report,
+    report: data,
   };
 
   // update item
@@ -229,14 +254,14 @@ router.post('/product/detail/report', async (ctx) => {
       },
       {
         $set: {
-          report: data.report,
+          report: data,
         },
       }
     );
   }
 });
 
-router.post('/product/detail/review', async (ctx) => {
+router.post('/product/detail/review', validateRequest(ProductReviewRequestSchema), async (ctx) => {
   const {
     body: { product, reviews },
   } = <any>ctx.request;
@@ -260,16 +285,18 @@ router.post('/product/detail/review', async (ctx) => {
     return;
   }
 
-  const { data } = await client
-    .post('/test/review-summary', {
-      product,
-      reviews,
-    })
-    .catch(() => ({
-      data: {},
-    }));
+  const data = await getReviewSummary({ product, reviews });
+
+  if (!data) {
+    ctx.status = 500;
+    ctx.body = {
+      review: {},
+    };
+    return;
+  }
+
   ctx.body = {
-    review: data.summary,
+    review: data,
   };
 
   // update item
@@ -280,23 +307,27 @@ router.post('/product/detail/review', async (ctx) => {
       },
       {
         $set: {
-          review: data.summary,
+          review: data,
         },
       }
     );
   }
 });
 
-router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
-  const {
-    body: { product, reviews, question },
-  } = <any>ctx.request;
+router.post(
+  '/product/detail/ai-answer',
+  requireAuth,
+  validateRequest(AIAnswerRequestSchema),
+  async (ctx) => {
+    const {
+      body: { product, reviews, question },
+    } = <any>ctx.request;
 
-  const user = await db.User.findById(ctx.state.user._id);
-  if (user && user.aiPoint > 0) {
-    await user.useAiPoint(1);
+    const user = await db.User.findById(ctx.state.user._id);
+    if (user && user.aiPoint > 0) {
+      await user.useAiPoint(1);
 
-    /*
+      /*
     const subscription = await db.Purchase.findOne({
       userId: ctx.state.user._id,
       isExpired: false,
@@ -308,26 +339,29 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
       await user.save();
     }
     */
-  } else {
-    ctx.status = 400;
-    ctx.body = {
-      errorMessage: 'AI 포인트가 부족합니다.',
-    };
-    return;
-  }
+    } else {
+      ctx.status = 400;
+      ctx.body = {
+        errorMessage: 'AI 포인트가 부족합니다.',
+      };
+      return;
+    }
 
-  const { data } = await client
-    .post('/test/ai-answer', {
-      product,
-      reviews,
-      question,
-    })
-    .catch(() => ({
-      data: {},
-    }));
-  ctx.body = data;
-  ctx.status = 200;
-});
+    const data = await getAIAnswer({ product, reviews }, question);
+
+    if (!data) {
+      ctx.status = 500;
+      ctx.body = {
+        answer: '',
+      };
+      return;
+    }
+    ctx.body = {
+      answer: data,
+    };
+    ctx.status = 200;
+  }
+);
 
 router.post('/search', async (ctx) => {
   const {
