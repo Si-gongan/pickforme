@@ -10,7 +10,7 @@ import {
   getProductCaption,
   getProductReport,
   getReviewSummary,
-} from 'services/product/product-ai.service';
+} from 'services/product-detail/ai.service';
 
 const router = new Router({
   prefix: '/discover',
@@ -332,7 +332,7 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
     return;
   }
 
-  const data = await getAIAnswer(product, reviews, question);
+  const data = await getAIAnswer({ product, reviews }, question);
 
   if (!data) {
     ctx.status = 500;
@@ -341,7 +341,9 @@ router.post('/product/detail/ai-answer', requireAuth, async (ctx) => {
     };
     return;
   }
-  ctx.body = data;
+  ctx.body = {
+    answer: data,
+  };
   ctx.status = 200;
 });
 
