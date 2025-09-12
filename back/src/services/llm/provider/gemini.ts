@@ -1,11 +1,12 @@
 // 설치: npm install @google/genai
 import { GoogleGenAI, Content, Part, HarmCategory, HarmBlockThreshold } from '@google/genai';
+import { ContentPart } from '../ai.provider';
 
 const DEFAULT_MODEL = 'gemini-2.0-flash';
 
 export interface GeminiMessage {
   role: 'user' | 'model'; // Gemini는 user/model 역할만 지원
-  content: string;
+  content: string | ContentPart[];
 }
 
 export class GeminiProvider {
@@ -24,46 +25,45 @@ export class GeminiProvider {
    */
   async generate(params: {
     messages: GeminiMessage[];
-    images?: string[];
     modelName?: string;
     systemInstruction?: string;
   }): Promise<string> {
-    const { messages, images, modelName = DEFAULT_MODEL, systemInstruction } = params;
+    const { messages, modelName = DEFAULT_MODEL, systemInstruction } = params;
 
     if (!messages || messages.length === 0) {
       throw new Error('Messages array cannot be empty.');
     }
 
-    let contents: Content[];
+    // 메시지를 Gemini Content 형식으로 변환
+    const contents: Content[] = messages.map((msg) => {
+      if (typeof msg.content === 'string') {
+        // 단순 텍스트 메시지
+        return {
+          role: msg.role,
+          parts: [{ text: msg.content }],
+        };
+      } else {
+        // 복합 콘텐츠 (텍스트 + 이미지)
+        const parts: Part[] = msg.content.map((part) => {
+          if (part.type === 'text') {
+            return { text: part.text || '' };
+          } else if (part.type === 'image') {
+            return {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: part.image || '',
+              },
+            };
+          }
+          throw new Error(`Unsupported content part type: ${part.type}`);
+        });
 
-    // 이미지가 있는 경우 (멀티모달 요청 구성)
-    if (images && images.length > 0) {
-      const history = messages.slice(0, -1).map((msg) => ({
-        role: msg.role,
-        parts: [{ text: msg.content }],
-      }));
-      const lastMessage = messages[messages.length - 1];
-
-      const imageParts: Part[] = images.map((img) => ({
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: img,
-        },
-      }));
-
-      const lastUserContent: Content = {
-        role: 'user',
-        parts: [{ text: lastMessage.content }, ...imageParts],
-      };
-
-      contents = [...history, lastUserContent];
-    } else {
-      // 이미지가 없는 경우 (텍스트 전용 요청)
-      contents = messages.map((msg) => ({
-        role: msg.role,
-        parts: [{ text: msg.content }],
-      }));
-    }
+        return {
+          role: msg.role,
+          parts,
+        };
+      }
+    });
 
     try {
       const response = await this.ai.models.generateContent({

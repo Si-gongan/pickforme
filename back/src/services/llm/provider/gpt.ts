@@ -1,10 +1,11 @@
 import OpenAI from 'openai';
+import { ContentPart } from '../ai.provider';
 
 const DEFAULT_MODEL = 'gpt-4o-mini';
 
 export interface GPTMessage {
   role: 'user'; // system 역할 포함
-  content: string;
+  content: string | ContentPart[];
 }
 
 // OpenAI API가 요구하는 복합 콘텐츠 타입 정의
@@ -29,14 +30,12 @@ export class GPTProvider {
   /**
    * 텍스트와 이미지를 모두 처리할 수 있는 통합 GPT 응답 생성 메서드
    * @param params.messages - 필수. 대화 내역 배열.
-   * @param params.images - 선택. Base64 또는 URL 형식의 이미지 문자열 배열.
    * @param params.model - 사용할 모델 이름.
    * @param params.config - 온도, 최대 토큰 등 기타 설정.
    * @returns AI가 생성한 텍스트 응답.
    */
   async generate(params: {
     messages: GPTMessage[];
-    images?: string[];
     model?: string;
     config?: {
       temperature?: number;
@@ -45,45 +44,51 @@ export class GPTProvider {
       imageDetail?: 'auto' | 'low' | 'high';
     };
   }): Promise<string> {
-    const { messages, images, model = DEFAULT_MODEL, config = {} } = params;
+    const { messages, model = DEFAULT_MODEL, config = {} } = params;
 
     if (!messages || messages.length === 0) {
       throw new Error('Messages array cannot be empty.');
     }
 
-    // OpenAI API에 보낼 최종 메시지 배열
-    let apiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+    // 메시지를 OpenAI API 형식으로 변환
+    const apiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = messages.map(
+      (msg) => {
+        if (typeof msg.content === 'string') {
+          // 단순 텍스트 메시지
+          return {
+            role: msg.role,
+            content: msg.content,
+          };
+        } else {
+          // 복합 콘텐츠 (텍스트 + 이미지)
+          const contentParts: MessageContent = msg.content.map((part) => {
+            if (part.type === 'text') {
+              return { type: 'text', text: part.text || '' };
+            } else if (part.type === 'image') {
+              const imageUrl = part.image?.startsWith('http')
+                ? part.image
+                : `data:image/jpeg;base64,${part.image}`;
+              return {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl,
+                  detail: config.imageDetail || 'auto',
+                },
+              };
+            }
+            throw new Error(`Unsupported content part type: ${part.type}`);
+          }) as (
+            | { type: 'text'; text: string }
+            | { type: 'image_url'; image_url: { url: string; detail?: 'auto' | 'low' | 'high' } }
+          )[];
 
-    // 이미지가 있는 경우 (멀티모달 요청 구성)
-    if (images && images.length > 0) {
-      const history = messages.slice(0, -1); // 마지막 메시지를 제외한 대화 내역
-      const lastMessage = messages[messages.length - 1];
-
-      if (lastMessage.role !== 'user') {
-        throw new Error('Images can only be attached to the last user message.');
+          return {
+            role: msg.role,
+            content: contentParts,
+          };
+        }
       }
-
-      // 이미지 파트 생성
-      const imageParts = images.map((img) => ({
-        type: 'image_url' as const,
-        image_url: {
-          url: img.startsWith('http') ? img : `data:image/jpeg;base64,${img}`,
-          detail: config.imageDetail || 'auto',
-        },
-      }));
-
-      // 마지막 메시지의 텍스트와 이미지 파트를 결합
-      const multimodalContent: MessageContent = [
-        { type: 'text', text: lastMessage.content },
-        ...imageParts,
-      ];
-
-      // 전체 대화 내역 재구성
-      apiMessages = [...history, { role: 'user', content: multimodalContent }];
-    } else {
-      // 이미지가 없는 경우 (텍스트 전용 요청)
-      apiMessages = messages;
-    }
+    );
 
     try {
       const response = await this.openai.chat.completions.create({

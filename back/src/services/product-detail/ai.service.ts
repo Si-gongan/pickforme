@@ -1,4 +1,4 @@
-import { aiProvider, AIModelType } from '../llm/ai.provider';
+import { aiProvider, AIModelType, AIProviderMessage, ContentPart } from '../llm/ai.provider';
 import { log } from 'utils/logger';
 import * as Prompts from './prompts';
 import { convertUrlsToBase64 } from 'utils/images';
@@ -42,13 +42,20 @@ export const getProductCaption = async (
   }
   try {
     const prompt = Prompts.createProductCaptionPrompt(product.name);
-    const messages = [{ role: 'user' as const, content: prompt }];
-
     const thumbnailBase64 = await convertUrlsToBase64([product.thumbnail]);
+
+    const messages: AIProviderMessage[] = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          { type: 'image', image: thumbnailBase64[0] },
+        ],
+      },
+    ];
 
     const caption = await aiProvider.generate({
       messages,
-      images: thumbnailBase64,
       model,
     });
     return caption;
@@ -70,13 +77,22 @@ export const getProductReport = async (
 ): Promise<string | null> => {
   try {
     const prompt = Prompts.createAIReportPrompt(product.name);
-    const messages = [{ role: 'user' as const, content: prompt }];
-
     const detailImagesBase64 = await convertUrlsToBase64(product.detail_images);
+
+    const contentParts: ContentPart[] = [
+      { type: 'text', text: prompt },
+      ...detailImagesBase64.map((img): ContentPart => ({ type: 'image', image: img })),
+    ];
+
+    const messages: AIProviderMessage[] = [
+      {
+        role: 'user',
+        content: contentParts,
+      },
+    ];
 
     const report = await aiProvider.generate({
       messages,
-      images: detailImagesBase64,
       model,
     });
 
@@ -145,16 +161,26 @@ export const getAIAnswer = async (
     const reviewsText =
       request.reviews.length > 0 ? request.reviews.join('\n- ').slice(0, 3000) : '';
     const prompt = Prompts.createAIAnswerPrompt(question, reviewsText, request.product);
-    const messages = [{ role: 'user' as const, content: prompt }];
 
     const imagesBase64 = await convertUrlsToBase64([
-      ...request.product.detail_images,
       request.product.thumbnail,
+      ...request.product.detail_images,
     ]);
+
+    const contentParts: ContentPart[] = [
+      { type: 'text', text: prompt },
+      ...imagesBase64.map((img): ContentPart => ({ type: 'image', image: img })),
+    ];
+
+    const messages: AIProviderMessage[] = [
+      {
+        role: 'user',
+        content: contentParts,
+      },
+    ];
 
     const answer = await aiProvider.generate({
       messages,
-      images: imagesBase64,
       model,
     });
     return answer;
