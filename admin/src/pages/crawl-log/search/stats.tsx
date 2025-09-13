@@ -63,6 +63,7 @@ type FieldCompletenessRow = {
 };
 
 type StatsResponse = {
+  todayBySource: SummaryRow[]; // ✅ '오늘' 요약 데이터 필드 추가
   rangeBySource: SummaryRow[];
   byDateAndSource: ByDateRow[];
   fieldCompletenessByDate: FieldCompletenessRow[];
@@ -148,8 +149,8 @@ export default function SearchLogStatsPage() {
     fetchStats();
   }, [fetchStats]);
 
-  // 상단 요약
-  const summaryRows = useMemo(() => stats?.rangeBySource ?? [], [stats]);
+  // ✅ 상단 요약: '오늘' 데이터로 변경
+  const summaryRows = useMemo(() => stats?.todayBySource ?? [], [stats]);
 
   const summaryColumns = [
     { title: "소스", dataIndex: "source", key: "source" },
@@ -186,13 +187,16 @@ export default function SearchLogStatsPage() {
     },
   ];
 
-  // 라인차트: 일자별 성공률
+  // ✅ 라인차트: 툴팁에 필요한 total, success 값도 함께 저장
   const lineData = useMemo(() => {
     if (!stats?.byDateAndSource) return [];
     const byDate: Record<string, any> = {};
     for (const row of stats.byDateAndSource) {
       if (!byDate[row.date]) byDate[row.date] = { date: row.date };
-      byDate[row.date][`${row.source}Rate`] = row.successRate ?? 0;
+      const { source, successRate, total, success } = row;
+      byDate[row.date][`${source}Rate`] = successRate ?? 0;
+      byDate[row.date][`${source}Total`] = total;
+      byDate[row.date][`${source}Success`] = success;
     }
     return Object.values(byDate).sort((a: any, b: any) =>
       a.date < b.date ? -1 : 1
@@ -283,8 +287,8 @@ export default function SearchLogStatsPage() {
 
       {stats && (
         <ContentSection>
-          {/* 기간 전체 요약 */}
-          <StatsCard title="선택한 기간 전체 요약 (소스별)" loading={loading}>
+          {/* ✅ 기간 전체 요약 -> 오늘 통계 요약으로 변경 */}
+          <StatsCard title="오늘의 통계 요약 (소스별)" loading={loading}>
             <Table
               rowKey={(r) => r.source}
               columns={summaryColumns as any}
@@ -300,12 +304,27 @@ export default function SearchLogStatsPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[0, 100]} />
+                {/* ✅ Tooltip formatter 수정 */}
                 <Tooltip
-                  formatter={(value, name) =>
-                    typeof value === "number"
-                      ? [`${value.toFixed(2)}%`, name]
-                      : [value as any, name as any]
-                  }
+                  formatter={(value, name, props) => {
+                    if (typeof value !== "number") {
+                      return [value as any, name as any];
+                    }
+                    const source = name === "Webview" ? "webview" : "server";
+                    const total = props.payload[`${source}Total`];
+                    const success = props.payload[`${source}Success`];
+
+                    if (
+                      typeof total === "number" &&
+                      typeof success === "number"
+                    ) {
+                      const formattedValue = `${value.toFixed(
+                        2
+                      )}% (${success}/${total})`;
+                      return [formattedValue, name];
+                    }
+                    return [`${value.toFixed(2)}%`, name]; // Fallback
+                  }}
                 />
                 <Legend />
                 <Line
