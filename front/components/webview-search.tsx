@@ -215,6 +215,23 @@ export const WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps)
                 // 데스크톱 DOM을 강제하기 위해 UA를 데스크톱으로 설정
                 userAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
                 onMessage={handleMessage}
+                onShouldStartLoadWithRequest={request => {
+                    // 외부 앱 스킴 차단 (coupang://, intent://, market:// 등)
+                    const url = request.url.toLowerCase();
+                    if (
+                        url.startsWith('coupang://') ||
+                        url.startsWith('intent://') ||
+                        url.startsWith('market://') ||
+                        url.startsWith('play.google.com') ||
+                        url.startsWith('itunes.apple.com') ||
+                        url.includes('://launch')
+                    ) {
+                        console.log('Blocked external app scheme:', request.url);
+                        return false; // 차단
+                    }
+                    // HTTP/HTTPS만 허용
+                    return url.startsWith('http://') || url.startsWith('https://');
+                }}
                 onNavigationStateChange={() => {
                     // 라우팅/페이지 변경 시에도 재주입
                     setTimeout(() => {
