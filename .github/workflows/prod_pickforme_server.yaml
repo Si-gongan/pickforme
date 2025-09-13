@@ -44,7 +44,7 @@ jobs:
       - name: Create and push tags
         id: tag
         run: |
-          TAG="server-prod-$(date -u +'%y%m%d-%H%M')"
+          TAG="server-prod-$(TZ=Asia/Seoul date +'%y%m%d-%H%M')"
           echo "Generated tag: $TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           git tag "$TAG"
