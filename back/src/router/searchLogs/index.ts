@@ -90,13 +90,7 @@ router.get('/list', async (ctx) => {
  * - failureReasonsRange: 기간 전체 실패 원인 분포
  * - meta: tz, from, to
  */
-/**
- * GET /search-logs/stats
- * - todayBySource: 오늘(KST) 소스별 요약(횟수/성공/실패/성공률/평균시간/평균결과수)
- * - byDateAndSource: 기간 내 일자×소스 성공률/평균시간/평균결과수
- * - failureReasonsWebviewToday: 웹뷰 실패 원인 분포(오늘) — timeout / no_results / other
- * - failureReasonsWebviewRange: 웹뷰 실패 원인 분포(기간 전체)
- */
+
 router.get('/stats', async (ctx) => {
   const tz = (ctx.query.tz as string) || 'Asia/Seoul';
   const from = ctx.query.from as string | undefined;
@@ -108,7 +102,7 @@ router.get('/stats', async (ctx) => {
     return;
   }
 
-  // ✅ 먼저 안전한 범위를 계산
+  // 먼저 안전한 범위를 계산
   let baseFrom: string, baseTo: string, guardStart: Date, guardEnd: Date;
   try {
     ({ baseFrom, baseTo, guardStart, guardEnd } = toZonedRange(tz, from, to));
@@ -118,7 +112,7 @@ router.get('/stats', async (ctx) => {
     return;
   }
 
-  // ✅ 필드 충족률 집계 (fieldStats 있는 문서만)
+  // 필드 충족률 집계 (fieldStats 있는 문서만)
   const fieldStatsAgg = await SearchLogModel.aggregate([
     { $match: { createdAt: { $gte: guardStart, $lte: guardEnd }, fieldStats: { $exists: true } } },
     {
@@ -144,7 +138,6 @@ router.get('/stats', async (ctx) => {
     { $sort: { _id: 1 } },
   ]);
 
-  // ✅ ratio 뿐 아니라 "몇 개/전체"도 같이 내려주기(num/den)
   const fieldCompletenessByDate: Array<{
     date: string;
     source: 'webview' | 'server';
@@ -172,7 +165,7 @@ router.get('/stats', async (ctx) => {
     push('url', row.url);
   }
 
-  // ✅ 나머지 통계 파이프라인도 동일한 범위를 사용
+  // 나머지 통계 파이프라인
   const pipeline: any[] = [
     { $match: { createdAt: { $gte: guardStart, $lte: guardEnd } } },
     {
@@ -180,11 +173,12 @@ router.get('/stats', async (ctx) => {
         localDate: { $dateToString: { date: '$createdAt', format: '%Y-%m-%d', timezone: tz } },
       },
     },
-    { $match: { localDate: { $gte: baseFrom, $lte: baseTo } } },
+    // localDate 필터는 $facet 내부로 이동하여 각 파이프라인이 독립적으로 필터링하게 함
     {
       $facet: {
-        /** (A) 선택한 기간 전체 요약(소스별) */
-        rangeBySource: [
+        /** (A) ✅ 오늘의 통계 요약 (소스별) - 추가된 부분 */
+        todayBySource: [
+          { $match: { localDate: baseTo } }, // 오늘 날짜(`to` 날짜)로 필터링
           {
             $group: {
               _id: '$source',
@@ -215,8 +209,42 @@ router.get('/stats', async (ctx) => {
           },
         ],
 
-        /** (B) 일자 × 소스 */
+        /** (B) 선택한 기간 전체 요약(소스별) */
+        rangeBySource: [
+          { $match: { localDate: { $gte: baseFrom, $lte: baseTo } } },
+          {
+            $group: {
+              _id: '$source',
+              total: { $sum: 1 },
+              success: { $sum: { $cond: [{ $eq: ['$success', true] }, 1, 0] } },
+              fail: { $sum: { $cond: [{ $eq: ['$success', false] }, 1, 0] } },
+              avgDurationMs: { $avg: '$durationMs' },
+              avgResultCount: { $avg: '$resultCount' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              source: '$_id',
+              total: 1,
+              success: 1,
+              fail: 1,
+              successRate: {
+                $cond: [
+                  { $gt: ['$total', 0] },
+                  { $multiply: [{ $divide: ['$success', '$total'] }, 100] },
+                  0,
+                ],
+              },
+              avgDurationMs: 1,
+              avgResultCount: 1,
+            },
+          },
+        ],
+
+        /** (C) 일자 × 소스 */
         byDateAndSource: [
+          { $match: { localDate: { $gte: baseFrom, $lte: baseTo } } },
           {
             $group: {
               _id: { date: '$localDate', source: '$source' },
@@ -249,7 +277,7 @@ router.get('/stats', async (ctx) => {
           { $sort: { date: 1, source: 1 } },
         ],
 
-        /** (C) 웹뷰 실패 원인 - 오늘 */
+        /** (D) 웹뷰 실패 원인 - 오늘 */
         failureReasonsWebviewToday: [
           { $match: { localDate: baseTo, source: 'webview', success: false } },
           {
@@ -259,10 +287,7 @@ router.get('/stats', async (ctx) => {
                   branches: [
                     {
                       case: {
-                        $regexMatch: {
-                          input: { $ifNull: ['$errorMsg', ''] },
-                          regex: /timeout/i,
-                        },
+                        $regexMatch: { input: { $ifNull: ['$errorMsg', ''] }, regex: /timeout/i },
                       },
                       then: 'timeout',
                     },
@@ -278,9 +303,15 @@ router.get('/stats', async (ctx) => {
           { $sort: { count: -1 } },
         ],
 
-        /** (D) 웹뷰 실패 원인 - 기간 전체 */
+        /** (E) 웹뷰 실패 원인 - 기간 전체 */
         failureReasonsWebviewRange: [
-          { $match: { source: 'webview', success: false } },
+          {
+            $match: {
+              localDate: { $gte: baseFrom, $lte: baseTo },
+              source: 'webview',
+              success: false,
+            },
+          },
           {
             $project: {
               category: {
@@ -288,10 +319,7 @@ router.get('/stats', async (ctx) => {
                   branches: [
                     {
                       case: {
-                        $regexMatch: {
-                          input: { $ifNull: ['$errorMsg', ''] },
-                          regex: /timeout/i,
-                        },
+                        $regexMatch: { input: { $ifNull: ['$errorMsg', ''] }, regex: /timeout/i },
                       },
                       then: 'timeout',
                     },
@@ -313,9 +341,10 @@ router.get('/stats', async (ctx) => {
   const [agg] = await SearchLogModel.aggregate(pipeline).allowDiskUse(true);
 
   ctx.body = {
+    todayBySource: agg?.todayBySource ?? [], // ✅ 오늘 데이터 추가
     rangeBySource: agg?.rangeBySource ?? [],
     byDateAndSource: agg?.byDateAndSource ?? [],
-    fieldCompletenessByDate, // ✅ 이제 채워짐
+    fieldCompletenessByDate,
     failureReasonsWebviewToday: agg?.failureReasonsWebviewToday ?? [],
     failureReasonsWebviewRange: agg?.failureReasonsWebviewRange ?? [],
     meta: { tz, range: { from: baseFrom, to: baseTo } },
