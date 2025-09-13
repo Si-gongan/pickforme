@@ -31,6 +31,7 @@ interface FormResponse {
   name: string;
   phoneNumber: string;
   email: string;
+  membershipProcessed: string;
 }
 
 async function processUser(response: FormResponse, eventRewards: ProductReward): Promise<void> {
@@ -53,23 +54,28 @@ async function processUser(response: FormResponse, eventRewards: ProductReward):
 
     if (!user) {
       console.log(
-        `User ${response.name} not found for phone: ${normalizedPhoneNumber} or email: ${response.email}`
+        `유저 ${response.name}을 찾을 수 없습니다. phone: ${normalizedPhoneNumber} or email: ${response.email}`
       );
       return;
     }
 
     if (user.event === 1) {
-      console.log(`User ${response.name} already processed`);
+      console.log(`유저 ${response.name} 이미 처리되었습니다.`);
+      return;
+    }
+
+    if (response.membershipProcessed == 'o') {
+      console.log(`유저 ${response.name} 이미 처리되었습니다2.`);
       return;
     }
 
     await user.applyEventRewards(eventRewards, EVENT_IDS.HANSIRYUN);
 
     console.log(
-      `new event membership for User ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt}`
+      `유저 ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt} 처리 완료`
     );
   } catch (error) {
-    console.error(`Error processing user ${response.email}:`, error);
+    console.error(`유저 ${response.email} 처리 중 오류 발생:`, error);
     throw error;
   }
 }
@@ -113,6 +119,7 @@ async function main() {
       name: row[1],
       email: row[2],
       phoneNumber: row[3],
+      membershipProcessed: row[6],
     }));
 
     const eventProducts = await db.Product.findOne({
