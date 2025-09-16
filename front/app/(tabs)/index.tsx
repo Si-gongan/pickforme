@@ -65,7 +65,8 @@ export default function HomeScreen() {
         handleSortChange,
         handleSearchButtonClick,
         handleBackButtonClick,
-        hasError
+        hasError,
+        startWebviewSearch
     } = useProductSearch();
 
     useFocusEffect(
@@ -193,7 +194,11 @@ export default function HomeScreen() {
             </View>
 
             <View importantForAccessibility="no-hide-descendants">
-                <WebViewSearch keyword={searchText} isSearching={isSearching} onMessage={handleSearchResults} />
+                <WebViewSearch
+                    keyword={searchText}
+                    startWebviewSearch={startWebviewSearch}
+                    onMessage={handleSearchResults}
+                />
             </View>
 
             {/* 검색 결과 또는 메인 상품 목록 */}
