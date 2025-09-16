@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { Alert, AppState } from 'react-native';
-import { GetProductAPI } from '../stores/product/apis';
+import { GetProductAPI, SearchCoupangByApiAPI } from '../stores/product/apis';
 import { Product } from '../stores/product/types';
 import { sanitizeUrl } from '../utils/url';
 import { SearchCoupangAPI } from '../stores/product/apis';
@@ -17,20 +17,20 @@ interface UseProductSearchProps {}
 // ---- types ----
 type FieldStats = {
     total: number;
-    title: number;
-    thumbnail: number;
-    price: number;
+    title: number; // ok
+    thumbnail: number; // ok
+    price: number; // ok
     originPrice: number;
     discountRate: number;
     ratings: number;
     reviews: number;
-    url: number;
+    url: number; // ok
 };
 
 type SearchLogPayload = {
     requestId: string;
     keyword: string;
-    source: 'webview' | 'server';
+    source: 'webview' | 'server' | 'coupang_api';
     success: boolean;
     durationMs: number;
     resultCount: number;
@@ -71,8 +71,9 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [isSearching, setIsSearching] = useState(false);
-    const [hasError, setHasError] = useState(false);
     const [isSearchMode, setIsSearchMode] = useState(false);
+    const [hasError, setHasError] = useState(false);
+    const [startWebviewSearch, setStartWebviewSearch] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // ✅ 요청 단위 식별자 & 타이머
@@ -130,6 +131,7 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
         requestIdRef.current = null;
         searchStartAtRef.current = null;
         searchModeStartAtRef.current = null;
+        setStartWebviewSearch(false);
         setIsSearching(false);
         setHasError(false);
         setSearchResult({ count: 0, page: 1, products: [] });
@@ -150,6 +152,53 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
         setSearchText('');
         resetSearchState();
     }, [resetSearchState, clearSearchTimeout]);
+
+    const handleSearchResults = useCallback(
+        (
+            products: Product[],
+            opts: {
+                skipLog?: boolean;
+                source?: 'webview' | 'server' | 'coupang_api';
+            } = {}
+        ) => {
+            if (!opts.skipLog) {
+                const source = opts.source ?? 'webview';
+                const ok = (products?.length ?? 0) > 0;
+                const fieldStats = computeFieldStats(products);
+
+                logEvent('keyword_search_complete', {
+                    request_id: requestIdRef.current,
+                    keyword: keywordRef.current!,
+                    results_count: products?.length ?? 0,
+                    duration_ms: Date.now() - (searchStartAtRef.current ?? Date.now()),
+                    success: ok,
+                    source: source
+                }).catch(e => {
+                    console.error('logEvent failed:', e);
+                });
+
+                postSearchLog({
+                    requestId: requestIdRef.current!,
+                    keyword: keywordRef.current!,
+                    source: source,
+                    success: ok,
+                    durationMs: Date.now() - (searchStartAtRef.current ?? Date.now()),
+                    resultCount: products.length,
+                    errorMsg: ok ? undefined : 'no_results',
+                    fieldStats
+                }).catch(e => {
+                    console.error('postSearchLog failed:', e);
+                });
+            }
+
+            clearSearchTimeout();
+            setIsSearching(false);
+            setHasError(false);
+            setStartWebviewSearch(false);
+            setSearchResult({ count: products.length, page: 1, products });
+        },
+        [setSearchResult, clearSearchTimeout]
+    );
 
     // URL 검색 처리
     const handleUrlSearch = useCallback(
@@ -194,17 +243,12 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     const handleKeywordSearch = useCallback(
         async (keyword: string) => {
             try {
-                setIsSearching(true);
-
-                requestIdRef.current = uuid();
-
                 await logEvent('keyword_search_submit', {
                     request_id: requestIdRef.current,
                     keyword: keywordRef.current!,
                     sorter: searchSorter,
                     source: 'webview'
                 });
-                searchStartAtRef.current = Date.now();
 
                 // 검색 시작 후 5초 타임아웃 설정
                 timeoutRef.current = setTimeout(async () => {
@@ -326,16 +370,11 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
                 setSearchResult({ count: 0, page: 1, products: [] });
             }
         },
-        [setSearchResult, postSearchLog, searchSorter]
+        [setSearchResult, postSearchLog]
     );
 
-    // 검색 실행
     const executeSearch = useCallback(
         async (text: string) => {
-            resetSearchState();
-
-            keywordRef.current = text;
-
             if (!text.trim()) {
                 return;
             }
@@ -343,12 +382,58 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
             if (text.includes('coupang')) {
                 setIsSearchMode(false);
                 await handleUrlSearch(text);
-            } else {
-                setIsSearchMode(true);
-                await handleKeywordSearch(text);
+                return;
             }
+
+            // --- 1. 상태 초기화 및 검색 시작 ---
+            resetSearchState();
+            setIsSearching(true);
+            setIsSearchMode(true);
+            keywordRef.current = text;
+            requestIdRef.current = uuid();
+            searchStartAtRef.current = Date.now();
+
+            // --- 2. API를 통한 검색 우선 시도 ---
+            try {
+                const apiResponse = await SearchCoupangByApiAPI(text);
+
+                if (
+                    apiResponse.data?.success &&
+                    Array.isArray(apiResponse.data.data) &&
+                    apiResponse.data.data.length > 0
+                ) {
+                    // API 검색 성공 및 결과가 있을 경우
+                    const mappedProducts: Product[] = apiResponse.data.data.map(item => ({
+                        productId: String(item.id),
+                        name: item.name,
+                        thumbnail: item.thumbnail,
+                        price: item.price,
+                        url: item.url,
+                        // 요청대로 없는 데이터는 0 또는 빈 값으로 채움
+                        origin_price: 0,
+                        discount_rate: 0,
+                        ratings: 0,
+                        reviews: 0,
+                        itemId: '',
+                        vendorItemId: '',
+                        platform: 'coupang'
+                    }));
+
+                    // API 결과로 바로 상태 업데이트 후 함수 종료
+                    handleSearchResults(mappedProducts, { source: 'coupang_api' });
+                    return;
+                }
+                // API 호출은 성공했으나 데이터가 없는 경우, 자연스럽게 웹뷰 검색으로 넘어감
+            } catch (error) {
+                // API 호출 자체가 실패한 경우 (네트워크 에러 등), 웹뷰 검색으로 넘어감
+                console.warn('API search failed, falling back to WebView search:', error);
+            }
+
+            // --- 3. API 실패/결과 없음 시 웹뷰 검색으로 폴백 ---
+            setStartWebviewSearch(true);
+            await handleKeywordSearch(text);
         },
-        [handleUrlSearch, handleKeywordSearch, resetSearchState]
+        [handleUrlSearch, handleKeywordSearch, resetSearchState, handleSearchResults]
     );
 
     // 검색어 변경 처리
@@ -373,56 +458,13 @@ export const useProductSearch = ({}: UseProductSearchProps = {}) => {
         [searchText, executeSearch, setSearchSorter, clearSearchTimeout]
     );
 
-    const handleSearchResults = useCallback(
-        (
-            products: Product[],
-            opts: {
-                skipLog?: boolean;
-            } = {}
-        ) => {
-            if (!opts.skipLog) {
-                const ok = (products?.length ?? 0) > 0;
-                const fieldStats = computeFieldStats(products);
-
-                logEvent('keyword_search_complete', {
-                    request_id: requestIdRef.current,
-                    keyword: keywordRef.current!,
-                    results_count: products?.length ?? 0,
-                    duration_ms: Date.now() - (searchStartAtRef.current ?? Date.now()),
-                    success: ok,
-                    source: 'webview'
-                }).catch(e => {
-                    console.error('logEvent failed:', e);
-                });
-
-                postSearchLog({
-                    requestId: requestIdRef.current!,
-                    keyword: keywordRef.current!,
-                    source: 'webview',
-                    success: ok,
-                    durationMs: Date.now() - (searchStartAtRef.current ?? Date.now()),
-                    resultCount: products.length,
-                    errorMsg: ok ? undefined : 'no_results',
-                    fieldStats
-                }).catch(e => {
-                    console.error('postSearchLog failed:', e);
-                });
-            }
-
-            clearSearchTimeout();
-            setIsSearching(false);
-            setHasError(false);
-            setSearchResult({ count: products.length, page: 1, products });
-        },
-        [setSearchResult, clearSearchTimeout]
-    );
-
     return {
         searchText,
         isSearching,
         hasError,
         searchSorter,
         isSearchMode,
+        startWebviewSearch,
         handleSearchTextChange,
         handleSearchResults,
         executeSearch,
