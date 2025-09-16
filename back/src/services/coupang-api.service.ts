@@ -169,6 +169,50 @@ export async function getCachedGoldbox(options?: { force?: boolean }) {
 }
 
 /**
+ * ✨ [수정] 키워드로 상품을 검색하여 '원본 데이터'를 반환합니다.
+ * (딥링크 변환은 클라이언트에서 처리하는 경우에 사용)
+ * * @param keyword 검색할 키워드
+ * @param limit 반환할 상품 개수 (기본값: 10)
+ * @returns 검색된 상품 목록 (딥링크로 변환되지 않은 원본 URL 포함)
+ */
+export async function searchProducts(keyword: string, limit: number = 10) {
+  if (!keyword) {
+    return [];
+  }
+
+  const METHOD = 'GET';
+  const PATH = `${API_BASE_PATH}/products/search`;
+  // 검색어는 URL 인코딩 필수
+  const QUERY = `keyword=${encodeURIComponent(keyword)}&limit=${limit}&subId=${SUB_ID}`;
+
+  try {
+    const authorization = generateAuthorizationHeader(METHOD, PATH, QUERY);
+    const response = await axios.get(`${API_DOMAIN}${PATH}?${QUERY}`, {
+      headers: { Authorization: authorization },
+    });
+
+    const productsFromApi = response.data?.data?.productData || [];
+
+    // API에서 받은 데이터를 표준 형식으로 변환만 수행
+    const transformedProducts = productsFromApi.map((p: any) => ({
+      id: p.productId,
+      name: p.productName,
+      price: p.productPrice,
+      thumbnail: p.productImage,
+      url: p.productUrl, // 딥링크로 변환하지 않은 '원본 URL'을 그대로 반환
+      platform: 'coupang',
+    }));
+
+    return transformedProducts;
+  } catch (error) {
+    void log.error(`Coupang Search API 호출 실패 (keyword: ${keyword})`, 'API', 'HIGH', {
+      error,
+    });
+    throw error;
+  }
+}
+
+/**
  * API 데이터를 미리 로드하고 캐싱합니다. (변경 없음)
  */
 export async function preloadCoupangAPI() {
