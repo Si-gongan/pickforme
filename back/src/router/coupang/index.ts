@@ -3,6 +3,7 @@ import coupangCrawlerService from '../../services/coupang-crawler.service';
 import { log } from 'utils/logger';
 import { extractAndValidateCoupangUrl } from 'utils/coupang';
 import client from 'utils/axios';
+import { searchProducts } from 'services/coupang-api.service';
 
 const router = new Router({
   prefix: '/coupang',
@@ -128,6 +129,42 @@ router.post('/deeplink', async (ctx) => {
   }
 
   ctx.body = { success: true, data: result[0] };
+});
+
+router.post('/api/search', async (ctx) => {
+  try {
+    const { keyword } = ctx.request.body as { keyword: string };
+
+    // 파트너스 api 최대 허용 검색 개수는 10개입니다.
+    const searchLimit = 10;
+
+    if (!keyword) {
+      ctx.status = 400;
+      ctx.body = { success: false, message: '검색어(keyword)가 필요합니다.' };
+      return;
+    }
+
+    // 이전에 만든 API 검색 서비스 함수 호출
+    const result = await searchProducts(keyword, searchLimit);
+
+    ctx.body = { success: true, data: result };
+
+    void log.info('쿠팡 API 검색 성공', 'COUPANG', 'LOW', {
+      keyword,
+      resultCount: result.length,
+    });
+  } catch (error) {
+    console.error('❌ 쿠팡 API 검색 실패:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: error instanceof Error ? error.message : 'API 검색 중 오류가 발생했습니다.',
+    };
+    void log.error('쿠팡 API 검색 실패', 'COUPANG', 'MEDIUM', {
+      keyword: (ctx.request.body as any)?.keyword,
+      error: error instanceof Error ? error.stack : error,
+    });
+  }
 });
 
 // 크롤러 상태 확인

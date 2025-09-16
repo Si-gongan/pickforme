@@ -64,6 +64,8 @@ export const CoupangCrawlAPI = (url: string) =>
         .post<CoupangCrawlResponse>('/coupang/crawl', { url })
         .catch(error => handleApiError(error, 'CoupangCrawlAPI'));
 
+// [기존] 서버쪽 크롤러를 통해 상품을 검색합니다.
+
 export const SearchCoupangAPI = (searchText: string) =>
     client
         .post(
@@ -74,3 +76,20 @@ export const SearchCoupangAPI = (searchText: string) =>
             }
         )
         .catch(error => handleApiError(error, 'SearchCoupangAPI'));
+
+/**
+ * [신규] 서버의 Coupang Partners API를 통해 상품을 검색합니다.
+ */
+export const SearchCoupangByApiAPI = (keyword: string, limit: number = 10) => {
+    return client.post<{
+        success: boolean;
+        data: {
+            id: number;
+            name: string;
+            price: number;
+            thumbnail: string;
+            url: string;
+            platform: string;
+        }[];
+    }>('/coupang/api/search', { keyword, limit });
+};

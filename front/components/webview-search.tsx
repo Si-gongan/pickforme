@@ -7,7 +7,7 @@ import { Product } from '../stores/product/types';
 interface WebViewProps {
     keyword: string;
     onMessage: (data: Product[]) => void;
-    isSearching: boolean;
+    startWebviewSearch: boolean;
 }
 
 const searchProductInjectionCode = `
@@ -198,7 +198,7 @@ const shouldBlock = (url: string) => {
 
 const buildUrl = (kw: string) => `https://www.coupang.com/np/search?q=${encodeURIComponent(kw)}&page=1`;
 
-const _WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps) => {
+const _WebViewSearch = ({ keyword, onMessage, startWebviewSearch }: WebViewProps) => {
     const webViewRef = useRef<WebView>(null);
     const [retryCount, setRetryCount] = useState<number>(0);
     const maxRetries = 5;
@@ -247,11 +247,11 @@ const _WebViewSearch = ({ keyword, onMessage, isSearching }: WebViewProps) => {
     };
 
     useEffect(() => {
-        if (isSearching && keyword) {
+        if (startWebviewSearch && keyword) {
             setRetryCount(0);
             handleExecuteSearch();
         }
-    }, [isSearching, keyword]);
+    }, [startWebviewSearch, keyword]);
 
     return (
         <View style={{ width: '100%', height: 0 }}>
