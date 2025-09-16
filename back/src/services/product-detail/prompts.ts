@@ -51,17 +51,40 @@ export const createAIReportPrompt = (productName: string): string => `
  * [리뷰 요약] 상품 리뷰를 JSON 형식으로 요약하기 위한 프롬프트입니다.
  */
 export const createReviewSummaryPrompt = (productName: string, reviewsText: string): string => `
-  [Reviews]
+  [제품명]
+  ${productName}
+
+  [리뷰 목록]
   ${reviewsText}
-  [Request]
-  Summarize the reviews of the product into pros and cons.
-  And select the maximum three review sections that best reflect this content.
-  Product name: ${productName}
-  Answer should be following JSON format. Only three column : ("pros" : list, "cons" : list, "bests" : list)
-  Make sure to include 3~5 pros, 2~3 cons, 1~3 best reviews.
-  If each best review exceeds two sentences, "output only the most important TWO sentences" in that review.
-  Use the Korean.
-  [JSON answer]
+
+  [요청]
+  위 [리뷰 목록]을 요약해서 장점("pros"), 단점("cons"), 그리고 베스트 리뷰("bests")를 추출해줘.
+  - 장점은 3~5개, 단점은 2~3개, 베스트 리뷰는 1~3개를 선정해줘.
+  - 베스트 리뷰가 2문장이 넘을 경우, 가장 핵심적인 2문장만 남겨줘.
+  - 내용은 모두 한국어로 작성해줘.
+  - 답변은 반드시 아래 [예시]와 동일한 JSON 형식이어야 하며, \`\`\`json ... \`\`\` 코드 블록 안에 넣어줘.
+  - **"bests" 필드의 값은 반드시 리뷰 내용만 담긴 문자열의 배열(string[])이어야 해. 객체를 포함하면 절대 안 돼.**
+
+  [예시]
+  \`\`\`json
+  {
+    "pros": [
+      "색감이 파스텔톤이라 예뻐요.",
+      "가성비가 좋습니다.",
+      "딱 기본 사이즈의 머그컵입니다."
+    ],
+    "cons": [
+      "마감이 약간 아쉬워요.",
+      "조금 무겁게 느껴질 수 있습니다."
+    ],
+    "bests": [
+      "엄마가 집에서 막 사용할 컵을 원하셔서 저렴하고 예쁜 키에 베이직 무지 파스텔 머그컵을 구매하게 되었습니다. 딱 기본 사이즈의 머그컵입니다.(350ml)",
+      "일단 칼라가 4가지다 예쁜거에요 보통 여러색깔 있으면 한가지정도는 좀 덜마음에 들법한데 ㅎㅎ 실물로봐도 참 예뻐요 ㅠㅠ"
+    ]
+  }
+  \`\`\`
+
+  [JSON 답변]
 `;
 
 /**
