@@ -15,10 +15,8 @@ import Item from './item';
 import Popup from './popup';
 import SearchLog from './searchLog';
 
-import dotenv from 'dotenv';
 import { log } from 'utils/logger';
 import PurchaseFailure from './purchase/failure';
-dotenv.config();
 
 const uri = process.env.MONGO_URI!;
 const isTest = process.env.NODE_ENV === 'test';
