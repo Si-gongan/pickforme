@@ -132,3 +132,30 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
         isPending: isPendingAppleLogin || isPendingKakaoLogin || isPendingGoogleLogin
     };
 }
+
+// 회원탈퇴 hook
+export function useWithdraw() {
+    const onUser = useSetAtom(userAtom);
+
+    const { mutateAsync: mutateWithdraw, isPending: isPendingWithdraw } = useMutation({
+        mutationKey: ['mutateWithdraw'],
+        mutationFn: function () {
+            return client.post('/auth/quit');
+        },
+        onSuccess: async function (response) {
+            if (response.status === 200) {
+                // 회원탈퇴 성공 시 사용자 상태 초기화
+                await onUser({});
+                changeToken(undefined);
+            }
+        },
+        onError: function (error) {
+            console.error('회원탈퇴 에러:', error);
+        }
+    });
+
+    return {
+        mutateWithdraw,
+        isPending: isPendingWithdraw
+    };
+}
