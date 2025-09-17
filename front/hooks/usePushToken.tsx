@@ -6,6 +6,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 
 import { setPushTokenAtom, userAtom } from '@stores';
+import { logEvent } from '@/services/firebase';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -29,7 +30,10 @@ const usePushToken = () => {
         const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
             // notification 누른경우
             const data = response.notification.request.content.data;
-            if (data.url) {
+            if (data.url && data.type === 'answer') {
+                logEvent('manager_answer_push_click', {
+                    url: data.url
+                });
                 initialPushRouteRef.current = data.url;
             }
         });

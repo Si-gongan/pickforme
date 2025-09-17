@@ -3,7 +3,7 @@ import axios from 'axios';
 import db from 'models';
 import verifyAppleToken from 'verify-apple-id-token';
 import requireAuth from 'middleware/jwt';
-import { PushSetting } from 'models/user/types';
+import { PushService, PushSetting } from 'models/user/types';
 
 const router = new Router({
   prefix: '/auth',
@@ -26,27 +26,11 @@ const handleLogin = async (email: string) => {
       aiPoint: 15,
     });
 
-    const usedEmail = await db.User.findOne({
-      originEmail: email,
-    });
-    if (!usedEmail) {
-      // 과거 회원 기록이 없는 경우
-    } else {
-      // 과거 회원 기록이 있는 경우
-      // const isNewLoginAfterUpdate = +new Date() - +usedEmail.lastLoginAt < 1000;
-    }
     isRegister = true;
   } else {
-    // 기존 회원
-    // const isNewLoginAfterUpdate = +new Date() - +user.lastLoginAt < 1000;
-
-    // 한시련 이벤트 처리 관련 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/events.ts
-
     // update last login date
     user.lastLoginAt = new Date();
   }
-
-  // 환불 후 로그인 시 유저 포인트 초기화 로직은 스케쥴러에서 작업하도록 처리했습니다. src/scheduler/iap.ts
 
   await user.save();
 
@@ -142,8 +126,31 @@ router.post('/quit', requireAuth, async (ctx) => {
     ctx.status = 404;
     return;
   }
+
+  if (user.email.includes('_deleted_')) {
+    ctx.status = 400;
+    ctx.body = {
+      error: '이미 탈퇴한 사용자입니다',
+    };
+    return;
+  }
+
   user.originEmail = user.email;
   user.email = `${user.email}_deleted_${new Date()}`;
+  user.pushToken = undefined;
+  user.phone = undefined;
+  user.push = {
+    service: PushService.off,
+  };
+  user.point = 0;
+  user.aiPoint = 0;
+  user.level = 1;
+  user.lastLoginAt = new Date();
+  user.MembershipAt = null;
+  user.lastMembershipAt = null;
+  user.event = null;
+  user.hide = [];
+
   await user.save();
   ctx.status = 200;
 });

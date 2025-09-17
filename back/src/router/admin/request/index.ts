@@ -26,7 +26,7 @@ router.post('/answer', async (ctx) => {
         request!.type === RequestType.QUESTION
           ? `'${request!.product.name.slice(0, 13)}...' 상품에 대한 매니저 답변이 도착했습니다.`
           : '매니저 답변이 도착했습니다.',
-      data: { url: deeplink },
+      data: { url: deeplink, type: 'answer' },
     });
   }
 

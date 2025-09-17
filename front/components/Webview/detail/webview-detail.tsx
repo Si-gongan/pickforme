@@ -108,15 +108,15 @@ export const useWebViewDetail = ({
                         maxRetries: 1
                     },
                     {
-                        label: 'mobile-vm',
-                        url: extracted.mobileVM,
-                        getInjection: (ids: Ids) => getMobileInjectionCode(),
-                        maxRetries: 2
-                    },
-                    {
                         label: 'mobile-mlp',
                         url: extracted.mobileMLP,
                         getInjection: (ids: Ids) => getMobileInjectionCode2(ids),
+                        maxRetries: 3
+                    },
+                    {
+                        label: 'mobile-vm',
+                        url: extracted.mobileVM,
+                        getInjection: (ids: Ids) => getMobileInjectionCode(),
                         maxRetries: 2
                     }
                 ].filter(a => !!a.url);
@@ -160,11 +160,11 @@ export const useWebViewDetail = ({
         if (retryCount < max) {
             // 재주입
             setRetryCount(c => c + 1);
+            setIsReady(false);
+            setHasInjected(false);
             setTimeout(() => {
                 try {
                     webViewRef.current?.reload();
-                    const code = currentAttempt!.getInjection(idsRef.current);
-                    webViewRef.current?.injectJavaScript(code);
                 } catch {}
             }, RETRY_DELAY_MS);
         } else {
@@ -261,8 +261,25 @@ export const useWebViewDetail = ({
                         true;
                     `);
                 }}
-                onLoadEnd={() => setIsReady(true)}
+                onLoad={() => setIsReady(true)}
                 onError={() => triggerFailure()}
+                onShouldStartLoadWithRequest={request => {
+                    // 외부 앱 스킴 차단 (coupang://, intent://, market:// 등)
+                    const url = request.url.toLowerCase();
+                    if (
+                        url.startsWith('coupang://') ||
+                        url.startsWith('intent://') ||
+                        url.startsWith('market://') ||
+                        url.startsWith('play.google.com') ||
+                        url.startsWith('itunes.apple.com') ||
+                        url.includes('://launch')
+                    ) {
+                        console.log('Blocked external app scheme:', request.url);
+                        return false; // 차단
+                    }
+                    // HTTP/HTTPS만 허용
+                    return url.startsWith('http://') || url.startsWith('https://');
+                }}
                 cacheEnabled={false}
                 cacheMode="LOAD_NO_CACHE"
                 renderToHardwareTextureAndroid

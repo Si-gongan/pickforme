@@ -23,7 +23,8 @@ export type AnalyticsEventName =
     | 'subscription_unsubscribe'
     | 'subscription_request_error'
     | 'main_products_request'
-    | 'main_products_response';
+    | 'main_products_response'
+    | 'manager_answer_push_click';
 
 // | 'login'
 // | 'signup'

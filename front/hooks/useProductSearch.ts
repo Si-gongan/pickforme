@@ -54,7 +54,8 @@ function computeFieldStats(products: Product[]): FieldStats {
     for (const p of products || []) {
         if (has(p.name)) title++;
         if (has(p.thumbnail)) thumbnail++;
-        if (has(p.price)) price++;
+        // 가격이 0이면 실패로 처리 (크롤링 실패)
+        if (has(p.price) && p.price > 0) price++;
         if (has(p.origin_price)) originPrice++;
         if (has(p.discount_rate)) discountRate++;
         if (has(p.ratings)) ratings++;
@@ -64,7 +65,7 @@ function computeFieldStats(products: Product[]): FieldStats {
     return { total, title, thumbnail, price, originPrice, discountRate, ratings, reviews, url };
 }
 
-const TIMEOUT_DURATION = 5000;
+const TIMEOUT_DURATION = 7000;
 
 export const useProductSearch = ({}: UseProductSearchProps = {}) => {
     const router = useRouter();

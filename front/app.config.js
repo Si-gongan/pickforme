@@ -20,7 +20,7 @@ export default ({ config }) => {
         name,
         slug: 'pickformeapp',
         owner: 'sigonggan',
-        version: '3.3.3',
+        version: '3.3.4',
         orientation: 'portrait',
         icon: './assets/images/pickforme_logoWtxt_200x200.png',
         scheme,
@@ -41,7 +41,7 @@ export default ({ config }) => {
             jsEngine: 'jsc',
             icon: './assets/images/pickforme_logo_200x200.png',
             googleServicesFile: './GoogleService-Info.plist',
-            buildNumber: '8',
+            buildNumber: '1',
             infoPlist: {
                 CFBundleURLTypes: [
                     {
@@ -57,7 +57,7 @@ export default ({ config }) => {
             },
             package: scheme,
             googleServicesFile: './google-services.json',
-            versionCode: 120
+            versionCode: 119
         },
         web: {
             bundler: 'metro',
@@ -96,7 +96,7 @@ export default ({ config }) => {
         experiments: {
             typedRoutes: true
         },
-        runtimeVersion: '1.0.0',
+        runtimeVersion: '3.3.4',
         updates: {
             enabled: true,
             fallbackToCacheTimeout: 0,

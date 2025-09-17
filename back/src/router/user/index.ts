@@ -56,7 +56,7 @@ router.get('/push/:id', async (ctx) => {
       to: user.pushToken,
       title: 'push 테스트',
       body: 'push 성공',
-      data: { userId: user._id },
+      data: { userId: user._id, type: 'send_test' },
     });
   }
   ctx.body = {

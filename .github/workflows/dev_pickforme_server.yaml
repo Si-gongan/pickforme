@@ -44,13 +44,13 @@ jobs:
       - name: Create and push tags
         id: tag
         run: |
-          TAG="dev_$(date -u +'%y%m%d-%H%M')"
+          TAG="server-dev-$(TZ=Asia/Seoul date +'%y%m%d-%H%M')"
           echo "Generated tag: $TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           git tag "$TAG"
-          git tag -fa dev_server -m "latest dev server tag" "$TAG"
+          git tag -fa server-dev-latest -m "latest dev server tag" "$TAG"
           git push origin "$TAG"
-          git push --force origin dev_server
+          git push --force origin server-dev-latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master

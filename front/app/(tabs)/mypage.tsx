@@ -20,6 +20,7 @@ import { userAtom } from '@stores';
 import { changeToken } from '../../utils/axios';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/core';
+import { useWithdraw } from '@/services';
 
 export default function MyScreen() {
     const colorScheme = useColorScheme();
@@ -28,6 +29,7 @@ export default function MyScreen() {
     const headerTitleRef = useRef<View>(null);
 
     const [user, onUser] = useAtom(userAtom);
+    const { mutateWithdraw, isPending: isWithdrawPending } = useWithdraw();
 
     useFocusEffect(
         useCallback(() => {
@@ -120,11 +122,58 @@ export default function MyScreen() {
 
     const onLogout = useCallback(
         function () {
-            onUser({});
-            changeToken(undefined);
-            Alert.alert('로그아웃 되었습니다.');
+            Alert.alert('로그아웃', '로그아웃하시겠습니까?', [
+                {
+                    text: '아니요',
+                    style: 'cancel'
+                },
+                {
+                    text: '예',
+                    onPress: () => {
+                        onUser({});
+                        changeToken(undefined);
+                        Alert.alert('로그아웃 되었습니다.');
+                    }
+                }
+            ]);
         },
         [onUser]
+    );
+
+    const onWithdraw = useCallback(
+        function () {
+            Alert.alert(
+                '정말 회원탈퇴 하시겠어요?',
+                '회원탈퇴 시 계정과 이용 기록이 모두 삭제되며, 복구가 불가능합니다. 또한 보유 중인 이용권과 멤버십 혜택은 즉시 소멸됩니다.',
+                [
+                    {
+                        text: '아니요',
+                        style: 'cancel'
+                    },
+                    {
+                        text: '네, 탈퇴합니다',
+                        style: 'destructive',
+                        onPress: async () => {
+                            try {
+                                await mutateWithdraw();
+                                Alert.alert('회원탈퇴가 완료되었습니다.', '', [
+                                    {
+                                        text: '확인',
+                                        onPress: () => {
+                                            router.replace('/login');
+                                        }
+                                    }
+                                ]);
+                            } catch (error) {
+                                Alert.alert('오류', '회원탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.');
+                                console.error('회원탈퇴 오류:', error);
+                            }
+                        }
+                    }
+                ]
+            );
+        },
+        [mutateWithdraw, router]
     );
 
     const myInfoMenu = useMemo(
@@ -215,7 +264,7 @@ export default function MyScreen() {
                             title="계정"
                             items={[
                                 { name: '로그아웃', onPress: onLogout },
-                                { name: '회원탈퇴', onPress: goToLogin }
+                                { name: '회원탈퇴', onPress: onWithdraw }
                             ]}
                             role="button"
                         />

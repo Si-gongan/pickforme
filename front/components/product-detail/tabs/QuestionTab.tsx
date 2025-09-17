@@ -84,7 +84,7 @@ const QuestionTab: React.FC<QuestionTabProps> = ({
     return (
         <View style={styles.detailWrap}>
             <View style={styles.inputWrap}>
-                <View accessible style={{ width: '90%' }}>
+                <View style={{ width: '90%' }}>
                     <TextInput
                         ref={inputRef}
                         style={styles.textArea}

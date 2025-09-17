@@ -192,10 +192,9 @@ export default function HomeScreen() {
                 </View>
             </View>
 
-            {/* WebView Search */}
-            {isSearchMode && (
+            <View importantForAccessibility="no-hide-descendants">
                 <WebViewSearch keyword={searchText} isSearching={isSearching} onMessage={handleSearchResults} />
-            )}
+            </View>
 
             {/* 검색 결과 또는 메인 상품 목록 */}
             {isSearching ? (
