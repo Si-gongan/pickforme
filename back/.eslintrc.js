@@ -16,6 +16,7 @@ module.exports = {
     'import/prefer-default-export': 0,
     'prettier/prettier': 'error',
     '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/naming-convention': 'warn',
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
