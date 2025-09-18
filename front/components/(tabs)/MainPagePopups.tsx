@@ -11,6 +11,7 @@ import Modal from 'react-native-modal';
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
 import Survey from './popups/Survey';
+import UpdateNotice from './popups/UpdateNotice';
 
 const MainPagePopups = () => {
     const [isHowModalVisible, setIsHowModalVisible] = React.useState(false);
@@ -18,6 +19,7 @@ const MainPagePopups = () => {
     const { isFirstLogin } = useCheckIsFirstLogin();
     const { registerPopup, showNextPopup, handlePopupClose, isRegistered } = usePopupSystem();
     const [isHansiryunVisible, setIsHansiryunVisible] = React.useState(false);
+    const [isUpdateNoticeVisible, setIsUpdateNoticeVisible] = React.useState(false);
     // 팝업 등록
     useEffect(() => {
         registerPopup({
@@ -78,6 +80,27 @@ const MainPagePopups = () => {
             },
             priority: 0
         });
+        registerPopup({
+            id: 'update-notice',
+            shouldShow: async () => {
+                try {
+                    const result = await PopupService.checkUpdateNoticePopup();
+                    return result;
+                } catch (error) {
+                    console.error('업데이트 안내 팝업 체크 에러:', error);
+                    return false;
+                }
+            },
+            onShow: () => {
+                setTimeout(() => {
+                    setIsUpdateNoticeVisible(true);
+                }, 300);
+            },
+            onClose: () => {
+                setIsUpdateNoticeVisible(false);
+            },
+            priority: 3
+        });
     }, [isFirstLogin, registerPopup]);
 
     // 팝업 등록이 완료되면 showNextPopup 호출
@@ -131,6 +154,15 @@ const MainPagePopups = () => {
             >
                 <HansiryunPopup visible={isHansiryunVisible} onClose={handlePopupClose} />
             </Modal>
+
+            <UpdateNotice
+                visible={isUpdateNoticeVisible}
+                onClose={handlePopupClose}
+                onShoppingClick={() => {
+                    handlePopupClose();
+                    // 홈 탭으로 이동하는 로직 (추후 구현 가능)
+                }}
+            />
         </>
     );
 };
