@@ -4,7 +4,8 @@ import { Table, Tag, Button, Tooltip, Space, Input } from "antd";
 import { useRouter } from "next/router";
 import axios from "@/utils/axios";
 
-export type SearchSource = "webview" | "server";
+// [수정] 'coupang_api' 타입 추가
+export type SearchSource = "webview" | "server" | "coupang_api";
 
 interface SearchLog {
   _id?: string;
@@ -54,7 +55,6 @@ export default function SearchLogListPage() {
   const fetchLogs = async (page = 1, limit = 20, keyword = "") => {
     setLoading(true);
     try {
-      // 백엔드: /search-logs/list (필요 시 requestId/keyword/source 등 파라미터 지원)
       const { data } = await axios.get<ListRespRaw>("/search-logs/list", {
         params: { page, limit, keyword },
       });
@@ -76,7 +76,6 @@ export default function SearchLogListPage() {
     fetchLogs(1, 20);
   }, []);
 
-  // requestId 단위로 그룹핑(각 source별 최신 1건 유지), 최신 요청 우선 정렬
   const grouped = useMemo<GroupedRow[]>(() => {
     const map = new Map<string, GroupedRow>();
     for (const r of raw.results) {
@@ -121,25 +120,19 @@ export default function SearchLogListPage() {
     );
   };
 
-  // KST 기준으로 날짜를 포맷팅하는 함수
   const formatKSTDate = (isoString: string) => {
     try {
       const date = new Date(isoString);
-      // KST는 UTC+9
-      const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-
-      const year = kstDate.getUTCFullYear();
-      const month = kstDate.getUTCMonth() + 1;
-      const day = kstDate.getUTCDate();
-      const hours = kstDate.getUTCHours();
-      const minutes = kstDate.getUTCMinutes();
-      const seconds = kstDate.getUTCSeconds();
-
-      return `${year}년 ${month}월 ${day}일 ${hours
-        .toString()
-        .padStart(2, "0")}시 ${minutes.toString().padStart(2, "0")}분 ${seconds
-        .toString()
-        .padStart(2, "0")}초`;
+      return new Intl.DateTimeFormat("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Seoul",
+      }).format(date);
     } catch (e) {
       return "-";
     }
@@ -156,6 +149,14 @@ export default function SearchLogListPage() {
       ),
     },
     { title: "키워드", dataIndex: "keyword", key: "keyword", ellipsis: true },
+    // [추가] 쿠팡 API 컬럼
+    {
+      title: "쿠팡 API",
+      key: "coupang_api",
+      align: "center" as const,
+      render: (_: any, record: GroupedRow) =>
+        renderProcess(record.processes["coupang_api"]),
+    },
     {
       title: "웹뷰",
       key: "webview",
@@ -170,6 +171,7 @@ export default function SearchLogListPage() {
       render: (_: any, record: GroupedRow) =>
         renderProcess(record.processes["server"]),
     },
+
     {
       title: "생성일시",
       key: "createdAt",
@@ -249,6 +251,7 @@ export default function SearchLogListPage() {
   );
 }
 
+// ... styled components ...
 const Container = styled.div`
   padding: 32px;
   max-width: 1200px;
