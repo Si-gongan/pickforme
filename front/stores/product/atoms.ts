@@ -1,33 +1,31 @@
-import { atom } from 'jotai';
-import {
-    SearchProductsRequest,
-    SearchProductsResponse,
-    MainProductsState,
-    ProductDetailState,
-    Product,
-    ScrapedProductDetail,
-    GetProductDetailResponse,
-    ProductReview
-} from './types';
 import { userAtom } from '@stores';
-import { atomWithStorage } from '../utils';
 import * as Haptics from 'expo-haptics';
+import { atom } from 'jotai';
 import { attempt } from '../../utils/axios';
+import { atomWithStorage } from '../utils';
+import {
+    MainProductsState,
+    Product,
+    ProductDetailState,
+    ProductReview,
+    ScrapedProductDetail,
+    SearchProductsResponse
+} from './types';
 
+import { logEvent } from '@/services/firebase';
+import * as WebBrowser from 'expo-web-browser';
+import { Alert } from 'react-native';
+import { parseCoupangIdsFromUrl } from '../../utils/url';
 import {
     GetMainProductsAPI,
+    GetProductAIAnswerAPI,
     GetProductAPI,
     GetProductCaptionAPI,
     GetProductReportAPI,
     GetProductReviewAPI,
-    GetProductAIAnswerAPI,
     ParseProductUrlAPI,
     UpdateProductAPI
 } from './apis';
-import { Alert } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { resolveRedirectUrl, sanitizeUrl, normalizeUrl, parseCoupangIdsFromUrl } from '../../utils/url';
-import { logEvent } from '@/services/firebase';
 
 export const mainProductsAtom = atom<MainProductsState>({
     special: [],
@@ -100,15 +98,25 @@ export const initProductDetailAtom = atom(null, async (get, set) => {
 export const setProductAtom = atom(null, async (get, set, product: Product) => {
     const productDetail = get(productDetailAtom);
 
+    const updatedProduct: Partial<Product> = { ...productDetail?.product };
+
+    for (const key in product) {
+        if (Object.prototype.hasOwnProperty.call(product, key)) {
+            const value = product[key as keyof Product];
+
+            // 값이 유효한 경우에만 (null, undefined, 빈 문자열이 아님) 업데이트
+            if (value !== null && value !== undefined && value !== '') {
+                updatedProduct[key as keyof Product] = value as any;
+            }
+        }
+    }
+
     // URL이 일치하지 않아도 상품 정보 업데이트
-    if (product.name && product.price) {
+    if (updatedProduct.name && updatedProduct.price) {
         set(productDetailAtom, {
             ...productDetail,
             url: product.url,
-            product: {
-                ...productDetail?.product, // 기존 product의 정보 유지 (caption 등)
-                ...product // 새로운 정보로 업데이트
-            }
+            product: updatedProduct as Product
         });
 
         // 캡션이 존재하면 loadingStatus도 업데이트 필요 : 2025.04.09
