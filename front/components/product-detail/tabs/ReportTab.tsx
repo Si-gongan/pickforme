@@ -23,7 +23,6 @@ const ReportTab: React.FC<ReportTabProps> = ({ productDetail, isTabPressed }) =>
 
             // 첫 번째 섹션이 있으면 그곳에 포커스, 없으면 전체 컨텐츠에 포커스
             if (firstSectionRef.current) {
-                console.log('focus on report');
                 focusOnRef(firstSectionRef, delay);
             }
         }
