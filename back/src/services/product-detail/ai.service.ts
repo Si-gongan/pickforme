@@ -1,9 +1,13 @@
-import { aiProvider, AIModelType, AIProviderMessage, ContentPart } from '../llm/ai.provider';
+import {
+  aiProvider,
+  ModelConfig,
+  MODELS,
+  AIProviderMessage,
+  ContentPart,
+} from '../llm/ai.provider';
 import { log } from 'utils/logger';
 import * as Prompts from './prompts';
 import { convertUrlsToBase64 } from 'utils/images';
-
-const DEFAULT_MODEL: AIModelType = 'gemini';
 
 interface Product {
   name: string;
@@ -32,7 +36,7 @@ interface ProductAIAnswerRequest {
  */
 export const getProductCaption = async (
   product: Pick<Product, 'name' | 'thumbnail'>,
-  model: AIModelType = DEFAULT_MODEL
+  modelConfig: ModelConfig = MODELS.GEMINI_2_0_FLASH
 ): Promise<string | null> => {
   if (!product.thumbnail) {
     void log.warn('Product thumbnail is missing, cannot generate caption.', 'API', 'LOW', {
@@ -56,7 +60,7 @@ export const getProductCaption = async (
 
     const caption = await aiProvider.generate({
       messages,
-      model,
+      modelConfig,
     });
     return caption;
   } catch (error) {
@@ -73,7 +77,7 @@ export const getProductCaption = async (
  */
 export const getProductReport = async (
   product: Product,
-  model: AIModelType = DEFAULT_MODEL
+  modelConfig: ModelConfig = MODELS.GEMINI_2_5_FLASH_LITE
 ): Promise<string | null> => {
   try {
     const prompt = Prompts.createAIReportPrompt(product.name);
@@ -93,7 +97,7 @@ export const getProductReport = async (
 
     const report = await aiProvider.generate({
       messages,
-      model,
+      modelConfig,
     });
 
     return report;
@@ -111,14 +115,14 @@ export const getProductReport = async (
  */
 export const getReviewSummary = async (
   request: ProductReviewRequest,
-  model: AIModelType = DEFAULT_MODEL
+  modelConfig: ModelConfig = MODELS.GEMINI_2_5_FLASH_LITE
 ): Promise<ProductReviewResponse | null> => {
   try {
     const reviewsText = request.reviews.map((review, i) => `리뷰 ${i + 1}: ${review}`).join('\n');
     const prompt = Prompts.createReviewSummaryPrompt(request.product.name, reviewsText);
     const messages = [{ role: 'user' as const, content: prompt }];
 
-    const rawSummaryString = await aiProvider.generate({ messages, model });
+    const rawSummaryString = await aiProvider.generate({ messages, modelConfig });
 
     try {
       // 2. 정규식을 사용해 순수 JSON 문자열 추출
@@ -155,7 +159,7 @@ export const getReviewSummary = async (
 export const getAIAnswer = async (
   request: ProductAIAnswerRequest,
   question: string,
-  model: AIModelType = DEFAULT_MODEL
+  modelConfig: ModelConfig = MODELS.GEMINI_2_5_FLASH_LITE
 ): Promise<string | null> => {
   try {
     const reviewsText =
@@ -189,7 +193,7 @@ export const getAIAnswer = async (
 
     const answer = await aiProvider.generate({
       messages,
-      model,
+      modelConfig,
     });
     return answer;
   } catch (error) {
