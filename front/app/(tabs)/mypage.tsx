@@ -21,6 +21,7 @@ import { changeToken } from '../../utils/axios';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/core';
 import { useWithdraw } from '@/services';
+import { setAnalyticsUserId } from '@/services/firebase';
 
 export default function MyScreen() {
     const colorScheme = useColorScheme();
@@ -129,9 +130,11 @@ export default function MyScreen() {
                 },
                 {
                     text: '예',
-                    onPress: () => {
+                    onPress: async () => {
                         onUser({});
                         changeToken(undefined);
+                        // Firebase Analytics에서 사용자 ID 제거
+                        await setAnalyticsUserId(null);
                         Alert.alert('로그아웃 되었습니다.');
                     }
                 }

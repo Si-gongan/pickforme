@@ -2,6 +2,7 @@ import {
     getAnalytics,
     logEvent as firebaseLogEvent,
     setUserProperty,
+    setUserId,
     logScreenView as firebaseLogScreenView,
     setAnalyticsCollectionEnabled,
     FirebaseAnalyticsTypes
@@ -139,6 +140,18 @@ export const logScreenView = async (screenName: AnalyticsScreenName, screenClass
         });
     } catch (error) {
         console.error('Screen view logging failed:', error);
+    }
+};
+
+// 사용자 ID 설정
+export const setAnalyticsUserId = async (userId: string | number | null) => {
+    if (!isProd || !analytics) return;
+
+    try {
+        await setUserId(analytics, userId ? String(userId) : null);
+        console.log('✅ Firebase Analytics User ID set:', userId);
+    } catch (error) {
+        console.error('Setting user ID failed:', error);
     }
 };
 
