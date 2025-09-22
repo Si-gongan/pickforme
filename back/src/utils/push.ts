@@ -1,6 +1,6 @@
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
 
-type PushMessageType = 'answer' | 'send_test';
+type PushMessageType = 'answer' | 'send_test' | 'membership_expiration';
 
 // ExpoPushMessage에서 data 타입을 확장하여 type 키를 필수로 포함
 type CustomExpoPushMessage = Omit<ExpoPushMessage, 'data'> & {
