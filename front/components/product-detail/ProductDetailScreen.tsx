@@ -92,6 +92,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     // 질문 상태 (먼저 선언)
     const [question, setQuestion] = useState('');
 
+    // 탭별 시작 시간 추적
+    const tabStartTimes = useRef<{ [key in TABS]: number }>({
+        [TABS.CAPTION]: 0,
+        [TABS.REPORT]: 0,
+        [TABS.REVIEW]: 0,
+        [TABS.QUESTION]: 0
+    });
+
     // 커스텀 훅들
     const { product, productRequests, request, wishlistItem, isLocal } = useProductData({ productUrl });
     const { tab, isTabPressed, handlePressTab, handleRegenerate } = useProductTabs(initialTab);
@@ -270,6 +278,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         linkSearchCompletedRef.current = false;
         linkSearchDetailOkRef.current = false;
         linkSearchReviewOkRef.current = false;
+
+        // 탭 시작 시간도 초기화
+        tabStartTimes.current = {
+            [TABS.CAPTION]: 0,
+            [TABS.REPORT]: 0,
+            [TABS.REVIEW]: 0,
+            [TABS.QUESTION]: 0
+        };
     }, [productUrl]);
 
     useEffect(() => {
@@ -277,6 +293,19 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             getProductDetail(product);
         }
     }, [productUrl, getProductDetail]);
+
+    // 상품 데이터 처리 시작 시 모든 탭의 시작 시간 기록
+    useEffect(() => {
+        if (product && tabStartTimes.current[TABS.CAPTION] === 0) {
+            const now = Date.now();
+            tabStartTimes.current = {
+                [TABS.CAPTION]: now,
+                [TABS.REPORT]: now,
+                [TABS.REVIEW]: now,
+                [TABS.QUESTION]: 0 // Question은 별도 처리
+            };
+        }
+    }, [product]);
 
     useEffect(() => {
         if (isFromLink) {
@@ -349,6 +378,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                             handleRegenerate={handleRegenerate}
                             handleLoadMore={handleLoadMore}
                             isTabPressed={isTabPressed}
+                            requestId={requestId.current}
+                            productUrl={productUrl}
+                            tabStartTimes={tabStartTimes.current}
                         />
                     </View>
                 ) : (
