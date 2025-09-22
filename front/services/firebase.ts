@@ -154,3 +154,30 @@ export const setUserProperties = async (properties: { [key: string]: string }) =
         console.error('Setting user properties failed:', error);
     }
 };
+
+// 탭 콘텐츠 프로세스 결과 로깅
+export const logTabContentProcess = async (params: {
+    request_id: string;
+    tab: 'caption' | 'report' | 'review' | 'question';
+    status: 'success' | 'failed';
+    duration_ms: number;
+    failure_reason?: 'no_data' | 'ai_generation_failed' | 'network_error';
+    process_path?: 'webview_only' | 'server_only' | 'webview_then_server';
+    product_url?: string;
+}) => {
+    if (!isProd || !analytics) return;
+
+    try {
+        await firebaseLogEvent(analytics, 'tab_content_process', {
+            request_id: params.request_id,
+            tab: params.tab,
+            status: params.status,
+            duration_ms: params.duration_ms,
+            failure_reason: params.failure_reason,
+            process_path: params.process_path,
+            product_url: params.product_url
+        });
+    } catch (error) {
+        console.error('Tab content process logging failed:', error);
+    }
+};

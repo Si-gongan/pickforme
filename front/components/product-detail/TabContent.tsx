@@ -16,6 +16,7 @@ import { Text } from '@components';
 import { Request } from '../../stores/request/types';
 import useColorScheme from '../../hooks/useColorScheme';
 import { Colors } from '@constants';
+import { logTabContentProcess } from '../../services/firebase';
 
 import CaptionTab from './tabs/CaptionTab';
 import ReportTab from './tabs/ReportTab';
@@ -34,6 +35,9 @@ interface TabContentProps {
     handleRegenerate: () => void;
     handleLoadMore: () => void;
     isTabPressed: boolean;
+    requestId: string;
+    productUrl: string;
+    tabStartTimes: { [key in TABS]: number };
 }
 
 const NO_DATA_MESSAGE = {
@@ -58,7 +62,10 @@ const TabContent: React.FC<TabContentProps> = ({
     loadingStatus,
     handleRegenerate,
     handleLoadMore,
-    isTabPressed
+    isTabPressed,
+    requestId,
+    productUrl,
+    tabStartTimes
 }) => {
     const colorScheme = useColorScheme();
     const styles = useStyles(colorScheme);
@@ -68,6 +75,8 @@ const TabContent: React.FC<TabContentProps> = ({
     const noDataRef = useRef<RNView>(null);
     // 로딩 상태 ref
     const loadingRef = useRef<RNView>(null);
+    // 로깅 완료 여부 추적 (중복 방지)
+    const loggedRef = useRef<Set<string>>(new Set());
 
     // 탭이 바뀌거나, loading 상태가 바뀌었을때 포커스 이동
     useEffect(() => {
@@ -76,11 +85,85 @@ const TabContent: React.FC<TabContentProps> = ({
 
             if (loadingStatus[tab] === LoadingStatus.NO_DATA && noDataRef.current) {
                 focusOnRef(noDataRef, delay);
-            } else if ((loadingStatus[tab] === 0 || loadingStatus[tab] === 1) && loadingRef.current) {
+            } else if (
+                (loadingStatus[tab] === LoadingStatus.INIT || loadingStatus[tab] === LoadingStatus.LOADING) &&
+                loadingRef.current
+            ) {
                 focusOnRef(loadingRef, delay);
             }
         }
     }, [loadingStatus[tab], tab, isTabPressed]);
+
+    // 모든 탭의 상태 변화 감지하여 로깅
+    useEffect(() => {
+        // 모든 탭(Question 제외)을 체크
+        Object.values(TABS).forEach(currentTab => {
+            if (currentTab === TABS.QUESTION) return;
+
+            // 성공: productDetail에 해당 탭 데이터가 있음
+            if (productDetail?.[currentTab]) {
+                const successKey = `${currentTab}-success`;
+                if (!loggedRef.current.has(successKey)) {
+                    const startTime = tabStartTimes[currentTab];
+
+                    if (startTime) {
+                        const duration = Date.now() - startTime;
+                        logTabContentProcess({
+                            request_id: requestId,
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review' | 'question',
+                            status: 'success',
+                            duration_ms: duration,
+                            product_url: productUrl
+                        });
+                        loggedRef.current.add(successKey);
+                    }
+                }
+            }
+            // 실패: NO_DATA 상태
+            else if (loadingStatus[currentTab] === LoadingStatus.NO_DATA) {
+                const failKey = `${currentTab}-failed-no_data`;
+                if (!loggedRef.current.has(failKey)) {
+                    const startTime = tabStartTimes[currentTab];
+                    if (startTime) {
+                        const duration = Date.now() - startTime;
+                        logTabContentProcess({
+                            request_id: requestId,
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review' | 'question',
+                            status: 'failed',
+                            duration_ms: duration,
+                            failure_reason: 'no_data',
+                            product_url: productUrl
+                        });
+                        loggedRef.current.add(failKey);
+                    }
+                }
+            }
+            // 실패: ERROR 상태
+            else if (loadingStatus[currentTab] === LoadingStatus.ERROR) {
+                const errorKey = `${currentTab}-failed-error`;
+                if (!loggedRef.current.has(errorKey)) {
+                    const startTime = tabStartTimes[currentTab];
+                    if (startTime) {
+                        const duration = Date.now() - startTime;
+                        logTabContentProcess({
+                            request_id: requestId,
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review' | 'question',
+                            status: 'failed',
+                            duration_ms: duration,
+                            failure_reason: 'ai_generation_failed',
+                            product_url: productUrl
+                        });
+                        loggedRef.current.add(errorKey);
+                    }
+                }
+            }
+        });
+    }, [productDetail, loadingStatus]);
+
+    // URL이 바뀔 때 로깅 상태 초기화 (ProductDetailScreen에서 productUrl이 바뀔 때)
+    useEffect(() => {
+        loggedRef.current.clear();
+    }, [productUrl]);
 
     // 1. Question 탭 처리
     if (tab === TABS.QUESTION) {
@@ -101,7 +184,7 @@ const TabContent: React.FC<TabContentProps> = ({
     }
 
     // 2. 로딩 상태 처리
-    if (loadingStatus[tab] === 0 || loadingStatus[tab] === 1) {
+    if (loadingStatus[tab] === LoadingStatus.INIT || loadingStatus[tab] === LoadingStatus.LOADING) {
         return (
             <View style={styles.detailWrap}>
                 <View
