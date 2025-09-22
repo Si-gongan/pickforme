@@ -8,7 +8,10 @@ import type { ForwardedRef } from 'react';
 import type { IProductCardProps } from './type';
 import { logEvent, maybeLogFirstAction } from '@/services/firebase';
 
-export default forwardRef(function ProductCard({ data, type = '' }: IProductCardProps, ref: ForwardedRef<View>) {
+export default forwardRef(function ProductCard(
+    { data, type = '', category }: IProductCardProps,
+    ref: ForwardedRef<View>
+) {
     const router = useRouter();
     const styles = useStyle();
 
@@ -41,22 +44,26 @@ export default forwardRef(function ProductCard({ data, type = '' }: IProductCard
         [isBase, data]
     );
 
-    const onPress = useCallback(function () {
-        maybeLogFirstAction('product_card_click');
+    const onPress = useCallback(
+        function () {
+            maybeLogFirstAction('product_card_click');
 
-        if (type === 'search') {
-            logEvent('search_item_click', {
-                item_id: data.url,
-                item_name: data.name
-            });
-        } else {
-            logEvent('home_item_click', {
-                item_id: data.url,
-                item_name: data.name
-            });
-        }
-        router.push(`/product-detail?url=${encodeURIComponent(data.url)}`);
-    }, []);
+            if (type === 'search') {
+                logEvent('search_item_click', {
+                    item_id: data.url,
+                    item_name: data.name
+                });
+            } else {
+                logEvent('home_item_click', {
+                    item_id: data.url,
+                    item_name: data.name,
+                    category: category || '기타'
+                });
+            }
+            router.push(`/product-detail?url=${encodeURIComponent(data.url)}`);
+        },
+        [category]
+    );
 
     return (
         <Pressable
