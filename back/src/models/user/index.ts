@@ -130,10 +130,17 @@ UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
 
 UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(
   rewards: ProductReward,
-  session?: mongoose.ClientSession
+  session?: mongoose.ClientSession,
+  isAdditional = false
 ) {
-  this.point += rewards.point;
-  this.aiPoint += rewards.aiPoint;
+  // 갱신인 경우 포인트를 덮어쓰기, 아닌 경우 더하기
+  if (isAdditional) {
+    this.point += rewards.point;
+    this.aiPoint += rewards.aiPoint;
+  } else {
+    this.point = rewards.point;
+    this.aiPoint = rewards.aiPoint;
+  }
 
   // 멤버쉽 갱신이 아닌 만료 후 첫 멤버쉽 구매인 경우, MembershipAt을 새롭게 기록.
   // 단 기존에 MembershipAt만 있었는 경우는 (구 유저들) MembershipAt을 새롭게 기록하지 않음.

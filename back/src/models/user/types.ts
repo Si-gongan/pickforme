@@ -37,7 +37,11 @@ export interface UserDocument extends User, Document {
   useAiPoint(payload: number): Promise<number>;
   processExpiredMembership: (options?: { session?: ClientSession }) => Promise<void>;
   initMonthPoint: () => Promise<void>;
-  applyPurchaseRewards: (rewards: ProductReward, session?: ClientSession) => Promise<void>;
+  applyPurchaseRewards: (
+    rewards: ProductReward,
+    session?: ClientSession,
+    isAdditional?: boolean
+  ) => Promise<void>;
   applyEventRewards: (
     rewards: ProductReward,
     eventType: number,
