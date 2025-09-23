@@ -111,7 +111,7 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                                 <View style={style.MainProductSectionSeparator} accessible={false} />
                             )}
                             renderItem={function ({ item }) {
-                                return <ProductCard data={item} />;
+                                return <ProductCard data={item} category={category} />;
                             }}
                         />
                         {data.random.length >= randomCount + 5 && (
@@ -144,7 +144,7 @@ const MainProductList = forwardRef<MainProductListRef, MainProductListProps>(({ 
                                 <View style={style.MainProductSectionSeparator} accessible={false} />
                             )}
                             renderItem={function ({ item }) {
-                                return <ProductCard data={item} />;
+                                return <ProductCard data={item} category="오늘의 특가 상품" />;
                             }}
                         />
                         {data.special.length >= specialCount + 5 && (
