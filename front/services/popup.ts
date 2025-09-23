@@ -21,6 +21,36 @@ export const PopupService = {
         return this.checkPopup('event_survey');
     },
 
+    async checkUpdateNoticePopup() {
+        return this.checkPopup('event_update_notice');
+    },
+
+    async checkTestGroupRecruitmentPopup() {
+        return this.checkPopup('event_test_group_recruitment');
+    },
+
+    async setDontShowUpdateNotice() {
+        try {
+            const payload = { popup_id: 'event_update_notice', flag: 1 };
+            const res = await SetPopupAPI(payload);
+            return res.status === 200;
+        } catch (error) {
+            console.error('업데이트 안내 팝업 설정 실패:', error);
+            return false;
+        }
+    },
+
+    async setDontShowTestGroupRecruitment() {
+        try {
+            const payload = { popup_id: 'event_test_group_recruitment', flag: 1 };
+            const res = await SetPopupAPI(payload);
+            return res.status === 200;
+        } catch (error) {
+            console.error('체험단 모집 팝업 설정 실패:', error);
+            return false;
+        }
+    },
+
     async setDontShowSurvey() {
         try {
             const payload = { popup_id: 'event_survey', flag: 1 };
