@@ -133,6 +133,9 @@ describe('Subscription Service Integration Tests', () => {
         return new RealDate(date);
       }
     } as unknown as DateConstructor;
+
+    jest.spyOn(Date, 'now').mockImplementation(() => new RealDate(testDate).getTime());
+
     await setupTestDB();
   });
 
@@ -976,13 +979,11 @@ describe('Subscription Service Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      await subscriptionService.createSubscription(user._id.toString(), product._id.toString(), {
-        transactionDate: new Date(),
-        transactionId: 'test_transaction_id',
-        productId: product._id.toString(),
-        price: 100,
-        currency: 'USD',
-      });
+      await subscriptionService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockIosReceipt
+      );
 
       // When
       const result = await subscriptionService.checkRefundEligibility(user._id.toString());

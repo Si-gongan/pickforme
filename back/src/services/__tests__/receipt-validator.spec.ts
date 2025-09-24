@@ -31,6 +31,9 @@ jest.mock('googleapis', () => ({
   },
 }));
 
+const RealDate = Date;
+const testDate = '2023-02-01T00:00:00+09:00';
+
 describe('receipt-validator.spec.ts', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -39,6 +42,18 @@ describe('receipt-validator.spec.ts', () => {
     mockGetSubscription = google.androidpublisher({
       version: 'v3',
     }).purchases.subscriptionsv2.get as jest.Mock;
+
+    global.Date = class extends RealDate {
+      constructor(date?: string | number | Date) {
+        super();
+        if (date === undefined) {
+          return new RealDate(testDate);
+        }
+        return new RealDate(date);
+      }
+    } as unknown as DateConstructor;
+
+    jest.spyOn(Date, 'now').mockImplementation(() => new RealDate(testDate).getTime());
   });
 
   describe('IOS', () => {

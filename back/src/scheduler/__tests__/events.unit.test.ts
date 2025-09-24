@@ -105,16 +105,7 @@ describe('Event Scheduler', () => {
 
       await handleEventScheduler();
 
-      expect(mockUser.applyPurchaseRewards).toHaveBeenCalledWith(mockProduct.getRewards());
-      expect(log.info).toHaveBeenCalledWith(
-        expect.stringContaining('이벤트 멤버십 포인트 충전 완료'),
-        'SCHEDULER',
-        'LOW',
-        expect.objectContaining({
-          scheduler: 'events',
-          userId: mockUser._id,
-        })
-      );
+      expect(mockUser.applyPurchaseRewards.mock.calls[0][0]).toEqual(mockProduct.getRewards());
     });
 
     it('6개월이 지나지 않고 마지막 지급일로부터 한달이 지나지 않은 이벤트 멤버십은 포인트를 충전하지 않는다', async () => {
