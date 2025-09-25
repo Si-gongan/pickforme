@@ -12,7 +12,7 @@ services:
       MONGO_INITDB_DATABASE: pickforme-dev
     volumes:
       - mongodb_data:/data/db
-      - ./back/backups:/backups:ro
+      - ./back/backups/pickforme-dev:/backups/pickforme-dev:ro
       - ./scripts/mongo-init:/docker-entrypoint-initdb.d:ro
     networks:
       - pickforme-network
