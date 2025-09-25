@@ -3,7 +3,7 @@ import cron from 'node-cron';
 import db from 'models';
 import { log } from 'utils/logger/logger';
 import { receiptValidatorService } from 'services/receipt-validator.service';
-import { subscriptionService } from 'services/subscription.service';
+import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
 
 const SCHEDULER_NAME = 'iap';
 
@@ -34,7 +34,7 @@ const checkSubscriptions = async () => {
 
         if (validation.status === 'expired') {
           try {
-            await subscriptionService.expireSubscription(purchase);
+            await subscriptionManagementService.expireSubscription(purchase);
             void log.info(
               `개별 구독 환불/만료 처리 완료 - userId: ${purchase.userId}`,
               'SCHEDULER',
