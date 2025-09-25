@@ -7,6 +7,7 @@ import PurchaseFailure from 'models/purchase/failure';
 import { formatError } from 'utils/error';
 import { purchaseFailureService } from 'feature/subscription/service/purchase-failure.service';
 import { subscriptionQueryService } from 'feature/subscription/service/subscription-query.service';
+import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
 
 const router = new Router({
   prefix: '/purchase',
@@ -152,7 +153,7 @@ router.get('/subscription/status', requireAuth, async (ctx) => {
 // 환불대상 조회
 router.get('/refund', requireAuth, async (ctx) => {
   try {
-    const result = await subscriptionService.checkRefundEligibility(ctx.state.user._id);
+    const result = await subscriptionManagementService.checkRefundEligibility(ctx.state.user._id);
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
@@ -181,7 +182,10 @@ router.post('/refund', requireAuth, async (ctx) => {
   } = <any>ctx.request;
 
   try {
-    const result = await subscriptionService.processRefund(ctx.state.user._id, subscriptionId);
+    const result = await subscriptionManagementService.processRefund(
+      ctx.state.user._id,
+      subscriptionId
+    );
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {

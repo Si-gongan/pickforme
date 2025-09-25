@@ -3,7 +3,8 @@ import { ProductType } from 'models/product';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../../__tests__/setupDButils';
-import { subscriptionService } from '../../../services/subscription.service';
+import { subscriptionManagementService } from '../service/subscription-management.service';
+import { subscriptionCreationService } from '../service/subscription-creation.service';
 import constants from '../../../constants';
 import { google } from 'googleapis';
 
@@ -129,7 +130,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.expireSubscription(purchase);
+      const result = await subscriptionManagementService.expireSubscription(purchase);
 
       // Then
       expect(result.isExpired).toBe(true);
@@ -169,7 +170,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
 
       try {
         // When
-        const result = await subscriptionService.expireSubscription(purchase, session);
+        const result = await subscriptionManagementService.expireSubscription(purchase, session);
         await session.commitTransaction();
 
         // Then
@@ -213,7 +214,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
 
       try {
         // When
-        await subscriptionService.expireSubscription(purchase, session);
+        await subscriptionManagementService.expireSubscription(purchase, session);
         throw new Error('테스트 에러');
       } catch (error) {
         await session.abortTransaction();
@@ -255,7 +256,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.expireSubscription(purchase);
+      const result = await subscriptionManagementService.expireSubscription(purchase);
 
       // Then
       expect(result.isExpired).toBe(true);
@@ -270,7 +271,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
   describe('checkRefundEligibility', () => {
     it('유저가 없는 경우 환불 불가능하다', async () => {
       // When
-      const result = await subscriptionService.checkRefundEligibility(
+      const result = await subscriptionManagementService.checkRefundEligibility(
         new mongoose.Types.ObjectId().toString()
       );
 
@@ -284,7 +285,9 @@ describe('SubscriptionManagementService Integration Tests', () => {
       const user = await db.User.create({ email: 'test@example.com' });
 
       // When
-      const result = await subscriptionService.checkRefundEligibility(user._id.toString());
+      const result = await subscriptionManagementService.checkRefundEligibility(
+        user._id.toString()
+      );
 
       // Then
       expect(result.isRefundable).toBe(false);
@@ -316,7 +319,9 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.checkRefundEligibility(user._id.toString());
+      const result = await subscriptionManagementService.checkRefundEligibility(
+        user._id.toString()
+      );
 
       // Then
       expect(result.isRefundable).toBe(false);
@@ -349,14 +354,16 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      await subscriptionService.createSubscription(
+      await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
       );
 
       // When
-      const result = await subscriptionService.checkRefundEligibility(user._id.toString());
+      const result = await subscriptionManagementService.checkRefundEligibility(
+        user._id.toString()
+      );
 
       // Then
       expect(result.isRefundable).toBe(true);
@@ -390,14 +397,14 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      const subscription = await subscriptionService.createSubscription(
+      const subscription = await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
       );
 
       // When
-      const result = await subscriptionService.processRefund(
+      const result = await subscriptionManagementService.processRefund(
         user._id.toString(),
         subscription._id.toString()
       );
@@ -443,7 +450,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      const subscription = await subscriptionService.createSubscription(
+      const subscription = await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
@@ -460,7 +467,10 @@ describe('SubscriptionManagementService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.processRefund(user._id.toString(), subscription._id.toString())
+        subscriptionManagementService.processRefund(
+          user._id.toString(),
+          subscription._id.toString()
+        )
       ).rejects.toThrow();
 
       //
@@ -495,7 +505,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
       });
 
       // 구독을 생성한다.
-      const subscription = await subscriptionService.createSubscription(
+      const subscription = await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
@@ -512,7 +522,10 @@ describe('SubscriptionManagementService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.processRefund(user._id.toString(), subscription._id.toString())
+        subscriptionManagementService.processRefund(
+          user._id.toString(),
+          subscription._id.toString()
+        )
       ).rejects.toThrow();
 
       // 구독이 만료되지 않았는지 확인
@@ -556,7 +569,7 @@ describe('SubscriptionManagementService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.processRefund(
+        subscriptionManagementService.processRefund(
           user._id.toString(),
           new mongoose.Types.ObjectId().toString()
         )
