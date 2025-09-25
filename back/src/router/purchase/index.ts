@@ -6,6 +6,7 @@ import { subscriptionService } from '../../services/subscription.service';
 import PurchaseFailure from 'models/purchase/failure';
 import { formatError } from 'utils/error';
 import { purchaseFailureService } from 'feature/subscription/service/purchase-failure.service';
+import { subscriptionQueryService } from 'feature/subscription/service/subscription-query.service';
 
 const router = new Router({
   prefix: '/purchase',
@@ -107,7 +108,7 @@ router.get('/products/:platform', async (ctx) => {
     return;
   }
 
-  const products = await subscriptionService.getSubscriptionProductsByPlatform(platform);
+  const products = await subscriptionQueryService.getSubscriptionProductsByPlatform(platform);
 
   ctx.body = products;
   ctx.status = 200;
@@ -115,7 +116,7 @@ router.get('/products/:platform', async (ctx) => {
 
 // 유저 구독 목록 조회
 router.get('/subscriptions', requireAuth, async (ctx) => {
-  const subscriptions = await subscriptionService.getUserSubscriptions(ctx.state.user._id);
+  const subscriptions = await subscriptionQueryService.getUserSubscriptions(ctx.state.user._id);
   ctx.body = subscriptions;
   ctx.status = 200;
 });
@@ -123,7 +124,7 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
 // 구독 상태 조회
 router.get('/subscription/status', requireAuth, async (ctx) => {
   try {
-    const status = await subscriptionService.getSubscriptionStatus(ctx.state.user._id);
+    const status = await subscriptionQueryService.getSubscriptionStatus(ctx.state.user._id);
     ctx.body = status;
     ctx.status = 200;
   } catch (error) {
