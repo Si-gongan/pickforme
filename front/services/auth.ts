@@ -7,6 +7,7 @@ import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-goo
 import { userAtom, modalAtom } from '@stores';
 import client from '../utils/axios';
 import { changeToken } from '../utils/axios';
+import { setAnalyticsUserId } from './firebase';
 
 import type { IAppleAuthPayload, ILogin, IServiceProps, IBaseAuthPayload } from '@types';
 
@@ -43,6 +44,10 @@ export function useServiceLogin({ onSuccess }: Partial<IServiceProps> = {}) {
             await onUser(userData || {});
             if (!!userData) {
                 changeToken(userData?.token);
+                // Firebase Analytics에 사용자 ID 설정
+                if (userData._id) {
+                    await setAnalyticsUserId(userData._id);
+                }
             }
             onModal(function (prev) {
                 return {
@@ -147,6 +152,8 @@ export function useWithdraw() {
                 // 회원탈퇴 성공 시 사용자 상태 초기화
                 await onUser({});
                 changeToken(undefined);
+                // Firebase Analytics에서 사용자 ID 제거
+                await setAnalyticsUserId(null);
             }
         },
         onError: function (error) {

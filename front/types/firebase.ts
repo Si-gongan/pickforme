@@ -24,7 +24,8 @@ export type AnalyticsEventName =
     | 'subscription_request_error'
     | 'main_products_request'
     | 'main_products_response'
-    | 'manager_answer_push_click';
+    | 'manager_answer_push_click'
+    | 'tab_content_process';
 
 // | 'login'
 // | 'signup'
