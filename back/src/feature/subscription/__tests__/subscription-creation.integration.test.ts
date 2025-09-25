@@ -3,7 +3,7 @@ import { ProductType } from 'models/product';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../../__tests__/setupDButils';
-import { subscriptionService } from '../../../services/subscription.service';
+import { subscriptionCreationService } from '../service/subscription-creation.service';
 import constants from '../../../constants';
 import { google } from 'googleapis';
 
@@ -160,7 +160,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.createSubscription(
+      const result = await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
@@ -187,7 +187,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       const product = await createTestProduct('test_subscription', 'ios');
 
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           product._id.toString(),
           mockIosReceipt
@@ -202,7 +202,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       const user = await db.User.create({ email: 'test@example.com' });
       const product = await createTestProduct('test_subscription', 'ios');
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           product._id.toString(),
           mockIosReceipt
@@ -225,7 +225,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.createSubscription(
+      const result = await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockAndroidReceipt
@@ -253,7 +253,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       const product = await createTestProduct('pickforme_member', 'android');
 
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           product._id.toString(),
           mockAndroidReceipt
@@ -269,7 +269,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       const product = await createTestProduct('pickforme_member', 'android');
 
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           product._id.toString(),
           mockAndroidReceipt
@@ -290,7 +290,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           new mongoose.Types.ObjectId().toString(),
           product._id.toString(),
           mockIosReceipt
@@ -321,7 +321,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           product._id.toString(),
           mockIosReceipt
@@ -335,7 +335,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           new mongoose.Types.ObjectId().toString(),
           mockIosReceipt
@@ -360,7 +360,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.createSubscription(
+        subscriptionCreationService.createSubscription(
           user._id.toString(),
           product._id.toString(),
           mockIosReceipt
@@ -394,7 +394,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
         'MIIUUAYJKoZIhvcNAQcCoIIUQTCCFD0CAQExDzANBglghkgBZQMEAgEFADCCA4YGCSqGSIb3DQEHAaCCA3cEggNzMYIDbzAKAgEIAgEBBAIWADAKAgEUAgEBBAIMADALAgEBAgEBBAMCAQAwCwIBAwIBAQQDDAExMAsCAQsCAQEEAwIBADALAgEPAgEBBAMCAQAwCwIBEAIBAQQDAgEAMAsCARkCAQEEAwIBAzAMAgEKAgEBBAQWAjQrMAwCAQ4CAQEEBAICARcwDQIBDQIBAQQFAgMCmT0wDQIBEwIBAQQFDAMxLjAwDgIBCQIBAQQGAgRQMzAyMBgCAQQCAQI';
 
       // When
-      const result = await subscriptionService.createSubscriptionWithoutValidation(
+      const result = await subscriptionCreationService.createSubscriptionWithoutValidation(
         user._id.toString(),
         product._id.toString(),
         iosReceipt
@@ -417,7 +417,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.createSubscriptionWithoutValidation(
+      const result = await subscriptionCreationService.createSubscriptionWithoutValidation(
         user._id.toString(),
         product._id.toString(),
         mockAndroidReceipt
@@ -440,7 +440,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       });
 
       // When - receipt를 undefined로 명시적으로 전달
-      const result = await subscriptionService.createSubscriptionWithoutValidation(
+      const result = await subscriptionCreationService.createSubscriptionWithoutValidation(
         user._id.toString(),
         product._id.toString(),
         undefined
@@ -479,7 +479,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.createSubscriptionWithoutValidation(
+        subscriptionCreationService.createSubscriptionWithoutValidation(
           new mongoose.Types.ObjectId().toString(),
           product._id.toString()
         )
@@ -502,7 +502,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       });
 
       // 기존 구독 생성
-      await subscriptionService.createSubscription(
+      await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
@@ -510,7 +510,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // 또 구독을 생성할때,
       await expect(
-        subscriptionService.createSubscriptionWithoutValidation(
+        subscriptionCreationService.createSubscriptionWithoutValidation(
           user._id.toString(),
           product._id.toString()
         )
@@ -523,7 +523,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // When & Then
       await expect(
-        subscriptionService.createSubscriptionWithoutValidation(
+        subscriptionCreationService.createSubscriptionWithoutValidation(
           user._id.toString(),
           new mongoose.Types.ObjectId().toString()
         )

@@ -7,7 +7,7 @@ import { handleIAPScheduler } from '../iap';
 import { handleMembershipScheduler } from '../membership';
 import { EVENT_IDS } from '../../constants/events';
 import { POINTS } from '../../constants/points';
-import { subscriptionService } from 'services/subscription.service';
+import { subscriptionCreationService } from 'feature/subscription/service/subscription-creation.service';
 
 jest.mock('utils/iap', () => {
   const mockValidate = jest.fn();
@@ -149,7 +149,7 @@ describe('Scheduler Integration Tests', () => {
         rewards: { point: 100, aiPoint: 1000 },
       });
 
-      const purchase = await subscriptionService.createSubscriptionWithoutValidation(
+      const purchase = await subscriptionCreationService.createSubscriptionWithoutValidation(
         user._id,
         product._id,
         undefined
