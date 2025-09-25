@@ -2,7 +2,8 @@ import db from 'models';
 import { ProductType } from 'models/product';
 import iapValidator from 'utils/iap';
 import { setupTestDB, teardownTestDB } from '../../../__tests__/setupDButils';
-import { subscriptionService } from '../../../services/subscription.service';
+import { purchaseFailureService } from '../service/purchase-failure.service';
+import { subscriptionCreationService } from '../service/subscription-creation.service';
 import constants from '../../../constants';
 import { google } from 'googleapis';
 
@@ -109,7 +110,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       const user = await db.User.create({ email: 'test@example.com' });
 
       // When
-      const result = await subscriptionService.checkPurchaseFailure(user._id.toString());
+      const result = await purchaseFailureService.checkPurchaseFailure(user._id.toString());
 
       // Then
       expect(result.hasFailedPurchase).toBe(false);
@@ -127,7 +128,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.checkPurchaseFailure(user._id.toString());
+      const result = await purchaseFailureService.checkPurchaseFailure(user._id.toString());
 
       // Then
       expect(result.hasFailedPurchase).toBe(true);
@@ -145,7 +146,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       });
 
       // When
-      const result = await subscriptionService.checkPurchaseFailure(user._id.toString());
+      const result = await purchaseFailureService.checkPurchaseFailure(user._id.toString());
 
       // Then
       expect(result.hasFailedPurchase).toBe(false);
@@ -176,7 +177,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       mockIosValidator.mockResolvedValue(iosSuccessResponse);
 
       // When
-      await subscriptionService.createSubscription(
+      await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockIosReceipt
@@ -227,7 +228,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       mockAndroidAPI.mockResolvedValue(androidSuccessResponse);
 
       // When
-      await subscriptionService.createSubscription(
+      await subscriptionCreationService.createSubscription(
         user._id.toString(),
         product._id.toString(),
         mockAndroidReceipt
@@ -270,7 +271,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       });
 
       // When - 영수증 없이 구독 생성
-      await subscriptionService.createSubscriptionWithoutValidation(
+      await subscriptionCreationService.createSubscriptionWithoutValidation(
         user._id.toString(),
         product._id.toString(),
         undefined
@@ -309,7 +310,7 @@ describe('PurchaseFailureService Integration Tests', () => {
       mockIosValidator.mockResolvedValue(iosSuccessResponse);
 
       // When - user1의 구독 생성
-      await subscriptionService.createSubscription(
+      await subscriptionCreationService.createSubscription(
         user1._id.toString(),
         product._id.toString(),
         mockIosReceipt

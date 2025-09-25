@@ -5,6 +5,7 @@ import { log } from 'utils/logger';
 import { subscriptionService } from '../../services/subscription.service';
 import PurchaseFailure from 'models/purchase/failure';
 import { formatError } from 'utils/error';
+import { purchaseFailureService } from 'feature/subscription/service/purchase-failure.service';
 
 const router = new Router({
   prefix: '/purchase',
@@ -32,7 +33,7 @@ router.post('/', requireAuth, async (ctx) => {
   }
 
   try {
-    const purchaseFailure = await subscriptionService.checkPurchaseFailure(userId);
+    const purchaseFailure = await purchaseFailureService.checkPurchaseFailure(userId);
     if (purchaseFailure.hasFailedPurchase) {
       throw new Error('아직 처리되지 않은 구독 실패 내역이 있습니다.');
     }
@@ -254,7 +255,7 @@ router.get('/my-failures', requireAuth, async (ctx) => {
   try {
     const userId = ctx.state.user._id;
 
-    const { hasFailedPurchase } = await subscriptionService.checkPurchaseFailure(userId);
+    const { hasFailedPurchase } = await purchaseFailureService.checkPurchaseFailure(userId);
 
     ctx.body = {
       canPurchase: !hasFailedPurchase, // 실패 내역이 없으면 true
