@@ -78,26 +78,48 @@ export const normalizeUrl = (url: string): string => {
 export const convertToCoupangReviewUrl = async (url: string): Promise<string> => {
     try {
         let processedUrl = url;
+        let productId = null;
 
         // 쿠팡 앱 링크 처리 (link.coupang.com)
         if (url.includes('link.coupang.com')) {
-            processedUrl = await resolveRedirectUrl(url);
+            try {
+                // 먼저 URL에서 직접 pageKey 추출 시도
+                const urlObj = new URL(url);
+                const pageKey = urlObj.searchParams.get('pageKey');
+                const itemId = urlObj.searchParams.get('itemId');
+
+                if (pageKey) {
+                    // pageKey가 있으면 바로 사용
+                    productId = pageKey;
+                } else {
+                    // pageKey가 없으면 리디렉트 시도
+                    processedUrl = await resolveRedirectUrl(url);
+
+                    // 리디렉트 결과가 여전히 link.coupang.com인 경우 무한루프 방지
+                    if (processedUrl.includes('link.coupang.com')) {
+                        throw new Error('link.coupang.com 리디렉트 결과가 동일하여 무한루프 방지');
+                    }
+                }
+            } catch (error) {
+                console.warn('link.coupang.com 처리 중 오류:', error);
+                throw new Error('쿠팡 제품 ID를 찾을 수 없습니다.');
+            }
         }
 
-        // 쿠팡 제품 ID 추출
-        let productId = null;
-
-        // 패턴 1: productId= 쿼리 파라미터
-        if (processedUrl.includes('productId=')) {
-            productId = processedUrl.split('productId=')[1]?.split('&')[0];
-        }
-        // 패턴 2: products/ 경로 사용 (모바일 및 데스크톱)
-        else if (
-            processedUrl.includes('coupang.com/vp/products/') ||
-            processedUrl.includes('coupang.com/vm/products/')
-        ) {
-            let idPart = processedUrl.split('products/')[1] || '';
-            productId = idPart.split(/[\?#]/)[0]; // 쿼리스트링이나 해시 태그 제거
+        // productId가 아직 없으면 processedUrl에서 추출
+        if (!productId) {
+            // 패턴 1: productId= 쿼리 파라미터
+            if (processedUrl.includes('productId=')) {
+                productId = processedUrl.split('productId=')[1]?.split('&')[0];
+            }
+            // 패턴 2: products/ 경로 사용 (모바일 및 데스크톱)
+            else if (
+                processedUrl.includes('coupang.com/vp/products/') ||
+                processedUrl.includes('coupang.com/vm/products/')
+            ) {
+                let idPart = processedUrl.split('products/')[1] || '';
+                productId = idPart.split(/[\?#]/)[0]; // 쿼리스트링이나 해시 태그 제거
+            }
         }
 
         if (!productId) {
