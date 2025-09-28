@@ -40,7 +40,35 @@ export const extractFromUrl = async (rawInput: string): Promise<ExtractResult> =
     // link.coupang.com → 최종 리디렉트 따라가기
     if (raw.includes('link.coupang.com')) {
         try {
+            // 먼저 URL에서 직접 ID들을 추출해보기
+            const url = new URL(raw);
+            const productId = url.searchParams.get('pageKey') || url.searchParams.get('productId');
+            const itemId = url.searchParams.get('itemId');
+            const vendorItemId = url.searchParams.get('vendorItemId');
+
+            // ID가 있으면 바로 처리
+            if (productId) {
+                const canonicalDesktop = buildDesktop(productId, itemId || undefined, vendorItemId || undefined);
+                const mobileVM = buildMobileVM(productId);
+                const mobileMLP = buildMobileMLP(productId, itemId || undefined, vendorItemId || undefined);
+                return {
+                    kind: 'coupang',
+                    ids: { productId, itemId: itemId || undefined, vendorItemId: vendorItemId || undefined },
+                    canonicalDesktop,
+                    mobileVM,
+                    mobileMLP
+                };
+            }
+
+            // ID가 없으면 리디렉트 시도
             const redirectUrl = await resolveRedirectUrl(raw);
+
+            // 리디렉트 결과가 여전히 link.coupang.com인 경우 무한루프 방지
+            if (redirectUrl.includes('link.coupang.com')) {
+                console.warn('extractFromUrl: link.coupang.com 리디렉트 결과가 동일, 일반 URL로 처리');
+                return { kind: 'general', url: raw };
+            }
+
             return extractFromUrl(redirectUrl);
         } catch {
             return { kind: 'general', url: raw };
