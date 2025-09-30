@@ -14,7 +14,7 @@
     "test:unit": "jest --selectProjects unit",
     "test:integration": "jest --selectProjects integration",
     "test:coverage": "jest --coverage",
-    "membership-events": "NODE_ENV=production NODE_PATH=./src ts-node src/utils/events.ts",
+    "process-hansiryun": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/hansiryun.ts",
     "test-backup": "NODE_PATH=./src ts-node -e \"import('./src/scheduler/backup').then(m => m.testBackupScheduler())\""
   },
   "author": "jinsang",
