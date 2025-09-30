@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import db from 'models';
 import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
-import { subscriptionService } from 'services/subscription.service';
+import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
 
 const SCHEDULER_NAME = 'membership';
 
@@ -28,7 +28,7 @@ const checkSubscriptionExpirations = async () => {
       oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
       if (oneMonthLater < now) {
-        const result = await subscriptionService.expireSubscription(purchase);
+        const result = await subscriptionManagementService.expireSubscription(purchase);
         if (result) {
           void log.info(`멤버십 만료 처리 완료 - userId: ${purchase.userId}`, 'SCHEDULER', 'LOW', {
             scheduler: SCHEDULER_NAME,

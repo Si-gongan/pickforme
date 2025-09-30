@@ -11,6 +11,14 @@ const popupSchema = new mongoose.Schema({
     required: true,
   },
   description: String,
+  startDate: {
+    type: Date,
+    required: false,
+  },
+  endDate: {
+    type: Date,
+    required: false,
+  },
   createdAt: {
     type: Date,
     default: () => new Date(),

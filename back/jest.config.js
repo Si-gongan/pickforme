@@ -25,6 +25,7 @@ module.exports = {
     '^middleware/(.*)$': '<rootDir>/src/middleware/$1',
     '^services$': '<rootDir>/src/services',
     '^services/(.*)$': '<rootDir>/src/services/$1',
+    '^feature/(.*)$': '<rootDir>/src/feature/$1',
   },
   verbose: true,
   projects: [
@@ -50,6 +51,7 @@ module.exports = {
         '^services/(.*)$': '<rootDir>/src/services/$1',
         '^cache$': '<rootDir>/src/cache',
         '^cache/(.*)$': '<rootDir>/src/cache/$1',
+        '^feature/(.*)$': '<rootDir>/src/feature/$1',
       },
     },
     {
@@ -73,6 +75,7 @@ module.exports = {
         '^services/(.*)$': '<rootDir>/src/services/$1',
         '^cache$': '<rootDir>/src/cache',
         '^cache/(.*)$': '<rootDir>/src/cache/$1',
+        '^feature/(.*)$': '<rootDir>/src/feature/$1',
       },
     },
   ],

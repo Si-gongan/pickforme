@@ -2,9 +2,12 @@ import Router from '@koa/router';
 import { Receipt } from 'in-app-purchase';
 import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
-import { subscriptionService } from '../../services/subscription.service';
 import PurchaseFailure from 'models/purchase/failure';
 import { formatError } from 'utils/error';
+import { purchaseFailureService } from 'feature/subscription/service/purchase-failure.service';
+import { subscriptionQueryService } from 'feature/subscription/service/subscription-query.service';
+import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
+import { subscriptionCreationService } from 'feature/subscription/service/subscription-creation.service';
 
 const router = new Router({
   prefix: '/purchase',
@@ -32,12 +35,16 @@ router.post('/', requireAuth, async (ctx) => {
   }
 
   try {
-    const purchaseFailure = await subscriptionService.checkPurchaseFailure(userId);
+    const purchaseFailure = await purchaseFailureService.checkPurchaseFailure(userId);
     if (purchaseFailure.hasFailedPurchase) {
       throw new Error('아직 처리되지 않은 구독 실패 내역이 있습니다.');
     }
 
-    const purchaseData = await subscriptionService.createSubscription(userId, productId, receipt);
+    const purchaseData = await subscriptionCreationService.createSubscription(
+      userId,
+      productId,
+      receipt
+    );
 
     ctx.status = 200;
     ctx.body = purchaseData;
@@ -106,7 +113,7 @@ router.get('/products/:platform', async (ctx) => {
     return;
   }
 
-  const products = await subscriptionService.getSubscriptionProductsByPlatform(platform);
+  const products = await subscriptionQueryService.getSubscriptionProductsByPlatform(platform);
 
   ctx.body = products;
   ctx.status = 200;
@@ -114,7 +121,7 @@ router.get('/products/:platform', async (ctx) => {
 
 // 유저 구독 목록 조회
 router.get('/subscriptions', requireAuth, async (ctx) => {
-  const subscriptions = await subscriptionService.getUserSubscriptions(ctx.state.user._id);
+  const subscriptions = await subscriptionQueryService.getUserSubscriptions(ctx.state.user._id);
   ctx.body = subscriptions;
   ctx.status = 200;
 });
@@ -122,7 +129,7 @@ router.get('/subscriptions', requireAuth, async (ctx) => {
 // 구독 상태 조회
 router.get('/subscription/status', requireAuth, async (ctx) => {
   try {
-    const status = await subscriptionService.getSubscriptionStatus(ctx.state.user._id);
+    const status = await subscriptionQueryService.getSubscriptionStatus(ctx.state.user._id);
     ctx.body = status;
     ctx.status = 200;
   } catch (error) {
@@ -150,7 +157,7 @@ router.get('/subscription/status', requireAuth, async (ctx) => {
 // 환불대상 조회
 router.get('/refund', requireAuth, async (ctx) => {
   try {
-    const result = await subscriptionService.checkRefundEligibility(ctx.state.user._id);
+    const result = await subscriptionManagementService.checkRefundEligibility(ctx.state.user._id);
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
@@ -179,7 +186,10 @@ router.post('/refund', requireAuth, async (ctx) => {
   } = <any>ctx.request;
 
   try {
-    const result = await subscriptionService.processRefund(ctx.state.user._id, subscriptionId);
+    const result = await subscriptionManagementService.processRefund(
+      ctx.state.user._id,
+      subscriptionId
+    );
     ctx.body = result;
     ctx.status = 200;
   } catch (error) {
@@ -254,7 +264,7 @@ router.get('/my-failures', requireAuth, async (ctx) => {
   try {
     const userId = ctx.state.user._id;
 
-    const { hasFailedPurchase } = await subscriptionService.checkPurchaseFailure(userId);
+    const { hasFailedPurchase } = await purchaseFailureService.checkPurchaseFailure(userId);
 
     ctx.body = {
       canPurchase: !hasFailedPurchase, // 실패 내역이 없으면 true
@@ -290,9 +300,9 @@ router.post('/retry', requireAuth, async (ctx) => {
   }
 
   try {
-    const result = await subscriptionService.createSubscription(userId, productId, receipt);
+    const result = await subscriptionCreationService.createSubscription(userId, productId, receipt);
 
-    await subscriptionService.sendNotificationForManualSubscription(userId);
+    await subscriptionCreationService.sendNotificationForManualSubscription(userId);
 
     ctx.status = 200;
     ctx.body = result;
@@ -326,13 +336,13 @@ router.post('/admin/retry', requireAuth, async (ctx) => {
   }
 
   try {
-    const result = await subscriptionService.createSubscriptionWithoutValidation(
+    const result = await subscriptionCreationService.createSubscriptionWithoutValidation(
       userId,
       productId,
       receipt
     );
 
-    await subscriptionService.sendNotificationForManualSubscription(userId);
+    await subscriptionCreationService.sendNotificationForManualSubscription(userId);
 
     ctx.status = 200;
     ctx.body = result;

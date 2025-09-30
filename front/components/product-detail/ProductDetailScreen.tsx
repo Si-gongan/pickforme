@@ -187,8 +187,15 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { component: reviewsComponent, scrollDown } = useWebViewReviews({
         productUrl: product?.url || '',
         onMessage: data => {
-            if (data && data.length > 0) {
+            // 웹뷰에서 onMessage가 호출되었다는 것은 리뷰 평점 노드가 있다는 의미
+            // 빈 배열이어도 성공으로 처리
+            if (data && Array.isArray(data)) {
                 setProductReview(data);
+                if (data.length == 0) {
+                    setProductLoadingStatus({
+                        review: LoadingStatus.NO_DATA
+                    });
+                }
             }
 
             const durationMs = new Date().getTime() - startDate.current.getTime();

@@ -85,14 +85,22 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                 const reviewUrl = await convertToCoupangReviewUrl(url);
                 setReviewWebviewUrl(reviewUrl);
                 setInjectionCode(`(function() {
+                  // 리뷰 평점 노드 확인
+                  const ratingNode = document.querySelector('.reviews-rating');
+                  const hasRating = ratingNode !== null;
+                  
                   const divs = document.querySelectorAll('div[class*="review-content"]');
                   const divContents = [];
                   divs.forEach(div => {
                     divContents.push(div.innerText.trim());
                   });
                   const uniqueContents = Array.from(new Set(divContents));
+                  
                   if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ 
+                      content: uniqueContents,
+                      hasRating: hasRating
+                    }));
                   }
                 })();
                 true;`);
@@ -100,6 +108,10 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                 // TODO: add other platforms
                 setReviewWebviewUrl(url);
                 setInjectionCode(`(function() {
+                  // 리뷰 평점 노드 확인
+                  const ratingNode = document.querySelector('.reviews-rating');
+                  const hasRating = ratingNode !== null;
+                  
                   const divs = document.querySelectorAll('div[class*="review"]');
                   const divContents = [];
                   divs.forEach(div => {
@@ -108,8 +120,12 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                     }
                   });
                   const uniqueContents = Array.from(new Set(divContents));
+                  
                   if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({ content: uniqueContents }));
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ 
+                      content: uniqueContents,
+                      hasRating: hasRating
+                    }));
                   }
                 })();
                 true;`);
@@ -135,6 +151,10 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                     const prevScrollY = window.scrollY;
                     window.scrollTo(0, document.body.scrollHeight);
                     
+                    // 리뷰 평점 노드 확인
+                    const ratingNode = document.querySelector('.reviews-rating');
+                    const hasRating = ratingNode !== null;
+                    
                     // 리뷰 컨텐츠 추출 코드 직접 실행
                     const divs = document.querySelectorAll('div[class*="review-content"]');
                     const divContents = [];
@@ -149,7 +169,8 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
                         window.ReactNativeWebView.postMessage(JSON.stringify({
                             type: 'scrollResult',
                             scrollChanged: scrollChanged,
-                            content: uniqueContents
+                            content: uniqueContents,
+                            hasRating: hasRating
                         }));
                     }, 1000);
                     return true;
@@ -181,41 +202,67 @@ export const useWebViewReviews = ({ productUrl, onMessage, onError }: WebViewPro
             if (parsedData.type === 'scrollResult') {
                 clearWatchdog();
 
+                // 리뷰 평점 노드가 없으면 에러 처리
+                if (!parsedData.hasRating) {
+                    console.log('리뷰 평점 노드를 찾을 수 없음');
+                    handleError();
+                    return;
+                }
+
                 if (!parsedData.scrollChanged && scrollDownCount < 11) {
                     scrollDown();
                     setScrollDownCount(count => count + 1);
                     return;
                 }
 
-                // 스크롤 결과에 컨텐츠가 포함되어 있으면 처리
-                if (parsedData.content && parsedData.content.length > 0) {
-                    const newReviews = parsedData.content.filter(
-                        (review: string) => !accumulatedReviews.includes(review)
-                    );
+                // 리뷰 평점 노드가 있으면 빈 배열이어도 성공으로 처리
+                if (parsedData.hasRating) {
+                    if (parsedData.content && parsedData.content.length > 0) {
+                        const newReviews = parsedData.content.filter(
+                            (review: string) => !accumulatedReviews.includes(review)
+                        );
 
-                    if (newReviews.length > 0) {
-                        console.log('새로운 리뷰:', newReviews.length, '개 발견');
-                        const updatedReviews = [...accumulatedReviews, ...newReviews];
-                        setAccumulatedReviews(updatedReviews);
-                        onMessage(updatedReviews); // 전체 리뷰 전달
+                        if (newReviews.length > 0) {
+                            console.log('새로운 리뷰:', newReviews.length, '개 발견');
+                            const updatedReviews = [...accumulatedReviews, ...newReviews];
+                            setAccumulatedReviews(updatedReviews);
+                            onMessage(updatedReviews); // 전체 리뷰 전달
+                        } else {
+                            // 새로운 리뷰는 없지만 평점 노드가 있으면 성공으로 처리
+                            onMessage(accumulatedReviews);
+                        }
+                    } else {
+                        // 리뷰 내용이 없어도 평점 노드가 있으면 성공으로 처리
+                        onMessage(accumulatedReviews);
                     }
                 }
                 return;
             }
 
             // 일반 컨텐츠 처리
-            if (parsedData.content && parsedData.content.length > 0) {
+            if (parsedData.hasRating) {
                 clearWatchdog();
 
-                const newReviews = parsedData.content.filter((review: string) => !accumulatedReviews.includes(review));
+                // 리뷰 평점 노드가 있으면 빈 배열이어도 성공으로 처리
+                if (parsedData.content && parsedData.content.length > 0) {
+                    const newReviews = parsedData.content.filter(
+                        (review: string) => !accumulatedReviews.includes(review)
+                    );
 
-                if (newReviews.length > 0) {
-                    const updatedReviews = [...accumulatedReviews, ...newReviews];
-                    setAccumulatedReviews(updatedReviews);
-                    onMessage(updatedReviews); // 전체 리뷰 전달
+                    if (newReviews.length > 0) {
+                        const updatedReviews = [...accumulatedReviews, ...newReviews];
+                        setAccumulatedReviews(updatedReviews);
+                        onMessage(updatedReviews); // 전체 리뷰 전달
+                    } else {
+                        // 새로운 리뷰는 없지만 평점 노드가 있으면 성공으로 처리
+                        onMessage(accumulatedReviews);
+                    }
+                } else {
+                    // 리뷰 내용이 없어도 평점 노드가 있으면 성공으로 처리
+                    onMessage(accumulatedReviews);
                 }
             } else {
-                console.log('handleMessage', retryCount);
+                console.log('리뷰 평점 노드를 찾을 수 없음, handleError 호출');
                 handleError();
             }
         } catch (error) {
