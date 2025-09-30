@@ -15,6 +15,7 @@
     "test:integration": "jest --selectProjects integration",
     "test:coverage": "jest --coverage",
     "process-hansiryun": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/hansiryun.ts",
+    "process-pickforme-test": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/pickforme_test.ts",
     "test-backup": "NODE_PATH=./src ts-node -e \"import('./src/scheduler/backup').then(m => m.testBackupScheduler())\""
   },
   "author": "jinsang",
