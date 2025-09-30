@@ -135,10 +135,57 @@ const processHansiryunEventMembership = async () => {
 };
 
 /**
+ * 픽포미 체험단 이벤트 멤버십을 가진 유저들의 상태를 확인하고,
+ * 2025년 10월 26일에 만료 처리
+ */
+const processPickformeTestEventMembership = async () => {
+  try {
+    const now = new Date();
+    const expirationDate = new Date('2025-10-26T00:00:00+09:00'); // 한국 시간 기준
+
+    // 픽포미 체험단 이벤트 멤버십을 가진 유저들 조회
+    const users = await db.User.find({
+      event: EVENT_IDS.PICKFORME_TEST,
+      MembershipAt: { $ne: null },
+    });
+
+    for (const user of users) {
+      if (!user.MembershipAt) continue;
+
+      // 만료 체크 (2025년 10월 26일)
+      if (now >= expirationDate) {
+        await user.processExpiredMembership();
+        void log.info(
+          `픽포미 체험단 이벤트 멤버십 만료 처리 완료 - userId: ${user._id}`,
+          'SCHEDULER',
+          'LOW',
+          {
+            scheduler: SCHEDULER_NAME,
+            userId: user._id,
+            eventId: EVENT_IDS.PICKFORME_TEST,
+          }
+        );
+        continue;
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error)
+      void log.error('픽포미 체험단 이벤트 멤버십 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
+        scheduler: SCHEDULER_NAME,
+        eventId: EVENT_IDS.PICKFORME_TEST,
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+  }
+};
+
+/**
  * 모든 이벤트 멤버십을 체크하는 메인 함수
  */
 const processEventMembership = async () => {
   await processHansiryunEventMembership();
+  await processPickformeTestEventMembership();
 };
 
 export const handleEventScheduler = async () => {
