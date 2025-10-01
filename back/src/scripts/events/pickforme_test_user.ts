@@ -41,6 +41,8 @@ interface FormResponse {
   rowIndex: number; // 스프레드시트에서의 실제 row 인덱스 (헤더 제외)
 }
 
+const eventOverridedUserEmailList: string[] = [];
+
 async function processUser(
   response: FormResponse,
   eventRewards: ProductReward,
@@ -81,8 +83,37 @@ async function processUser(
       return;
     }
 
-    // 멤버쉽 처리
-    await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+    if (user.event !== null) {
+      if (user.event != EVENT_IDS.HANSIRYUN) {
+        // 한시련 이외의 이벤트의 경우에는 아직 처리방침 x. 이벤트 처리하지 않고 그대로 반환.
+        console.log(`유저 ${response.name} ${user.email}은 다른 이벤트가 적용중입니다.`);
+        return;
+      }
+
+      if (!user.MembershipAt) {
+        return;
+      }
+
+      const membershipStartDate = new Date(user.MembershipAt);
+      const isSeptemberSignUp =
+        membershipStartDate.getFullYear() == 2025 && membershipStartDate.getMonth() == 8;
+
+      if (isSeptemberSignUp) {
+        membershipStartDate.setMonth(membershipStartDate.getMonth() + 1);
+      } else {
+        membershipStartDate.setMonth(membershipStartDate.getMonth() + 6);
+      }
+
+      const testGroupExpirationDate = new Date();
+
+      if (testGroupExpirationDate > membershipStartDate) {
+        eventOverridedUserEmailList.push(user.email);
+        console.log(`유저 ${response.name} 픽포미 체험단 이벤트 적용 완료.`);
+        await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+      } else {
+        console.log(`유저 ${response.name}는 한시련 이벤트 대상자입니다.`);
+      }
+    }
 
     // 스프레드시트의 해당 row의 멤버쉽 처리 여부 컬럼을 'o'로 업데이트
     // 헤더가 있으므로 실제 row는 response.rowIndex + 2 (헤더 1개 + 0-based index)
@@ -167,6 +198,8 @@ async function main() {
     for (const response of formResponses) {
       await processUser(response, eventRewards, sheets, spreadsheetId);
     }
+
+    console.log(`이벤트 오버라이드 유저 리스트: ${eventOverridedUserEmailList}`);
 
     console.log('Processing completed successfully');
   } catch (error) {
