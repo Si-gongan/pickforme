@@ -1,9 +1,4 @@
 // src/features/analytics/analytics.handlers.ts
-import dotenv from 'dotenv';
-
-dotenv.config({
-  path: '.env.local',
-});
 
 import { foundationJobs, summaryJobs } from './scheduler/jobs';
 import { runEtlJob } from './analytics.service';

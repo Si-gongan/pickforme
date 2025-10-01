@@ -28,7 +28,7 @@ export const mongodbSyncJobs: MetricJob[] = [
 // 공통 target_date 생성 함수
 const getTargetDate = () => {
   const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate()); // 어제 날짜
+  targetDate.setDate(targetDate.getDate() - 5);
   return targetDate.toISOString().split('T')[0];
 };
 
