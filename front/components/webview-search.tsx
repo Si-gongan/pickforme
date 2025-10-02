@@ -6,7 +6,7 @@ import { Product } from '../stores/product/types';
 
 interface WebViewProps {
     keyword: string;
-    onMessage: (data: Product[]) => void;
+    onMessage: (data: Product[], opts?: { source?: string; isFinalResult?: boolean }) => void;
     startWebviewSearch: boolean;
 }
 
@@ -221,7 +221,8 @@ const _WebViewSearch = ({ keyword, onMessage, startWebviewSearch }: WebViewProps
             }
             if (Array.isArray(data?.content)) {
                 // console.log('🚀 ~ handleMessage ~ data.content:', data.content);
-                onMessage(data.content);
+                // webview에서 성공 - 최종 결과로 처리
+                onMessage(data.content, { source: 'webview', isFinalResult: true });
             }
         } catch (error) {
             console.error('Failed to parse WebView message:', error);
