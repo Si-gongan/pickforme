@@ -25,7 +25,6 @@ if (!isTest) {
   log.debug(`connecting to mongodb`);
   mongoose
     .connect(uri, {
-      dbName: process.env.MODE === 'dev' ? 'pickforme-dev' : 'pickforme-production',
       serverSelectionTimeoutMS: 5000,
     })
     .then(() => {
