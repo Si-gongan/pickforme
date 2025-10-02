@@ -1,11 +1,12 @@
 import dotenv from 'dotenv';
+
+dotenv.config();
+
 import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import db from 'models';
 import { ProductReward } from 'models/product';
 import { EVENT_IDS } from 'constants/events';
-
-dotenv.config();
 
 /**
  * 한시련 이벤트 신청자 대상으로 멤버쉽 처리를 해주기 위한 스크립트입니다.
@@ -22,7 +23,7 @@ dotenv.config();
 
 // 구글 API 인증 설정
 const auth = new google.auth.GoogleAuth({
-  keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  keyFile: process.env.EVENTS_HANSIRYUN_CREDENTIALS,
   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
 });
 
@@ -69,7 +70,7 @@ async function processUser(response: FormResponse, eventRewards: ProductReward):
       return;
     }
 
-    await user.applyEventRewards(eventRewards, EVENT_IDS.HANSIRYUN);
+    // await user.applyEventRewards(eventRewards, EVENT_IDS.HANSIRYUN);
 
     console.log(
       `유저 ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt} 처리 완료`
@@ -93,8 +94,8 @@ async function main() {
     const sheets = google.sheets({ version: 'v4', auth });
 
     // 스프레드시트 ID와 범위 설정
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-    const range = process.env.GOOGLE_SHEET_RANGE || "'설문지 응답 시트1'!A:H";
+    const spreadsheetId = process.env.EVENTS_HANSIRYUN_GOOGLE_SHEET_ID;
+    const range = '설문지 응답 시트1!A:H';
 
     if (!spreadsheetId) {
       throw new Error('GOOGLE_SHEET_ID environment variable is required');

@@ -135,10 +135,93 @@ const processHansiryunEventMembership = async () => {
 };
 
 /**
+ * 픽포미 체험단 이벤트 멤버십을 가진 유저들의 상태를 확인하고,
+ * MembershipAt으로부터 3달 후 만료 처리, 한달마다 포인트 갱신
+ */
+const processPickformeTestEventMembership = async () => {
+  try {
+    const now = new Date();
+
+    // 픽포미 체험단 이벤트 멤버십을 가진 유저들 조회
+    const users = await db.User.find({
+      event: EVENT_IDS.PICKFORME_TEST,
+      MembershipAt: { $ne: null },
+    });
+
+    const eventProduct = await db.Product.findOne({
+      type: ProductType.SUBSCRIPTION,
+      eventId: EVENT_IDS.PICKFORME_TEST,
+    });
+
+    if (!eventProduct) {
+      void log.error('픽포미 체험단 이벤트 상품이 존재하지 않습니다.', 'SCHEDULER', 'HIGH', {
+        scheduler: SCHEDULER_NAME,
+        eventId: EVENT_IDS.PICKFORME_TEST,
+      });
+      return;
+    }
+
+    for (const user of users) {
+      if (!user.MembershipAt) continue;
+
+      const membershipStartDate = new Date(user.MembershipAt);
+      const lastMembershipDate = user.lastMembershipAt || membershipStartDate;
+
+      // 3달 후 만료
+      const expirationDate = new Date(membershipStartDate);
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+      // 만료 체크
+      if (now >= expirationDate) {
+        await user.processExpiredMembership();
+        void log.info(
+          `픽포미 체험단 이벤트 멤버십 만료 처리 완료 - userId: ${user._id}`,
+          'SCHEDULER',
+          'LOW',
+          {
+            scheduler: SCHEDULER_NAME,
+            userId: user._id,
+            eventId: EVENT_IDS.PICKFORME_TEST,
+          }
+        );
+        continue;
+      }
+
+      const oneMonthLater = new Date(lastMembershipDate);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+
+      // 한달이 지난 경우 포인트 갱신
+      if (now >= oneMonthLater) {
+        await user.applyPurchaseRewards(eventProduct.getRewards()); // isAdditional = false
+        void log.info(
+          `픽포미 체험단 이벤트 멤버십 포인트 갱신 완료 - userId: ${user._id}`,
+          'SCHEDULER',
+          'LOW',
+          {
+            scheduler: SCHEDULER_NAME,
+            userId: user._id,
+          }
+        );
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error)
+      void log.error('픽포미 체험단 이벤트 멤버십 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
+        scheduler: SCHEDULER_NAME,
+        eventId: EVENT_IDS.PICKFORME_TEST,
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+  }
+};
+
+/**
  * 모든 이벤트 멤버십을 체크하는 메인 함수
  */
 const processEventMembership = async () => {
   await processHansiryunEventMembership();
+  await processPickformeTestEventMembership();
 };
 
 export const handleEventScheduler = async () => {
