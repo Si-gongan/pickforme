@@ -4,6 +4,7 @@ node_modules
 # backups
 backups/*
 dist/*
+credentials/*
 # misc
 .env
 .env.local

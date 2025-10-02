@@ -28,7 +28,7 @@ export const mongodbSyncJobs: MetricJob[] = [
 // 공통 target_date 생성 함수
 const getTargetDate = () => {
   const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() - 5);
+  targetDate.setDate(targetDate.getDate() - 1);
   return targetDate.toISOString().split('T')[0];
 };
 
@@ -74,15 +74,6 @@ export const summaryJobs: MetricJob[] = [
     name: '키워드 검색 관련 지표',
     sqlFile: 'summary/getDailySearchMetrics.sql',
     destinationTable: 'daily_search_metrics',
-    writeDisposition: 'MERGE',
-    getQueryParams: () => ({
-      target_date: getTargetDate(),
-    }),
-  },
-  {
-    name: '검색 시도 지표',
-    sqlFile: 'summary/getSearchAttemptMetrics.sql',
-    destinationTable: 'daily_search_attempt_metrics',
     writeDisposition: 'MERGE',
     getQueryParams: () => ({
       target_date: getTargetDate(),

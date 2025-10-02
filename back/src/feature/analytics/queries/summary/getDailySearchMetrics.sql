@@ -6,7 +6,7 @@ USING (
     COUNTIF(event_name = 'keyword_search_complete') AS keyword_search_success_count,
     COUNTIF(event_name = 'keyword_search_timeout') AS keyword_search_failure_count,
     COUNTIF(event_name = 'search_item_click') AS search_item_click_count,
-    COUNTIF(event_name = 'screen_view' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'firebase_screen') = 'SearchResultScreen') AS search_result_pv
+    COUNTIF(event_name = 'search_mode_view') AS search_result_pv
   FROM
     {{- GA4_EVENTS_TABLE -}}
   WHERE
