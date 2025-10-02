@@ -1,3 +1,4 @@
+import { EVENT_IDS } from '../../../constants/events';
 import db from 'models';
 import { ProductType } from 'models/product';
 
@@ -48,13 +49,19 @@ export class SubscriptionQueryService {
     }
 
     // 이벤트 멤버쉽이 활성화 되어있는지 확인
-    if (user.event === 1 && user.MembershipAt) {
+    if (user.event && user.MembershipAt) {
       const membershipAt = new Date(user.MembershipAt);
       membershipAt.setHours(0, 0, 0, 0);
 
-      // 6개월 뒤 날짜 계산
+      // 이벤트 타입에 따라 만료일 계산
       const expiredDate = new Date(membershipAt);
-      expiredDate.setMonth(expiredDate.getMonth() + 6);
+      if (user.event === EVENT_IDS.HANSIRYUN) {
+        // 한시련 이벤트: 6개월 뒤 만료
+        expiredDate.setMonth(expiredDate.getMonth() + 6);
+      } else if (user.event === EVENT_IDS.PICKFORME_TEST) {
+        // 픽포미 체험단 이벤트: 3개월 뒤 만료
+        expiredDate.setMonth(expiredDate.getMonth() + 3);
+      }
 
       // 남은 일수 계산
       const timeDifference = expiredDate.getTime() - currentDate.getTime();
