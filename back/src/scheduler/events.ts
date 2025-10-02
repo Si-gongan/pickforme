@@ -136,12 +136,11 @@ const processHansiryunEventMembership = async () => {
 
 /**
  * 픽포미 체험단 이벤트 멤버십을 가진 유저들의 상태를 확인하고,
- * 2025년 10월 26일에 만료 처리
+ * MembershipAt으로부터 3달 후 만료 처리, 한달마다 포인트 갱신
  */
 const processPickformeTestEventMembership = async () => {
   try {
     const now = new Date();
-    const expirationDate = new Date('2025-10-26T00:00:00+09:00'); // 한국 시간 기준
 
     // 픽포미 체험단 이벤트 멤버십을 가진 유저들 조회
     const users = await db.User.find({
@@ -149,10 +148,30 @@ const processPickformeTestEventMembership = async () => {
       MembershipAt: { $ne: null },
     });
 
+    const eventProduct = await db.Product.findOne({
+      type: ProductType.SUBSCRIPTION,
+      eventId: EVENT_IDS.PICKFORME_TEST,
+    });
+
+    if (!eventProduct) {
+      void log.error('픽포미 체험단 이벤트 상품이 존재하지 않습니다.', 'SCHEDULER', 'HIGH', {
+        scheduler: SCHEDULER_NAME,
+        eventId: EVENT_IDS.PICKFORME_TEST,
+      });
+      return;
+    }
+
     for (const user of users) {
       if (!user.MembershipAt) continue;
 
-      // 만료 체크 (2025년 10월 26일)
+      const membershipStartDate = new Date(user.MembershipAt);
+      const lastMembershipDate = user.lastMembershipAt || membershipStartDate;
+
+      // 3달 후 만료
+      const expirationDate = new Date(membershipStartDate);
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+      // 만료 체크
       if (now >= expirationDate) {
         await user.processExpiredMembership();
         void log.info(
@@ -166,6 +185,23 @@ const processPickformeTestEventMembership = async () => {
           }
         );
         continue;
+      }
+
+      const oneMonthLater = new Date(lastMembershipDate);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+
+      // 한달이 지난 경우 포인트 갱신
+      if (now >= oneMonthLater) {
+        await user.applyPurchaseRewards(eventProduct.getRewards()); // isAdditional = false
+        void log.info(
+          `픽포미 체험단 이벤트 멤버십 포인트 갱신 완료 - userId: ${user._id}`,
+          'SCHEDULER',
+          'LOW',
+          {
+            scheduler: SCHEDULER_NAME,
+            userId: user._id,
+          }
+        );
       }
     }
   } catch (error) {
