@@ -1,17 +1,25 @@
-import React from "react";
+"use client";
+
+import React, { useMemo } from "react";
 import Link from "next/link";
 import styled from "@emotion/styled";
+import { useAtomValue } from "jotai";
+import { userDataAtom } from "@/stores/auth/atoms";
 
 const Header: React.FC = () => {
+  const userData = useAtomValue(userDataAtom);
+
+  const isLogin = useMemo(() => !!userData, [userData]);
+
   return (
     <NavBar>
       <NavList>
         <NavItem>
           <Link href="/">Home</Link>
         </NavItem>
-        <NavItem>
+        {/* <NavItem>
           <Link href="/dashboard">Dashboard</Link>
-        </NavItem>
+        </NavItem> */}
         <NavItem>
           <Link href="/notices">Notices</Link>
         </NavItem>
@@ -27,8 +35,13 @@ const Header: React.FC = () => {
         <NavItem>
           <Link href="/crawl-log">Crawl Log</Link>
         </NavItem>
+        {isLogin ? null : (
+          <NavItem>
+            <Link href="/login">Login</Link>
+          </NavItem>
+        )}
         <NavItem>
-          <Link href="/login">Login</Link>
+          <Link href="/analytics">Analytics</Link>
         </NavItem>
       </NavList>
     </NavBar>
