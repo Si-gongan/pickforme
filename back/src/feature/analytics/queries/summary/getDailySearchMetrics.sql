@@ -2,9 +2,9 @@ MERGE {{- DESTINATION_TABLE -}} AS target
 USING (
   SELECT
     DATE(@target_date) AS summary_date,
-    COUNTIF(event_name = 'keyword_search_submit') AS keyword_search_submit_count,
-    COUNTIF(event_name = 'keyword_search_complete') AS keyword_search_success_count,
-    COUNTIF(event_name = 'keyword_search_timeout') AS keyword_search_failure_count,
+    COUNTIF(event_name = 'keyword_search_result' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'started') AS keyword_search_submit_count,
+    COUNTIF(event_name = 'keyword_search_result' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS keyword_search_success_count,
+    COUNTIF(event_name = 'keyword_search_result' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failure') AS keyword_search_failure_count,
     COUNTIF(event_name = 'search_item_click') AS search_item_click_count,
     COUNTIF(event_name = 'search_mode_view') AS search_result_pv
   FROM
