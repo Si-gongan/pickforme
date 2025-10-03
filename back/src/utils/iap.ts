@@ -6,7 +6,7 @@ const isProd = process.env.NODE_ENV === 'production';
 iap.config({
   /* Configurations for Apple */
   appleExcludeOldTransactions: true,
-  applePassword: '05cffed4530a4370b0e1c07389656a24',
+  applePassword: process.env.APPLE_APP_SHARED_SECRET,
   googleServiceAccount: {
     clientEmail: 'pickforme-pay@pc-api-7720781988710275417-821.iam.gserviceaccount.com',
     // eslint-disable-next-line max-len
