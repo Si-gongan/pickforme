@@ -8,14 +8,8 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
     { name: 'kakao_login_attempt_count', type: 'INTEGER' },
     { name: 'google_login_attempt_count', type: 'INTEGER' },
     { name: 'apple_login_attempt_count', type: 'INTEGER' },
-    { name: 'register_success_count', type: 'INTEGER' },
-  ],
-
-  // 회원가입 전환율
-  daily_signup_conversion_metrics: [
-    { name: 'summary_date', type: 'DATE' },
     { name: 'signup_page_pv', type: 'INTEGER' },
-    { name: 'signup_complete_users', type: 'INTEGER' },
+    { name: 'register_success_count', type: 'INTEGER' },
   ],
 
   // 홈 화면 관련 지표

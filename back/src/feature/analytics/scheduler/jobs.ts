@@ -44,15 +44,6 @@ export const summaryJobs: MetricJob[] = [
     }),
   },
   {
-    name: '회원가입 전환율',
-    sqlFile: 'summary/getSignupConversion.sql',
-    destinationTable: 'daily_signup_conversion_metrics',
-    writeDisposition: 'MERGE',
-    getQueryParams: () => ({
-      target_date: getTargetDate(),
-    }),
-  },
-  {
     name: '홈 화면 관련 지표',
     sqlFile: 'summary/getDailyHomeMetrics.sql',
     destinationTable: 'daily_home_metrics',

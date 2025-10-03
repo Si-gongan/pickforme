@@ -4,100 +4,6 @@ import { log } from '../../../utils/logger/logger';
 export class StatisticsService {
   private readonly DATASET_ID = process.env.GA4_DATASET_SUMMARY_ID;
 
-  // 기본값 헬퍼 메서드들
-  private getDefaultUserStatistics() {
-    return {
-      signupConversionRate: 0,
-      signupPageViews: 0,
-      signupCompletions: 0,
-      loginSuccessRate: 0,
-      loginFailureRate: 0,
-      loginAttempts: 0,
-      loginSuccesses: 0,
-      loginFailures: 0,
-      socialLoginStats: { google: 0, apple: 0, kakao: 0 },
-      ttfa: { averageTime: 0, medianTime: 0 },
-      firstVisitorConversionRate: 0,
-      firstVisitors: 0,
-      firstVisitorDetailViews: 0,
-    };
-  }
-
-  private getDefaultHomeStatistics() {
-    return {
-      recommendedProductClickRate: 0,
-      homePageViews: 0,
-      recommendedProductClicks: 0,
-      categoryClickRates: {},
-    };
-  }
-
-  private getDefaultSearchStatistics() {
-    return {
-      searchSuccessRate: 0,
-      searchFailureRate: 0,
-      searchAttempts: 0,
-      searchSuccesses: 0,
-      searchFailures: 0,
-      searchRecommendationClickRate: 0,
-      searchResultPageViews: 0,
-      searchRecommendationClicks: 0,
-    };
-  }
-
-  private getDefaultLinkSearchStatistics() {
-    return {
-      linkSearchSuccessRate: 0,
-      linkSearchAttempts: 0,
-      linkSearchSuccesses: 0,
-    };
-  }
-
-  private getDefaultProductDetailStatistics() {
-    return {
-      buttonClickRates: {},
-      purchaseButtonClickRate: 0,
-      purchaseButtonClicks: 0,
-      productDetailPageViews: 0,
-      purchaseCompletionRate: 0,
-      dailyActiveUsers: 0,
-      weeklyActiveUsers: 0,
-      monthlyActiveUsers: 0,
-      purchaseCompletions: 0,
-    };
-  }
-
-  private getDefaultMembershipStatistics() {
-    return {
-      membershipSubscribeClickRate: 0,
-      membershipPageViews: 0,
-      membershipSubscribeClicks: 0,
-      membershipPaymentSuccessRate: 0,
-      membershipSuccessfulPurchases: 0,
-      membershipPaymentErrorRate: 0,
-      membershipPaymentAbandonmentRate: 0,
-      membershipPurchaseFailures: 0,
-      membershipUnsubscribeRate: 0,
-      membershipUnsubscribes: 0,
-      membershipUserRatio: 0,
-      totalUsers: 0,
-      membershipUsers: 0,
-      repeatMembershipUserRatio: 0,
-      repeatMembershipUsers: 0,
-      membershipRetentionRate: 0,
-      currentMonthRenewalUsers: 0,
-      previousMonthPurchases: 0,
-    };
-  }
-
-  private getDefaultManagerQAStatistics() {
-    return {
-      managerResponseConfirmationRate: 0,
-      managerResponses: 0,
-      responseConfirmationPageViews: 0,
-    };
-  }
-
   /**
    * 비율 데이터를 퍼센트로 변환하는 헬퍼 함수
    */
@@ -336,35 +242,7 @@ export class StatisticsService {
    */
   private async getUserStatisticsInternal(startDate: string, endDate: string) {
     try {
-      // 회원가입 전환율 조회
-      const signupQuery = `
-        SELECT
-          summary_date,
-          signup_page_pv,
-          signup_complete_users
-        FROM \`${this.DATASET_ID}.daily_signup_conversion_metrics\`
-        WHERE summary_date BETWEEN @start_date AND @end_date
-        ORDER BY summary_date
-      `;
-
-      const signupParams = {
-        start_date: startDate,
-        end_date: endDate,
-      };
-
-      const signupData = await this.executeQuery(signupQuery, signupParams);
-
-      // 날짜별로 데이터 매핑
-      const signupMap = new Map();
-      signupData.forEach((row: any) => {
-        const dateStr = row.summary_date?.value || row.summary_date;
-        signupMap.set(dateStr, {
-          signup_page_pv: row.signup_page_pv || 0,
-          signup_complete_users: row.signup_complete_users || 0,
-        });
-      });
-
-      // 로그인 메트릭 조회
+      // 통합된 로그인/회원가입 메트릭 조회
       const loginQuery = `
         SELECT
           summary_date,
@@ -373,13 +251,19 @@ export class StatisticsService {
           kakao_login_attempt_count,
           google_login_attempt_count,
           apple_login_attempt_count,
+          signup_page_pv,
           register_success_count
         FROM \`${this.DATASET_ID}.daily_login_metrics\`
         WHERE summary_date BETWEEN @start_date AND @end_date
         ORDER BY summary_date
       `;
 
-      const loginData = await this.executeQuery(loginQuery, signupParams);
+      const loginParams = {
+        start_date: startDate,
+        end_date: endDate,
+      };
+
+      const loginData = await this.executeQuery(loginQuery, loginParams);
 
       // 날짜별로 데이터 매핑
       const loginMap = new Map();
@@ -391,6 +275,7 @@ export class StatisticsService {
           kakao_login_attempt_count: row.kakao_login_attempt_count || 0,
           google_login_attempt_count: row.google_login_attempt_count || 0,
           apple_login_attempt_count: row.apple_login_attempt_count || 0,
+          signup_page_pv: row.signup_page_pv || 0,
           register_success_count: row.register_success_count || 0,
         });
       });
@@ -406,7 +291,7 @@ export class StatisticsService {
         ORDER BY summary_date
       `;
 
-      const ttfaData = await this.executeQuery(ttfaQuery, signupParams);
+      const ttfaData = await this.executeQuery(ttfaQuery, loginParams);
 
       // 날짜별로 데이터 매핑
       const ttfaMap = new Map();
@@ -429,7 +314,7 @@ export class StatisticsService {
         ORDER BY summary_date
       `;
 
-      const firstVisitorData = await this.executeQuery(firstVisitorQuery, signupParams);
+      const firstVisitorData = await this.executeQuery(firstVisitorQuery, loginParams);
 
       // 날짜별로 데이터 매핑
       const firstVisitorMap = new Map();
@@ -452,13 +337,13 @@ export class StatisticsService {
       }
       // 날짜별 배열 반환
       return dateRange.map((date) => {
-        const signup = signupMap.get(date) || { signup_page_pv: 0, signup_complete_users: 0 };
         const login = loginMap.get(date) || {
           login_attempt_count: 0,
           login_success_count: 0,
           kakao_login_attempt_count: 0,
           google_login_attempt_count: 0,
           apple_login_attempt_count: 0,
+          signup_page_pv: 0,
           register_success_count: 0,
         };
         const ttfa = ttfaMap.get(date) || {
@@ -472,7 +357,7 @@ export class StatisticsService {
 
         // 전환율 계산
         const signupConversionRate =
-          signup.signup_page_pv > 0 ? signup.signup_complete_users / signup.signup_page_pv : 0;
+          login.signup_page_pv > 0 ? login.register_success_count / login.signup_page_pv : 0;
         const loginSuccessRate =
           login.login_attempt_count > 0 ? login.login_success_count / login.login_attempt_count : 0;
         const loginFailureRate =
@@ -487,8 +372,8 @@ export class StatisticsService {
         return {
           date,
           signupConversionRate,
-          signupPageViews: signup.signup_page_pv,
-          signupCompletions: signup.signup_complete_users,
+          signupPageViews: login.signup_page_pv,
+          signupCompletions: login.register_success_count,
           loginSuccessRate,
           loginFailureRate,
           loginAttempts: login.login_attempt_count,
