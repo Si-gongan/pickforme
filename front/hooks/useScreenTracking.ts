@@ -11,7 +11,8 @@ const screenNameMapping: { [key: string]: AnalyticsScreenName } = {
     '/wishlist': 'WishlistScreen',
     '/mypage': 'MyPageScreen',
     '/subscription': 'SubscriptionScreen',
-    '/subscription-history': 'SubscriptionHistoryScreen'
+    '/subscription-history': 'SubscriptionHistoryScreen',
+    '/login': 'LoginScreen'
 };
 
 export const useScreenTracking = () => {

@@ -44,7 +44,8 @@ export type AnalyticsScreenName =
     | 'WishlistScreen'
     | 'MyPageScreen'
     | 'SubscriptionScreen'
-    | 'SubscriptionHistoryScreen';
+    | 'SubscriptionHistoryScreen'
+    | 'LoginScreen';
 
 // 이벤트 파라미터 타입 정의
 export interface AnalyticsEventParams {
