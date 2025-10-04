@@ -21,7 +21,8 @@ export type LogContext =
   | 'CONTROLLER' // 컨트롤러
   | 'UTIL' // 유틸리티 함수
   | 'EXTERNAL' // 외부 API 호출
-  | 'CRAWL'; // 크롤링 관련
+  | 'CRAWL' // 크롤링 관련
+  | 'ANALYTICS';
 
 export type LogSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 

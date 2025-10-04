@@ -6,6 +6,7 @@ credentials/*
 # backups
 backups/*
 dist/*
+credentials/*
 # misc
 .env
 .env.local
