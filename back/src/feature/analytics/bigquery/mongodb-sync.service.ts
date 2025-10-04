@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-
 import { bigqueryClient } from './bigquery-client';
 import { TABLE_SCHEMAS } from './table-schemas';
 import db from 'models';
@@ -58,21 +55,32 @@ export class MongodbSyncService {
       });
       const table = dataset.table(tableName);
 
-      // 테이블의 모든 데이터 삭제 (TRUNCATE)
-      await table.delete();
-      console.log(`✅ Cleared data from table ${this.DATASET_ID}.${tableName}`);
+      // 테이블 존재 확인
+      const [exists] = await table.exists();
 
-      // 테이블 재생성 (빈 테이블)
-      const schema = TABLE_SCHEMAS[tableName];
-      if (!schema) {
-        throw new Error(`Schema not found for table: ${tableName}`);
+      if (exists) {
+        // 데이터만 삭제 (테이블 구조는 유지)
+        const query = `DELETE FROM \`${this.DATASET_ID}.${tableName}\` WHERE TRUE`;
+        const [job] = await bigqueryClient.createQueryJob({
+          query: query,
+          location: 'asia-northeast3',
+        });
+
+        await job.getQueryResults();
+        console.log(`✅ Cleared data from table ${this.DATASET_ID}.${tableName}`);
+      } else {
+        // 테이블이 없으면 새로 생성
+        const schema = TABLE_SCHEMAS[tableName];
+        if (!schema) {
+          throw new Error(`Schema not found for table: ${tableName}`);
+        }
+
+        await table.create({
+          schema: schema,
+          location: 'asia-northeast3',
+        });
+        console.log(`✅ Created table ${this.DATASET_ID}.${tableName}`);
       }
-
-      await table.create({
-        schema: schema,
-        location: 'asia-northeast3',
-      });
-      console.log(`✅ Recreated empty table ${this.DATASET_ID}.${tableName}`);
     } catch (error) {
       console.error(`❌ Failed to clear table ${tableName}:`, error);
       throw error;
@@ -86,23 +94,28 @@ export class MongodbSyncService {
     try {
       log.info('MongoDB 동기화 시작', 'SCHEDULER', 'LOW');
 
-      // 테이블 존재 확인
-      console.log('🔄 Ensuring tables exist...');
-      await this.ensureTableExists('users');
-      await this.ensureTableExists('purchases');
-      await this.ensureTableExists('purchase_failures');
-
-      await this.clearTableData('users');
-      await this.clearTableData('purchases');
-      await this.clearTableData('purchase_failures');
+      // jobs.ts에서 정의된 MongoDB 동기화 작업들만 실행
+      const { mongodbSyncJobs } = await import('../scheduler/jobs');
 
       const lastSync = await this.getLastSyncTime();
 
-      await Promise.all([
-        this.syncUsers(lastSync),
-        this.syncPurchases(lastSync),
-        this.syncPurchaseFailures(lastSync),
-      ]);
+      // 각 작업을 순차적으로 실행
+      for (const job of mongodbSyncJobs) {
+        if (job.type === 'mongodb_sync') {
+          console.log(`🔄 Processing ${job.name}...`);
+
+          // 테이블 존재 확인
+          await this.ensureTableExists(job.destinationTable);
+
+          // 기존 데이터 삭제
+          await this.clearTableData(job.destinationTable);
+
+          // 데이터 동기화
+          await this.syncCollection(job.collection!, job.destinationTable, lastSync);
+
+          console.log(`✅ ${job.name} 완료`);
+        }
+      }
 
       await this.updateLastSyncTime(new Date());
 
@@ -114,107 +127,84 @@ export class MongodbSyncService {
   }
 
   /**
-   * 유저 데이터 동기화
+   * 동적으로 컬렉션 동기화
    */
-  private async syncUsers(lastSyncTime?: Date) {
+  private async syncCollection(collectionName: string, tableName: string, lastSyncTime?: Date) {
     const query = lastSyncTime ? { updatedAt: { $gt: lastSyncTime } } : {};
 
     let skip = 0;
     let hasMore = true;
 
     while (hasMore) {
-      const users = await db.User.find(query).skip(skip).limit(this.BATCH_SIZE).lean();
+      let data: any[];
 
-      if (users.length === 0) {
+      // 컬렉션별로 다른 모델 사용
+      switch (collectionName) {
+        case 'users':
+          data = await db.User.find(query).skip(skip).limit(this.BATCH_SIZE).lean();
+          break;
+        case 'purchases':
+          data = await db.Purchase.find(query).skip(skip).limit(this.BATCH_SIZE).lean();
+          break;
+        case 'purchase_failures':
+          data = await db.PurchaseFailure.find(query).skip(skip).limit(this.BATCH_SIZE).lean();
+          break;
+        case 'requests':
+          data = await db.Request.find(query).skip(skip).limit(this.BATCH_SIZE).lean();
+          break;
+        default:
+          throw new Error(`Unknown collection: ${collectionName}`);
+      }
+
+      if (data.length === 0) {
         hasMore = false;
         break;
       }
 
-      // BigQuery에 맞는 형태로 변환 (타입 방어 로직 추가)
-      const transformedUsers = users.map((user) => ({
-        _id: user._id.toString(),
-        email: user.email,
-        point: Number(user.point) || 0,
-        aiPoint: Number(user.aiPoint) || 0,
-        level: Number(user.level) || 1,
-        lastLoginAt: user.lastLoginAt?.toISOString() || null,
-        MembershipAt: user.MembershipAt?.toISOString() || null,
-        lastMembershipAt: user.lastMembershipAt?.toISOString() || null,
-        event: user.event || null,
-        createdAt: user.createdAt?.toISOString() || null,
-        updatedAt: user.updatedAt?.toISOString() || null,
-      }));
+      // 컬렉션별로 다른 변환 로직 적용
+      const transformedData = this.transformData(collectionName, data);
 
-      await this.insertBatchToBigQuery('users', transformedUsers);
+      await this.insertBatchToBigQuery(tableName, transformedData);
       skip += this.BATCH_SIZE;
     }
 
-    log.info(`유저 데이터 동기화 완료 (${skip}개 레코드)`, 'SCHEDULER', 'LOW');
+    log.info(`${collectionName} 데이터 동기화 완료 (${skip}개 레코드)`, 'SCHEDULER', 'LOW');
   }
 
   /**
-   * 구매 데이터 동기화
+   * 컬렉션별 데이터 변환
    */
-  private async syncPurchases(lastSyncTime?: Date) {
-    const query = lastSyncTime ? { updatedAt: { $gt: lastSyncTime } } : {};
+  private transformData(collectionName: string, data: any[]): any[] {
+    switch (collectionName) {
+      case 'users':
+        return data.map((user) => ({
+          _id: user._id.toString(),
+          email: user.email,
+          point: Number(user.point) || 0,
+          aiPoint: Number(user.aiPoint) || 0,
+          level: Number(user.level) || 1,
+          lastLoginAt: user.lastLoginAt?.toISOString() || null,
+          MembershipAt: user.MembershipAt?.toISOString() || null,
+          lastMembershipAt: user.lastMembershipAt?.toISOString() || null,
+          event: user.event || null,
+          createdAt: user.createdAt?.toISOString() || null,
+          updatedAt: user.updatedAt?.toISOString() || null,
+        }));
 
-    let skip = 0;
-    let hasMore = true;
+      case 'purchases':
+        return data.map((purchase) => ({
+          _id: purchase._id.toString(),
+          userId: purchase.userId.toString(),
+          productId: purchase.product?.productId || null,
+          platform: purchase.product?.platform || null,
+          type: purchase.product?.type || null,
+          isExpired: purchase.isExpired || false,
+          createdAt: purchase.createdAt.toISOString(),
+          updatedAt: purchase.updatedAt.toISOString(),
+        }));
 
-    while (hasMore) {
-      const purchases = await db.Purchase.find(query).skip(skip).limit(this.BATCH_SIZE).lean();
-
-      if (purchases.length === 0) {
-        hasMore = false;
-        break;
-      }
-
-      // BigQuery에 맞는 형태로 변환
-      const transformedPurchases = purchases.map((purchase) => ({
-        _id: purchase._id.toString(),
-        userId: purchase.userId.toString(),
-        productId: purchase.product?.productId || null,
-        platform: purchase.product?.platform || null,
-        type: purchase.product?.type || null,
-        isExpired: purchase.isExpired || false,
-        createdAt: purchase.createdAt.toISOString(),
-        updatedAt: purchase.updatedAt.toISOString(),
-      }));
-
-      await this.insertBatchToBigQuery('purchases', transformedPurchases);
-      skip += this.BATCH_SIZE;
-    }
-
-    log.info(`구매 데이터 동기화 완료 (${skip}개 레코드)`, 'SCHEDULER', 'LOW');
-  }
-
-  /**
-   * 구매 실패 데이터 동기화
-   */
-  private async syncPurchaseFailures(lastSyncTime?: Date) {
-    const query = lastSyncTime ? { updatedAt: { $gt: lastSyncTime } } : {};
-
-    let skip = 0;
-    let hasMore = true;
-
-    while (hasMore) {
-      const failures = await db.PurchaseFailure.find(query)
-        .skip(skip)
-        .limit(this.BATCH_SIZE)
-        .lean();
-
-      if (failures.length === 0) {
-        hasMore = false;
-        break;
-      }
-
-      // BigQuery에 맞는 형태로 변환
-      const transformedFailures = failures.map((failure) => {
-        // stringify 하기 전에 객체인지 확인
-        const stringifyIfObject = (data: any) =>
-          data && typeof data === 'object' ? JSON.stringify(data) : null;
-
-        return {
+      case 'purchase_failures':
+        return data.map((failure) => ({
           _id: failure._id.toString(),
           userId: failure.userId?.toString() || null,
           productId: failure.productId?.toString() || null,
@@ -222,14 +212,26 @@ export class MongodbSyncService {
           platform: failure.platform || null,
           createdAt: failure.createdAt.toISOString(),
           updatedAt: failure.updatedAt.toISOString(),
-        };
-      });
+        }));
 
-      await this.insertBatchToBigQuery('purchase_failures', transformedFailures);
-      skip += this.BATCH_SIZE;
+      case 'requests':
+        return data.map((request) => ({
+          _id: request._id.toString(),
+          userId: request.userId?.toString() || null,
+          status: request.status || null,
+          type: request.type || null,
+          name: request.name || null,
+          text: request.text || null,
+          product: request.product ? JSON.stringify(request.product) : null,
+          review: request.review ? JSON.stringify(request.review) : null,
+          answer: request.answer ? JSON.stringify(request.answer) : null,
+          createdAt: request.createdAt?.toISOString() || null,
+          updatedAt: request.updatedAt?.toISOString() || null,
+        }));
+
+      default:
+        throw new Error(`Unknown collection: ${collectionName}`);
     }
-
-    log.info(`구매 실패 데이터 동기화 완료 (${skip}개 레코드)`, 'SCHEDULER', 'LOW');
   }
 
   /**

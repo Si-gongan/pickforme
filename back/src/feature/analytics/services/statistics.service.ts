@@ -1031,6 +1031,7 @@ export class StatisticsService {
       const managerQAQuery = `
         SELECT
           summary_date,
+          manager_response_count,
           manager_answer_push_click_count
         FROM \`${this.DATASET_ID}.daily_manager_qa_metrics\`
         WHERE summary_date BETWEEN @start_date AND @end_date
@@ -1047,6 +1048,7 @@ export class StatisticsService {
       managerQAData.forEach((row: any) => {
         const dateStr = row.summary_date?.value || row.summary_date;
         managerQAMap.set(dateStr, {
+          manager_response_count: row.manager_response_count || 0,
           manager_answer_push_click_count: row.manager_answer_push_click_count || 0,
         });
       });
@@ -1063,13 +1065,20 @@ export class StatisticsService {
       // 날짜별 배열 반환
       return dateRange.map((date) => {
         const data = managerQAMap.get(date) || {
+          manager_response_count: 0,
           manager_answer_push_click_count: 0,
         };
 
+        // 매니저 응답 확인률 계산
+        const managerResponseConfirmationRate =
+          data.manager_response_count > 0
+            ? data.manager_answer_push_click_count / data.manager_response_count
+            : 0;
+
         return {
           date,
-          managerResponseConfirmationRate: 0, // TODO: 분모가 되는 매니저 응답 수는 별도 조회 필요
-          managerResponses: 0, // TODO: 매니저 응답 수는 별도 조회 필요
+          managerResponseConfirmationRate,
+          managerResponses: data.manager_response_count,
           responseConfirmationPageViews: data.manager_answer_push_click_count,
         };
       });

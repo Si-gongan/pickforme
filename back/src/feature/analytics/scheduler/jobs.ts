@@ -23,6 +23,12 @@ export const mongodbSyncJobs: MetricJob[] = [
     collection: 'purchase_failures',
     destinationTable: 'purchase_failures',
   },
+  {
+    name: 'MongoDB 요청 데이터 동기화',
+    type: 'mongodb_sync',
+    collection: 'requests',
+    destinationTable: 'requests',
+  },
 ];
 
 // 공통 target_date 생성 함수

@@ -80,6 +80,7 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
   // 매니저 Q&A 응답 확인 지표
   daily_manager_qa_metrics: [
     { name: 'summary_date', type: 'DATE' },
+    { name: 'manager_response_count', type: 'INTEGER' },
     { name: 'manager_answer_push_click_count', type: 'INTEGER' },
   ],
 
@@ -144,5 +145,19 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
     { name: 'createdAt', type: 'TIMESTAMP' },
     { name: 'updatedAt', type: 'TIMESTAMP' },
     { name: 'platform', type: 'STRING' },
+  ],
+
+  requests: [
+    { name: '_id', type: 'STRING' },
+    { name: 'userId', type: 'STRING' },
+    { name: 'status', type: 'STRING' },
+    { name: 'type', type: 'STRING' },
+    { name: 'name', type: 'STRING' },
+    { name: 'text', type: 'STRING' },
+    { name: 'product', type: 'JSON' },
+    { name: 'review', type: 'JSON' },
+    { name: 'answer', type: 'JSON' },
+    { name: 'createdAt', type: 'TIMESTAMP' },
+    { name: 'updatedAt', type: 'TIMESTAMP' },
   ],
 };
