@@ -17,7 +17,11 @@ export default forwardRef(function ProductCard(
 
     const isBase = useMemo(
         function () {
-            return !['liked', 'request'].includes(type || '') && data.ratings !== null && data.ratings !== undefined;
+            return (
+                !['liked', 'request', 'search'].includes(type || '') &&
+                data.ratings !== null &&
+                data.ratings !== undefined
+            );
         },
         [type, data]
     );
@@ -132,7 +136,8 @@ export default forwardRef(function ProductCard(
                         {/* 나머지 정보 2행 */}
                         <View style={styles.ProductCardContentRow}>
                             <View style={styles.ProductCardTitleColumn}>
-                                {data.reviews !== null &&
+                                {type !== 'search' &&
+                                    data.reviews !== null &&
                                     data.reviews > -1 &&
                                     data.ratings !== null &&
                                     data.ratings > -1 && (
