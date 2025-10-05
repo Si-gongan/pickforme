@@ -43,7 +43,7 @@ function generateAuthorizationHeader(method: string, path: string, query: string
  */
 export async function getDeeplinks(
   urls: string[]
-): Promise<{ originalUrl: string; shortUrl: string }[]> {
+): Promise<{ originalUrl: string; shortenUrl: string; landingUrl: string }[]> {
   if (!urls || urls.length === 0) {
     return [];
   }
@@ -152,7 +152,7 @@ export async function getCachedGoldbox(options?: { force?: boolean }) {
     if (transformedProducts.length > 0) {
       const originalUrls = transformedProducts.map((p: any) => p.url);
       const deeplinks = await getDeeplinks(originalUrls);
-      const urlMap = new Map(deeplinks.map((link) => [link.originalUrl, link.shortUrl]));
+      const urlMap = new Map(deeplinks.map((link) => [link.originalUrl, link.shortenUrl]));
 
       transformedProducts = transformedProducts.map((p: any) => ({
         ...p,

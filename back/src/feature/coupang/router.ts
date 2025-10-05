@@ -2,8 +2,7 @@ import Router from '@koa/router';
 import coupangCrawlerService from './crawler.service';
 import { log } from 'utils/logger';
 import { extractAndValidateCoupangUrl } from './utils';
-import client from 'utils/axios';
-import { searchProducts } from './api.service';
+import { searchProducts, getDeeplinks } from './api.service';
 
 const router = new Router({
   prefix: '/coupang',
@@ -111,18 +110,9 @@ router.post('/deeplink', async (ctx) => {
     return;
   }
 
-  const response = await client.post('/coupang/deeplink', { urls });
+  const result = await getDeeplinks(urls);
 
-  const { urls: result } = response.data;
-
-  if (
-    !result ||
-    response.status !== 200 ||
-    result.length === 0 ||
-    !result[0].originalUrl ||
-    !result[0].shortenUrl ||
-    !result[0].landingUrl
-  ) {
+  if (!result || result.length === 0 || !result[0].originalUrl || !result[0].shortenUrl) {
     ctx.status = 500;
     ctx.body = { success: false, message: 'URL 변환 중 오류가 발생했습니다.' };
     return;
