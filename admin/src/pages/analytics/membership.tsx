@@ -12,7 +12,6 @@ import {
   Bar,
 } from "recharts";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
-import DateRangePicker from "@/components/analytics/DateRangePicker";
 import AnalyticsLayout from "@/components/analytics/AnalyticsLayout";
 
 interface MembershipStatistics {
@@ -51,7 +50,7 @@ const MembershipAnalytics: React.FC = () => {
     return trendData[trendData.length - 1];
   };
 
-  const { loading, error, todayStats, trendData, dateRange, handleDateChange } =
+  const { loading, error, todayStats, trendData } =
     useAnalyticsData({
       endpoint: "/analytics/statistics/membership",
       extractTodayData,
@@ -64,11 +63,6 @@ const MembershipAnalytics: React.FC = () => {
       loading={loading}
       error={error}
     >
-      <DateRangePicker
-        startDate={dateRange.startDate}
-        endDate={dateRange.endDate}
-        onDateChange={handleDateChange}
-      />
 
       {todayStats && (
         <>
