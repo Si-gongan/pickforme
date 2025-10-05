@@ -13,13 +13,30 @@ USING (
     COUNTIF(event_name = 'tab_click' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption') AS caption_tab_click_count,
     COUNTIF(event_name = 'tab_click' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report') AS report_tab_click_count,
     COUNTIF(event_name = 'tab_click' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review') AS review_tab_click_count,
-    COUNTIF(event_name = 'tab_click' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'question') AS question_tab_click_count
+    -- question_tab_click_count 제거
+
+    -- 탭 콘텐츠 프로세스 통계
+    -- Caption 탭
+    COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS caption_success_count,
+    COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failed') AS caption_failed_count,
+    AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms') END) AS caption_avg_duration_ms,
+
+    -- Report 탭
+    COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS report_success_count,
+    COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failed') AS report_failed_count,
+    AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms') END) AS report_avg_duration_ms,
+
+    -- Review 탭
+    COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS review_success_count,
+    COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failed') AS review_failed_count,
+    AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms') END) AS review_avg_duration_ms
+    -- Question 탭 제거
 
   FROM
     {{- GA4_EVENTS_TABLE -}}
   WHERE
     PARSE_DATE('%Y%m%d', event_date) = DATE(@target_date)
-    AND event_name IN ('screen_view', 'product_detail_buy_click', 'button_click', 'tab_click')
+    AND event_name IN ('screen_view', 'product_detail_buy_click', 'button_click', 'tab_click', 'tab_content_process')
 ) AS source
 ON target.summary_date = source.summary_date
 WHEN MATCHED THEN
@@ -30,7 +47,17 @@ WHEN MATCHED THEN
     caption_tab_click_count = source.caption_tab_click_count,
     report_tab_click_count = source.report_tab_click_count,
     review_tab_click_count = source.review_tab_click_count,
-    question_tab_click_count = source.question_tab_click_count
+    -- question_tab_click_count 제거
+    caption_success_count = source.caption_success_count,
+    caption_failed_count = source.caption_failed_count,
+    caption_avg_duration_ms = source.caption_avg_duration_ms,
+    report_success_count = source.report_success_count,
+    report_failed_count = source.report_failed_count,
+    report_avg_duration_ms = source.report_avg_duration_ms,
+    review_success_count = source.review_success_count,
+    review_failed_count = source.review_failed_count,
+    review_avg_duration_ms = source.review_avg_duration_ms
+    -- question 관련 컬럼들 제거
 WHEN NOT MATCHED THEN
-  INSERT (summary_date, pdp_pv, buy_button_click_count, wishlist_button_click_count, caption_tab_click_count, report_tab_click_count, review_tab_click_count, question_tab_click_count)
-  VALUES (source.summary_date, source.pdp_pv, source.buy_button_click_count, source.wishlist_button_click_count, source.caption_tab_click_count, source.report_tab_click_count, source.review_tab_click_count, source.question_tab_click_count);
+  INSERT (summary_date, pdp_pv, buy_button_click_count, wishlist_button_click_count, caption_tab_click_count, report_tab_click_count, review_tab_click_count, caption_success_count, caption_failed_count, caption_avg_duration_ms, report_success_count, report_failed_count, report_avg_duration_ms, review_success_count, review_failed_count, review_avg_duration_ms)
+  VALUES (source.summary_date, source.pdp_pv, source.buy_button_click_count, source.wishlist_button_click_count, source.caption_tab_click_count, source.report_tab_click_count, source.review_tab_click_count, source.caption_success_count, source.caption_failed_count, source.caption_avg_duration_ms, source.report_success_count, source.report_failed_count, source.report_avg_duration_ms, source.review_success_count, source.review_failed_count, source.review_avg_duration_ms);
