@@ -89,7 +89,7 @@ router.post('/apple', async (ctx) => {
   const { identityToken } = <{ identityToken: string }>ctx.request.body;
   const { email_verified, email } = await verifyAppleToken({
     idToken: identityToken,
-    clientId: 'com.sigonggan.pickforme',
+    clientId: process.env.APPLE_CLIENT_ID as string,
   });
 
   if (!email_verified || !email) {
