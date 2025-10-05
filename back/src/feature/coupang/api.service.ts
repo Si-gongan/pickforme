@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { createHmac } from 'crypto';
-import { cacheProvider } from '../cache';
-import { cacheKey } from '../constants/cacheKey';
-import { COUPANG_CATEGORIES } from '../feature/coupang/categories';
+import { cacheProvider } from '../../cache';
+import { cacheKey } from '../../constants/cacheKey';
+import { COUPANG_CATEGORIES } from './categories';
 import { log } from 'utils/logger';
 import { chunk } from 'utils/common';
 

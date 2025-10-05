@@ -2,7 +2,6 @@ import Router from '@koa/router';
 import db from 'models';
 import client from 'utils/axios';
 import requireAuth from 'middleware/jwt';
-import { getCachedBestCategory, getCachedGoldbox } from 'services/coupang-api.service';
 import { validateProductData } from '../utils';
 import { log } from 'utils/logger';
 import {
@@ -18,6 +17,7 @@ import {
   ProductReviewRequestSchema,
   AIAnswerRequestSchema,
 } from './validation';
+import { getCachedBestCategory, getCachedGoldbox } from 'feature/coupang/api.service';
 
 const router = new Router({
   prefix: '/discover',

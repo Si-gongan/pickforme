@@ -1,10 +1,10 @@
 // __tests__/scheduler/coupang.test.ts
-import { preloadCoupangAPI } from 'services/coupang-api.service';
 import { handleCoupangPreload } from 'scheduler/coupangAPI';
-import { COUPANG_CATEGORIES } from '../../feature/coupang/categories';
+import { COUPANG_CATEGORIES } from '../categories';
 import { cacheProvider } from 'cache';
-import { cacheKey } from '../../constants/cacheKey';
+import { cacheKey } from '../../../constants/cacheKey';
 import axios from 'axios';
+import { preloadCoupangAPI } from 'feature/coupang/api.service';
 
 jest.mock('axios', () => ({
   __esModule: true,
@@ -124,7 +124,7 @@ describe('Coupang Preload Scheduler', () => {
   });
 
   it('handleCoupangPreload는 preloadCoupangAPI를 호출한다', async () => {
-    const preloadSpy = jest.spyOn(require('services/coupang-api.service'), 'preloadCoupangAPI');
+    const preloadSpy = jest.spyOn(require('feature/coupang/api.service'), 'preloadCoupangAPI');
     await handleCoupangPreload();
     expect(preloadSpy).toHaveBeenCalled();
   });

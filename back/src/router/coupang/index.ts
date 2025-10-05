@@ -3,7 +3,7 @@ import coupangCrawlerService from '../../services/coupang-crawler.service';
 import { log } from 'utils/logger';
 import { extractAndValidateCoupangUrl } from 'utils/coupang';
 import client from 'utils/axios';
-import { searchProducts } from 'services/coupang-api.service';
+import { searchProducts } from 'feature/coupang/api.service';
 
 const router = new Router({
   prefix: '/coupang',
