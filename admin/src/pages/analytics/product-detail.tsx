@@ -12,7 +12,6 @@ import {
   Bar,
 } from "recharts";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
-import DateRangePicker from "@/components/analytics/DateRangePicker";
 import AnalyticsLayout from "@/components/analytics/AnalyticsLayout";
 
 interface ProductDetailStatistics {
@@ -125,7 +124,7 @@ const ProductDetailAnalytics: React.FC = () => {
     };
   };
 
-  const { loading, error, todayStats, trendData, dateRange, handleDateChange } =
+  const { loading, error, todayStats, trendData, handleDateChange } =
     useAnalyticsData({
       endpoint: "/analytics/statistics/product-detail",
       extractTodayData,
@@ -288,12 +287,6 @@ const ProductDetailAnalytics: React.FC = () => {
       loading={loading}
       error={error}
     >
-      <DateRangePicker
-        startDate={dateRange.startDate}
-        endDate={dateRange.endDate}
-        onDateChange={handleDateChange}
-      />
-
       {todayStats && (
         <>
           {/* 주요 지표 카드들 */}

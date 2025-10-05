@@ -1,6 +1,7 @@
 import React from "react";
 import { Layout, Spin, Alert } from "antd";
 import AnalyticsMenu from "./AnalyticsMenu";
+import DateRangePicker from "./DateRangePicker";
 
 const { Sider, Content } = Layout;
 
@@ -54,6 +55,7 @@ const AnalyticsLayout: React.FC<AnalyticsLayoutProps> = ({
       <Layout>
         <Content style={{ padding: "24px", background: "#f5f5f5" }}>
           <h1 style={{ marginBottom: "24px" }}>{title}</h1>
+          <DateRangePicker />
           {children}
         </Content>
       </Layout>
