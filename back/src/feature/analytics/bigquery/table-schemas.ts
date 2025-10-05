@@ -93,7 +93,18 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
     { name: 'caption_tab_click_count', type: 'INTEGER' },
     { name: 'report_tab_click_count', type: 'INTEGER' },
     { name: 'review_tab_click_count', type: 'INTEGER' },
-    { name: 'question_tab_click_count', type: 'INTEGER' },
+    // question_tab_click_count 제거
+    // 탭 콘텐츠 프로세스 통계 추가
+    { name: 'caption_success_count', type: 'INTEGER' },
+    { name: 'caption_failed_count', type: 'INTEGER' },
+    { name: 'caption_avg_duration_ms', type: 'FLOAT' },
+    { name: 'report_success_count', type: 'INTEGER' },
+    { name: 'report_failed_count', type: 'INTEGER' },
+    { name: 'report_avg_duration_ms', type: 'FLOAT' },
+    { name: 'review_success_count', type: 'INTEGER' },
+    { name: 'review_failed_count', type: 'INTEGER' },
+    { name: 'review_avg_duration_ms', type: 'FLOAT' },
+    // question 관련 컬럼들 제거
   ],
 
   // 멤버십 관련 지표

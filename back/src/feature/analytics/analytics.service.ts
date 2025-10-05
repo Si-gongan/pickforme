@@ -10,6 +10,84 @@ const PROJECT_ID = process.env.BIGQUERY_PROJECT_ID;
 const RAW_DATASET = process.env.GA4_DATASET_RAW_ID; // 원본 GA4 데이터셋
 const FOUNDATION_DATASET = process.env.GA4_DATASET_FOUNDATION_ID; // 중간 데이터셋 이름으로 변경
 
+async function updateTableSchema(datasetId: string, tableName: string) {
+  try {
+    const dataset = bigqueryClient.dataset(datasetId, {
+      location: 'asia-northeast3',
+    });
+
+    const table = dataset.table(tableName);
+    const [exists] = await table.exists();
+
+    if (!exists) {
+      console.log(`Table ${datasetId}.${tableName} does not exist, skipping schema update`);
+      return;
+    }
+
+    // 현재 테이블 스키마 가져오기
+    const [metadata] = await table.getMetadata();
+    const currentSchema = metadata.schema?.fields || [];
+    const currentFieldNames = new Set(currentSchema.map((field: any) => field.name));
+
+    // 새로운 스키마 정의
+    const newSchema = TABLE_SCHEMAS[tableName];
+    if (!newSchema) {
+      console.log(`No schema definition found for table: ${tableName}`);
+      return;
+    }
+
+    // 추가할 필드들 찾기
+    const fieldsToAdd = newSchema.filter((field) => !currentFieldNames.has(field.name));
+
+    if (fieldsToAdd.length === 0) {
+      console.log(`✅ Table ${datasetId}.${tableName} schema is up to date`);
+      return;
+    }
+
+    console.log(
+      `🔄 Adding ${fieldsToAdd.length} new fields to ${datasetId}.${tableName}:`,
+      fieldsToAdd.map((f) => f.name)
+    );
+
+    // ALTER TABLE 쿼리 생성
+    const alterQueries = fieldsToAdd.map((field) => {
+      const fieldType =
+        field.type === 'FLOAT'
+          ? 'FLOAT64'
+          : field.type === 'INTEGER'
+            ? 'INT64'
+            : field.type === 'STRING'
+              ? 'STRING'
+              : field.type === 'DATE'
+                ? 'DATE'
+                : field.type === 'TIMESTAMP'
+                  ? 'TIMESTAMP'
+                  : field.type === 'BOOLEAN'
+                    ? 'BOOL'
+                    : field.type === 'JSON'
+                      ? 'JSON'
+                      : field.type;
+
+      return `ADD COLUMN ${field.name} ${fieldType}`;
+    });
+
+    const alterQuery = `ALTER TABLE \`${PROJECT_ID}.${datasetId}.${tableName}\` ${alterQueries.join(', ')}`;
+
+    console.log(`[DEBUG] ALTER TABLE query: ${alterQuery}`);
+
+    // ALTER TABLE 실행
+    const [queryJob] = await bigqueryClient.createQueryJob({
+      query: alterQuery,
+    });
+
+    await queryJob.getQueryResults();
+    console.log(`✅ Successfully updated schema for ${datasetId}.${tableName}`);
+  } catch (error) {
+    console.error(`❌ Failed to update schema for ${datasetId}.${tableName}:`, error);
+    throw error;
+  }
+}
+
 // 테이블 자동 생성 함수
 async function ensureTableExists(datasetId: string, tableName: string) {
   try {
@@ -31,6 +109,8 @@ async function ensureTableExists(datasetId: string, tableName: string) {
         location: 'asia-northeast3',
       });
       console.log(`✅ Table ${datasetId}.${tableName} created automatically`);
+    } else {
+      await updateTableSchema(datasetId, tableName);
     }
   } catch (error) {
     console.error(`❌ Failed to create table ${datasetId}.${tableName}:`, error);
