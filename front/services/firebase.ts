@@ -168,10 +168,10 @@ export const setUserProperties = async (properties: { [key: string]: string }) =
     }
 };
 
-// 탭 콘텐츠 프로세스 결과 로깅
+// 탭 콘텐츠 프로세스 결과 로깅 (question 제거)
 export const logTabContentProcess = async (params: {
     request_id: string;
-    tab: 'caption' | 'report' | 'review' | 'question';
+    tab: 'caption' | 'report' | 'review'; // question 제거
     status: 'success' | 'failed';
     duration_ms: number;
     failure_reason?: 'no_data' | 'ai_generation_failed' | 'network_error';

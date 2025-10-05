@@ -110,7 +110,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         const duration = Date.now() - startTime;
                         logTabContentProcess({
                             request_id: requestId,
-                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review' | 'question',
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review',
                             status: 'success',
                             duration_ms: duration,
                             product_url: productUrl
@@ -128,7 +128,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         const duration = Date.now() - startTime;
                         logTabContentProcess({
                             request_id: requestId,
-                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review' | 'question',
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review',
                             status: 'failed',
                             duration_ms: duration,
                             failure_reason: 'no_data',
@@ -147,7 +147,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         const duration = Date.now() - startTime;
                         logTabContentProcess({
                             request_id: requestId,
-                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review' | 'question',
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review',
                             status: 'failed',
                             duration_ms: duration,
                             failure_reason: 'ai_generation_failed',
