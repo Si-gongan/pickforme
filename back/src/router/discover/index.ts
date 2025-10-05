@@ -17,7 +17,7 @@ import {
   ProductReviewRequestSchema,
   AIAnswerRequestSchema,
 } from './validation';
-import { getCachedBestCategory, getCachedGoldbox } from 'feature/coupang/api.service';
+import { getCachedBestCategory, getCachedGoldbox } from '../../feature/coupang/api.service';
 
 const router = new Router({
   prefix: '/discover',

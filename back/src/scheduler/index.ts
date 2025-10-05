@@ -2,7 +2,7 @@ import { registerMembershipScheduler } from './membership';
 import { registerIAPScheduler } from './iap';
 import { registerEventScheduler } from './events';
 import { registerBackupScheduler } from './backup';
-import { registerCoupangAPIScheduler } from './coupangAPI';
+import { registerCoupangAPIScheduler } from '../feature/coupang/scheduler';
 import { registerAnalyticsSchedulers } from 'feature/analytics/scheduler/analytics.scheduler';
 
 /**

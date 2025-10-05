@@ -1,4 +1,13 @@
-import coupangCrawlerService from '../coupang-crawler.service';
+import coupangCrawlerService from '../crawler.service';
+
+describe('Coupang Crawler Service', () => {
+  it('should initialize and cleanup properly', async () => {
+    await coupangCrawlerService.initialize();
+    const status = coupangCrawlerService.getStatus();
+    expect(status.isInitialized).toBe(true);
+    await coupangCrawlerService.cleanup();
+  });
+});
 
 async function testParallelProcessing() {
   console.log('🚀 병렬 처리 테스트 시작...');

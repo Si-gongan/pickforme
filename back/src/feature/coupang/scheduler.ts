@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { preloadCoupangAPI } from 'feature/coupang/api.service';
+import { preloadCoupangAPI } from './api.service';
 import { log } from 'utils/logger/logger';
 
 const SCHEDULER_NAME = 'coupang-preload';

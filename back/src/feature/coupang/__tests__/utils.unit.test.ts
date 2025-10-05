@@ -4,7 +4,7 @@ import {
   extractProductId,
   normalizeCoupangUrl,
   extractAndValidateCoupangUrl,
-} from '../coupang';
+} from '../utils';
 
 describe('쿠팡 URL 유틸리티 테스트', () => {
   describe('extractCoupangUrl', () => {

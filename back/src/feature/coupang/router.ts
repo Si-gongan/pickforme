@@ -1,9 +1,9 @@
 import Router from '@koa/router';
-import coupangCrawlerService from '../../services/coupang-crawler.service';
+import coupangCrawlerService from './crawler.service';
 import { log } from 'utils/logger';
-import { extractAndValidateCoupangUrl } from 'utils/coupang';
+import { extractAndValidateCoupangUrl } from './utils';
 import client from 'utils/axios';
-import { searchProducts } from 'feature/coupang/api.service';
+import { searchProducts } from './api.service';
 
 const router = new Router({
   prefix: '/coupang',
