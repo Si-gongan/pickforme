@@ -4,6 +4,8 @@ import { log } from '../../../utils/logger/logger';
 export class StatisticsService {
   private readonly DATASET_ID = process.env.GA4_DATASET_SUMMARY_ID;
 
+  private readonly FOUNDATION_DATASET_ID = process.env.GA4_DATASET_FOUNDATION_ID;
+
   /**
    * 비율 데이터를 퍼센트로 변환하는 헬퍼 함수
    */
@@ -1021,6 +1023,109 @@ export class StatisticsService {
   async getManagerQAStatistics(startDate: string, endDate: string) {
     const data = await this.getManagerQAStatisticsInternal(startDate, endDate);
     return data.map((item) => this.convertSingleItemRates(item));
+  }
+
+  /**
+   * 활성 유저 목록 조회 (공개 메서드)
+   */
+  async getActiveUsers(date: string) {
+    try {
+      const query = `
+        SELECT 
+          user_unique_id,
+          total_events,
+          first_event_time,
+          last_event_time
+        FROM \`${this.FOUNDATION_DATASET_ID}.daily_active_unique_ids\`
+        WHERE 
+          summary_date = DATE(@target_date)
+        ORDER BY total_events DESC
+      `;
+
+      const data = await this.executeQuery(query, {
+        target_date: date,
+      });
+
+      return {
+        success: true,
+        data: data.map((row: any) => ({
+          user_unique_id: row.user_unique_id,
+          total_events: row.total_events,
+          first_event_time: row.first_event_time?.value || row.first_event_time,
+          last_event_time: row.last_event_time?.value || row.last_event_time,
+        })),
+        queryParams: { date },
+        message: '활성 유저 목록 조회 성공',
+      };
+    } catch (error) {
+      void log.error('활성 유저 목록 조회 실패', 'ANALYTICS', 'HIGH', { error, date });
+      return { success: false, data: [], message: '활성 유저 목록 조회 실패' };
+    }
+  }
+
+  /**
+   * 특정 유저의 이벤트 상세 조회 (공개 메서드)
+   */
+  async getUserEventDetails(userUniqueId: string, date: string) {
+    try {
+      const query = `
+        SELECT 
+          user_pseudo_id as user_unique_id,
+          event_name,
+          event_timestamp,
+          (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'category') as category,
+          (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'keyword') as search_query,
+          (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'session_id') as session_id,
+          (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') as tab,
+          (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'type') as type,
+          COALESCE((SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'firebase_screen'), (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'firebase_screen_class'), (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'screen')) as screen
+        FROM \`${process.env.BIGQUERY_PROJECT_ID}.${process.env.GA4_DATASET_RAW_ID}.events_*\`
+        WHERE 
+          event_date = FORMAT_DATE('%Y%m%d', @target_date)
+          AND user_pseudo_id = @user_unique_id
+          AND (
+            (event_name = 'keyword_search_result' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'started')
+            OR (event_name = 'screen_view' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'firebase_screen') IS NOT NULL)
+            OR event_name = 'link_search_attempt'  
+            OR event_name = 'search_item_click'
+            OR event_name = 'home_item_click'
+            OR event_name = 'tab_click'
+            OR event_name = 'question_send'
+            OR event_name = 'manager_answer_push_click'
+            OR event_name = 'product_detail_buy_click'
+          )
+        ORDER BY event_timestamp ASC
+      `;
+
+      const data = await this.executeQuery(query, {
+        target_date: date,
+        user_unique_id: userUniqueId,
+      });
+
+      return {
+        success: true,
+        data: data.map((row: any) => ({
+          user_unique_id: row.user_unique_id,
+          event_name: row.event_name,
+          event_timestamp: row.event_timestamp,
+          category: row.category,
+          search_query: row.search_query,
+          session_id: row.session_id,
+          screen: row.screen,
+          tab: row.tab,
+          type: row.type,
+        })),
+        queryParams: { userUniqueId, date },
+        message: '유저 이벤트 상세 조회 성공',
+      };
+    } catch (error) {
+      void log.error('유저 이벤트 상세 조회 실패', 'ANALYTICS', 'HIGH', {
+        error,
+        userUniqueId,
+        date,
+      });
+      return { success: false, data: [], message: '유저 이벤트 상세 조회 실패' };
+    }
   }
 
   /**

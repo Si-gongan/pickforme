@@ -1,7 +1,24 @@
 import { MetricJob } from '../types/types';
 
+// 공통 target_date 생성 함수
+const getTargetDate = () => {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() - 1);
+  return targetDate.toISOString().split('T')[0];
+};
+
 //  기초 공사(중간 테이블 생성) 작업 목록
-export const foundationJobs: MetricJob[] = [];
+export const foundationJobs: MetricJob[] = [
+  {
+    name: '활성 유저 지표',
+    sqlFile: 'summary/foundation/getDailyActiveUniqueIds.sql',
+    destinationTable: 'daily_active_unique_ids',
+    writeDisposition: 'MERGE',
+    getQueryParams: () => ({
+      target_date: getTargetDate(),
+    }),
+  },
+];
 
 // MongoDB 동기화 작업 목록
 export const mongodbSyncJobs: MetricJob[] = [
@@ -30,13 +47,6 @@ export const mongodbSyncJobs: MetricJob[] = [
     destinationTable: 'requests',
   },
 ];
-
-// 공통 target_date 생성 함수
-const getTargetDate = () => {
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() - 1);
-  return targetDate.toISOString().split('T')[0];
-};
 
 // 최종 요약 테이블 생성 작업 목록
 export const summaryJobs: MetricJob[] = [
