@@ -18,4 +18,8 @@ router.get(
 );
 router.get('/membership', statisticsController.getMembershipStatistics.bind(statisticsController));
 
+// 유저 관련 새로운 엔드포인트들
+router.get('/active-users', statisticsController.getActiveUsers.bind(statisticsController));
+router.get('/user-events', statisticsController.getUserEventDetails.bind(statisticsController));
+
 export default router;

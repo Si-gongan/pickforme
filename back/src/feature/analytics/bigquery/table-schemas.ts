@@ -122,6 +122,15 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
     { name: 'createdAt', type: 'TIMESTAMP' },
   ],
 
+  // 활성 유저 지표
+  daily_active_unique_ids: [
+    { name: 'summary_date', type: 'DATE' },
+    { name: 'user_unique_id', type: 'STRING' },
+    { name: 'total_events', type: 'INTEGER' },
+    { name: 'first_event_time', type: 'TIMESTAMP' },
+    { name: 'last_event_time', type: 'TIMESTAMP' },
+  ],
+
   // Foundation 데이터셋 - MongoDB 동기화용 테이블들
   users: [
     { name: '_id', type: 'STRING' },

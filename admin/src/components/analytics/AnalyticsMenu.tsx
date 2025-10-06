@@ -7,6 +7,7 @@ import {
   ShoppingCartOutlined,
   FileTextOutlined,
   QuestionCircleOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/router";
 
@@ -59,6 +60,12 @@ const AnalyticsMenu: React.FC<AnalyticsMenuProps> = ({ selectedKey }) => {
       icon: <QuestionCircleOutlined />,
       label: "매니저 관련 통계",
       onClick: () => router.push("/analytics/manager"),
+    },
+    {
+      key: "user-analytics",
+      icon: <TeamOutlined />,
+      label: "유저 분석",
+      onClick: () => router.push("/analytics/user-analytics"),
     },
   ];
 

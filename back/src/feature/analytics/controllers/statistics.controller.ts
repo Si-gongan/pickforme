@@ -258,6 +258,95 @@ export class StatisticsController {
       };
     }
   }
+
+  /**
+   * 활성 유저 목록 조회
+   * GET /analytics/statistics/active-users?date=2024-01-15
+   */
+  async getActiveUsers(ctx: Context) {
+    try {
+      const { date } = ctx.query;
+
+      if (!date) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          message: 'date 파라미터가 필요합니다.',
+        };
+        return;
+      }
+
+      const result = await statisticsService.getActiveUsers(date as string);
+
+      if (result.success) {
+        ctx.status = 200;
+        ctx.body = {
+          success: true,
+          data: result.data,
+          queryParams: result.queryParams,
+        };
+      } else {
+        ctx.status = 500;
+        ctx.body = {
+          success: false,
+          message: result.message || '활성 유저 목록 조회 실패',
+        };
+      }
+    } catch (error) {
+      void log.error('활성 유저 목록 조회 API 오류', 'API', 'HIGH', { error });
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        message: '서버 오류가 발생했습니다.',
+      };
+    }
+  }
+
+  /**
+   * 특정 유저의 이벤트 상세 조회
+   * GET /analytics/statistics/user-events?userUniqueId=xxx&date=2024-01-15
+   */
+  async getUserEventDetails(ctx: Context) {
+    try {
+      const { userUniqueId, date } = ctx.query;
+
+      if (!userUniqueId || !date) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          message: 'userUniqueId와 date 파라미터가 필요합니다.',
+        };
+        return;
+      }
+
+      const result = await statisticsService.getUserEventDetails(
+        userUniqueId as string,
+        date as string
+      );
+
+      if (result.success) {
+        ctx.status = 200;
+        ctx.body = {
+          success: true,
+          data: result.data,
+          queryParams: result.queryParams,
+        };
+      } else {
+        ctx.status = 500;
+        ctx.body = {
+          success: false,
+          message: result.message || '유저 이벤트 상세 조회 실패',
+        };
+      }
+    } catch (error) {
+      void log.error('유저 이벤트 상세 조회 API 오류', 'API', 'HIGH', { error });
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        message: '서버 오류가 발생했습니다.',
+      };
+    }
+  }
 }
 
 export const statisticsController = new StatisticsController();
