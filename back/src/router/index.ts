@@ -11,11 +11,12 @@ import userRouter from './user';
 import logRouter from './log';
 import productRouter from './product';
 import popupRouter from './popup';
-import coupangRouter from './coupang';
+import coupangRouter from '../feature/coupang/router';
 import crawlReportRouter from './crawl-report';
 import db from '../models';
 import { log } from 'utils/logger';
 import searchLogsRouter from './searchLogs';
+import statisticsRouter from '../feature/analytics/routes/statistics.router';
 
 const router = new Router();
 
@@ -33,6 +34,7 @@ const router = new Router();
   coupangRouter,
   crawlReportRouter,
   searchLogsRouter,
+  statisticsRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
 });

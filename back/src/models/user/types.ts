@@ -27,6 +27,8 @@ export interface User extends LocalRegisterPayload {
   phone?: string;
   event?: number | null;
   hide?: string[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface UserDocument extends User, Document {

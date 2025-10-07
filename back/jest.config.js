@@ -36,6 +36,7 @@ module.exports = {
         '**/__tests__/**/*.unit.spec.ts', // 추가
         '**/__tests__/**/*.spec.ts', // 추가
       ],
+      setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
       moduleNameMapper: {
         '^models$': '<rootDir>/src/models',
         '^models/(.*)$': '<rootDir>/src/models/$1',
@@ -60,6 +61,7 @@ module.exports = {
         '**/__tests__/**/*.integration.test.ts',
         '**/__tests__/**/*.integration.spec.ts', // 추가
       ],
+      setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
       moduleNameMapper: {
         '^models$': '<rootDir>/src/models',
         '^models/(.*)$': '<rootDir>/src/models/$1',

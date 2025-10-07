@@ -162,8 +162,6 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
     };
 
     const handleSubscriptionError = (error: Error): boolean => {
-        console.error('구독 처리 중 에러 발생:', error);
-
         let message: string = PURCHASE_MESSAGES.PURCHASE_ERROR;
         let title = '';
 
@@ -184,6 +182,10 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
         }
 
         Alert.alert(title, message);
+
+        logEvent('subscription_request_failure', {
+            failure_reason: error.message || 'Unknown error on handleSubscription'
+        });
 
         // 에러 발생 시 상태 초기화
         setSubscriptionLoading(false);
@@ -215,19 +217,8 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
             // 구독 요청 실행
             await performSubscriptionRequest(sku, offerToken);
 
-            logEvent('subscription_request_success', {
-                sku,
-                offerToken
-            });
-
             return true;
         } catch (error) {
-            logEvent('subscription_request_error', {
-                sku,
-                offerToken,
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
-
             return handleSubscriptionError(error as Error);
         }
     };
@@ -285,13 +276,20 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
                             await purchaseProduct({ _id: product._id, receipt: parsedReceipt });
                             await getSubscription();
 
+                            logEvent('subscription_request_success', {
+                                sku: purchase.productId
+                            });
+
                             setIsShowSubscriptionModal(true);
                         } catch (error) {
-                            console.error('구매 처리 중 에러 발생:', error);
                             Alert.alert(
                                 PURCHASE_MESSAGES.PURCHASE_SUCCESS_ERROR,
                                 PURCHASE_MESSAGES.PURCHASE_SUCCESS_ERROR_DETAIL
                             );
+                            logEvent('subscription_request_failure', {
+                                failure_reason:
+                                    error instanceof Error ? error.message : 'Unknown error on purchase success'
+                            });
                             // 에러 발생 시 거래를 처리 완료 목록에서 제거
                             processedTransactionsRef.current.delete(transactionId);
                         } finally {
@@ -305,8 +303,14 @@ const PurchaseWrapper: React.FC<PurchaseWrapperProps> = ({ children }) => {
 
                     purchaseErrorRef.current = purchaseErrorListener((error: PurchaseError) => {
                         if (error.code !== 'E_USER_CANCELLED') {
-                            console.error('구독 처리 중 에러 발생:', error);
                             Alert.alert(PURCHASE_MESSAGES.PURCHASE_ERROR);
+                            logEvent('subscription_request_failure', {
+                                failure_reason: error.code || 'Unknown error on purchase error'
+                            });
+                        } else if (error.code === 'E_USER_CANCELLED') {
+                            logEvent('subscription_request_failure', {
+                                failure_reason: 'user_cancelled'
+                            });
                         }
 
                         // 에러 발생 시 상태 초기화

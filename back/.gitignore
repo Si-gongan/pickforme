@@ -2,9 +2,11 @@
 node_modules
 credentials/*
 
+credentials/*
 # backups
 backups/*
 dist/*
+credentials/*
 # misc
 .env
 .env.local

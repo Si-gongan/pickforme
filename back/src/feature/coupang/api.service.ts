@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { createHmac } from 'crypto';
-import { cacheProvider } from '../cache';
-import { cacheKey } from '../constants/cacheKey';
-import { COUPANG_CATEGORIES } from '../constants/coupangCategories';
+import { cacheProvider } from '../../cache';
+import { cacheKey } from '../../constants/cacheKey';
+import { COUPANG_CATEGORIES } from './categories';
 import { log } from 'utils/logger';
 import { chunk } from 'utils/common';
 
@@ -43,7 +43,7 @@ function generateAuthorizationHeader(method: string, path: string, query: string
  */
 export async function getDeeplinks(
   urls: string[]
-): Promise<{ originalUrl: string; shortUrl: string }[]> {
+): Promise<{ originalUrl: string; shortenUrl: string; landingUrl: string }[]> {
   if (!urls || urls.length === 0) {
     return [];
   }
@@ -152,7 +152,7 @@ export async function getCachedGoldbox(options?: { force?: boolean }) {
     if (transformedProducts.length > 0) {
       const originalUrls = transformedProducts.map((p: any) => p.url);
       const deeplinks = await getDeeplinks(originalUrls);
-      const urlMap = new Map(deeplinks.map((link) => [link.originalUrl, link.shortUrl]));
+      const urlMap = new Map(deeplinks.map((link) => [link.originalUrl, link.shortenUrl]));
 
       transformedProducts = transformedProducts.map((p: any) => ({
         ...p,
@@ -220,6 +220,13 @@ export async function preloadCoupangAPI() {
   const categoryIds = Object.keys(COUPANG_CATEGORIES);
   const batches = chunk(categoryIds, 5);
 
+  try {
+    await getCachedGoldbox({ force: true });
+    void log.info('✅ 골드박스 캐싱 성공', 'SCHEDULER');
+  } catch (err) {
+    void log.error('❌ 골드박스 캐싱 실패', 'SCHEDULER', 'HIGH', { error: err });
+  }
+
   for (const batch of batches) {
     const promises = batch.map((categoryId) =>
       getCachedBestCategory(categoryId, { force: true })
@@ -227,13 +234,6 @@ export async function preloadCoupangAPI() {
         .catch(() => results.push({ categoryId, ok: false }))
     );
     await Promise.all(promises);
-  }
-
-  try {
-    await getCachedGoldbox({ force: true });
-    void log.info('✅ 골드박스 캐싱 성공', 'SCHEDULER');
-  } catch (err) {
-    void log.error('❌ 골드박스 캐싱 실패', 'SCHEDULER', 'HIGH', { error: err });
   }
 
   log.info('✅ 카테고리 캐시 완료', 'SCHEDULER', 'LOW', { results });
