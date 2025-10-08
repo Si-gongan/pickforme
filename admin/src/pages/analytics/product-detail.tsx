@@ -36,7 +36,7 @@ interface ProductDetailStatistics {
   linkSearchAttempts: number;
   linkSearchSuccesses: number;
   // 탭 콘텐츠 프로세스 통계 추가 (question 제거)
-  tabContentStats: {
+  tabContentProcess: {
     caption: {
       successCount: number;
       failedCount: number;
@@ -103,21 +103,21 @@ const ProductDetailAnalytics: React.FC = () => {
       linkSearchAttempts: lastItem.linkSearchAttempts || 0,
       linkSearchSuccesses: lastItem.linkSearchSuccesses || 0,
       // 탭 콘텐츠 프로세스 통계 추가 (question 제거)
-      tabContentStats: {
+      tabContentProcess: {
         caption: calculateTabStats(
-          lastItem.caption_success_count || 0,
-          lastItem.caption_failed_count || 0,
-          lastItem.caption_avg_duration_ms || 0
+          lastItem.tabContentProcess?.caption?.successCount || 0,
+          lastItem.tabContentProcess?.caption?.failedCount || 0,
+          lastItem.tabContentProcess?.caption?.avgDurationMs || 0
         ),
         report: calculateTabStats(
-          lastItem.report_success_count || 0,
-          lastItem.report_failed_count || 0,
-          lastItem.report_avg_duration_ms || 0
+          lastItem.tabContentProcess?.report?.successCount || 0,
+          lastItem.tabContentProcess?.report?.failedCount || 0,
+          lastItem.tabContentProcess?.report?.avgDurationMs || 0
         ),
         review: calculateTabStats(
-          lastItem.review_success_count || 0,
-          lastItem.review_failed_count || 0,
-          lastItem.review_avg_duration_ms || 0
+          lastItem.tabContentProcess?.review?.successCount || 0,
+          lastItem.tabContentProcess?.review?.failedCount || 0,
+          lastItem.tabContentProcess?.review?.avgDurationMs || 0
         ),
         // question 제거
       },
@@ -163,21 +163,21 @@ const ProductDetailAnalytics: React.FC = () => {
       linkSearchAttempts: item.linkSearchAttempts || 0,
       linkSearchSuccesses: item.linkSearchSuccesses || 0,
       // 탭 콘텐츠 프로세스 통계 추가 (question 제거)
-      tabContentStats: {
+      tabContentProcess: {
         caption: calculateTabStats(
-          item.caption_success_count || 0,
-          item.caption_failed_count || 0,
-          item.caption_avg_duration_ms || 0
+          item.tabContentProcess?.caption?.successCount || 0,
+          item.tabContentProcess?.caption?.failedCount || 0,
+          item.tabContentProcess?.caption?.avgDurationMs || 0
         ),
         report: calculateTabStats(
-          item.report_success_count || 0,
-          item.report_failed_count || 0,
-          item.report_avg_duration_ms || 0
+          item.tabContentProcess?.report?.successCount || 0,
+          item.tabContentProcess?.report?.failedCount || 0,
+          item.tabContentProcess?.report?.avgDurationMs || 0
         ),
         review: calculateTabStats(
-          item.review_success_count || 0,
-          item.review_failed_count || 0,
-          item.review_avg_duration_ms || 0
+          item.tabContentProcess?.review?.successCount || 0,
+          item.tabContentProcess?.review?.failedCount || 0,
+          item.tabContentProcess?.review?.avgDurationMs || 0
         ),
         // question 제거
       },
@@ -266,9 +266,9 @@ const ProductDetailAnalytics: React.FC = () => {
 
   // 탭 콘텐츠 데이터 변환 (question 제거)
   const getTabContentTableData = () => {
-    if (!todayStats?.tabContentStats) return [];
+    if (!todayStats?.tabContentProcess) return [];
 
-    return Object.entries(todayStats.tabContentStats).map(
+    return Object.entries(todayStats.tabContentProcess).map(
       ([tab, data]: [string, any]) => ({
         key: tab,
         tab,
@@ -441,7 +441,9 @@ const ProductDetailAnalytics: React.FC = () => {
               <Card>
                 <Statistic
                   title="캡션 성공률"
-                  value={todayStats.tabContentStats?.caption?.successRate || 0}
+                  value={
+                    todayStats.tabContentProcess?.caption?.successRate || 0
+                  }
                   formatter={(value) => formatPercentage(value as number)}
                   precision={2}
                 />
@@ -451,7 +453,7 @@ const ProductDetailAnalytics: React.FC = () => {
               <Card>
                 <Statistic
                   title="리포트 성공률"
-                  value={todayStats.tabContentStats?.report?.successRate || 0}
+                  value={todayStats.tabContentProcess?.report?.successRate || 0}
                   formatter={(value) => formatPercentage(value as number)}
                   precision={2}
                 />
@@ -461,7 +463,7 @@ const ProductDetailAnalytics: React.FC = () => {
               <Card>
                 <Statistic
                   title="리뷰 성공률"
-                  value={todayStats.tabContentStats?.review?.successRate || 0}
+                  value={todayStats.tabContentProcess?.review?.successRate || 0}
                   formatter={(value) => formatPercentage(value as number)}
                   precision={2}
                 />
@@ -484,21 +486,21 @@ const ProductDetailAnalytics: React.FC = () => {
                     />
                     <Line
                       type="monotone"
-                      dataKey="tabContentStats.caption.successRate"
+                      dataKey="tabContentProcess.caption.successRate"
                       stroke="#1890ff"
                       strokeWidth={2}
                       name="캡션"
                     />
                     <Line
                       type="monotone"
-                      dataKey="tabContentStats.report.successRate"
+                      dataKey="tabContentProcess.report.successRate"
                       stroke="#52c41a"
                       strokeWidth={2}
                       name="리포트"
                     />
                     <Line
                       type="monotone"
-                      dataKey="tabContentStats.review.successRate"
+                      dataKey="tabContentProcess.review.successRate"
                       stroke="#faad14"
                       strokeWidth={2}
                       name="리뷰"
@@ -519,21 +521,21 @@ const ProductDetailAnalytics: React.FC = () => {
                     <Tooltip />
                     <Line
                       type="monotone"
-                      dataKey="tabContentStats.caption.avgDurationMs"
+                      dataKey="tabContentProcess.caption.avgDurationMs"
                       stroke="#1890ff"
                       strokeWidth={2}
                       name="캡션"
                     />
                     <Line
                       type="monotone"
-                      dataKey="tabContentStats.report.avgDurationMs"
+                      dataKey="tabContentProcess.report.avgDurationMs"
                       stroke="#52c41a"
                       strokeWidth={2}
                       name="리포트"
                     />
                     <Line
                       type="monotone"
-                      dataKey="tabContentStats.review.avgDurationMs"
+                      dataKey="tabContentProcess.review.avgDurationMs"
                       stroke="#faad14"
                       strokeWidth={2}
                       name="리뷰"

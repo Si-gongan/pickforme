@@ -19,17 +19,17 @@ USING (
     -- Caption 탭
     COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS caption_success_count,
     COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failed') AS caption_failed_count,
-    AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms') END) AS caption_avg_duration_ms,
+    ROUND(AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'caption' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN COALESCE((SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms'), (SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'duration_ms')) END), 2) AS caption_avg_duration_ms,
 
     -- Report 탭
     COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS report_success_count,
     COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failed') AS report_failed_count,
-    AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms') END) AS report_avg_duration_ms,
+    ROUND(AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'report' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN COALESCE((SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms'), (SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'duration_ms')) END), 2) AS report_avg_duration_ms,
 
     -- Review 탭
     COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success') AS review_success_count,
     COUNTIF(event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'failed') AS review_failed_count,
-    AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms') END) AS review_avg_duration_ms
+    ROUND(AVG(CASE WHEN event_name = 'tab_content_process' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'tab') = 'review' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') = 'success' THEN COALESCE((SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'duration_ms'), (SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'duration_ms')) END), 2) AS review_avg_duration_ms
     -- Question 탭 제거
 
   FROM

@@ -95,6 +95,21 @@ export class StatisticsService {
       // ttfa는 시간이므로 변환하지 않음
     }
 
+    // tabContentProcess 내부의 successRate 변환
+    if (converted.tabContentProcess && typeof converted.tabContentProcess === 'object') {
+      Object.keys(converted.tabContentProcess).forEach((tab) => {
+        if (
+          converted.tabContentProcess[tab] &&
+          typeof converted.tabContentProcess[tab] === 'object'
+        ) {
+          if (converted.tabContentProcess[tab].successRate !== undefined) {
+            converted.tabContentProcess[tab].successRate =
+              Math.round(converted.tabContentProcess[tab].successRate * 10000) / 100;
+          }
+        }
+      });
+    }
+
     return converted;
   }
 
@@ -698,7 +713,15 @@ export class StatisticsService {
           caption_tab_click_count,
           report_tab_click_count,
           review_tab_click_count,
-          question_tab_click_count
+          caption_success_count,
+          caption_failed_count,
+          caption_avg_duration_ms,
+          report_success_count,
+          report_failed_count,
+          report_avg_duration_ms,
+          review_success_count,
+          review_failed_count,
+          review_avg_duration_ms
         FROM \`${this.DATASET_ID}.daily_pdp_metrics\`
         WHERE summary_date BETWEEN @start_date AND @end_date
         ORDER BY summary_date
@@ -737,7 +760,15 @@ export class StatisticsService {
           caption_tab_click_count: row.caption_tab_click_count || 0,
           report_tab_click_count: row.report_tab_click_count || 0,
           review_tab_click_count: row.review_tab_click_count || 0,
-          question_tab_click_count: row.question_tab_click_count || 0,
+          caption_success_count: row.caption_success_count || 0,
+          caption_failed_count: row.caption_failed_count || 0,
+          caption_avg_duration_ms: row.caption_avg_duration_ms || 0,
+          report_success_count: row.report_success_count || 0,
+          report_failed_count: row.report_failed_count || 0,
+          report_avg_duration_ms: row.report_avg_duration_ms || 0,
+          review_success_count: row.review_success_count || 0,
+          review_failed_count: row.review_failed_count || 0,
+          review_avg_duration_ms: row.review_avg_duration_ms || 0,
         });
       });
 
@@ -769,7 +800,15 @@ export class StatisticsService {
           caption_tab_click_count: 0,
           report_tab_click_count: 0,
           review_tab_click_count: 0,
-          question_tab_click_count: 0,
+          caption_success_count: 0,
+          caption_failed_count: 0,
+          caption_avg_duration_ms: 0,
+          report_success_count: 0,
+          report_failed_count: 0,
+          report_avg_duration_ms: 0,
+          review_success_count: 0,
+          review_failed_count: 0,
+          review_avg_duration_ms: 0,
         };
 
         const linkSearch = linkSearchMap.get(date) || {
@@ -808,11 +847,6 @@ export class StatisticsService {
             clicks: pdp.review_tab_click_count,
             pageViews: pdp.pdp_pv,
           };
-          buttonClickRates.question_tab = {
-            clickRate: pdp.question_tab_click_count / pdp.pdp_pv,
-            clicks: pdp.question_tab_click_count,
-            pageViews: pdp.pdp_pv,
-          };
         }
         const purchaseButtonClickRate =
           pdp.pdp_pv > 0 ? pdp.buy_button_click_count / pdp.pdp_pv : 0;
@@ -838,6 +872,37 @@ export class StatisticsService {
           linkSearchSuccessRate,
           linkSearchAttempts: linkSearch.link_search_attempt_count,
           linkSearchSuccesses: linkSearch.link_search_success_count,
+          // 탭 콘텐츠 프로세스 관련 데이터 추가
+          tabContentProcess: {
+            caption: {
+              successCount: pdp.caption_success_count,
+              failedCount: pdp.caption_failed_count,
+              avgDurationMs: pdp.caption_avg_duration_ms,
+              successRate:
+                pdp.caption_success_count + pdp.caption_failed_count > 0
+                  ? pdp.caption_success_count /
+                    (pdp.caption_success_count + pdp.caption_failed_count)
+                  : 0,
+            },
+            report: {
+              successCount: pdp.report_success_count,
+              failedCount: pdp.report_failed_count,
+              avgDurationMs: pdp.report_avg_duration_ms,
+              successRate:
+                pdp.report_success_count + pdp.report_failed_count > 0
+                  ? pdp.report_success_count / (pdp.report_success_count + pdp.report_failed_count)
+                  : 0,
+            },
+            review: {
+              successCount: pdp.review_success_count,
+              failedCount: pdp.review_failed_count,
+              avgDurationMs: pdp.review_avg_duration_ms,
+              successRate:
+                pdp.review_success_count + pdp.review_failed_count > 0
+                  ? pdp.review_success_count / (pdp.review_success_count + pdp.review_failed_count)
+                  : 0,
+            },
+          },
         };
       });
     } catch (error) {
