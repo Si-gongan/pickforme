@@ -66,9 +66,6 @@ jobs:
             if ! command -v pm2 &> /dev/null; then
               npm install -g pm2
             fi
-            # 테스트용 실패 명령어 (실제 배포시에는 제거)
-            echo "테스트용 실패 유발"
-            exit 1
             pm2 start pm2.json
 
       - name: Create and push tags
