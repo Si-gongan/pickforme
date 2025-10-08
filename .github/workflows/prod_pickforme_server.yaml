@@ -39,33 +39,41 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
-
-      - name: Create and push tags
-        id: tag
-        run: |
-          TAG="server-prod-$(TZ=Asia/Seoul date +'%y%m%d-%H%M')"
-          echo "Generated tag: $TAG"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          git tag "$TAG"
-          git tag -fa server-prod-latest -m "latest prod server tag" "$TAG"
-          git push origin "$TAG"
-          git push --force origin server-prod-latest
+          node-version: "20.19.5"
 
       - name: Deploy to EC2
+        id: deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.PROD_EC2_HOST }}
           username: ${{ secrets.PROD_EC2_USERNAME }}
           key: ${{ secrets.PROD_EC2_SSH_KEY }}
           script: |
+            set -e
+
             source ~/.nvm/nvm.sh
-            nvm use 18
+            nvm install 20.19.5
+            nvm use 20.19.5
+
             cd /home/ubuntu/pickforme
             git fetch origin
-            git fetch --tags --force
-            git checkout ${{ steps.tag.outputs.tag }}
+            git checkout main
+            git config pull.rebase false
+            git pull origin main
             cd back
             npm install
             npm run build
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
             pm2 start pm2.json
+
+      - name: Create and push tags
+        if: steps.deploy.outcome == 'success'
+        run: |
+          TAG="server-prod-$(TZ=Asia/Seoul date +'%y%m%d-%H%M')"
+          echo "Generated tag: $TAG"
+          git tag "$TAG"
+          git tag -fa server-prod-latest -m "latest prod server tag" "$TAG"
+          git push origin "$TAG"
+          git push --force origin server-prod-latest
