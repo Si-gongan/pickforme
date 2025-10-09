@@ -129,16 +129,23 @@ export class StatisticsService {
 
   private async getAllStatisticsInternal(startDate: string, endDate: string) {
     try {
-      const allStatistics = await this.getUserStatisticsInternal(startDate, endDate);
-      const homeStatistics = await this.getHomeStatisticsInternal(startDate, endDate);
-      const searchStatistics = await this.getSearchStatisticsInternal(startDate, endDate);
-      const linkSearchStatistics = await this.getLinkSearchStatisticsInternal(startDate, endDate);
-      const productDetailStatistics = await this.getProductDetailStatisticsInternal(
-        startDate,
-        endDate
-      );
-      const membershipStatistics = await this.getMembershipStatisticsInternal(startDate, endDate);
-      const managerQAStatistics = await this.getManagerQAStatisticsInternal(startDate, endDate);
+      const [
+        allStatistics,
+        homeStatistics,
+        searchStatistics,
+        linkSearchStatistics,
+        productDetailStatistics,
+        membershipStatistics,
+        managerQAStatistics,
+      ] = await Promise.all([
+        this.getUserStatisticsInternal(startDate, endDate),
+        this.getHomeStatisticsInternal(startDate, endDate),
+        this.getSearchStatisticsInternal(startDate, endDate),
+        this.getLinkSearchStatisticsInternal(startDate, endDate),
+        this.getProductDetailStatisticsInternal(startDate, endDate),
+        this.getMembershipStatisticsInternal(startDate, endDate),
+        this.getManagerQAStatisticsInternal(startDate, endDate),
+      ]);
 
       // 모든 통계를 하나의 배열로 합치기
       const allData = [
