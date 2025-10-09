@@ -1,5 +1,7 @@
 import { bigqueryClient } from '../bigquery/bigquery-client';
 import { log } from '../../../utils/logger/logger';
+import { cacheProvider } from '../../../cache';
+import { cacheKey } from '../../../constants/cacheKey';
 
 export class StatisticsService {
   private readonly DATASET_ID = process.env.GA4_DATASET_SUMMARY_ID;
@@ -7,36 +9,13 @@ export class StatisticsService {
   private readonly FOUNDATION_DATASET_ID = process.env.GA4_DATASET_FOUNDATION_ID;
 
   /**
-   * 비율 데이터를 퍼센트로 변환하는 헬퍼 함수
-   */
-  private convertRatesToPercentage(data: any): any {
-    if (!data || !Array.isArray(data)) return data;
-
-    return data.map((item) => {
-      if (!item || typeof item !== 'object') return item;
-
-      const converted = { ...item };
-
-      // data 객체 내의 각 카테고리별로 변환
-      if (converted.data && typeof converted.data === 'object') {
-        Object.keys(converted.data).forEach((category) => {
-          if (converted.data[category] && typeof converted.data[category] === 'object') {
-            converted.data[category] = this.convertSingleItemRates(converted.data[category]);
-          }
-        });
-      }
-
-      return converted;
-    });
-  }
-
-  /**
    * 단일 아이템의 비율 데이터를 퍼센트로 변환
    */
   private convertSingleItemRates(item: any): any {
     if (!item || typeof item !== 'object') return item;
 
-    const converted = { ...item };
+    // const converted = { ...item };
+    const converted = JSON.parse(JSON.stringify(item));
 
     // 비율 필드들을 퍼센트로 변환 (소수점 2자리까지)
     const rateFields = [
@@ -116,9 +95,14 @@ export class StatisticsService {
   async getAllStatistics(startDate: string, endDate: string) {
     const data = await this.getAllStatisticsInternal(startDate, endDate);
 
+    // 전체 통계 데이터에 비율 변환 적용
+    const convertedData = data.map((item) => ({
+      ...item,
+    }));
+
     return {
       success: true,
-      data: this.convertRatesToPercentage(data),
+      data: convertedData,
       queryParams: {
         startDate,
         endDate,
@@ -129,6 +113,7 @@ export class StatisticsService {
 
   private async getAllStatisticsInternal(startDate: string, endDate: string) {
     try {
+      // 캐시를 활용하기 위해 공개 메서드들을 호출하되, 원본 데이터만 가져오기
       const [
         allStatistics,
         homeStatistics,
@@ -138,13 +123,13 @@ export class StatisticsService {
         membershipStatistics,
         managerQAStatistics,
       ] = await Promise.all([
-        this.getUserStatisticsInternal(startDate, endDate),
-        this.getHomeStatisticsInternal(startDate, endDate),
-        this.getSearchStatisticsInternal(startDate, endDate),
-        this.getLinkSearchStatisticsInternal(startDate, endDate),
-        this.getProductDetailStatisticsInternal(startDate, endDate),
-        this.getMembershipStatisticsInternal(startDate, endDate),
-        this.getManagerQAStatisticsInternal(startDate, endDate),
+        this.getUserStatistics(startDate, endDate),
+        this.getHomeStatistics(startDate, endDate),
+        this.getSearchStatistics(startDate, endDate),
+        this.getLinkSearchStatistics(startDate, endDate),
+        this.getProductDetailStatistics(startDate, endDate),
+        this.getMembershipStatistics(startDate, endDate),
+        this.getManagerQAStatistics(startDate, endDate),
       ]);
 
       // 모든 통계를 하나의 배열로 합치기
@@ -254,10 +239,54 @@ export class StatisticsService {
   }
 
   /**
+   * 특정 날짜 범위의 통계 캐시 무효화
+   */
+  clearStatisticsCache(startDate: string, endDate: string) {
+    const keys = [
+      cacheKey.analytics.userStatistics(startDate, endDate),
+      cacheKey.analytics.homeStatistics(startDate, endDate),
+      cacheKey.analytics.searchStatistics(startDate, endDate),
+      cacheKey.analytics.linkSearchStatistics(startDate, endDate),
+      cacheKey.analytics.productDetailStatistics(startDate, endDate),
+      cacheKey.analytics.membershipStatistics(startDate, endDate),
+      cacheKey.analytics.managerQAStatistics(startDate, endDate),
+    ];
+
+    keys.forEach((key) => cacheProvider.delete(key));
+    void log.info('통계 캐시 무효화 완료', 'ANALYTICS', 'LOW', {
+      startDate,
+      endDate,
+      clearedKeys: keys.length,
+    });
+  }
+
+  /**
+   * 모든 통계 캐시 무효화
+   */
+  clearAllStatisticsCache() {
+    cacheProvider.clear();
+    void log.info('모든 통계 캐시 무효화 완료', 'ANALYTICS', 'LOW');
+  }
+
+  /**
    * 사용자 관련 통계 조회 (공개 메서드)
    */
   async getUserStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.userStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getUserStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
@@ -427,7 +456,21 @@ export class StatisticsService {
    * 홈화면 관련 통계 조회 (공개 메서드)
    */
   async getHomeStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.homeStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getHomeStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
@@ -528,7 +571,20 @@ export class StatisticsService {
    * 검색 관련 통계 조회 (공개 메서드)
    */
   async getSearchStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.searchStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getSearchStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
@@ -624,7 +680,20 @@ export class StatisticsService {
    * 링크 검색 관련 통계 조회 (공개 메서드)
    */
   async getLinkSearchStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.linkSearchStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getLinkSearchStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
@@ -701,7 +770,20 @@ export class StatisticsService {
    * 상품 상세 관련 통계 조회 (공개 메서드)
    */
   async getProductDetailStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.productDetailStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getProductDetailStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
@@ -926,7 +1008,20 @@ export class StatisticsService {
    * 멤버십 관련 통계 조회 (공개 메서드)
    */
   async getMembershipStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.membershipStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getMembershipStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
@@ -1093,7 +1188,20 @@ export class StatisticsService {
    * 매니저 Q&A 관련 통계 조회 (공개 메서드)
    */
   async getManagerQAStatistics(startDate: string, endDate: string) {
+    const cacheKeyStr = cacheKey.analytics.managerQAStatistics(startDate, endDate);
+
+    // 캐시에서 데이터 조회
+    const cachedData = cacheProvider.get<any[]>(cacheKeyStr);
+    if (cachedData) {
+      return cachedData.map((item) => this.convertSingleItemRates(item));
+    }
+
+    // 캐시에 없으면 DB에서 조회
     const data = await this.getManagerQAStatisticsInternal(startDate, endDate);
+
+    // 캐시에 저장 (1시간 TTL)
+    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+
     return data.map((item) => this.convertSingleItemRates(item));
   }
 
