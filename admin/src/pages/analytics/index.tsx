@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Row, Col, Statistic } from "antd";
+import { Card, Row, Col, Statistic, Button, message } from "antd";
 import {
   LineChart,
   Line,
@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
 import AnalyticsLayout from "@/components/analytics/AnalyticsLayout";
+import client from "@/utils/axios";
 
 interface StatisticsData {
   user: any;
@@ -44,6 +45,32 @@ const AnalyticsIndex: React.FC = () => {
     extractTodayData,
   });
 
+  const clearCacheAndReload = async () => {
+    try {
+      if (!trendData || trendData.length === 0) {
+        message.warning("삭제할 캐시의 기간 데이터를 찾을 수 없어요.");
+        return;
+      }
+      const startDate = trendData[0].period;
+      const endDate = trendData[trendData.length - 1].period;
+
+      const resp = await client.post(
+        `/analytics/statistics/cache/clear?startDate=${startDate}&endDate=${endDate}`,
+        {
+          params: {
+            startDate,
+            endDate,
+          },
+        }
+      );
+      if (resp.status !== 200) throw new Error("캐시 삭제 실패");
+      message.success("캐시를 삭제했어요. 새로고침합니다.");
+      setTimeout(() => window.location.reload(), 300);
+    } catch (e) {
+      message.error("캐시 삭제 중 오류가 발생했어요.");
+    }
+  };
+
   return (
     <AnalyticsLayout
       selectedKey="overview"
@@ -51,6 +78,15 @@ const AnalyticsIndex: React.FC = () => {
       loading={loading}
       error={error}
     >
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Button onClick={clearCacheAndReload}>캐시 삭제 후 새로고침</Button>
+      </div>
       {todayStats && (
         <>
           {/* 주요 지표 카드들 */}

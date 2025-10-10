@@ -3,6 +3,9 @@ import { log } from '../../../utils/logger/logger';
 import { cacheProvider } from '../../../cache';
 import { cacheKey } from '../../../constants/cacheKey';
 
+// 캐시 TTL을 한 곳에서 관리
+const CACHE_TTL_MS = 1000 * 60 * 60; // 1시간
+
 export class StatisticsService {
   private readonly DATASET_ID = process.env.GA4_DATASET_SUMMARY_ID;
 
@@ -285,7 +288,7 @@ export class StatisticsService {
     const data = await this.getUserStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
@@ -469,7 +472,7 @@ export class StatisticsService {
     const data = await this.getHomeStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
@@ -583,7 +586,7 @@ export class StatisticsService {
     const data = await this.getSearchStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
@@ -692,7 +695,7 @@ export class StatisticsService {
     const data = await this.getLinkSearchStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
@@ -782,7 +785,7 @@ export class StatisticsService {
     const data = await this.getProductDetailStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
@@ -1020,7 +1023,7 @@ export class StatisticsService {
     const data = await this.getMembershipStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
@@ -1200,7 +1203,7 @@ export class StatisticsService {
     const data = await this.getManagerQAStatisticsInternal(startDate, endDate);
 
     // 캐시에 저장 (1시간 TTL)
-    cacheProvider.set(cacheKeyStr, data, 1000 * 60 * 60);
+    cacheProvider.set(cacheKeyStr, data, CACHE_TTL_MS);
 
     return data.map((item) => this.convertSingleItemRates(item));
   }
