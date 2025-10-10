@@ -55,6 +55,44 @@ export class StatisticsController {
   }
 
   /**
+   * 통계 캐시 무효화 (analytics 범주 한정)
+   * POST /analytics/statistics/cache/clear?startDate=2024-01-01&endDate=2024-01-15
+   */
+  async clearStatisticsCache(ctx: Context) {
+    try {
+      const { startDate, endDate } = ctx.query;
+
+      if (!startDate || !endDate) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          message: 'startDate와 endDate가 필요합니다.',
+        };
+        return;
+      }
+
+      statisticsService.clearStatisticsCache(startDate as string, endDate as string);
+
+      ctx.status = 200;
+      ctx.body = {
+        success: true,
+        message: '해당 기간의 Analytics 캐시를 무효화했습니다.',
+        queryParams: {
+          startDate,
+          endDate,
+        },
+      };
+    } catch (error) {
+      void log.error('통계 캐시 무효화 API 오류', 'API', 'HIGH', { error });
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        message: '서버 오류가 발생했습니다.',
+      };
+    }
+  }
+
+  /**
    * 사용자 관련 통계만 조회
    * GET /analytics/statistics/user?startDate=2024-01-01&endDate=2024-01-15
    */
