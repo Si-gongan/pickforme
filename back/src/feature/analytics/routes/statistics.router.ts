@@ -22,4 +22,7 @@ router.get('/membership', statisticsController.getMembershipStatistics.bind(stat
 router.get('/active-users', statisticsController.getActiveUsers.bind(statisticsController));
 router.get('/user-events', statisticsController.getUserEventDetails.bind(statisticsController));
 
+// 캐시 무효화 (해당 기간의 analytics 키만)
+router.post('/cache/clear', statisticsController.clearStatisticsCache.bind(statisticsController));
+
 export default router;
