@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-
-dotenv.config();
+import 'env';
 
 import mongoose from 'mongoose';
 import { google } from 'googleapis';
@@ -39,6 +37,7 @@ interface FormResponse {
   email: string;
   membershipProcessed: string;
   rowIndex: number; // 스프레드시트에서의 실제 row 인덱스 (헤더 제외)
+  activityStarted: string; // L컬럼: 활동시작여부 ('o'인 경우만 선택 처리 가능)
 }
 
 const eventOverridedUserEmailList: string[] = [];
@@ -83,6 +82,7 @@ async function processUser(
       return;
     }
 
+    // 이미 기존 이벤트가 존재하는 경우.
     if (user.event !== null) {
       if (user.event != EVENT_IDS.HANSIRYUN) {
         // 한시련 이외의 이벤트의 경우에는 아직 처리방침 x. 이벤트 처리하지 않고 그대로 반환.
@@ -106,12 +106,39 @@ async function processUser(
 
       const testGroupExpirationDate = new Date();
 
+      testGroupExpirationDate.setMonth(testGroupExpirationDate.getMonth() + 3);
+
       if (testGroupExpirationDate > membershipStartDate) {
         eventOverridedUserEmailList.push(user.email);
-        console.log(`유저 ${response.name} 픽포미 체험단 이벤트 적용 완료.`);
+        console.log(
+          `유저 ${response.name}: ${response.email} 한시련 이벤트에서 픽포미 체험단 이벤트로 변경.`
+        );
         await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
       } else {
-        console.log(`유저 ${response.name}는 한시련 이벤트 대상자입니다.`);
+        console.log(
+          `유저 ${response.name}: ${response.email} 는 한시련 이벤트 대상자입니다. 이벤트를 적용하지 않습니다.`
+        );
+      }
+    } else {
+      if (user.MembershipAt) {
+        // 멤버쉽 처리 되어 있는 경우, 기존 멤버쉽은 만료처리하고 픽포미 체험단 이벤트 적용.
+
+        const membershipStartDate = new Date(user.MembershipAt);
+
+        membershipStartDate.setMonth(membershipStartDate.getMonth() + 1);
+
+        await user.processExpiredMembership();
+
+        await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+
+        console.log(
+          `유저 ${response.name}: ${response.email} 멤버쉽에서 픽포미 체험단 이벤트로 변경.`
+        );
+      } else {
+        // 멤버쉽 처리 되어 있지 않은 경우,
+        await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+
+        console.log(`유저 ${response.name}: ${response.email} 픽포미 체험단 이벤트 적용 완료.`);
       }
     }
 
@@ -140,6 +167,10 @@ async function processUser(
 
 async function main() {
   try {
+    // 실행 옵션: 활동시작여부가 'o'인 대상만 처리
+    const withSelected =
+      process.env.WITH_SELECTED === 'true' || process.argv.includes('--withSelected');
+
     // MongoDB 연결
     const uri = process.env.MONGO_URI;
 
@@ -154,7 +185,7 @@ async function main() {
 
     // 스프레드시트 ID와 범위 설정
     const spreadsheetId = process.env.EVENTS_PICKFORME_TEST_GOOGLE_SHEET_ID;
-    const range = '설문지 응답 시트1!A:K';
+    const range = '설문지 응답 시트1!A:L';
 
     if (!spreadsheetId) {
       throw new Error('EVENTS_PICKFORME_TEST_GOOGLE_SHEET_ID environment variable is required');
@@ -181,7 +212,16 @@ async function main() {
       phoneNumber: row[3], // 전화번호는 D컬럼 (인덱스 3)
       membershipProcessed: row[10], // 멤버쉽 지급여부는 K컬럼 (인덱스 10)
       rowIndex: index, // 0-based index (헤더 제외)
+      activityStarted: row[11], // 활동시작여부는 L컬럼 (인덱스 11)
     }));
+
+    const filteredResponses = withSelected
+      ? formResponses.filter((r) => r.activityStarted === 'o')
+      : formResponses;
+
+    console.log(
+      `총 응답: ${formResponses.length}, 처리 대상(withSelected=${withSelected}): ${filteredResponses.length}`
+    );
 
     const eventProducts = await db.Product.findOne({
       eventId: EVENT_IDS.PICKFORME_TEST,
@@ -195,7 +235,7 @@ async function main() {
     const eventRewards = eventProducts.getRewards();
 
     // 각 응답 처리
-    for (const response of formResponses) {
+    for (const response of filteredResponses) {
       await processUser(response, eventRewards, sheets, spreadsheetId);
     }
 
