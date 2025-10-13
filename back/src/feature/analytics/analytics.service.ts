@@ -5,6 +5,7 @@ import path from 'path';
 import { bigqueryClient } from './bigquery/bigquery-client';
 import { MetricJob } from './types/types';
 import { TABLE_SCHEMAS } from './bigquery/table-schemas';
+import { log } from '../../utils/logger/logger';
 
 const PROJECT_ID = process.env.BIGQUERY_PROJECT_ID;
 const RAW_DATASET = process.env.GA4_DATASET_RAW_ID; // 원본 GA4 데이터셋
@@ -119,8 +120,18 @@ async function ensureTableExists(datasetId: string, tableName: string) {
 }
 
 // [변경] destinationDataset을 인자로 받도록 유지 (핸들러에서 제어)
-export const runEtlJob = async (job: MetricJob, destinationDataset: string) => {
+export const runEtlJob = async (
+  job: MetricJob,
+  destinationDataset: string,
+  targetDate?: string
+) => {
   const queryParams = job.getQueryParams ? job.getQueryParams() : {};
+
+  // targetDate가 제공되면 해당 날짜를 사용, 아니면 job의 기본값 사용
+  if (targetDate) {
+    queryParams.target_date = targetDate;
+  }
+
   const jobDateForLog = queryParams.target_date || new Date().toISOString().split('T')[0];
 
   console.log(`[START] Running ETL job: ${job.name} for ${jobDateForLog}`);
@@ -170,5 +181,58 @@ export const runEtlJob = async (job: MetricJob, destinationDataset: string) => {
   } catch (error) {
     console.error(`[FAIL] ETL job: ${job.name} failed. Details:`, error);
     throw error;
+  }
+};
+
+/**
+ * BigQuery 데이터 가용성 체크
+ * 특정 날짜의 데이터가 있는지 확인 (기본값: 1일 전)
+ */
+export const checkDataAvailability = async (targetDate?: string): Promise<boolean> => {
+  try {
+    const checkDate =
+      targetDate ||
+      (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 1);
+
+        return date.toISOString().split('T')[0];
+      })();
+
+    // checkDate를 YYYYMMDD 형식으로 변환 (2025-10-10 -> 20251010)
+    const tableSuffix = checkDate.replace(/-/g, '');
+
+    const query = `
+      SELECT COUNT(*) as count
+      FROM \`${PROJECT_ID}.${RAW_DATASET}.events_*\`
+      WHERE _TABLE_SUFFIX = @tableSuffix
+    `;
+
+    const [rows] = await bigqueryClient.query({
+      query,
+      params: { tableSuffix },
+    });
+
+    const count = rows[0]?.count || 0;
+
+    void log.info(
+      `데이터 가용성 체크 완료 - KST ${checkDate} 이벤트 수: ${count}`,
+      'ANALYTICS',
+      'LOW',
+      {
+        count,
+        checkDate,
+        rawDataset: RAW_DATASET,
+      }
+    );
+
+    return count > 0;
+  } catch (error) {
+    void log.error('데이터 가용성 체크 실패', 'ANALYTICS', 'MEDIUM', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      targetDate,
+      rawDataset: RAW_DATASET,
+    });
+    return false;
   }
 };
