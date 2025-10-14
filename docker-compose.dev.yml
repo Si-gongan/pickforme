@@ -16,6 +16,17 @@ services:
       - ./scripts/mongo-init:/docker-entrypoint-initdb.d:ro
     networks:
       - pickforme-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: ["mongod", "--quiet"]
+    logging:
+      driver: "none"
+    tty: false
+    stdin_open: false
 
   # Backend API
   server:
@@ -32,7 +43,8 @@ services:
       - ./back:/app
       - /app/node_modules
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - pickforme-network
     command: npm run dev
