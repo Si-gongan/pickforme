@@ -119,16 +119,7 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
             product: updatedProduct as Product
         });
 
-        // 캡션이 존재하면 loadingStatus도 업데이트 필요 : 2025.04.09
-        if (productDetail?.caption) {
-            set(loadingStatusAtom, {
-                ...get(loadingStatusAtom),
-                caption: LoadingStatus.FINISH
-            });
-        }
-
         // 백엔드 db 업데이트 요청
-
         const result = await attempt(() => UpdateProductAPI({ product }));
         if (!result.ok) console.error('백엔드 업데이트 API 호출 실패:', result.error);
     } else {
