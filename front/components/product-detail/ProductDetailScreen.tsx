@@ -33,7 +33,7 @@ import TabContent from './TabContent';
 import { useProductData } from '../../hooks/product-detail/useProductData';
 import { useProductActions } from '../../hooks/product-detail/useProductActions';
 import { useProductTabs } from '../../hooks/product-detail/useProductTabs';
-import { useTabData } from '@/hooks/product-detail/useTabData';
+import { useTabData, checkRequiredData } from '@/hooks/product-detail/useTabData';
 
 // 웹뷰 관련
 import { useWebViewReviews } from '../webview-reviews';
@@ -164,6 +164,32 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             const hasDetail =
                 !!data?.thumbnail || (Array.isArray(data?.detail_images) && data.detail_images.length > 0);
             linkSearchDetailOkRef.current = hasDetail;
+
+            // 각 탭별 데이터 충족 여부 체크 및 NO_DATA 상태 업데이트
+            const updates: {
+                caption?: LoadingStatus;
+                review?: LoadingStatus;
+                report?: LoadingStatus;
+            } = {};
+
+            // checkRequiredData 함수를 사용하여 각 탭의 데이터 충족 여부 체크
+            if (!checkRequiredData(TABS.CAPTION, data, [])) {
+                updates.caption = LoadingStatus.NO_DATA;
+            }
+
+            if (!checkRequiredData(TABS.REPORT, data, [])) {
+                updates.report = LoadingStatus.NO_DATA;
+            }
+
+            // REVIEW 탭은 리뷰 데이터가 별도로 처리되므로 현재 리뷰 데이터와 함께 체크
+            if (!checkRequiredData(TABS.REVIEW, data, productReview.reviews || [])) {
+                updates.review = LoadingStatus.NO_DATA;
+            }
+
+            // 업데이트가 있으면 상태 변경
+            if (Object.keys(updates).length > 0) {
+                setProductLoadingStatus(updates);
+            }
 
             // 리뷰가 이미 OK였다면 여기서 완료
             if (linkSearchReviewOkRef.current) {
