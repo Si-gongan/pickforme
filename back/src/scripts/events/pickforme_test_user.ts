@@ -46,7 +46,8 @@ async function processUser(
   response: FormResponse,
   eventRewards: ProductReward,
   sheets: any,
-  spreadsheetId: string
+  spreadsheetId: string,
+  dryRun: boolean
 ): Promise<void> {
   try {
     const normalizedPhoneNumber = response.phoneNumber.replace(/-/g, '');
@@ -72,13 +73,8 @@ async function processUser(
       return;
     }
 
-    if (user.event === EVENT_IDS.PICKFORME_TEST) {
+    if (response.membershipProcessed === 'o' || user.event === EVENT_IDS.PICKFORME_TEST) {
       console.log(`유저 ${response.name} 이미 처리되었습니다.`);
-      return;
-    }
-
-    if (response.membershipProcessed === 'o') {
-      console.log(`유저 ${response.name} 이미 처리되었습니다2.`);
       return;
     }
 
@@ -113,30 +109,38 @@ async function processUser(
         console.log(
           `유저 ${response.name}: ${response.email} 한시련 이벤트에서 픽포미 체험단 이벤트로 변경.`
         );
-        await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+        if (dryRun) {
+          console.log('[DRY RUN] processExpiredMembership/applyEventRewards skipped');
+        } else {
+          await user.processExpiredMembership();
+          await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+        }
       } else {
         console.log(
           `유저 ${response.name}: ${response.email} 는 한시련 이벤트 대상자입니다. 이벤트를 적용하지 않습니다.`
         );
       }
     } else {
+      // 이미 멤버쉽 적용중인 경우, 기존 멤버쉽은 만료처리하고 픽포미 체험단 이벤트 적용.
       if (user.MembershipAt) {
-        // 멤버쉽 처리 되어 있는 경우, 기존 멤버쉽은 만료처리하고 픽포미 체험단 이벤트 적용.
-
-        const membershipStartDate = new Date(user.MembershipAt);
-
-        membershipStartDate.setMonth(membershipStartDate.getMonth() + 1);
-
-        await user.processExpiredMembership();
-
-        await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+        if (dryRun) {
+          console.log('[DRY RUN] 기존 멤버쉽 만료 & 체험단 이벤트 적용 생략');
+        } else {
+          await user.processExpiredMembership();
+          await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+        }
 
         console.log(
           `유저 ${response.name}: ${response.email} 멤버쉽에서 픽포미 체험단 이벤트로 변경.`
         );
       } else {
         // 멤버쉽 처리 되어 있지 않은 경우,
-        await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+        if (dryRun) {
+          console.log('[DRY RUN] (무멤버쉽) 만료 처리 & 체험단 이벤트 적용 생략');
+        } else {
+          await user.processExpiredMembership(); // 혹시 모르니까 만료 처리.
+          await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
+        }
 
         console.log(`유저 ${response.name}: ${response.email} 픽포미 체험단 이벤트 적용 완료.`);
       }
@@ -147,14 +151,18 @@ async function processUser(
     // K컬럼은 11번째 컬럼이므로 K로 업데이트
     const updateRange = `설문지 응답 시트1!K${response.rowIndex + 2}`;
 
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: updateRange,
-      valueInputOption: 'RAW',
-      requestBody: {
-        values: [['o']],
-      },
-    });
+    if (dryRun) {
+      console.log(`[DRY RUN] Sheets 업데이트 생략 → range=${updateRange}, value='o'`);
+    } else {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: updateRange,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [['o']],
+        },
+      });
+    }
 
     console.log(
       `유저 ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt} 처리 완료 및 스프레드시트 업데이트 완료`
@@ -170,6 +178,12 @@ async function main() {
     // 실행 옵션: 활동시작여부가 'o'인 대상만 처리
     const withSelected =
       process.env.WITH_SELECTED === 'true' || process.argv.includes('--withSelected');
+
+    // 실행 옵션: DRY RUN 모드 (실제 변경 없이 로그만)
+    const dryRun = process.env.DRY_RUN === 'true' || process.argv.includes('--dryRun');
+    if (dryRun) {
+      console.log('[DRY RUN] 실제 DB/시트 변경 없이 시뮬레이션만 진행합니다.');
+    }
 
     // MongoDB 연결
     const uri = process.env.MONGO_URI;
@@ -236,7 +250,8 @@ async function main() {
 
     // 각 응답 처리
     for (const response of filteredResponses) {
-      await processUser(response, eventRewards, sheets, spreadsheetId);
+      await processUser(response, eventRewards, sheets, spreadsheetId, dryRun);
+      console.log('===============================================');
     }
 
     console.log(`이벤트 오버라이드 유저 리스트: ${eventOverridedUserEmailList}`);
