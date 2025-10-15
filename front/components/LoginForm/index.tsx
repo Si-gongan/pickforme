@@ -40,6 +40,11 @@ export default function LoginForm({
     const { mutateKakaoLogin, mutateAppleLogin, mutateGoogleLogin, isPending } = useServiceLogin({
         onSuccess: async ({ isRegister }) => {
             onLoginSuccess?.({ isRegister });
+            if (isRegister) {
+                logEvent('register_success');
+            } else {
+                logEvent('login_success');
+            }
             await PopupService.resetFirstLogin();
         }
     });
