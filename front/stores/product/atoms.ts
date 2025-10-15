@@ -37,7 +37,7 @@ export enum LoadingStatus {
     INIT,
     LOADING,
     FINISH,
-    ERROR,
+    AI_GENERATION_FAILED,
     NO_DATA
 }
 
@@ -188,7 +188,7 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
 
     if (!result.ok) {
         console.error('리뷰 요약 생성 실패:', result.error);
-        set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.ERROR });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), review: LoadingStatus.AI_GENERATION_FAILED });
         return;
     }
 
@@ -220,7 +220,7 @@ export const getProductReportAtom = atom(null, async (get, set) => {
 
     if (!result.ok) {
         console.error('상세 설명 생성 실패:', result.error);
-        set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.ERROR });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), report: LoadingStatus.AI_GENERATION_FAILED });
         return;
     }
 
@@ -251,7 +251,7 @@ export const getProductCaptionAtom = atom(null, async (get, set) => {
 
     if (!result.ok) {
         console.error('이미지 설명 생성 실패:', result.error);
-        set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.ERROR });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), caption: LoadingStatus.AI_GENERATION_FAILED });
         return;
     }
 
@@ -290,7 +290,7 @@ export const getProductAIAnswerAtom = atom(null, async (get, set, question: stri
 
     if (!result.ok) {
         console.error('AI 답변 생성 실패:', result.error);
-        set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.ERROR });
+        set(loadingStatusAtom, { ...get(loadingStatusAtom), question: LoadingStatus.AI_GENERATION_FAILED });
         return;
     }
 

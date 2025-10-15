@@ -139,7 +139,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 }
             }
             // 실패: ERROR 상태
-            else if (loadingStatus[currentTab] === LoadingStatus.ERROR) {
+            else if (loadingStatus[currentTab] === LoadingStatus.AI_GENERATION_FAILED) {
                 const errorKey = `${currentTab}-failed-error`;
                 if (!loggedRef.current.has(errorKey)) {
                     const startTime = tabStartTimes[currentTab];
