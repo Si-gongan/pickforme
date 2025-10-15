@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Product } from '@/stores/product/types';
 import { TABS } from '@/utils/common';
 import { logCrawlProcessResult } from '@/utils/crawlLog';
+import { checkRequiredData } from '@/hooks/product-detail/useTabData';
 
 interface UseWebViewFallbackProps {
     productUrl: string;
@@ -31,24 +32,10 @@ export const useWebViewFallback = ({ productUrl, onComplete, requestId }: UseWeb
         startDate.current = new Date();
     }, [productUrl]);
 
-    // 각 탭별로 필요한 데이터가 있는지 체크하는 함수 (useTabData.ts 참고)
+    // checkRequiredData 함수를 사용하여 각 탭의 데이터 충족 여부 체크
     const checkTabRequirements = (tab: TABS, productDetail: any, productReview: string[]): boolean => {
         if (!productDetail) return false;
-
-        switch (tab) {
-            case TABS.CAPTION:
-                return !!(productDetail.product?.name && productDetail.product?.thumbnail);
-            case TABS.REPORT:
-                return !!(
-                    productDetail.product?.name &&
-                    productDetail.product?.detail_images &&
-                    productDetail.product.detail_images.length > 0
-                );
-            case TABS.REVIEW:
-                return !!(productReview.length > 0 && productDetail.product?.name);
-            default:
-                return false;
-        }
+        return checkRequiredData(tab, productDetail.product, productReview);
     };
 
     // 서버 크롤링 완료 후 각 탭의 데이터 존재 여부를 판단하는 함수
