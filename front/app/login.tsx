@@ -36,11 +36,6 @@ export default function LoginScreen() {
 
     const onLoginSuccess = ({ isRegister }: { isRegister: boolean }) => {
         hasUserJustLoggedIn.current = true;
-        if (isRegister) {
-            logEvent('register_success');
-        } else {
-            logEvent('login_success');
-        }
         router.replace('/(tabs)');
     };
 
