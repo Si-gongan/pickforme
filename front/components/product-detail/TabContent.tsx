@@ -40,10 +40,16 @@ interface TabContentProps {
     tabStartTimes: { [key in TABS]: number };
 }
 
-const NO_DATA_MESSAGE = {
+const CRAWLING_FAILED_MESSAGE = {
     [TABS.CAPTION]: '이미지를 불러오는데 실패했습니다.',
     [TABS.REPORT]: '상세페이지 정보를 불러오는데 실패했습니다.',
     [TABS.REVIEW]: '리뷰 정보를 불러오는데 실패했습니다.'
+};
+
+const NO_DATA_MESSAGE = {
+    [TABS.CAPTION]: '등록된 썸네일이 없습니다.',
+    [TABS.REPORT]: '등록된 상세이미지가 없습니다.',
+    [TABS.REVIEW]: '등록된 리뷰가 없습니다.'
 };
 
 const ERROR_MESSAGE = {
@@ -77,6 +83,8 @@ const TabContent: React.FC<TabContentProps> = ({
     const loadingRef = useRef<RNView>(null);
     // 로깅 완료 여부 추적 (중복 방지)
     const loggedRef = useRef<Set<string>>(new Set());
+    // 크롤링 실패 ref
+    const crawlingFailedRef = useRef<RNView>(null);
 
     // 탭이 바뀌거나, loading 상태가 바뀌었을때 포커스 이동
     useEffect(() => {
@@ -90,6 +98,8 @@ const TabContent: React.FC<TabContentProps> = ({
                 loadingRef.current
             ) {
                 focusOnRef(loadingRef, delay);
+            } else if (loadingStatus[tab] === LoadingStatus.CRAWLING_FAILED && crawlingFailedRef.current) {
+                focusOnRef(crawlingFailedRef, delay);
             }
         }
     }, [loadingStatus[tab], tab, isTabPressed]);
@@ -132,6 +142,23 @@ const TabContent: React.FC<TabContentProps> = ({
                             status: 'failed',
                             duration_ms: duration,
                             failure_reason: 'no_data',
+                            product_url: productUrl
+                        });
+                        loggedRef.current.add(failKey);
+                    }
+                }
+            } else if (loadingStatus[currentTab] === LoadingStatus.CRAWLING_FAILED) {
+                const failKey = `${currentTab}-failed-crawling_failed`;
+                if (!loggedRef.current.has(failKey)) {
+                    const startTime = tabStartTimes[currentTab];
+                    if (startTime) {
+                        const duration = Date.now() - startTime;
+                        logTabContentProcess({
+                            request_id: requestId,
+                            tab: currentTab.toLowerCase() as 'caption' | 'report' | 'review',
+                            status: 'failed',
+                            duration_ms: duration,
+                            failure_reason: 'crawling_failed',
                             product_url: productUrl
                         });
                         loggedRef.current.add(failKey);
@@ -219,11 +246,24 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     }
 
-    // 웹뷰, 서버 크롤링 모두 실패한 경우.
+    // 해당 탭에 필요한 데이터가 없는 경우.
     if (loadingStatus[tab] === LoadingStatus.NO_DATA) {
         return (
             <View style={styles.detailWrap} ref={noDataRef} accessible accessibilityLabel={NO_DATA_MESSAGE[tab]}>
                 <Text style={styles.errorText}>{NO_DATA_MESSAGE[tab]}</Text>
+            </View>
+        );
+    }
+
+    if (loadingStatus[tab] === LoadingStatus.CRAWLING_FAILED) {
+        return (
+            <View
+                style={styles.detailWrap}
+                ref={crawlingFailedRef}
+                accessible
+                accessibilityLabel={CRAWLING_FAILED_MESSAGE[tab]}
+            >
+                <Text style={styles.errorText}>{CRAWLING_FAILED_MESSAGE[tab]}</Text>
             </View>
         );
     }
