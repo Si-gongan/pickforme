@@ -38,7 +38,6 @@ import { useTabData, checkRequiredData } from '@/hooks/product-detail/useTabData
 // 웹뷰 관련
 import { useWebViewReviews } from '../webview-reviews';
 import { useWebViewDetail } from '../Webview/detail/webview-detail';
-import { useWebViewFallback } from '@/hooks/useWebViewFallback';
 import { TABS } from '@/utils/common';
 import { v4 as uuidv4 } from 'uuid';
 import { logCrawlProcessResult } from '@/utils/crawlLog';
@@ -106,56 +105,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
     const { handleClickBuy, handleClickWish, handleClickSend, handleClickRequest, handleClickContact } =
         useProductActions({ product, productUrl, wishlistItem, question, requestId: requestId.current, setQuestion });
 
-    // 웹뷰에서 정보를 가져오는 것이 실패했을 때 서버측 크롤러 API 호출
-    const { handleWebViewError, isLoading: isFallbackLoading } = useWebViewFallback({
-        productUrl,
-        requestId: requestId.current,
-        // 서버 크롤링까지 마치면 이제 크롤링은 끝난 상황. 이제 최종적으로 각 탭에 필요한 데이터가 있는지 확인하고 그에 따라 loading status 업데이트
-        onComplete: ({ canLoadReport, canLoadReview, canLoadCaption }) => {
-            // 링크 검색으로 들어왔을때의 조건 파악 후 최종 완료 로깅
-            const hasDetail =
-                !!product?.thumbnail || (Array.isArray(product?.detail_images) && product.detail_images.length > 0);
-            linkSearchDetailOkRef.current = linkSearchDetailOkRef.current || hasDetail;
-
-            const hasReviewFromState = Array.isArray(productReview?.reviews) && productReview.reviews.length > 0;
-            linkSearchReviewOkRef.current = linkSearchReviewOkRef.current || canLoadReview || hasReviewFromState;
-
-            // 최종 한 번만 완료 로깅
-            tryFinalizeLinkSearchComplete('server');
-
-            const updates: {
-                caption?: LoadingStatus;
-                review?: LoadingStatus;
-                report?: LoadingStatus;
-            } = {};
-
-            // report 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!canLoadReport) {
-                updates.report = LoadingStatus.NO_DATA;
-            }
-
-            // review 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!canLoadReview) {
-                updates.review = LoadingStatus.NO_DATA;
-            }
-
-            // caption 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!canLoadCaption) {
-                updates.caption = LoadingStatus.NO_DATA;
-            }
-
-            // 업데이트가 있으면 상태 변경
-            if (Object.keys(updates).length > 0) {
-                setProductLoadingStatus(updates);
-            }
-        }
-    });
-
     // 웹뷰 관련
     const DetailWebView = useWebViewDetail({
         productUrl,
         onError: () => {
-            handleWebViewError(); // 서버 API 호출
+            setProductLoadingStatus({
+                caption: LoadingStatus.CRAWLING_FAILED,
+                report: LoadingStatus.CRAWLING_FAILED
+            });
         },
         onMessage: data => {
             setProduct(data);
@@ -172,18 +129,14 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 report?: LoadingStatus;
             } = {};
 
-            // checkRequiredData 함수를 사용하여 각 탭의 데이터 충족 여부 체크
+            // caption 탭에 필요한 데이터가 없으면 NO_DATA로 설정
             if (!checkRequiredData(TABS.CAPTION, data, [])) {
                 updates.caption = LoadingStatus.NO_DATA;
             }
 
+            // report 탭에 필요한 데이터가 없으면 NO_DATA로 설정
             if (!checkRequiredData(TABS.REPORT, data, [])) {
                 updates.report = LoadingStatus.NO_DATA;
-            }
-
-            // REVIEW 탭은 리뷰 데이터가 별도로 처리되므로 현재 리뷰 데이터와 함께 체크
-            if (!checkRequiredData(TABS.REVIEW, data, productReview.reviews || [])) {
-                updates.review = LoadingStatus.NO_DATA;
             }
 
             // 업데이트가 있으면 상태 변경
@@ -214,9 +167,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         productUrl: product?.url || '',
         onMessage: data => {
             // 웹뷰에서 onMessage가 호출되었다는 것은 리뷰 평점 노드가 있다는 의미
-            // 빈 배열이어도 성공으로 처리
             if (data && Array.isArray(data)) {
+                // 있다면 상품 리뷰 데이터 설정. 이후 useTabData에서 LoadingStatus.LOADING으로 변경됨.
                 setProductReview(data);
+                // 빈 배열이면 NO_DATA로 설정.
                 if (data.length == 0) {
                     setProductLoadingStatus({
                         review: LoadingStatus.NO_DATA
@@ -258,7 +212,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 }
             });
 
-            handleWebViewError(); // 서버 API 호출
+            setProductLoadingStatus({
+                review: LoadingStatus.CRAWLING_FAILED
+            });
         }
     });
 

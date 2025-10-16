@@ -40,7 +40,8 @@ export enum LoadingStatus {
     LOADING,
     FINISH,
     AI_GENERATION_FAILED,
-    NO_DATA
+    NO_DATA,
+    CRAWLING_FAILED
 }
 
 export const loadingStatusAtom = atom({
