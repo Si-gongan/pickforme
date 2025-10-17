@@ -401,7 +401,7 @@ export default function WishListScreen() {
                                     .filter(product => product.name)}
                                 keyExtractor={product => `wishlist-wish-${product.url}`}
                                 renderItem={({ item: product, index: i }) => (
-                                    <ProductCard data={product} type={'liked'} />
+                                    <ProductCard data={product} type={'liked'} category={'위시리스트'} />
                                 )}
                                 ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
                             />
@@ -420,7 +420,7 @@ export default function WishListScreen() {
                                     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
                                 keyExtractor={(request, index) => `wishlist-request-${request.product!.url}-${index}`}
                                 renderItem={({ item: request }) => (
-                                    <ProductCard data={request.product!} type={'request'} />
+                                    <ProductCard data={request.product!} type={'request'} category={'문의한 상품'} />
                                 )}
                                 ItemSeparatorComponent={() => <View style={styles.seperatorRow} accessible={false} />}
                             />

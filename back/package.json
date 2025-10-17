@@ -5,7 +5,7 @@
   "main": "src/app.ts",
   "scripts": {
     "start": "NODE_ENV=production NODE_PATH=./dist node dist/app.js",
-    "build": "node --max-old-space-size=2048 ./node_modules/typescript/bin/tsc",
+    "build": "node --max-old-space-size=2048 ./node_modules/typescript/bin/tsc && copyfiles -u 1 \"src/feature/analytics/queries/**/*.sql\" dist/",
     "dev": "NODE_PATH=./src ts-node-dev src/app.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "pm2": "pm2 kill && pm2 start ./pm2.json",
@@ -16,6 +16,7 @@
     "test:coverage": "jest --coverage",
     "process-hansiryun": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/hansiryun.ts",
     "process-pickforme-test": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/pickforme_test_user.ts",
+    "query-membership-users": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/query_membership_users.ts",
     "manual-etl-pipeline": "NODE_ENV=production NODE_PATH=./src ts-node src/feature/analytics/analytics-manual.ts",
     "test-backup": "NODE_PATH=./src ts-node -e \"import('./src/scheduler/backup').then(m => m.testBackupScheduler())\""
   },
@@ -75,6 +76,7 @@
     "@types/node-schedule": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "^10.1.5",

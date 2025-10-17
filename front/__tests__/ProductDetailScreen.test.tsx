@@ -15,7 +15,6 @@ import {
     GetProductReviewAPI,
     CoupangCrawlAPI
 } from '../stores/product/apis';
-import { useWebViewFallback } from '@/hooks/useWebViewFallback';
 import { attempt } from '../utils/axios';
 import { useHydrateAtoms } from 'jotai/utils';
 import { productDetailAtom, loadingStatusAtom, LoadingStatus, productReviewAtom } from '../stores/product/atoms';

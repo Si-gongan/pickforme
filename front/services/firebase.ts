@@ -174,7 +174,7 @@ export const logTabContentProcess = async (params: {
     tab: 'caption' | 'report' | 'review'; // question 제거
     status: 'success' | 'failed';
     duration_ms: number;
-    failure_reason?: 'no_data' | 'ai_generation_failed' | 'network_error';
+    failure_reason?: 'no_data' | 'ai_generation_failed' | 'network_error' | 'crawling_failed';
     process_path?: 'webview_only' | 'server_only' | 'webview_then_server';
     product_url?: string;
 }) => {
