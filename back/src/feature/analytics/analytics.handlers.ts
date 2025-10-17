@@ -1,14 +1,14 @@
 // src/features/analytics/analytics.handlers.ts
 
 import { foundationJobs, summaryJobs } from './scheduler/jobs';
-import { runEtlJob, checkDataAvailability } from './analytics.service';
+import { checkDataAvailability, runEtlJob } from './analytics.service';
 import { mongodbSyncService } from './bigquery/mongodb-sync.service';
 import { log } from '../../utils/logger/logger';
 
 // .env 파일에서 데이터셋 이름 가져오기
 const FOUNDATION_DATASET = process.env.GA4_DATASET_FOUNDATION_ID!;
 const SUMMARY_DATASET = process.env.GA4_DATASET_SUMMARY_ID!;
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 10;
 const RETRY_DELAY = 60 * 60 * 1000; // 1시간
 
 // 핸들러 1: 기초 공사(Foundation) ETL
