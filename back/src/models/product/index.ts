@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
-import { IProduct, Platform, ProductModel, ProductReward } from './types';
+import {
+  EventMembershipProductReward,
+  IProduct,
+  MembershipProductReward,
+  Platform,
+  ProductModel,
+  ProductReward,
+  ProductType,
+} from './types';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -14,6 +22,7 @@ const ProductSchema = new mongoose.Schema(
     productId: {
       type: String,
       required: [true, "can't be blank"],
+      unique: true,
     },
     platform: {
       type: String,
@@ -31,6 +40,16 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: null, // 일반 상품은 null, 이벤트 상품은 이벤트 번호
     },
+    periodDate: {
+      type: Number,
+      default: 30,
+      description: '멤버쉽 기간 (일)',
+    },
+    renewalPeriodDate: {
+      type: Number,
+      default: 30,
+      description: '갱신 기간 (일)',
+    },
   },
   {
     timestamps: true,
@@ -44,60 +63,40 @@ ProductSchema.methods.getRewards = function (): ProductReward {
   };
 };
 
+ProductSchema.methods.getMembershipRewards = function (): MembershipProductReward {
+  if (this.type !== ProductType.SUBSCRIPTION) {
+    throw new Error('상품 타입이 올바르지 않습니다.');
+  }
+
+  if (!this.periodDate || !this.renewalPeriodDate) {
+    throw new Error('멤버십 기간 정보가 존재하지 않습니다.');
+  }
+
+  return {
+    productId: this.productId,
+    point: this.point,
+    aiPoint: this.aiPoint,
+    periodDate: this.periodDate,
+    renewalPeriodDate: this.renewalPeriodDate,
+  };
+};
+
+ProductSchema.methods.getEventRewards = function (): EventMembershipProductReward {
+  const rewards = this.getMembershipRewards();
+
+  if (!this.eventId) {
+    throw new Error('이벤트 번호가 존재하지 않습니다.');
+  }
+
+  return {
+    ...rewards,
+    event: this.eventId,
+  };
+};
+
 const model =
   (mongoose.models.Products as ProductModel) ||
   mongoose.model<IProduct, ProductModel>('Products', ProductSchema);
-
-// 초기 데이터 삽입
-// model.find({}).then((products) => {
-//   if (products.length) {
-//     return;
-//   }
-//   model.insertMany([
-//     {
-//       platform: Platform.IOS,
-//       productId: 'pickforme_plus',
-//       displayName: '픽포미 플러스',
-//       point: 10,
-//       aiPoint: 100,
-//       type: ProductType.SUBSCRIPTION,
-//     },
-//     // {
-//     //   platform: Platform.IOS,
-//     //   displayName: '픽포미 1픽',
-//     //   productId: 'pickforme_1pick',
-//     //   type: ProductType.PURCHASE,
-//     //   point: 1,
-//     // }, {
-//     //   platform: Platform.IOS,
-//     //   displayName: '픽포미 5픽',
-//     //   productId: 'pickforme_5pick',
-//     //   type: ProductType.PURCHASE,
-//     //   point: 5,
-//     // },
-//     {
-//       platform: Platform.ANDROID,
-//       productId: 'pickforme_plus',
-//       displayName: '픽포미 플러스',
-//       point: 10,
-//       aiPoint: 100,
-//       type: ProductType.SUBSCRIPTION,
-//     },
-//     // {
-//     //   platform: Platform.ANDROID,
-//     //   displayName: '픽포미 1픽',
-//     //   productId: 'pickforme_1pick',
-//     //   type: ProductType.PURCHASE,
-//     //   point: 1,
-//     // }, {
-//     //   platform: Platform.ANDROID,
-//     //   productId: 'pickforme_5pick',
-//     //   displayName: '픽포미 5픽',
-//     //   type: ProductType.PURCHASE,
-//     //   point: 5,
-//     // }
-//   ]);
-// });
 
 export * from './types';
 
