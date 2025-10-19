@@ -1,4 +1,9 @@
-import { ProductReward } from 'models/product';
+import {
+  EventMembershipProductReward,
+  IProduct,
+  MembershipProductReward,
+  ProductReward,
+} from 'models/product';
 import { Model, Document, ClientSession } from 'mongoose';
 
 export interface LocalRegisterPayload {
@@ -14,6 +19,14 @@ export interface PushSetting {
   service: PushService;
 }
 
+export interface MembershipStatus {
+  isActive: boolean;
+  leftDays: number;
+  expiresAt: Date | null;
+  membershipAt: Date | null;
+  msg: string;
+}
+
 export interface User extends LocalRegisterPayload {
   point: number;
   aiPoint: number;
@@ -24,6 +37,8 @@ export interface User extends LocalRegisterPayload {
   originEmail?: string;
   MembershipAt: Date | null;
   lastMembershipAt: Date | null;
+  MembershipExpiresAt: Date | null;
+  currentMembershipProductId: string | null;
   phone?: string;
   event?: number | null;
   hide?: string[];
@@ -39,16 +54,28 @@ export interface UserDocument extends User, Document {
   useAiPoint(payload: number): Promise<number>;
   processExpiredMembership: (options?: { session?: ClientSession }) => Promise<void>;
   initMonthPoint: () => Promise<void>;
-  applyPurchaseRewards: (
+  applyProductRewards: (
     rewards: ProductReward,
     session?: ClientSession,
     isAdditional?: boolean
   ) => Promise<void>;
-  applyEventRewards: (
-    rewards: ProductReward,
-    eventType: number,
-    session?: ClientSession
+  applyInitialMembershipRewards: (
+    rewards: MembershipProductReward,
+    session?: ClientSession,
+    isAdditional?: boolean
   ) => Promise<void>;
+  applyMembershipRenewalRewards: (
+    rewards: MembershipProductReward,
+    session?: ClientSession,
+    isAdditional?: boolean
+  ) => Promise<void>;
+  applyEventMembershipRewards: (
+    rewards: EventMembershipProductReward,
+    session?: ClientSession,
+    isAdditional?: boolean
+  ) => Promise<void>;
+  getMembershipStatus: () => MembershipStatus;
+  shouldRenewMembership: (currentProduct: IProduct) => boolean;
 }
 
 export interface UserModel extends Model<UserDocument> {
