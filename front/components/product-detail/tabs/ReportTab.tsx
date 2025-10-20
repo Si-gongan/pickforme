@@ -103,7 +103,7 @@ const ReportTab: React.FC<ReportTabProps> = ({ productDetail, isTabPressed }) =>
 const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         detailWrap: {
-            padding: 28
+            // padding: 28
         },
         sectionContainer: {
             marginBottom: 16

@@ -47,7 +47,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ productDetail, isTabPressed, hand
     }, [contentRef.current, isTabPressed]);
 
     return (
-        <>
+        <View style={styles.reviewContainer}>
             {review?.pros?.length !== 0 && (
                 <View style={styles.detailWrap}>
                     <View ref={contentRef} accessible={true}>
@@ -101,14 +101,17 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ productDetail, isTabPressed, hand
                     ))}
                 </View>
             )}
-        </>
+        </View>
     );
 };
 
 const useStyles = (colorScheme: 'light' | 'dark') =>
     StyleSheet.create({
+        reviewContainer: {
+            gap: 16
+        },
         detailWrap: {
-            padding: 28
+            // padding: 28
         },
         reviewListTitle: {
             fontSize: 16,

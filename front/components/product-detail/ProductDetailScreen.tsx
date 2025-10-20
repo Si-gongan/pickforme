@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, ScrollView, Alert } from 'react-native';
+import { StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Button_old as Button } from '@components';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { router, useLocalSearchParams } from 'expo-router';
 import Modal from 'react-native-modal';
@@ -28,6 +29,7 @@ import ProductInfo from './ProductInfo';
 import TabNavigation from './TabNavigation';
 import ActionButtons from './ActionButtons';
 import TabContent from './TabContent';
+import ManagerAnswerSection from './ManagerAnswerSection';
 
 // 커스텀 훅들
 import { useProductData } from '../../hooks/product-detail/useProductData';
@@ -42,6 +44,7 @@ import { TABS } from '@/utils/common';
 import { v4 as uuidv4 } from 'uuid';
 import { logCrawlProcessResult } from '@/utils/crawlLog';
 import { logEvent, logViewItemDetail } from '@/services/firebase';
+import useCheckLogin from '@/hooks/useCheckLogin';
 
 interface ProductDetailScreenProps {}
 
@@ -244,6 +247,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         linkSearchCompletedRef.current = true;
     }
 
+    const handleRequestWithLoading = useCheckLogin(handleClickRequest);
+
     // 탭 데이터 관리
     useTabData({
         tab,
@@ -348,36 +353,63 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             >
                 <Request />
             </Modal>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
+                <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
+                    {product ? (
+                        <View>
+                            <ProductInfo product={product} />
 
-            <ScrollView style={styles.scrollView}>
-                {product ? (
-                    <View>
-                        <ProductInfo product={product} />
+                            {/* <TabNavigation tab={tab} handlePressTab={handlePressTab} isLocal={isLocal} /> */}
 
-                        <TabNavigation tab={tab} handlePressTab={handlePressTab} isLocal={isLocal} />
+                            <TabContent
+                                tab={tab}
+                                question={question}
+                                setQuestion={setQuestion}
+                                handleClickSend={handleSendQuestion}
+                                request={request}
+                                productRequests={productRequests}
+                                loadingStatus={loadingStatus}
+                                handleRegenerate={handleRegenerate}
+                                handleLoadMore={handleLoadMore}
+                                isTabPressed={isTabPressed}
+                                requestId={requestId.current}
+                                productUrl={productUrl}
+                                tabStartTimes={tabStartTimes.current}
+                            />
+                        </View>
+                    ) : (
+                        <View style={styles.inner}>
+                            <Text>상품 정보를 불러오는 데 실패했습니다.</Text>
+                        </View>
+                    )}
 
-                        <TabContent
-                            tab={tab}
-                            question={question}
-                            setQuestion={setQuestion}
-                            handleClickSend={handleSendQuestion}
-                            request={request}
-                            productRequests={productRequests}
-                            loadingStatus={loadingStatus}
-                            handleRegenerate={handleRegenerate}
-                            handleLoadMore={handleLoadMore}
-                            isTabPressed={isTabPressed}
-                            requestId={requestId.current}
-                            productUrl={productUrl}
-                            tabStartTimes={tabStartTimes.current}
+                    <Text style={styles.titleText}>매니저에게 질문하기</Text>
+                    <View style={styles.seperator} />
+                    <View style={styles.buttonOuter}>
+                        <Button
+                            title="매니저에게 질문하기"
+                            onPress={handleRequestWithLoading}
+                            style={[styles.button, styles.button2]}
+                            color="tertiary"
+                            size="small"
+                            disabled={!product}
+                            textStyle={styles.button2Text}
                         />
                     </View>
-                ) : (
-                    <View style={styles.inner}>
-                        <Text>상품 정보를 불러오는 데 실패했습니다.</Text>
-                    </View>
-                )}
-            </ScrollView>
+
+                    {/* 매니저 답변 섹션 */}
+                    <ManagerAnswerSection
+                        productRequests={productRequests}
+                        loadingMessages={{
+                            manager: '매니저가 답변을 준비 중입니다...'
+                        }}
+                    />
+                </ScrollView>
+            </KeyboardAvoidingView>
 
             <ActionButtons
                 product={product}
@@ -403,6 +435,9 @@ const useStyles = (colorScheme: 'light' | 'dark') =>
         scrollView: {
             flex: 1
         },
+        scrollViewContent: {
+            marginHorizontal: 20
+        },
         inner: {
             paddingHorizontal: 20,
             paddingBottom: 40
@@ -410,6 +445,35 @@ const useStyles = (colorScheme: 'light' | 'dark') =>
         modalStyle: {
             justifyContent: 'flex-end',
             margin: 0
+        },
+        titleText: {
+            fontSize: 18,
+            fontWeight: '700',
+            lineHeight: 20,
+            color: Colors[colorScheme].text.primary,
+            marginBottom: 12
+        },
+        seperator: {
+            height: 10
+        },
+        buttonOuter: {
+            flex: 1
+        },
+        button: {
+            borderRadius: 4,
+            height: 50,
+            backgroundColor: Colors[colorScheme].button.primary.background
+        },
+        button2: {
+            backgroundColor: Colors[colorScheme].background.primary,
+            borderWidth: 1,
+            borderColor: Colors[colorScheme].button.primary.background
+        },
+        button2Text: {
+            color: Colors[colorScheme].text.primary
+        },
+        buttonText: {
+            color: Colors[colorScheme].text.secondary
         }
     });
 

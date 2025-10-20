@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View as RNView, findNodeHandle, AccessibilityInfo, InteractionManager } from 'react-native';
-import Markdown from 'react-native-markdown-display';
-import { View } from '@components';
-import useColorScheme from '../../../hooks/useColorScheme';
+import { Text, View } from '@components';
+import useColorScheme, { ColorScheme } from '../../../hooks/useColorScheme';
 import { Colors } from '@constants';
 import { ProductDetailState } from '../../../stores/product/types';
 
@@ -51,15 +50,21 @@ const CaptionTab: React.FC<CaptionTabProps> = ({ productDetail, isTabPressed }) 
             accessibilityLabel={`캡션 내용: ${plainText}`}
             importantForAccessibility="yes"
         >
-            <Markdown style={markdownStyles}>{captionContent}</Markdown>
+            {/* <Markdown style={markdownStyles}>{captionContent}</Markdown> */}
+            <Text style={styles.captionText}>{captionContent}</Text>
         </View>
     );
 };
 
-const useStyles = (colorScheme: any) =>
+const useStyles = (colorScheme: ColorScheme) =>
     StyleSheet.create({
         detailWrap: {
-            padding: 28
+            // padding: 28
+        },
+        captionText: {
+            fontSize: 14,
+            lineHeight: 20,
+            color: Colors[colorScheme].text.primary
         }
     });
 

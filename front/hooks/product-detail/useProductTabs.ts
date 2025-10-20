@@ -24,11 +24,15 @@ export const useProductTabs = (initialTab: TABS = TABS.CAPTION) => {
         setTab(nextTab);
     }, []);
 
-    const handleRegenerate = useCallback(() => {
-        if (tab === TABS.REPORT) getProductReport();
-        if (tab === TABS.REVIEW) getProductReview();
-        if (tab === TABS.CAPTION) getProductCaption();
-    }, [tab, getProductReport, getProductReview, getProductCaption]);
+    const handleRegenerate = useCallback(
+        (targetTab?: TABS) => {
+            const tabToRegenerate = targetTab || tab;
+            if (tabToRegenerate === TABS.REPORT) getProductReport();
+            if (tabToRegenerate === TABS.REVIEW) getProductReview();
+            if (tabToRegenerate === TABS.CAPTION) getProductCaption();
+        },
+        [tab, getProductReport, getProductReview, getProductCaption]
+    );
 
     return {
         tab,

@@ -9,12 +9,7 @@ import { useWebViewDetail } from '../components/Webview/detail/webview-detail';
 import { useWebViewReviews } from '../components/webview-reviews';
 import { useProductData } from '../hooks/product-detail/useProductData';
 import { useProductActions } from '../hooks/product-detail/useProductActions';
-import {
-    GetProductCaptionAPI,
-    GetProductReportAPI,
-    GetProductReviewAPI,
-    CoupangCrawlAPI
-} from '../stores/product/apis';
+import { GetProductCaptionAPI, GetProductReportAPI, GetProductReviewAPI } from '../stores/product/apis';
 import { attempt } from '../utils/axios';
 import { useHydrateAtoms } from 'jotai/utils';
 import { productDetailAtom, loadingStatusAtom, LoadingStatus, productReviewAtom } from '../stores/product/atoms';
@@ -34,7 +29,6 @@ jest.mock('../stores/product/apis', () => ({
     GetProductReportAPI: jest.fn(),
     GetProductReviewAPI: jest.fn(),
     GetProductAPI: jest.fn(),
-    CoupangCrawlAPI: jest.fn(),
     UpdateProductAPI: jest.fn()
 }));
 
@@ -49,6 +43,13 @@ jest.mock('../stores/request/apis', () => ({
 jest.mock('../utils/axios', () => ({
     ...jest.requireActual('../utils/axios'),
     attempt: jest.fn()
+}));
+
+// Mock logTabContentProcess function
+jest.mock('../services/firebase', () => ({
+    logTabContentProcess: jest.fn(),
+    logEvent: jest.fn(),
+    logViewItemDetail: jest.fn()
 }));
 
 // Test data
@@ -85,7 +86,6 @@ const mockUseProductActions = useProductActions as jest.MockedFunction<typeof us
 const mockGetProductCaptionAPI = GetProductCaptionAPI as jest.MockedFunction<typeof GetProductCaptionAPI>;
 const mockGetProductReportAPI = GetProductReportAPI as jest.MockedFunction<typeof GetProductReportAPI>;
 const mockGetProductReviewAPI = GetProductReviewAPI as jest.MockedFunction<typeof GetProductReviewAPI>;
-const mockCoupangCrawlAPI = CoupangCrawlAPI as jest.MockedFunction<typeof CoupangCrawlAPI>;
 
 const mockAttempt = attempt as jest.MockedFunction<typeof attempt>;
 
@@ -93,11 +93,10 @@ const mockAttempt = attempt as jest.MockedFunction<typeof attempt>;
 // 1. 접근성 관련 테스트
 // 2. 질문탭에서 정보 로드, 만약 포인트 없을때 어떻게 되는지 등.
 
-describe('ProductDetailScreen 탭별 테스트', () => {
+describe('ProductDetailScreen 통합 테스트', () => {
     // Store callbacks for testing
     let webViewDetailCallbacks: any = {};
     let webViewReviewsCallbacks: any = {};
-    let webViewFallbackCallbacks: any = {};
 
     // Set timeout for all tests in this describe block
     jest.setTimeout(10000);
@@ -108,13 +107,11 @@ describe('ProductDetailScreen 탭별 테스트', () => {
         // Reset callbacks
         webViewDetailCallbacks = {};
         webViewReviewsCallbacks = {};
-        webViewFallbackCallbacks = {};
 
         // Reset all API mocks to their default state
         mockGetProductCaptionAPI.mockReset();
         mockGetProductReportAPI.mockReset();
         mockGetProductReviewAPI.mockReset();
-        mockCoupangCrawlAPI.mockReset();
 
         // Mock attempt function to avoid retry delays - immediately return success or failure
         mockAttempt.mockImplementation(async operation => {
@@ -167,7 +164,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
         );
     };
 
-    describe('이미지 설명 탭 (CAPTION) 테스트', () => {
+    describe('이미지 설명 섹션 테스트', () => {
         it('웹뷰에서 상품 정보를 성공적으로 받아오고 AI 서버에서 이미지 설명 생성에 성공한다', async () => {
             // Mock AI API success response
             mockGetProductCaptionAPI.mockResolvedValue({
@@ -190,7 +187,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 }
             });
 
-            // Check initial loading state for caption tab
+            // Check initial loading state for caption section
             await waitFor(() => {
                 expect(getByText('상품의 이미지 설명을 생성중이에요.')).toBeTruthy();
             });
@@ -231,71 +228,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
             );
         });
 
-        it('웹뷰 실패 후 서버 크롤링으로 데이터를 받아와서 이미지 설명이 성공적으로 생성된다', async () => {
-            // Mock server crawling success response
-            mockCoupangCrawlAPI.mockResolvedValue({
-                data: {
-                    success: true,
-                    data: {
-                        ...mockProduct,
-                        name: '서버 크롤링으로 받은 상품',
-                        thumbnail: 'https://server-thumbnail.jpg'
-                    }
-                }
-            } as any);
-
-            // Mock AI API success after server crawling
-            mockGetProductCaptionAPI.mockResolvedValue({
-                data: {
-                    caption: '서버 크롤링 후 생성된 이미지 설명입니다.'
-                }
-            } as any);
-
-            const { getByText } = renderComponent();
-
-            await waitFor(() => {
-                expect(getByText('테스트 상품')).toBeTruthy();
-            });
-
-            // Simulate webview failure
-            act(() => {
-                if (webViewDetailCallbacks.onError) {
-                    webViewDetailCallbacks.onError();
-                }
-            });
-
-            // Wait for server crawling to complete and AI generation to succeed
-            await waitFor(
-                () => {
-                    expect(getByText('서버 크롤링 후 생성된 이미지 설명입니다.')).toBeTruthy();
-                },
-                { timeout: 3000 }
-            );
-        });
-
-        it('웹뷰와 서버 크롤링 모두 실패했을 때 NO_DATA 메시지가 표시된다', async () => {
-            // Mock server crawling failure
-            mockCoupangCrawlAPI.mockRejectedValue(new Error('Server crawling failed'));
-
-            const { getByText } = renderComponent();
-
-            await waitFor(() => {
-                expect(getByText('테스트 상품')).toBeTruthy();
-            });
-
-            // Simulate webview failure
-            act(() => {
-                if (webViewDetailCallbacks.onError) {
-                    webViewDetailCallbacks.onError();
-                }
-            });
-
-            await waitFor(() => {
-                expect(getByText('이미지를 불러오는데 실패했습니다.')).toBeTruthy();
-            });
-        });
-
-        it('이미지 설명 탭에서 AI 서버에서 설명 생성에 실패했을 때 재생성 버튼을 클릭하면 재생성이 실행된다', async () => {
+        it('이미지 설명 섹션에서 AI 서버에서 설명 생성에 실패했을 때 재생성 버튼을 클릭하면 재생성이 실행된다', async () => {
             // Mock initial failure then success
             mockGetProductCaptionAPI.mockRejectedValue(new Error('First attempt failed'));
 
@@ -312,7 +245,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 }
             });
 
-            // Check initial loading state for caption tab (기본 탭)
+            // Check initial loading state for caption section
             await waitFor(() => {
                 expect(getByText('상품의 이미지 설명을 생성중이에요.')).toBeTruthy();
             });
@@ -340,10 +273,53 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 { timeout: 3000 }
             );
         });
+
+        it('웹뷰에서 상품 정보 크롤링에 실패했을 때 CRAWLING_FAILED 메시지가 표시된다', async () => {
+            const { getByText } = renderComponent();
+
+            await waitFor(() => {
+                expect(getByText('테스트 상품')).toBeTruthy();
+            });
+
+            // Simulate webview detail failure
+            act(() => {
+                if (webViewDetailCallbacks.onError) {
+                    webViewDetailCallbacks.onError();
+                }
+            });
+
+            // Wait for crawling failed message
+            await waitFor(() => {
+                expect(getByText('이미지를 불러오는데 실패했습니다.')).toBeTruthy();
+            });
+        });
+
+        it('웹뷰에서 상품 정보는 받았지만 썸네일이 없을 때 NO_DATA 메시지가 표시된다', async () => {
+            const { getByText } = renderComponent();
+
+            await waitFor(() => {
+                expect(getByText('테스트 상품')).toBeTruthy();
+            });
+
+            // Simulate webview success with product data but no thumbnail
+            act(() => {
+                if (webViewDetailCallbacks.onMessage) {
+                    webViewDetailCallbacks.onMessage({
+                        ...mockProduct,
+                        thumbnail: undefined // 썸네일 없음
+                    });
+                }
+            });
+
+            // Wait for no data message
+            await waitFor(() => {
+                expect(getByText('등록된 썸네일이 없습니다.')).toBeTruthy();
+            });
+        });
     });
 
-    describe('리뷰 요약 탭 (REVIEW) 테스트', () => {
-        it('리뷰 요약 탭을 클릭했을 때 웹뷰에서 리뷰 데이터를 받아와서 AI 서버에서 성공적으로 요약한다', async () => {
+    describe('리뷰 요약 섹션 테스트', () => {
+        it('웹뷰에서 리뷰 데이터를 받아와서 AI 서버에서 성공적으로 요약한다', async () => {
             // Mock AI API success response for review
             mockGetProductReviewAPI.mockResolvedValue({
                 data: {
@@ -367,10 +343,6 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                     webViewDetailCallbacks.onMessage(mockProduct);
                 }
             });
-
-            // Click on review tab
-            const reviewTab = getByText('리뷰 요약');
-            fireEvent.press(reviewTab);
 
             // Simulate webview reviews success
             act(() => {
@@ -396,7 +368,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
             );
         });
 
-        it('리뷰 요약 탭에서 웹뷰는 성공했지만 AI 서버에서 요약 생성에 실패한다', async () => {
+        it('웹뷰는 성공했지만 AI 서버에서 요약 생성에 실패한다', async () => {
             // Mock AI API failure
             mockGetProductReviewAPI.mockRejectedValue(new Error('Review AI API Error'));
 
@@ -412,10 +384,6 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                     webViewDetailCallbacks.onMessage(mockProduct);
                 }
             });
-
-            // Click on review tab
-            const reviewTab = getByText('리뷰 요약');
-            fireEvent.press(reviewTab);
 
             // Simulate webview reviews success
             act(() => {
@@ -434,104 +402,11 @@ describe('ProductDetailScreen 탭별 테스트', () => {
             );
         });
 
-        it('리뷰 요약 탭에서 웹뷰 실패 후 서버 크롤링으로 데이터를 받아와서 리뷰 요약이 성공적으로 생성된다', async () => {
-            // Mock server crawling success response with reviews
-            mockCoupangCrawlAPI.mockResolvedValue({
-                data: {
-                    success: true,
-                    data: {
-                        ...mockProduct,
-                        name: '서버 크롤링으로 받은 상품',
-                        thumbnail: 'https://server-thumbnail.jpg',
-                        reviews: ['서버 크롤링 리뷰 1', '서버 크롤링 리뷰 2', '서버 크롤링 리뷰 3'] // 리뷰 데이터 추가
-                    }
-                }
-            } as any);
-
-            // Mock AI API success after server crawling
-            mockGetProductReviewAPI.mockResolvedValue({
-                data: {
-                    review: {
-                        pros: ['서버 크롤링 후 좋은 점'],
-                        cons: ['서버 크롤링 후 아쉬운 점'],
-                        bests: ['서버 크롤링 후 베스트 리뷰']
-                    }
-                }
-            } as any);
-
-            const { getByText } = renderComponent();
-
-            await waitFor(() => {
-                expect(getByText('테스트 상품')).toBeTruthy();
-            });
-
-            // Get product data first
-            act(() => {
-                if (webViewDetailCallbacks.onMessage) {
-                    webViewDetailCallbacks.onMessage(mockProduct);
-                }
-            });
-
-            // Click on review tab
-            const reviewTab = getByText('리뷰 요약');
-            fireEvent.press(reviewTab);
-
-            // Simulate webview reviews failure
-            act(() => {
-                if (webViewReviewsCallbacks.onError) {
-                    webViewReviewsCallbacks.onError();
-                }
-            });
-
-            // Wait for server crawling to complete and AI generation to succeed
-            await waitFor(
-                () => {
-                    expect(getByText(/서버 크롤링 후 좋은 점/)).toBeTruthy();
-                    expect(getByText(/서버 크롤링 후 아쉬운 점/)).toBeTruthy();
-                    expect(getByText(/서버 크롤링 후 베스트 리뷰/)).toBeTruthy();
-                },
-                { timeout: 3000 }
-            );
-        });
-
-        it('리뷰 요약 탭에서 웹뷰, 서버 크롤링 모두 실패했을 때 NO_DATA 메시지가 표시된다', async () => {
-            // Mock server crawling failure BEFORE rendering component
-            mockCoupangCrawlAPI.mockRejectedValue(new Error('Server crawling failed'));
-
-            const { getByText } = renderComponent();
-
-            await waitFor(() => {
-                expect(getByText('테스트 상품')).toBeTruthy();
-            });
-
-            // Get product data first
-            act(() => {
-                if (webViewDetailCallbacks.onMessage) {
-                    webViewDetailCallbacks.onMessage(mockProduct);
-                }
-            });
-
-            // Click on review tab
-            const reviewTab = getByText('리뷰 요약');
-            fireEvent.press(reviewTab);
-
-            // Simulate webview reviews failure
-            act(() => {
-                if (webViewReviewsCallbacks.onError) {
-                    webViewReviewsCallbacks.onError();
-                }
-            });
-
-            await waitFor(() => {
-                expect(getByText('리뷰 정보를 불러오는데 실패했습니다.')).toBeTruthy();
-            });
-        });
-
-        it('리뷰 요약 탭에서 AI 서버에서 요약 생성에 실패했을 때 재생성 버튼을 클릭하면 재생성이 실행된다', async () => {
+        it('리뷰 요약 섹션에서 AI 서버에서 요약 생성에 실패했을 때 재생성 버튼을 클릭하면 재생성이 실행된다', async () => {
             // Mock initial failure then success
             mockGetProductReviewAPI.mockRejectedValue(new Error('First attempt failed'));
 
-            const { getByText } = renderComponent();
+            const { getByText, getAllByText } = renderComponent();
 
             await waitFor(() => {
                 expect(getByText('테스트 상품')).toBeTruthy();
@@ -543,10 +418,6 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                     webViewDetailCallbacks.onMessage(mockProduct);
                 }
             });
-
-            // 리뷰 요약 탭을 클릭
-            const reviewTab = getByText('리뷰 요약');
-            fireEvent.press(reviewTab);
 
             // Simulate webview reviews success to trigger AI generation
             act(() => {
@@ -566,7 +437,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 expect(getByText('다시 생성하기')).toBeTruthy();
             });
 
-            // Mock success for retry
+            // Mock success for retry - 이제 성공하도록 변경
             mockGetProductReviewAPI.mockResolvedValue({
                 data: {
                     review: {
@@ -577,9 +448,14 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 }
             } as any);
 
-            // Click retry button
-            const retryButton = getByText('다시 생성하기');
-            fireEvent.press(retryButton);
+            // Click retry button - 여러 개의 "다시 생성하기" 버튼이 있을 수 있으므로 첫 번째 것을 클릭
+            const retryButtons = getAllByText('다시 생성하기');
+            fireEvent.press(retryButtons[0]);
+
+            // 재생성 버튼 클릭 후 로딩 상태 확인
+            await waitFor(() => {
+                expect(getByText('상품의 리뷰를 AI가 요약중이에요.')).toBeTruthy();
+            });
 
             // Wait for regenerated content
             await waitFor(
@@ -591,10 +467,64 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 { timeout: 3000 }
             );
         });
+
+        it('웹뷰에서 리뷰 크롤링에 실패했을 때 CRAWLING_FAILED 메시지가 표시된다', async () => {
+            const { getByText } = renderComponent();
+
+            await waitFor(() => {
+                expect(getByText('테스트 상품')).toBeTruthy();
+            });
+
+            // Get product data first
+            act(() => {
+                if (webViewDetailCallbacks.onMessage) {
+                    webViewDetailCallbacks.onMessage(mockProduct);
+                }
+            });
+
+            // Simulate webview reviews failure
+            act(() => {
+                if (webViewReviewsCallbacks.onError) {
+                    webViewReviewsCallbacks.onError();
+                }
+            });
+
+            // Wait for crawling failed message
+            await waitFor(() => {
+                expect(getByText('리뷰 정보를 불러오는데 실패했습니다.')).toBeTruthy();
+            });
+        });
+
+        it('웹뷰에서 리뷰 데이터는 받았지만 리뷰가 없을 때 NO_DATA 메시지가 표시된다', async () => {
+            const { getByText } = renderComponent();
+
+            await waitFor(() => {
+                expect(getByText('테스트 상품')).toBeTruthy();
+            });
+
+            // Get product data first
+            act(() => {
+                if (webViewDetailCallbacks.onMessage) {
+                    webViewDetailCallbacks.onMessage(mockProduct);
+                }
+            });
+
+            // Simulate webview reviews success but with empty reviews
+            act(() => {
+                if (webViewReviewsCallbacks.onMessage) {
+                    webViewReviewsCallbacks.onMessage([]); // 빈 리뷰 배열
+                }
+            });
+
+            // Wait for no data message
+            await waitFor(() => {
+                expect(getByText('등록된 리뷰가 없습니다.')).toBeTruthy();
+            });
+        });
     });
 
-    describe('상세페이지 설명 탭 (REPORT) 테스트', () => {
-        it('상세페이지 설명 탭을 클릭했을 때 웹뷰에서 상세 이미지를 받아와서 AI 서버에서 성공적으로 설명을 생성한다', async () => {
+    describe('상세페이지 설명 섹션 테스트', () => {
+        it('웹뷰에서 상세 이미지를 받아와서 AI 서버에서 성공적으로 설명을 생성한다', async () => {
             // Mock AI API success response for report
             mockGetProductReportAPI.mockResolvedValue({
                 data: {
@@ -617,10 +547,6 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 }
             });
 
-            // Click on report tab
-            const reportTab = getByText('상세페이지 설명');
-            fireEvent.press(reportTab);
-
             // Check loading state
             await waitFor(() => {
                 expect(getByText('상품의 자세한 설명을 생성중이에요.')).toBeTruthy();
@@ -635,7 +561,7 @@ describe('ProductDetailScreen 탭별 테스트', () => {
             );
         });
 
-        it('상세페이지 설명 탭에서 웹뷰는 성공했지만 AI 서버에서 설명 생성에 실패한다', async () => {
+        it('웹뷰는 성공했지만 AI 서버에서 설명 생성에 실패한다', async () => {
             // Mock AI API failure
             mockGetProductReportAPI.mockRejectedValue(new Error('Report AI API Error'));
 
@@ -655,10 +581,6 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 }
             });
 
-            // Click on report tab
-            const reportTab = getByText('상세페이지 설명');
-            fireEvent.press(reportTab);
-
             // Wait for error message
             await waitFor(
                 () => {
@@ -669,90 +591,11 @@ describe('ProductDetailScreen 탭별 테스트', () => {
             );
         });
 
-        it('상세페이지 설명 탭에서 웹뷰 실패 후 서버 크롤링으로 데이터를 받아와서 상세페이지 설명이 성공적으로 생성된다', async () => {
-            // Mock server crawling success response
-            mockCoupangCrawlAPI.mockResolvedValue({
-                data: {
-                    success: true,
-                    data: {
-                        ...mockProduct,
-                        name: '서버 크롤링으로 받은 상품',
-                        thumbnail: 'https://server-thumbnail.jpg',
-                        detail_images: ['https://server-detail1.jpg', 'https://server-detail2.jpg']
-                    }
-                }
-            } as any);
-
-            // Mock AI API success after server crawling
-            mockGetProductReportAPI.mockResolvedValue({
-                data: {
-                    report: '서버 크롤링 후 생성된 상세페이지 설명입니다.'
-                }
-            } as any);
-
-            const { getByText } = renderComponent();
-
-            await waitFor(() => {
-                expect(getByText('테스트 상품')).toBeTruthy();
-            });
-
-            // Get product data first
-            act(() => {
-                if (webViewDetailCallbacks.onMessage) {
-                    webViewDetailCallbacks.onMessage(mockProduct);
-                }
-            });
-
-            // Click on report tab
-            const reportTab = getByText('상세페이지 설명');
-            fireEvent.press(reportTab);
-
-            // Simulate webview failure
-            act(() => {
-                if (webViewDetailCallbacks.onError) {
-                    webViewDetailCallbacks.onError();
-                }
-            });
-
-            // Wait for server crawling to complete and AI generation to succeed
-            await waitFor(
-                () => {
-                    expect(getByText('서버 크롤링 후 생성된 상세페이지 설명입니다.')).toBeTruthy();
-                },
-                { timeout: 3000 }
-            );
-        });
-
-        it('상세페이지 설명 탭에서 웹뷰, 서버 크롤링 모두 실패했을 때 NO_DATA 메시지가 표시된다', async () => {
-            mockCoupangCrawlAPI.mockRejectedValue(new Error('Server crawling failed'));
-
-            const { getByText } = renderComponent();
-
-            await waitFor(() => {
-                expect(getByText('테스트 상품')).toBeTruthy();
-            });
-
-            // Get product data without detail images and server crawling failure
-            act(() => {
-                if (webViewDetailCallbacks.onError) {
-                    webViewDetailCallbacks.onError();
-                }
-            });
-
-            // Click on report tab and server crawling failure
-            const reportTab = getByText('상세페이지 설명');
-            fireEvent.press(reportTab);
-
-            await waitFor(() => {
-                expect(getByText('상세페이지 정보를 불러오는데 실패했습니다.')).toBeTruthy();
-            });
-        });
-
-        it('상세페이지 설명 탭에서 AI 서버에서 설명 생성에 실패했을 때 재생성 버튼을 클릭하면 재생성이 실행된다', async () => {
+        it('상세페이지 설명 섹션에서 AI 서버에서 설명 생성에 실패했을 때 재생성 버튼을 클릭하면 재생성이 실행된다', async () => {
             // Mock initial failure then success
             mockGetProductReportAPI.mockRejectedValue(new Error('First attempt failed'));
 
-            const { getByText } = renderComponent();
+            const { getByText, getAllByText } = renderComponent();
 
             await waitFor(() => {
                 expect(getByText('테스트 상품')).toBeTruthy();
@@ -768,10 +611,6 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 }
             });
 
-            // 상세페이지 설명 탭을 클릭
-            const reportTab = getByText('상세페이지 설명');
-            fireEvent.press(reportTab);
-
             await waitFor(() => {
                 expect(getByText('상품의 자세한 설명을 생성중이에요.')).toBeTruthy();
             });
@@ -782,14 +621,19 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 expect(getByText('다시 생성하기')).toBeTruthy();
             });
 
-            // Mock success for retry
+            // Mock success for retry - 이제 성공하도록 변경
             mockGetProductReportAPI.mockResolvedValue({
                 data: { report: '재생성된 상세페이지 설명입니다.' }
             } as any);
 
-            // Click retry button
-            const retryButton = getByText('다시 생성하기');
-            fireEvent.press(retryButton);
+            // Click retry button - 여러 개의 "다시 생성하기" 버튼이 있을 수 있으므로 첫 번째 것을 클릭
+            const retryButtons = getAllByText('다시 생성하기');
+            fireEvent.press(retryButtons[0]);
+
+            // 재생성 버튼 클릭 후 로딩 상태 확인
+            await waitFor(() => {
+                expect(getByText('상품의 자세한 설명을 생성중이에요.')).toBeTruthy();
+            });
 
             // Wait for regenerated content
             await waitFor(
@@ -799,23 +643,62 @@ describe('ProductDetailScreen 탭별 테스트', () => {
                 { timeout: 3000 }
             );
         });
-    });
 
-    describe('질문하기 탭 (QUESTION) 테스트', () => {
-        it('질문하기 탭을 클릭했을 때 질문 입력 인터페이스가 표시된다', async () => {
+        it('웹뷰에서 상품 정보 크롤링에 실패했을 때 상세페이지 설명 섹션에 CRAWLING_FAILED 메시지가 표시된다', async () => {
             const { getByText } = renderComponent();
 
             await waitFor(() => {
                 expect(getByText('테스트 상품')).toBeTruthy();
             });
 
-            // Click on question tab
-            const questionTab = getByText('질문하기');
-            fireEvent.press(questionTab);
+            // Simulate webview detail failure
+            act(() => {
+                if (webViewDetailCallbacks.onError) {
+                    webViewDetailCallbacks.onError();
+                }
+            });
 
-            // Question tab content should be displayed
+            // Wait for crawling failed message for report section
             await waitFor(() => {
-                expect(getByText('질문하기')).toBeTruthy();
+                expect(getByText('상세페이지 정보를 불러오는데 실패했습니다.')).toBeTruthy();
+            });
+        });
+
+        it('웹뷰에서 상품 정보는 받았지만 상세이미지가 없을 때 NO_DATA 메시지가 표시된다', async () => {
+            const { getByText } = renderComponent();
+
+            await waitFor(() => {
+                expect(getByText('테스트 상품')).toBeTruthy();
+            });
+
+            // Simulate webview success with product data but no detail images
+            act(() => {
+                if (webViewDetailCallbacks.onMessage) {
+                    webViewDetailCallbacks.onMessage({
+                        ...mockProduct,
+                        detail_images: undefined // 상세이미지 없음
+                    });
+                }
+            });
+
+            // Wait for no data message
+            await waitFor(() => {
+                expect(getByText('등록된 상세이미지가 없습니다.')).toBeTruthy();
+            });
+        });
+    });
+
+    describe('질문하기 섹션 테스트', () => {
+        it('질문 입력 인터페이스가 표시된다', async () => {
+            const { getByText } = renderComponent();
+
+            await waitFor(() => {
+                expect(getByText('테스트 상품')).toBeTruthy();
+            });
+
+            // Question section content should be displayed
+            await waitFor(() => {
+                expect(getByText('AI에게 질문하기')).toBeTruthy();
                 // Question input interface should be visible
             });
         });

@@ -32,7 +32,7 @@ interface TabContentProps {
     request: Request | undefined;
     productRequests: Request[];
     loadingStatus: { [key in TABS]: LoadingStatus };
-    handleRegenerate: () => void;
+    handleRegenerate: (targetTab?: TABS) => void;
     handleLoadMore: () => void;
     isTabPressed: boolean;
     requestId: string;
@@ -56,6 +56,12 @@ const ERROR_MESSAGE = {
     [TABS.CAPTION]: '이미지 설명을 생성하는데 실패했습니다.',
     [TABS.REPORT]: '상세페이지 설명을 생성하는데 실패했습니다.',
     [TABS.REVIEW]: '리뷰 요약을 생성하는데 실패했습니다.'
+};
+
+const TAB_NAME = {
+    [TABS.CAPTION]: '이미지 설명',
+    [TABS.REPORT]: '상세페이지 설명',
+    [TABS.REVIEW]: '리뷰 요약'
 };
 
 const TabContent: React.FC<TabContentProps> = ({
@@ -192,104 +198,143 @@ const TabContent: React.FC<TabContentProps> = ({
         loggedRef.current.clear();
     }, [productUrl]);
 
-    // 1. Question 탭 처리
-    if (tab === TABS.QUESTION) {
-        return (
-            <QuestionTab
-                question={question}
-                setQuestion={setQuestion}
-                handleClickSend={handleClickSend}
-                productRequests={productRequests}
-                loadingMessages={loadingMessages}
-                loadingStatus={loadingStatus}
-                tab={tab}
-                productDetail={productDetail}
-                isTabPressed={isTabPressed}
-                request={request}
-            />
-        );
-    }
+    // 모든 탭을 세로로 나열 렌더링 (QUESTION 제외)
+    const orderedTabs = [TABS.CAPTION, TABS.REPORT, TABS.REVIEW] as const;
 
-    // 2. 로딩 상태 처리
-    if (loadingStatus[tab] === LoadingStatus.INIT || loadingStatus[tab] === LoadingStatus.LOADING) {
-        return (
-            <View style={styles.detailWrap}>
-                <View
-                    style={styles.indicatorWrap}
-                    ref={loadingRef}
-                    accessible
-                    accessibilityLabel={loadingMessages[tab]}
-                >
-                    <ActivityIndicator />
-                    <Text style={styles.loadingMessageText}>{loadingMessages[tab]}</Text>
-                </View>
-            </View>
-        );
-    }
-
-    // 3. 상품 상세 정보가 있는 경우
-    if (productDetail?.[tab]) {
-        switch (tab) {
-            case TABS.REVIEW:
-                return (
-                    <ReviewTab
-                        productDetail={productDetail}
-                        isTabPressed={isTabPressed}
-                        handleLoadMore={handleLoadMore}
-                    />
-                );
-            case TABS.REPORT:
-                return <ReportTab productDetail={productDetail} isTabPressed={isTabPressed} />;
-            case TABS.CAPTION:
-            default:
-                return <CaptionTab productDetail={productDetail} isTabPressed={isTabPressed} />;
-        }
-    }
-
-    // 해당 탭에 필요한 데이터가 없는 경우.
-    if (loadingStatus[tab] === LoadingStatus.NO_DATA) {
-        return (
-            <View style={styles.detailWrap} ref={noDataRef} accessible accessibilityLabel={NO_DATA_MESSAGE[tab]}>
-                <Text style={styles.errorText}>{NO_DATA_MESSAGE[tab]}</Text>
-            </View>
-        );
-    }
-
-    if (loadingStatus[tab] === LoadingStatus.CRAWLING_FAILED) {
-        return (
-            <View
-                style={styles.detailWrap}
-                ref={crawlingFailedRef}
-                accessible
-                accessibilityLabel={CRAWLING_FAILED_MESSAGE[tab]}
-            >
-                <Text style={styles.errorText}>{CRAWLING_FAILED_MESSAGE[tab]}</Text>
-            </View>
-        );
-    }
-
-    // 4. 실패 상태
     return (
-        <View style={styles.detailWrap}>
-            <Text style={styles.errorText}>{ERROR_MESSAGE[tab]}</Text>
-            <Pressable
-                onPress={handleRegenerate}
-                accessible
-                accessibilityRole="button"
-                accessibilityLabel="다시 생성하기"
-                style={styles.retryButton}
-            >
-                <Text style={styles.retryText}>다시 생성하기</Text>
-            </Pressable>
+        <View>
+            {orderedTabs.map(currentTab => {
+                const isActive = currentTab === tab;
+                const currentStatus = loadingStatus[currentTab];
+                const hasData = Boolean(productDetail?.[currentTab]);
+
+                return (
+                    <View key={currentTab} style={styles.sectionWrap}>
+                        <Text style={styles.titleText}>{TAB_NAME[currentTab]}</Text>
+                        <View style={styles.seperator} />
+
+                        {/* 로딩 상태 */}
+                        {(currentStatus === LoadingStatus.INIT || currentStatus === LoadingStatus.LOADING) && (
+                            <View style={styles.detailWrap}>
+                                <View
+                                    style={styles.indicatorWrap}
+                                    ref={isActive ? loadingRef : undefined}
+                                    accessible
+                                    accessibilityLabel={loadingMessages[currentTab]}
+                                >
+                                    <ActivityIndicator />
+                                    <Text style={styles.loadingMessageText}>{loadingMessages[currentTab]}</Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* 데이터 존재 */}
+                        <View style={styles.dataWrap}>
+                            {hasData && productDetail && (
+                                <>
+                                    {currentTab === TABS.REVIEW && (
+                                        <ReviewTab
+                                            productDetail={productDetail}
+                                            isTabPressed={isActive && isTabPressed}
+                                            handleLoadMore={handleLoadMore}
+                                        />
+                                    )}
+                                    {currentTab === TABS.REPORT && (
+                                        <ReportTab
+                                            productDetail={productDetail}
+                                            isTabPressed={isActive && isTabPressed}
+                                        />
+                                    )}
+                                    {currentTab === TABS.CAPTION && (
+                                        <CaptionTab
+                                            productDetail={productDetail}
+                                            isTabPressed={isActive && isTabPressed}
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </View>
+
+                        {/* NO_DATA */}
+                        {!hasData && currentStatus === LoadingStatus.NO_DATA && (
+                            <View
+                                style={styles.detailWrap}
+                                ref={isActive ? noDataRef : undefined}
+                                accessible
+                                accessibilityLabel={NO_DATA_MESSAGE[currentTab]}
+                            >
+                                <Text style={styles.errorText}>{NO_DATA_MESSAGE[currentTab]}</Text>
+                            </View>
+                        )}
+
+                        {/* CRAWLING_FAILED */}
+                        {!hasData && currentStatus === LoadingStatus.CRAWLING_FAILED && (
+                            <View
+                                style={styles.detailWrap}
+                                ref={isActive ? crawlingFailedRef : undefined}
+                                accessible
+                                accessibilityLabel={CRAWLING_FAILED_MESSAGE[currentTab]}
+                            >
+                                <Text style={styles.errorText}>{CRAWLING_FAILED_MESSAGE[currentTab]}</Text>
+                            </View>
+                        )}
+
+                        {/* 그 외 실패 */}
+                        {!hasData && currentStatus === LoadingStatus.AI_GENERATION_FAILED && (
+                            <View style={styles.detailWrap}>
+                                <Text style={styles.errorText}>{ERROR_MESSAGE[currentTab]}</Text>
+                                <Pressable
+                                    onPress={() => handleRegenerate(currentTab)}
+                                    accessible
+                                    accessibilityRole="button"
+                                    accessibilityLabel="다시 생성하기"
+                                    style={styles.retryButton}
+                                >
+                                    <Text style={styles.retryText}>다시 생성하기</Text>
+                                </Pressable>
+                            </View>
+                        )}
+                    </View>
+                );
+            })}
+
+            {/* Question 탭은 맨 아래에 렌더링 */}
+            <View style={styles.sectionWrap}>
+                <Text style={styles.titleText}>AI에게 질문하기</Text>
+                <View style={styles.seperator} />
+                <QuestionTab
+                    question={question}
+                    setQuestion={setQuestion}
+                    handleClickSend={handleClickSend}
+                    loadingMessages={loadingMessages}
+                    loadingStatus={loadingStatus}
+                    tab={tab}
+                    productDetail={productDetail}
+                    isTabPressed={isTabPressed}
+                />
+            </View>
         </View>
     );
 };
 
 const useStyles = (colorScheme: 'light' | 'dark') =>
     StyleSheet.create({
+        sectionWrap: {
+            marginBottom: 40
+        },
         detailWrap: {
             padding: 28
         },
+        seperator: {
+            height: 10
+        },
+        titleText: {
+            fontSize: 18,
+            fontWeight: '700',
+            lineHeight: 20,
+            color: Colors[colorScheme].text.primary
+        },
+        dataWrap: {},
         indicatorWrap: {
             flexDirection: 'row',
             gap: 10,

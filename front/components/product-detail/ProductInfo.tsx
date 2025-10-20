@@ -76,7 +76,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 const useStyles = (colorScheme: 'light' | 'dark') =>
     StyleSheet.create({
         inner: {
-            paddingHorizontal: 20,
+            // paddingHorizontal: 20,
             paddingBottom: 40
         },
         name: {

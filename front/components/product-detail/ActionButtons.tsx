@@ -43,7 +43,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     textStyle={styles.buttonText}
                 />
             </View>
-            {product?.platform === 'thezam' ? (
+            {/* {product?.platform === 'thezam' ? (
                 <View style={styles.buttonOuter}>
                     <Button
                         title="대리구매 요청하기"
@@ -67,7 +67,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                         textStyle={styles.button2Text}
                     />
                 </View>
-            )}
+            )} */}
             {isWish ? (
                 <Pressable
                     onPress={handleClickWish}
