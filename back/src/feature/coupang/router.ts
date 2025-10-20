@@ -110,7 +110,12 @@ router.post('/deeplink', async (ctx) => {
     return;
   }
 
-  const result = await getDeeplinks(urls);
+  // URL 정규화
+  const { CoupangUrlNormalizerService } = await import('./url-normalizer.service');
+  const normalizedUrlInfo = CoupangUrlNormalizerService.normalizeUrl(urls[0]);
+
+  // 정규화된 URL로 딥링크 생성
+  const result = await getDeeplinks([normalizedUrlInfo.normalizedUrl]);
 
   if (!result || result.length === 0 || !result[0].originalUrl || !result[0].shortenUrl) {
     ctx.status = 500;
@@ -118,7 +123,17 @@ router.post('/deeplink', async (ctx) => {
     return;
   }
 
-  ctx.body = { success: true, data: result[0] };
+  // 원본 URL 정보와 정규화 정보를 함께 반환
+  ctx.body = {
+    success: true,
+    data: {
+      ...result[0],
+      originalInputUrl: normalizedUrlInfo.originalUrl,
+      normalizedUrl: normalizedUrlInfo.normalizedUrl,
+      productId: normalizedUrlInfo.productId,
+      urlType: normalizedUrlInfo.urlType,
+    },
+  };
 });
 
 router.post('/api/search', async (ctx) => {
