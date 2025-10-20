@@ -125,6 +125,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 !!data?.thumbnail || (Array.isArray(data?.detail_images) && data.detail_images.length > 0);
             linkSearchDetailOkRef.current = hasDetail;
 
+            // setProduct 후 업데이트된 최종 상품 데이터 가져오기
+            const updatedProduct = { ...product, ...data };
+
             // 각 탭별 데이터 충족 여부 체크 및 NO_DATA 상태 업데이트
             const updates: {
                 caption?: LoadingStatus;
@@ -132,13 +135,13 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 report?: LoadingStatus;
             } = {};
 
-            // caption 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!checkRequiredData(TABS.CAPTION, data, [])) {
+            // caption 탭에 필요한 데이터가 없으면 NO_DATA로 설정 (업데이트된 최종 데이터 사용)
+            if (!checkRequiredData(TABS.CAPTION, updatedProduct, [])) {
                 updates.caption = LoadingStatus.NO_DATA;
             }
 
-            // report 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!checkRequiredData(TABS.REPORT, data, [])) {
+            // report 탭에 필요한 데이터가 없으면 NO_DATA로 설정 (업데이트된 최종 데이터 사용)
+            if (!checkRequiredData(TABS.REPORT, updatedProduct, [])) {
                 updates.report = LoadingStatus.NO_DATA;
             }
 
@@ -173,8 +176,12 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
             if (data && Array.isArray(data)) {
                 // 있다면 상품 리뷰 데이터 설정. 이후 useTabData에서 LoadingStatus.LOADING으로 변경됨.
                 setProductReview(data);
-                // 빈 배열이면 NO_DATA로 설정.
-                if (data.length == 0) {
+
+                // setProductReview 후 업데이트된 최종 리뷰 데이터로 체크
+                const updatedReviews = data;
+
+                // 리뷰 탭에 필요한 데이터가 없으면 NO_DATA로 설정 (업데이트된 최종 리뷰 데이터 사용)
+                if (!checkRequiredData(TABS.REVIEW, product, updatedReviews)) {
                     setProductLoadingStatus({
                         review: LoadingStatus.NO_DATA
                     });
