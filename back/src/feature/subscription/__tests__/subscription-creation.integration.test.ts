@@ -6,6 +6,7 @@ import { setupTestDB, teardownTestDB } from '../../../__tests__/setupDButils';
 import { subscriptionCreationService } from '../service/subscription-creation.service';
 import constants from '../../../constants';
 import { google } from 'googleapis';
+import { subscriptionQueryService } from '../service/subscription-query.service';
 
 const { POINTS } = constants;
 
@@ -75,8 +76,6 @@ const androidExpiredResponse = {
   },
 };
 
-const iosSuccessResponse = {};
-
 const mockIosReceipt =
   'MIIUUAYJKoZIhvcNAQcCoIIUQTCCFD0CAQExDzANBglghkgBZQMEAgEFADCCA4YGCSqGSIb3DQEHAaCCA3cEggNzMYIDbzAKAgEIAgEBBAIWADAKAgEUAgEBBAIMADALAgEBAgEBBAMCAQAwCwIBAwIBAQQDDAExMAsCAQsCAQEEAwIBADALAgEPAgEBBAMCAQAwCwIBEAIBAQQDAgEAMAsCARkCAQEEAwIBAzAMAgEKAgEBBAQWAjQrMAwCAQ4CAQEEBAICARcwDQIBDQIBAQQFAgMCmT0wDQIBEwIBAQQFDAMxLjAwDgIBCQIBAQQGAgRQMzAyMBgCAQQCAQI';
 
@@ -99,14 +98,26 @@ const createTestProduct = async (productId: string, platform: string) => {
     productId,
     type: ProductType.SUBSCRIPTION,
     displayName: '테스트 구독',
-    point: 100,
-    aiPoint: 1000,
-    platform: 'ios',
+    point: 45,
+    aiPoint: 9999,
+    platform,
+    periodDate: 60,
+    renewalPeriodDate: 30,
+    eventId: null,
   });
+};
+
+const createTestUser = async () => {
+  return db.User.create({ email: 'test@example.com' });
 };
 
 const RealDate = Date;
 const testDate = '2023-02-01T00:00:00+09:00';
+
+const iosSuccessResponse = {
+  purchaseDateMs: new Date(testDate).getTime(),
+  expirationDate: new Date(testDate).getTime() + 30 * 24 * 60 * 60 * 1000,
+};
 
 describe('SubscriptionCreationService Integration Tests', () => {
   beforeEach(async () => {
@@ -149,15 +160,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
       mockIosValidator.mockResolvedValue(iosSuccessResponse);
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
 
       // When
       const result = await subscriptionCreationService.createSubscription(
@@ -173,17 +177,22 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // 포인트가 정상적으로 지급되었는지 확인
       const updatedUser = await db.User.findById(user._id);
-      expect(updatedUser?.point).toBe(100);
-      expect(updatedUser?.aiPoint).toBe(1000);
-      expect(updatedUser?.lastMembershipAt).toEqual(new Date(testDate));
-      expect(updatedUser?.MembershipAt).toEqual(new Date(testDate));
+      expect(updatedUser?.point).toBe(product.point);
+      expect(updatedUser?.aiPoint).toBe(product.aiPoint);
+
+      // 멤버십 상태 확인
+      const membership = await subscriptionQueryService.getSubscriptionStatus(user._id.toString());
+      expect(membership.activate).toBe(true);
+      expect(membership.leftDays).toBe(product.periodDate);
+      expect(membership.expiresAt).toBeDefined();
+      expect(membership.msg).toBe('멤버십이 활성화되어 있습니다.');
     });
 
     it('IOS에서 이미 구독이 만료된 영수증을 제출하면 구독이 생성되지 않는다.', async () => {
       mockIosValidator.mockResolvedValue(null);
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
       const product = await createTestProduct('test_subscription', 'ios');
 
       await expect(
@@ -199,7 +208,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       mockIosValidator.mockRejectedValue(new Error('유효하지 않은 영수증입니다.'));
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
       const product = await createTestProduct('test_subscription', 'ios');
       await expect(
         subscriptionCreationService.createSubscription(
@@ -214,15 +223,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
       mockAndroidAPI.mockResolvedValue(androidSuccessResponse);
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'pickforme_member',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '픽포미 플러스',
-        point: 30,
-        aiPoint: 99999,
-        platform: 'android',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'android');
 
       // When
       const result = await subscriptionCreationService.createSubscription(
@@ -241,15 +243,22 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // 포인트가 정상적으로 지급되었는지 확인
       const updatedUser = await db.User.findById(user._id);
-      expect(updatedUser?.point).toBe(30);
-      expect(updatedUser?.aiPoint).toBe(99999);
+      expect(updatedUser?.point).toBe(product.point);
+      expect(updatedUser?.aiPoint).toBe(product.aiPoint);
+
+      // 멤버십 상태 확인
+      const membership = await subscriptionQueryService.getSubscriptionStatus(user._id.toString());
+      expect(membership.activate).toBe(true);
+      expect(membership.leftDays).toBe(product.periodDate);
+      expect(membership.expiresAt).toBeDefined();
+      expect(membership.msg).toBe('멤버십이 활성화되어 있습니다.');
     });
 
     it('Android에서 이미 구독이 만료된 영수증을 제출하면 구독이 생성되지 않는다.', async () => {
       mockAndroidAPI.mockResolvedValue(androidExpiredResponse);
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
       const product = await createTestProduct('pickforme_member', 'android');
 
       await expect(
@@ -265,7 +274,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
       mockAndroidAPI.mockRejectedValue(new Error('유효하지 않은 영수증입니다.'));
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
       const product = await createTestProduct('pickforme_member', 'android');
 
       await expect(
@@ -279,14 +288,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
     it('존재하지 않는 유저의 경우 에러를 발생시킨다', async () => {
       // Given
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const product = await createTestProduct('test_subscription', 'ios');
 
       // When & Then
       await expect(
@@ -299,25 +301,18 @@ describe('SubscriptionCreationService Integration Tests', () => {
     });
 
     it('이미 구독중인 경우 에러를 발생시킨다', async () => {
+      mockIosValidator.mockResolvedValue(iosSuccessResponse);
+
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
 
       // 기존 구독 생성
-      await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date(),
-        product: { ...product.toObject() },
-      });
+      await subscriptionCreationService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockIosReceipt
+      );
 
       // When & Then
       await expect(
@@ -331,7 +326,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
     it('존재하지 않는 상품의 경우 에러를 발생시킨다', async () => {
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
 
       // When & Then
       await expect(
@@ -345,15 +340,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
     it('결제 검증 실패시 에러를 발생시키고 트랜잭션이 롤백된다', async () => {
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
 
       //
       (iapValidator.validate as jest.Mock).mockResolvedValue(null);
@@ -380,15 +368,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
   describe('createSubscriptionWithoutValidation', () => {
     it('iOS receipt가 있는 경우 구독이 성공적으로 생성되고 iOS 플랫폼으로 설정된다', async () => {
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
 
       const iosReceipt =
         'MIIUUAYJKoZIhvcNAQcCoIIUQTCCFD0CAQExDzANBglghkgBZQMEAgEFADCCA4YGCSqGSIb3DQEHAaCCA3cEggNzMYIDbzAKAgEIAgEBBAIWADAKAgEUAgEBBAIMADALAgEBAgEBBAMCAQAwCwIBAwIBAQQDDAExMAsCAQsCAQEEAwIBADALAgEPAgEBBAMCAQAwCwIBEAIBAQQDAgEAMAsCARkCAQEEAwIBAzAMAgEKAgEBBAQWAjQrMAwCAQ4CAQEEBAICARcwDQIBDQIBAQQFAgMCmT0wDQIBEwIBAQQFDAMxLjAwDgIBCQIBAQQGAgRQMzAyMBgCAQQCAQI';
@@ -406,15 +387,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
     it('Android receipt가 있는 경우 구독이 성공적으로 생성되고 Android 플랫폼으로 설정된다', async () => {
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'android',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'android');
 
       // When
       const result = await subscriptionCreationService.createSubscriptionWithoutValidation(
@@ -429,15 +403,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
     it('영수증이 없는 경우 기본 플랫폼으로 설정되고 어드민 구독이 생성된다', async () => {
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
 
       // When - receipt를 undefined로 명시적으로 전달
       const result = await subscriptionCreationService.createSubscriptionWithoutValidation(
@@ -462,20 +429,13 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
       // 포인트가 정상적으로 지급되었는지 확인
       const updatedUser = await db.User.findById(user._id);
-      expect(updatedUser?.point).toBe(100);
-      expect(updatedUser?.aiPoint).toBe(1000);
+      expect(updatedUser?.point).toBe(product.point);
+      expect(updatedUser?.aiPoint).toBe(product.aiPoint);
     });
 
     it('존재하지 않는 유저의 경우 에러를 발생시킨다', async () => {
       // Given
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const product = await createTestProduct('test_subscription', 'ios');
 
       // When & Then
       await expect(
@@ -491,15 +451,8 @@ describe('SubscriptionCreationService Integration Tests', () => {
       mockIosValidator.mockResolvedValue(iosSuccessResponse);
 
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
 
       // 기존 구독 생성
       await subscriptionCreationService.createSubscription(
@@ -519,7 +472,7 @@ describe('SubscriptionCreationService Integration Tests', () => {
 
     it('존재하지 않는 상품의 경우 에러를 발생시킨다', async () => {
       // Given
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
 
       // When & Then
       await expect(
