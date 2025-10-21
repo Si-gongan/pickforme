@@ -5,7 +5,7 @@ dotenv.config();
 import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import db from 'models';
-import { ProductReward } from 'models/product';
+import { EventMembershipProductReward } from 'models/product';
 import { EVENT_IDS } from 'constants/events';
 
 /**
@@ -35,7 +35,10 @@ interface FormResponse {
   membershipProcessed: string;
 }
 
-async function processUser(response: FormResponse, eventRewards: ProductReward): Promise<void> {
+async function processUser(
+  response: FormResponse,
+  eventRewards: EventMembershipProductReward
+): Promise<void> {
   try {
     const normalizedPhoneNumber = response.phoneNumber.replace(/-/g, '');
 
@@ -60,7 +63,7 @@ async function processUser(response: FormResponse, eventRewards: ProductReward):
       return;
     }
 
-    if (user.event === 1) {
+    if ((await user.getCurrentEventId()) === EVENT_IDS.HANSIRYUN) {
       console.log(`유저 ${response.name} 이미 처리되었습니다.`);
       return;
     }
@@ -70,7 +73,7 @@ async function processUser(response: FormResponse, eventRewards: ProductReward):
       return;
     }
 
-    // await user.applyEventRewards(eventRewards, EVENT_IDS.HANSIRYUN);
+    await user.applyEventMembershipRewards(eventRewards);
 
     console.log(
       `유저 ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt} 처리 완료`
@@ -132,7 +135,7 @@ async function main() {
       return;
     }
 
-    const eventRewards = eventProducts.getRewards();
+    const eventRewards = eventProducts.getEventRewards();
 
     // 각 응답 처리
     for (const response of formResponses) {

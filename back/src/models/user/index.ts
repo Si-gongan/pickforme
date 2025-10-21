@@ -253,6 +253,10 @@ UserSchema.methods.processExpiredMembership = async function processExpiredMembe
   await this.save(options);
 };
 
+UserSchema.methods.getCurrentEventId = async function getCurrentEventId() {
+  return this.event || null;
+};
+
 // User 모델에 추가
 UserSchema.methods.getMembershipStatus = function getMembershipStatus() {
   const currentDate = new Date();

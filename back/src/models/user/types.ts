@@ -40,7 +40,7 @@ export interface User extends LocalRegisterPayload {
   MembershipExpiresAt: Date | null;
   currentMembershipProductId: string | null;
   phone?: string;
-  event?: number | null;
+  event: number | null;
   hide?: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -74,6 +74,7 @@ export interface UserDocument extends User, Document {
     session?: ClientSession,
     isAdditional?: boolean
   ) => Promise<void>;
+  getCurrentEventId: () => Promise<number | null>;
   getMembershipStatus: () => MembershipStatus;
   shouldRenewMembership: (currentProduct: IProduct) => boolean;
 }
