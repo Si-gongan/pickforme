@@ -205,6 +205,7 @@ UserSchema.methods._applyMembershipRenewalRewards = async function _applyMembers
   await this._applyProductRewards(rewards, isAdditional);
 
   this.lastMembershipAt = new Date();
+  this.markModified('lastMembershipAt');
 };
 
 // 멤버쉽 갱신 시 포인트 충전 메서드.
@@ -327,8 +328,8 @@ UserSchema.methods.shouldRenewMembership = function shouldRenewMembership(
 
   // lastMembershipAt + renewalPeriodDate가 현재 시간보다 이전이면 갱신 필요
   const nextRenewalDate = new Date(this.lastMembershipAt);
-  nextRenewalDate.setDate(
-    nextRenewalDate.getDate() + currentProduct.renewalPeriodDate * 24 * 60 * 60 * 1000
+  nextRenewalDate.setTime(
+    nextRenewalDate.getTime() + currentProduct.renewalPeriodDate * 24 * 60 * 60 * 1000
   );
 
   return now >= nextRenewalDate;
