@@ -17,6 +17,7 @@ import db from '../models';
 import { log } from 'utils/logger';
 import searchLogsRouter from './searchLogs';
 import statisticsRouter from '../feature/analytics/routes/statistics.router';
+import urlTransformLogRouter from '../feature/urlTransformLog/router';
 
 const router = new Router();
 
@@ -35,6 +36,7 @@ const router = new Router();
   crawlReportRouter,
   searchLogsRouter,
   statisticsRouter,
+  urlTransformLogRouter,
 ].forEach((subrouter) => {
   router.use(subrouter.routes());
 });
