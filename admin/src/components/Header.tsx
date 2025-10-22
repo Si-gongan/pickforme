@@ -27,13 +27,13 @@ const Header: React.FC = () => {
           <Link href="/notifications">Notifications</Link>
         </NavItem>
         <NavItem>
-          <Link href="/popup">Manage Popup</Link>
+          <Link href="/popup">Popup</Link>
         </NavItem>
         <NavItem>
           <Link href="/purchase/purchase-failure">Purchase Failures</Link>
         </NavItem>
         <NavItem>
-          <Link href="/crawl-log">Crawl Log</Link>
+          <Link href="/log">System Log</Link>
         </NavItem>
         {isLogin ? null : (
           <NavItem>

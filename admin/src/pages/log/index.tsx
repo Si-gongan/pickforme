@@ -5,14 +5,15 @@ import {
   SearchOutlined,
   ProfileOutlined,
   BarChartOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 
-export default function CrawlLogHomePage() {
+export default function SystemLogHomePage() {
   return (
     <Container>
       <TopBar>
         <Typography.Title level={2} style={{ margin: 0 }}>
-          크롤링 로그 대시보드
+          시스템 로그 대시보드
         </Typography.Title>
       </TopBar>
 
@@ -33,13 +34,13 @@ export default function CrawlLogHomePage() {
           </Desc>
 
           <Space size={12}>
-            <Link href="/crawl-log/search">
+            <Link href="/log/search">
               <Button type="default" icon={<SearchOutlined />}>
                 검색 로그 보기
               </Button>
             </Link>
             {/* ✅ 통계 버튼 추가 */}
-            <Link href="/crawl-log/search/stats">
+            <Link href="/log/search/stats">
               <Button type="primary" icon={<BarChartOutlined />}>
                 통계 바로가기
               </Button>
@@ -63,10 +64,37 @@ export default function CrawlLogHomePage() {
           </Desc>
 
           <Space size={12}>
-            <Link href="/crawl-log/product-detail">
+            <Link href="/log/product-detail">
               <Button icon={<ProfileOutlined />}>상품 상세 로그 보기</Button>
             </Link>
-            <Link href="/crawl-log/product-detail/stats">
+            <Link href="/log/product-detail/stats">
+              <Button type="primary" icon={<BarChartOutlined />}>
+                통계 바로가기
+              </Button>
+            </Link>
+          </Space>
+        </Card>
+
+        {/* URL 변환 로그 */}
+        <Card
+          title={
+            <Space align="center">
+              <LinkOutlined />
+              <span>URL 변환 로그 (URL Transform)</span>
+            </Space>
+          }
+        >
+          <Desc>
+            <li>URL 정규화 및 딥링크 생성 과정의 상세 로그</li>
+            <li>변환 성공률, 딥링크 성공률, 처리 시간 분석</li>
+            <li>Request ID별 상세 변환 과정 및 에러 추적</li>
+          </Desc>
+
+          <Space size={12}>
+            <Link href="/log/url-transform-log">
+              <Button icon={<LinkOutlined />}>URL 변환 로그 보기</Button>
+            </Link>
+            <Link href="/log/url-transform-log/stats">
               <Button type="primary" icon={<BarChartOutlined />}>
                 통계 바로가기
               </Button>

@@ -96,6 +96,9 @@ router.post('/search', async (ctx) => {
 });
 
 router.post('/deeplink', async (ctx) => {
+  const startTime = Date.now();
+  const requestId = `deeplink_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
   const { urls } = ctx.request.body as { urls: string[] };
 
   if (!urls || !Array.isArray(urls) || urls.length === 0) {
@@ -110,15 +113,92 @@ router.post('/deeplink', async (ctx) => {
     return;
   }
 
-  const result = await getDeeplinks(urls);
+  let transformSuccess = false;
+  let deeplinkSuccess = false;
+  let errorMsg: string | undefined;
+  let deeplinkErrorMsg: string | undefined;
+  let normalizedUrlInfo: any = null;
+  let deeplinkResult: any = null;
 
-  if (!result || result.length === 0 || !result[0].originalUrl || !result[0].shortenUrl) {
+  try {
+    // URL 정규화
+    const { CoupangUrlNormalizerService } = await import('./url-normalizer.service');
+    normalizedUrlInfo = CoupangUrlNormalizerService.normalizeUrl(urls[0]);
+    transformSuccess = true;
+
+    // 정규화된 URL로 딥링크 생성
+    deeplinkResult = await getDeeplinks([normalizedUrlInfo.normalizedUrl]);
+
+    if (
+      !deeplinkResult ||
+      deeplinkResult.length === 0 ||
+      !deeplinkResult[0].originalUrl ||
+      !deeplinkResult[0].shortenUrl
+    ) {
+      deeplinkErrorMsg = '딥링크 생성 실패: 결과가 없거나 필수 필드 누락';
+    } else {
+      deeplinkSuccess = true;
+    }
+  } catch (error) {
+    errorMsg = error instanceof Error ? error.message : '알 수 없는 오류';
+    console.error('URL 변환 중 오류:', error);
+  }
+
+  const durationMs = Date.now() - startTime;
+
+  // 로그 저장
+  try {
+    const { default: UrlTransformLog } = await import('./models');
+
+    const logData = {
+      requestId,
+      originalInputUrl: urls[0],
+      normalizedUrl: normalizedUrlInfo?.normalizedUrl || urls[0],
+      productId: normalizedUrlInfo?.productId || '',
+      urlType: normalizedUrlInfo?.urlType || 'unknown',
+      transformSuccess,
+      errorMsg,
+      deeplinkSuccess,
+      deeplinkErrorMsg,
+      originalUrl: deeplinkResult?.[0]?.originalUrl,
+      shortenUrl: deeplinkResult?.[0]?.shortenUrl,
+      landingUrl: deeplinkResult?.[0]?.landingUrl,
+      durationMs,
+    };
+
+    const savedLog = await UrlTransformLog.create(logData);
+    console.log('📊 URL 변환 로그 저장 완료:', {
+      id: savedLog._id,
+      requestId: logData.requestId,
+      originalInputUrl: logData.originalInputUrl,
+      transformSuccess: logData.transformSuccess,
+      deeplinkSuccess: logData.deeplinkSuccess,
+    });
+  } catch (logError) {
+    console.error('로그 저장 실패:', logError);
+  }
+
+  // 응답 처리
+  if (!transformSuccess || !deeplinkSuccess) {
     ctx.status = 500;
-    ctx.body = { success: false, message: 'URL 변환 중 오류가 발생했습니다.' };
+    ctx.body = {
+      success: false,
+      message: errorMsg || deeplinkErrorMsg || 'URL 변환 중 오류가 발생했습니다.',
+    };
     return;
   }
 
-  ctx.body = { success: true, data: result[0] };
+  // 원본 URL 정보와 정규화 정보를 함께 반환
+  ctx.body = {
+    success: true,
+    data: {
+      ...deeplinkResult[0],
+      originalInputUrl: normalizedUrlInfo.originalUrl,
+      normalizedUrl: normalizedUrlInfo.normalizedUrl,
+      productId: normalizedUrlInfo.productId,
+      urlType: normalizedUrlInfo.urlType,
+    },
+  };
 });
 
 router.post('/api/search', async (ctx) => {
