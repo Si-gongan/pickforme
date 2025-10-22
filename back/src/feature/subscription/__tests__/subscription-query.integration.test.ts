@@ -45,6 +45,40 @@ const mockIosReceipt =
 const RealDate = Date;
 const testDate = '2023-02-01T00:00:00+09:00';
 
+const iosSuccessResponse = {};
+
+const createTestUser = async () => {
+  return db.User.create({ email: 'test@example.com' });
+};
+
+const createTestProduct = async (productId: string, platform: string) => {
+  return db.Product.create({
+    productId,
+    type: ProductType.SUBSCRIPTION,
+    displayName: '테스트 구독',
+    point: 45,
+    aiPoint: 9999,
+    platform,
+    periodDate: 60,
+    renewalPeriodDate: 30,
+    eventId: null,
+  });
+};
+
+const createEventProduct = async (eventId: number) => {
+  return db.Product.create({
+    productId: `pickforme_event_${eventId}`,
+    type: ProductType.SUBSCRIPTION,
+    displayName: `이벤트 ${eventId} 구독`,
+    point: 45,
+    aiPoint: 9999,
+    platform: 'ios',
+    periodDate: 60,
+    renewalPeriodDate: 30,
+    eventId,
+  });
+};
+
 describe('SubscriptionQueryService Integration Tests', () => {
   beforeEach(async () => {
     await db.User.deleteMany({});
@@ -83,160 +117,77 @@ describe('SubscriptionQueryService Integration Tests', () => {
 
   describe('getSubscriptionStatus', () => {
     it('구독 정보가 없는 경우 null을 반환한다', async () => {
-      const user = await db.User.create({ email: 'test@example.com' });
+      const user = await createTestUser();
 
       const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
 
-      expect(result.subscription).toBeNull();
       expect(result.activate).toBe(false);
       expect(result.leftDays).toBe(0);
       expect(result.expiresAt).toBeNull();
-      expect(result.msg).toBe('활성화중인 구독정보가 없습니다.');
+      expect(result.msg).toBe('활성화중인 멤버십이 없습니다.');
     });
 
     it('만료된 구독 정보는 조회되지 않는다', async () => {
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      const user = await createTestUser();
+      await createTestProduct('test_subscription', 'ios');
 
-      await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: true,
-        createdAt: new Date('2022-12-31T15:00:00.000Z'),
-        product: { ...product.toObject() },
-      });
+      await user.processExpiredMembership();
 
       const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
 
-      expect(result.subscription).toBeNull();
       expect(result.activate).toBe(false);
       expect(result.leftDays).toBe(0);
       expect(result.expiresAt).toBeNull();
+      expect(result.msg).toBe('활성화중인 멤버십이 없습니다.');
     });
 
     it('활성화된 구독 정보를 정상적으로 조회한다', async () => {
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
+      mockIosValidator.mockResolvedValue(iosSuccessResponse);
 
-      const purchase = await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date('2023-01-15T15:00:00.000Z'),
-        product: { ...product.toObject() },
-      });
+      const user = await createTestUser();
+      const product = await createTestProduct('test_subscription', 'ios');
+
+      await subscriptionCreationService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockIosReceipt
+      );
 
       const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
 
-      expect(result.subscription).toBeDefined();
-      expect(result.subscription?._id.toString()).toBe(purchase._id.toString());
       expect(result.activate).toBe(true);
-      expect(result.leftDays).toBeGreaterThan(0);
+      expect(result.leftDays).toBe(product.periodDate);
       expect(result.expiresAt).toBeDefined();
-      expect(result.msg).toBe('활성화중인 구독정보를 조회하였습니다.');
+      expect(result.msg).toBe('멤버십이 활성화되어 있습니다.');
     });
 
-    it('만료된 구독 정보는 activate가 false로 반환된다', async () => {
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
-
-      await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date('2022-12-15T15:00:00.000Z'), // 1달 이상 지난 날짜
-        product: { ...product.toObject() },
-      });
-
-      const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
-
-      expect(result.subscription).toBeDefined();
-      expect(result.activate).toBe(false);
-      expect(result.leftDays).toBe(0);
-      expect(result.msg).toBe('구독 기간이 만료되었습니다.');
-    });
-
-    it('여러 구독 정보가 있는 경우 가장 최근 구독 정보를 반환한다', async () => {
-      const user = await db.User.create({ email: 'test@example.com' });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
-
-      // 이전 구독
-      await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date('2023-01-01T15:00:00.000Z'),
-        product: { ...product.toObject() },
-      });
-
-      // 최근 구독
-      const recentPurchase = await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date('2023-01-15T15:00:00.000Z'),
-        product: { ...product.toObject() },
-      });
-
-      const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
-
-      expect(result.subscription?._id.toString()).toBe(recentPurchase._id.toString());
-      expect(result.activate).toBe(true);
-    });
-
-    it('이벤트 멤버십이 활성화된 유저는 구독 상태가 활성화된다', async () => {
+    it('이벤트 멤버십이 활성화된 유저는 멤버십 상태가 활성화된다', async () => {
       // Given
-      const user = await db.User.create({
-        email: 'test@example.com',
-        event: 1,
-        MembershipAt: new Date('2023-01-15T00:00:00+09:00'),
-      });
+      const user = await createTestUser();
+      const product = await createEventProduct(1);
+
+      // 이벤트 멤버십 적립
+      await user.applyEventMembershipRewards(product.getEventRewards());
 
       // When
       const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
 
       // Then
       expect(result.activate).toBe(true);
-      expect(result.leftDays).toBeGreaterThan(0);
+      expect(result.leftDays).toBe(product.periodDate);
       expect(result.expiresAt).toBeDefined();
       expect(result.msg).toBe('이벤트 멤버십이 활성화되어 있습니다.');
     });
 
     it('이벤트 멤버십이 만료된 유저는 구독 상태가 비활성화된다', async () => {
-      // Given
-      const user = await db.User.create({
-        email: 'test@example.com',
-        event: 1,
-        MembershipAt: new Date('2022-07-15T00:00:00+09:00'), // 6개월 이상 지난 날짜
-      });
+      const user = await createTestUser();
+      const product = await createEventProduct(1);
+
+      // 이벤트 멤버십 적립
+      await user.applyEventMembershipRewards(product.getEventRewards());
+
+      // 이벤트 멤버십 만료
+      await user.processExpiredMembership();
 
       // When
       const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
@@ -245,41 +196,7 @@ describe('SubscriptionQueryService Integration Tests', () => {
       expect(result.activate).toBe(false);
       expect(result.leftDays).toBe(0);
       expect(result.expiresAt).toBeDefined();
-      expect(result.msg).toBe('활성화중인 구독정보가 없습니다.');
-    });
-
-    it('이벤트 멤버십이 만료된 유저는 일반 구독 상태를 확인하고 구독이 있으면 활성화된 정보를 전달한다.', async () => {
-      // Given
-      const user = await db.User.create({
-        email: 'test@example.com',
-        event: 1,
-        MembershipAt: new Date('2022-07-15T00:00:00+09:00'), // 6개월 이상 지난 날짜
-      });
-      const product = await db.Product.create({
-        productId: 'test_subscription',
-        type: ProductType.SUBSCRIPTION,
-        displayName: '테스트 구독',
-        point: 100,
-        aiPoint: 1000,
-        platform: 'ios',
-      });
-
-      await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date('2023-01-15T15:00:00.000Z'),
-        product: { ...product.toObject() },
-      });
-
-      // When
-      const result = await subscriptionQueryService.getSubscriptionStatus(user._id);
-
-      // Then
-      expect(result.activate).toBe(true);
-      expect(result.leftDays).toBeGreaterThan(0);
-      expect(result.expiresAt).toBeDefined();
-      expect(result.msg).toBe('활성화중인 구독정보를 조회하였습니다.');
+      expect(result.msg).toBe('활성화중인 멤버십이 없습니다.');
     });
   });
 
@@ -326,7 +243,7 @@ describe('SubscriptionQueryService Integration Tests', () => {
   });
 
   describe('getUserSubscriptions', () => {
-    it('유저의 구독 내역을 생성일자 내림차순으로 조회한다', async () => {
+    it('유저의 구독상품 구매 내역을 생성일자 내림차순으로 조회한다', async () => {
       // Given
       const user = await db.User.create({ email: 'test@example.com' });
       const product = await db.Product.create({

@@ -13,7 +13,16 @@ export enum Platform {
 export interface ProductReward {
   point: number;
   aiPoint: number;
-  event?: number;
+}
+
+export interface MembershipProductReward extends ProductReward {
+  productId: string;
+  periodDate: number;
+  renewalPeriodDate: number;
+}
+
+export interface EventMembershipProductReward extends MembershipProductReward {
+  event: number;
 }
 
 export interface IProduct {
@@ -23,11 +32,15 @@ export interface IProduct {
   platform: Platform;
   point: number;
   aiPoint: number;
+  periodDate?: number;
+  renewalPeriodDate?: number;
   eventId: number | null;
 }
 
 export interface ProductDocument extends IProduct, mongoose.Document {
   getRewards(): ProductReward;
+  getMembershipRewards(): MembershipProductReward;
+  getEventRewards(): EventMembershipProductReward;
 }
 
 export interface ProductModel extends mongoose.Model<ProductDocument> {}

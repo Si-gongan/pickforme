@@ -3,8 +3,8 @@ import 'env';
 import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import db from 'models';
-import { ProductReward } from 'models/product';
-import { EVENT_IDS } from 'constants/events';
+import { EventMembershipProductReward } from 'models/product';
+import { EVENT_IDS } from '../../constants/events';
 
 /**
  * 픽포미 체험단 이벤트 신청자 대상으로 멤버쉽 처리를 해주기 위한 스크립트입니다.
@@ -18,7 +18,6 @@ import { EVENT_IDS } from 'constants/events';
  *
  * 멤버쉽 처리 후 스프레드시트의 해당 row의 멤버쉽 처리 여부 컬럼을 'o'로 업데이트합니다.
  *
- * 주의! 스크립트 실행 이후에는 다시 local용 .env로 변경해주세요!
  */
 
 // 구글 API 인증 설정 (읽기/쓰기 권한 필요)
@@ -40,11 +39,31 @@ interface FormResponse {
   activityStarted: string; // L컬럼: 활동시작여부 ('o'인 경우만 선택 처리 가능)
 }
 
-const eventOverridedUserEmailList: string[] = [];
+const processedUsers: Array<{
+  name: string;
+  email: string;
+  status: string;
+  action: string;
+  previousEventId?: number;
+  previousMembershipAt?: Date;
+  previousExpiresAt?: Date;
+  newExpiresAt?: Date;
+}> = [];
 
-async function processUser(
+export const membershipChangedUsers: Array<{
+  userId: string;
+  email: string;
+  username: string;
+  action: string;
+  previousEventId?: number;
+  previousMembershipAt?: Date;
+  previousExpiresAt?: Date;
+  newExpiresAt?: Date;
+}> = [];
+
+export async function processUser(
   response: FormResponse,
-  eventRewards: ProductReward,
+  eventRewards: EventMembershipProductReward,
   sheets: any,
   spreadsheetId: string,
   dryRun: boolean
@@ -59,10 +78,12 @@ async function processUser(
       {
         event: 1,
         MembershipAt: 1,
+        MembershipExpiresAt: 1,
         point: 1,
         aiPoint: 1,
         email: 1,
         phone: 1,
+        currentMembershipProductId: 1,
       }
     );
 
@@ -78,95 +99,117 @@ async function processUser(
       return;
     }
 
-    // 이미 기존 이벤트가 존재하는 경우.
-    if (user.event !== null) {
-      if (user.event != EVENT_IDS.HANSIRYUN) {
-        // 한시련 이외의 이벤트의 경우에는 아직 처리방침 x. 이벤트 처리하지 않고 그대로 반환.
-        console.log(`유저 ${response.name} ${user.email}은 다른 이벤트가 적용중입니다.`);
-        return;
-      }
+    const testGroupExpirationDate = new Date();
+    testGroupExpirationDate.setMonth(testGroupExpirationDate.getMonth() + 3);
 
-      if (!user.MembershipAt) {
-        return;
-      }
+    let shouldApply = false;
+    let action = '';
+    let previousEventId = await user.getCurrentEventId();
+    let previousMembershipAt = user.MembershipAt;
+    let previousExpiresAt = user.MembershipExpiresAt;
+    let newExpiresAt: Date | undefined;
 
-      const membershipStartDate = new Date(user.MembershipAt);
-      const isSeptemberSignUp =
-        membershipStartDate.getFullYear() == 2025 && membershipStartDate.getMonth() == 8;
+    // 1. 멤버십이 아예 없는 경우 -> 바로 적용
+    if (!user.MembershipAt || !user.MembershipExpiresAt) {
+      shouldApply = true;
+      action = '멤버십 없음 - 바로 적용';
+      newExpiresAt = testGroupExpirationDate;
+    }
+    // 2. 일반 멤버십 적용 중인 경우 -> 바로 적용
+    else if (!previousEventId) {
+      shouldApply = true;
+      action = '일반 멤버십 중 - 바로 적용';
+      newExpiresAt = testGroupExpirationDate;
+    }
+    // 3. 이벤트 멤버십 적용 중인 경우 -> MembershipExpiresAt과 비교해서 더 긴 쪽 적용
+    else if (previousEventId) {
+      const currentExpiresAt = new Date(user.MembershipExpiresAt);
 
-      if (isSeptemberSignUp) {
-        membershipStartDate.setMonth(membershipStartDate.getMonth() + 1);
+      if (testGroupExpirationDate > currentExpiresAt) {
+        shouldApply = true;
+        action = `이벤트 멤버십 중 - 기존 만료일(${currentExpiresAt.toISOString().split('T')[0]})보다 긴 기간으로 적용`;
+        newExpiresAt = testGroupExpirationDate;
       } else {
-        membershipStartDate.setMonth(membershipStartDate.getMonth() + 6);
-      }
-
-      const testGroupExpirationDate = new Date();
-
-      testGroupExpirationDate.setMonth(testGroupExpirationDate.getMonth() + 3);
-
-      if (testGroupExpirationDate > membershipStartDate) {
-        eventOverridedUserEmailList.push(user.email);
-        console.log(
-          `유저 ${response.name}: ${response.email} 한시련 이벤트에서 픽포미 체험단 이벤트로 변경.`
-        );
-        if (dryRun) {
-          console.log('[DRY RUN] processExpiredMembership/applyEventRewards skipped');
-        } else {
-          await user.processExpiredMembership();
-          await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
-        }
-      } else {
-        console.log(
-          `유저 ${response.name}: ${response.email} 는 한시련 이벤트 대상자입니다. 이벤트를 적용하지 않습니다.`
-        );
-      }
-    } else {
-      // 이미 멤버쉽 적용중인 경우, 기존 멤버쉽은 만료처리하고 픽포미 체험단 이벤트 적용.
-      if (user.MembershipAt) {
-        if (dryRun) {
-          console.log('[DRY RUN] 기존 멤버쉽 만료 & 체험단 이벤트 적용 생략');
-        } else {
-          await user.processExpiredMembership();
-          await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
-        }
-
-        console.log(
-          `유저 ${response.name}: ${response.email} 멤버쉽에서 픽포미 체험단 이벤트로 변경.`
-        );
-      } else {
-        // 멤버쉽 처리 되어 있지 않은 경우,
-        if (dryRun) {
-          console.log('[DRY RUN] (무멤버쉽) 만료 처리 & 체험단 이벤트 적용 생략');
-        } else {
-          await user.processExpiredMembership(); // 혹시 모르니까 만료 처리.
-          await user.applyEventRewards(eventRewards, EVENT_IDS.PICKFORME_TEST);
-        }
-
-        console.log(`유저 ${response.name}: ${response.email} 픽포미 체험단 이벤트 적용 완료.`);
+        shouldApply = false;
+        action = `이벤트 멤버십 중 - 기존 만료일(${currentExpiresAt.toISOString().split('T')[0]})이 더 김. 적용하지 않음`;
       }
     }
 
-    // 스프레드시트의 해당 row의 멤버쉽 처리 여부 컬럼을 'o'로 업데이트
-    // 헤더가 있으므로 실제 row는 response.rowIndex + 2 (헤더 1개 + 0-based index)
-    // K컬럼은 11번째 컬럼이므로 K로 업데이트
-    const updateRange = `설문지 응답 시트1!K${response.rowIndex + 2}`;
+    if (shouldApply) {
+      console.log(`유저 ${response.name}: ${response.email} - ${action}`);
 
-    if (dryRun) {
-      console.log(`[DRY RUN] Sheets 업데이트 생략 → range=${updateRange}, value='o'`);
+      if (dryRun) {
+        console.log('[DRY RUN] 이벤트 멤버십 적용 생략');
+      } else {
+        await user.applyEventMembershipRewards(eventRewards);
+        // 만료일을 더 긴 쪽으로 설정
+        if (newExpiresAt && user.MembershipExpiresAt && newExpiresAt > user.MembershipExpiresAt) {
+          user.MembershipExpiresAt = newExpiresAt;
+          await user.save();
+        }
+      }
+
+      processedUsers.push({
+        name: response.name,
+        email: response.email,
+        status: '적용됨',
+        action,
+        previousEventId: previousEventId || undefined,
+        previousMembershipAt: previousMembershipAt || undefined,
+        previousExpiresAt: previousExpiresAt || undefined,
+        newExpiresAt,
+      });
+
+      // 멤버십이 변경된 유저들을 별도로 추적 (기존 멤버십이 있던 경우만)
+      if (previousMembershipAt && previousExpiresAt) {
+        membershipChangedUsers.push({
+          userId: user._id.toString(),
+          email: response.email,
+          username: response.name,
+          action,
+          previousEventId: previousEventId || undefined,
+          previousMembershipAt: previousMembershipAt || undefined,
+          previousExpiresAt: previousExpiresAt || undefined,
+          newExpiresAt,
+        });
+      }
     } else {
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: updateRange,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [['o']],
-        },
+      console.log(`유저 ${response.name}: ${response.email} - ${action}`);
+
+      processedUsers.push({
+        name: response.name,
+        email: response.email,
+        status: '적용 안됨',
+        action,
+        previousEventId: previousEventId || undefined,
+        previousMembershipAt: previousMembershipAt || undefined,
+        previousExpiresAt: previousExpiresAt || undefined,
       });
     }
 
-    console.log(
-      `유저 ${response.name} userId ${user._id} MembershipAt ${user.MembershipAt} 처리 완료 및 스프레드시트 업데이트 완료`
-    );
+    // 스프레드시트의 해당 row의 멤버쉽 처리 여부 컬럼을 'o'로 업데이트 (적용된 경우에만)
+    if (shouldApply) {
+      const updateRange = `설문지 응답 시트1!K${response.rowIndex + 2}`;
+
+      if (dryRun) {
+        console.log(`[DRY RUN] Sheets 업데이트 생략 → range=${updateRange}, value='o'`);
+      } else {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: updateRange,
+          valueInputOption: 'RAW',
+          requestBody: {
+            values: [['o']],
+          },
+        });
+      }
+
+      console.log(
+        `유저 ${response.name} userId ${user._id} 처리 완료 및 스프레드시트 업데이트 완료`
+      );
+    } else {
+      console.log(`유저 ${response.name} userId ${user._id} 처리 완료 (적용 안됨)`);
+    }
   } catch (error) {
     console.error(`유저 ${response.email} 처리 중 오류 발생:`, error);
     throw error;
@@ -246,7 +289,7 @@ async function main() {
       return;
     }
 
-    const eventRewards = eventProducts.getRewards();
+    const eventRewards = eventProducts.getEventRewards();
 
     // 각 응답 처리
     for (const response of filteredResponses) {
@@ -254,7 +297,61 @@ async function main() {
       console.log('===============================================');
     }
 
-    console.log(`이벤트 오버라이드 유저 리스트: ${eventOverridedUserEmailList}`);
+    // 처리 결과 요약 출력
+    console.log('\n=== 처리 결과 요약 ===');
+    console.log(`총 처리된 유저: ${processedUsers.length}`);
+
+    const appliedUsers = processedUsers.filter((u) => u.status === '적용됨');
+    const notAppliedUsers = processedUsers.filter((u) => u.status === '적용 안됨');
+
+    console.log(`이벤트 적용됨: ${appliedUsers.length}명`);
+    console.log(`이벤트 적용 안됨: ${notAppliedUsers.length}명`);
+    console.log(`멤버십 변경됨: ${membershipChangedUsers.length}명`);
+
+    console.log('\n=== 적용된 유저 목록 ===');
+    appliedUsers.forEach((user) => {
+      console.log(`- ${user.name} (${user.email})`);
+      console.log(`  액션: ${user.action}`);
+      if (user.previousEventId) {
+        console.log(`  이전 이벤트: ${user.previousEventId}`);
+      }
+      if (user.previousExpiresAt) {
+        console.log(`  이전 만료일: ${user.previousExpiresAt.toISOString().split('T')[0]}`);
+      }
+      if (user.newExpiresAt) {
+        console.log(`  새로운 만료일: ${user.newExpiresAt.toISOString().split('T')[0]}`);
+      }
+      console.log('');
+    });
+
+    console.log('\n=== 적용 안된 유저 목록 ===');
+    notAppliedUsers.forEach((user) => {
+      console.log(`- ${user.name} (${user.email})`);
+      console.log(`  사유: ${user.action}`);
+      if (user.previousEventId) {
+        console.log(`  이전 이벤트: ${user.previousEventId}`);
+      }
+      if (user.previousExpiresAt) {
+        console.log(`  현재 만료일: ${user.previousExpiresAt.toISOString().split('T')[0]}`);
+      }
+      console.log('');
+    });
+
+    console.log('\n=== 멤버십 변경된 유저 목록 ===');
+    membershipChangedUsers.forEach((user) => {
+      console.log(`- ${user.username} (${user.email}) - ID: ${user.userId}`);
+      console.log(`  액션: ${user.action}`);
+      if (user.previousEventId) {
+        console.log(`  이전 이벤트: ${user.previousEventId}`);
+      }
+      if (user.previousExpiresAt) {
+        console.log(`  이전 만료일: ${user.previousExpiresAt.toISOString().split('T')[0]}`);
+      }
+      if (user.newExpiresAt) {
+        console.log(`  새로운 만료일: ${user.newExpiresAt.toISOString().split('T')[0]}`);
+      }
+      console.log('');
+    });
 
     console.log('Processing completed successfully');
   } catch (error) {
