@@ -176,7 +176,7 @@ export default function UrlTransformLogListPage() {
       key: "requestId",
       width: 200,
       render: (v: string) => (
-        <a onClick={() => router.push(`/url-transform-log/${v}`)}>{v}</a>
+        <a onClick={() => router.push(`/log/url-transform-log/${v}`)}>{v}</a>
       ),
     },
     {
@@ -283,7 +283,9 @@ export default function UrlTransformLogListPage() {
       render: (_: any, record: UrlTransformLog) => (
         <Button
           size="small"
-          onClick={() => router.push(`/url-transform-log/${record.requestId}`)}
+          onClick={() =>
+            router.push(`/log/url-transform-log/${record.requestId}`)
+          }
         >
           상세
         </Button>
@@ -359,7 +361,7 @@ export default function UrlTransformLogListPage() {
           </Button>
           <Button
             type="primary"
-            onClick={() => router.push("/url-transform-log/stats")}
+            onClick={() => router.push("/log/url-transform-log/stats")}
           >
             📊 통계 보기
           </Button>
