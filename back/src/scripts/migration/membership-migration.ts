@@ -3,7 +3,7 @@ import 'env';
 import mongoose from 'mongoose';
 import db from 'models';
 import { ProductType } from 'models/product';
-import { EVENT_IDS } from 'constants/events';
+import { EVENT_IDS } from '../../constants/events';
 
 interface MigrationResult {
   userId: string;
@@ -56,10 +56,41 @@ class MembershipMigrationService {
 
     console.log(`일반 멤버십 대상: ${activePurchases.length}명`);
 
+    // 유저별로 그룹화하여 중복 처리 방지
+    const userPurchasesMap = new Map<string, any[]>();
+
     for (const purchase of activePurchases) {
-      const user = await db.User.findById(purchase.userId);
+      const userId = purchase.userId.toString();
+      if (!userPurchasesMap.has(userId)) {
+        userPurchasesMap.set(userId, []);
+      }
+      userPurchasesMap.get(userId)!.push(purchase);
+    }
+
+    for (const [userId, purchases] of userPurchasesMap) {
+      const user = await db.User.findById(userId);
       if (!user) continue;
 
+      // 한 유저에 여러 개의 활성 구독이 있는 경우 에러 처리
+      if (purchases.length > 1) {
+        console.error(
+          `❌ 에러: 유저 ${user.email}에게 ${purchases.length}개의 활성 구독이 있습니다.`
+        );
+        this.results.push({
+          userId: user._id.toString(),
+          email: user.email,
+          type: 'regular',
+          currentMembershipAt: user.MembershipAt,
+          currentMembershipExpiresAt: user.MembershipExpiresAt,
+          currentMembershipProductId: user.currentMembershipProductId || null,
+          newMembershipExpiresAt: null,
+          newMembershipProductId: null,
+          changes: [`에러: ${purchases.length}개의 활성 구독 발견 - 처리 건너뜀`],
+        });
+        continue;
+      }
+
+      const purchase = purchases[0];
       const changes: string[] = [];
 
       // MembershipExpiresAt 설정 (createdAt + 1개월)
