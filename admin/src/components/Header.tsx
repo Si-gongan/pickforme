@@ -33,7 +33,7 @@ const Header: React.FC = () => {
           <Link href="/purchase/purchase-failure">Purchase Failures</Link>
         </NavItem>
         <NavItem>
-          <Link href="/crawl-log">Crawl Log</Link>
+          <Link href="/log">System Log</Link>
         </NavItem>
         {isLogin ? null : (
           <NavItem>
