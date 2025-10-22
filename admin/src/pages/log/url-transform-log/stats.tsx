@@ -43,9 +43,9 @@ interface StatsData {
 export default function UrlTransformLogStatsPage() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
-    [dayjs().subtract(7, "day"), dayjs()]
-  );
+  const [dateRange, setDateRange] = useState<
+    [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+  >([dayjs().subtract(7, "day"), dayjs()]);
   const router = useRouter();
 
   const fetchStats = async (startDate?: string, endDate?: string) => {
@@ -83,7 +83,10 @@ export default function UrlTransformLogStatsPage() {
     fetchStats(startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
   }, []);
 
-  const handleDateRangeChange = (dates: [dayjs.Dayjs, dayjs.Dayjs] | null) => {
+  const handleDateRangeChange = (
+    dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null,
+    dateStrings: [string, string]
+  ) => {
     setDateRange(dates);
     if (dates && dates[0] && dates[1]) {
       const [start, end] = dates;
