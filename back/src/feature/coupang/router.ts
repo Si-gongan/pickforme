@@ -1,8 +1,9 @@
 import Router from '@koa/router';
 import coupangCrawlerService from './crawler.service';
 import { log } from 'utils/logger';
-import { extractAndValidateCoupangUrl } from './utils';
-import { searchProducts, getDeeplinks } from './api.service';
+import { extractAndValidateCoupangUrl, createKSTDateFilter } from './utils';
+import { searchProducts, getDeeplinks, getOrders, getCommissions } from './api.service';
+import { default as UrlTransformLog } from './models';
 
 const router = new Router({
   prefix: '/coupang',
@@ -148,8 +149,6 @@ router.post('/deeplink', async (ctx) => {
 
   // 로그 저장
   try {
-    const { default: UrlTransformLog } = await import('./models');
-
     const logData = {
       requestId,
       originalInputUrl: urls[0],
@@ -293,6 +292,411 @@ router.post('/cleanup', async (ctx) => {
     ctx.body = {
       success: false,
       message: '크롤러 정리 중 오류가 발생했습니다.',
+    };
+  }
+});
+
+// 주문 정보 조회
+router.get('/reports/orders', async (ctx) => {
+  try {
+    const { startDate, endDate, subId, page = '0' } = ctx.query;
+
+    // 필수 파라미터 검증
+    if (!startDate || !endDate) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'startDate와 endDate는 필수 파라미터입니다.',
+      };
+      return;
+    }
+
+    // 날짜 형식 검증 (yyyyMMdd)
+    const dateRegex = /^\d{8}$/;
+    if (!dateRegex.test(startDate as string) || !dateRegex.test(endDate as string)) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '날짜는 yyyyMMdd 형식이어야 합니다.',
+      };
+      return;
+    }
+
+    // 날짜 범위 검증 (30일 이내)
+    const start = new Date(
+      (startDate as string).substring(0, 4) +
+        '-' +
+        (startDate as string).substring(4, 6) +
+        '-' +
+        (startDate as string).substring(6, 8)
+    );
+    const end = new Date(
+      (endDate as string).substring(0, 4) +
+        '-' +
+        (endDate as string).substring(4, 6) +
+        '-' +
+        (endDate as string).substring(6, 8)
+    );
+
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '시작일과 종료일의 차이는 30일 이하여야 합니다.',
+      };
+      return;
+    }
+
+    const pageNum = parseInt(page as string, 10);
+    if (isNaN(pageNum) || pageNum < 0) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'page는 0 이상의 정수여야 합니다.',
+      };
+      return;
+    }
+
+    const result = await getOrders(
+      startDate as string,
+      endDate as string,
+      pageNum,
+      subId as string
+    );
+
+    ctx.body = {
+      success: true,
+      data: result,
+    };
+
+    void log.info('쿠팡 주문 정보 조회 성공', 'COUPANG', 'LOW', {
+      startDate,
+      endDate,
+      subId,
+      page: pageNum,
+    });
+  } catch (error) {
+    console.error('❌ 쿠팡 주문 정보 조회 실패:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: error instanceof Error ? error.message : '주문 정보 조회 중 오류가 발생했습니다.',
+    };
+    void log.error('쿠팡 주문 정보 조회 실패', 'COUPANG', 'MEDIUM', {
+      query: ctx.query,
+      error: error instanceof Error ? error.stack : error,
+    });
+  }
+});
+
+// 수수료 정보 조회
+router.get('/reports/commissions', async (ctx) => {
+  try {
+    const { startDate, endDate, subId, page = '0' } = ctx.query;
+
+    // 필수 파라미터 검증
+    if (!startDate || !endDate) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'startDate와 endDate는 필수 파라미터입니다.',
+      };
+      return;
+    }
+
+    // 날짜 형식 검증 (yyyyMMdd)
+    const dateRegex = /^\d{8}$/;
+    if (!dateRegex.test(startDate as string) || !dateRegex.test(endDate as string)) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '날짜는 yyyyMMdd 형식이어야 합니다.',
+      };
+      return;
+    }
+
+    // 날짜 범위 검증 (30일 이내)
+    const start = new Date(
+      (startDate as string).substring(0, 4) +
+        '-' +
+        (startDate as string).substring(4, 6) +
+        '-' +
+        (startDate as string).substring(6, 8)
+    );
+    const end = new Date(
+      (endDate as string).substring(0, 4) +
+        '-' +
+        (endDate as string).substring(4, 6) +
+        '-' +
+        (endDate as string).substring(6, 8)
+    );
+
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '시작일과 종료일의 차이는 30일 이하여야 합니다.',
+      };
+      return;
+    }
+
+    const pageNum = parseInt(page as string, 10);
+    if (isNaN(pageNum) || pageNum < 0) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'page는 0 이상의 정수여야 합니다.',
+      };
+      return;
+    }
+
+    const result = await getCommissions(
+      startDate as string,
+      endDate as string,
+      pageNum,
+      subId as string
+    );
+
+    ctx.body = {
+      success: true,
+      data: result,
+    };
+
+    void log.info('쿠팡 수수료 정보 조회 성공', 'COUPANG', 'LOW', {
+      startDate,
+      endDate,
+      subId,
+      page: pageNum,
+    });
+  } catch (error) {
+    console.error('❌ 쿠팡 수수료 정보 조회 실패:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: error instanceof Error ? error.message : '수수료 정보 조회 중 오류가 발생했습니다.',
+    };
+    void log.error('쿠팡 수수료 정보 조회 실패', 'COUPANG', 'MEDIUM', {
+      query: ctx.query,
+      error: error instanceof Error ? error.stack : error,
+    });
+  }
+});
+
+// URL 변환 로그 관련 엔드포인트들
+
+// 테스트용 API - 모든 데이터 조회
+router.get('/url-transform-logs/test', async (ctx) => {
+  try {
+    const allLogs = await UrlTransformLog.find({}).sort({ createdAt: -1 }).limit(10).lean();
+    console.log('🧪 테스트 API - 전체 로그 수:', allLogs.length);
+
+    ctx.body = {
+      success: true,
+      data: {
+        count: allLogs.length,
+        logs: allLogs,
+      },
+    };
+  } catch (error) {
+    console.error('테스트 API 오류:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: '테스트 API 오류',
+    };
+  }
+});
+
+// URL 변환 로그 목록 조회
+router.get('/url-transform-logs/list', async (ctx) => {
+  try {
+    const { page = 1, limit = 20, urlType, transformSuccess, deeplinkSuccess, keyword } = ctx.query;
+
+    const filter: any = {};
+
+    if (urlType && urlType !== '') filter.urlType = urlType;
+    if (transformSuccess !== undefined && transformSuccess !== '')
+      filter.transformSuccess = transformSuccess === 'true';
+    if (deeplinkSuccess !== undefined && deeplinkSuccess !== '')
+      filter.deeplinkSuccess = deeplinkSuccess === 'true';
+    if (keyword) {
+      filter.$or = [
+        { originalInputUrl: { $regex: keyword, $options: 'i' } },
+        { normalizedUrl: { $regex: keyword, $options: 'i' } },
+        { productId: { $regex: keyword, $options: 'i' } },
+      ];
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [results, total] = await Promise.all([
+      UrlTransformLog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).lean(),
+      UrlTransformLog.countDocuments(filter),
+    ]);
+
+    console.log('📋 URL 변환 로그 목록 조회:', {
+      filter,
+      skip,
+      limit: Number(limit),
+      resultsCount: results.length,
+      total,
+    });
+
+    const totalPages = Math.ceil(total / Number(limit));
+
+    ctx.body = {
+      success: true,
+      data: {
+        results,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error('URL 변환 로그 목록 조회 오류:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: 'URL 변환 로그 목록 조회 중 오류가 발생했습니다.',
+    };
+  }
+});
+
+// 예를 들어 23일부터 24일까지 조회하고 싶다.
+// 그러면 날짜 필터는 10월 22일 15시 ~ 10월 23일 15시로 되어야 함.
+
+// URL 변환 통계 조회
+router.get('/url-transform-logs/stats', async (ctx) => {
+  try {
+    const { startDate, endDate } = ctx.query;
+
+    // 한국 시간을 고려한 날짜 필터 생성
+    const dateFilter = createKSTDateFilter(startDate as string, endDate as string);
+
+    const matchFilter: any = {};
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter.createdAt = dateFilter;
+    }
+
+    const stats = await UrlTransformLog.aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: null,
+          totalRequests: { $sum: 1 },
+          transformSuccessCount: {
+            $sum: { $cond: ['$transformSuccess', 1, 0] },
+          },
+          deeplinkSuccessCount: {
+            $sum: { $cond: ['$deeplinkSuccess', 1, 0] },
+          },
+          avgDurationMs: { $avg: '$durationMs' },
+        },
+      },
+      {
+        $project: {
+          totalRequests: 1,
+          transformSuccessCount: 1,
+          deeplinkSuccessCount: 1,
+          transformSuccessRate: {
+            $multiply: [{ $divide: ['$transformSuccessCount', '$totalRequests'] }, 100],
+          },
+          deeplinkSuccessRate: {
+            $multiply: [{ $divide: ['$deeplinkSuccessCount', '$totalRequests'] }, 100],
+          },
+          avgDurationMs: { $round: ['$avgDurationMs', 2] },
+        },
+      },
+    ]);
+
+    // URL 타입별 통계를 별도로 조회
+    const urlTypeStats = await UrlTransformLog.aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: '$urlType',
+          count: { $sum: 1 },
+          transformSuccess: { $sum: { $cond: ['$transformSuccess', 1, 0] } },
+          deeplinkSuccess: { $sum: { $cond: ['$deeplinkSuccess', 1, 0] } },
+        },
+      },
+      {
+        $project: {
+          urlType: '$_id',
+          count: 1,
+          transformSuccess: 1,
+          deeplinkSuccess: 1,
+          transformSuccessRate: {
+            $multiply: [{ $divide: ['$transformSuccess', '$count'] }, 100],
+          },
+          deeplinkSuccessRate: {
+            $multiply: [{ $divide: ['$deeplinkSuccess', '$count'] }, 100],
+          },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    const result = stats[0] || {
+      totalRequests: 0,
+      transformSuccessCount: 0,
+      deeplinkSuccessCount: 0,
+      transformSuccessRate: 0,
+      deeplinkSuccessRate: 0,
+      avgDurationMs: 0,
+    };
+
+    ctx.body = {
+      success: true,
+      data: {
+        ...result,
+        urlTypeStats,
+      },
+    };
+  } catch (error) {
+    console.error('URL 변환 통계 조회 오류:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: 'URL 변환 통계 조회 중 오류가 발생했습니다.',
+    };
+  }
+});
+
+// 특정 Request ID의 상세 로그 조회
+router.get('/url-transform-logs/:requestId', async (ctx) => {
+  try {
+    const { requestId } = ctx.params;
+
+    const urlTransformLog = await UrlTransformLog.findOne({ requestId }).lean();
+
+    if (!urlTransformLog) {
+      ctx.status = 404;
+      ctx.body = {
+        success: false,
+        message: '해당 Request ID의 로그를 찾을 수 없습니다.',
+      };
+      return;
+    }
+
+    ctx.body = {
+      success: true,
+      data: log,
+    };
+  } catch (error) {
+    console.error('URL 변환 로그 상세 조회 오류:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: 'URL 변환 로그 상세 조회 중 오류가 발생했습니다.',
     };
   }
 });

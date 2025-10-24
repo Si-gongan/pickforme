@@ -46,7 +46,7 @@ export default function UrlTransformLogDetailPage() {
     setLoading(true);
     try {
       const { data } = await axios.get<{ data: UrlTransformLog }>(
-        `/url-transform-logs/${requestId}`
+        `/coupang/url-transform-logs/${requestId}`
       );
       setLog(data.data);
     } catch (e) {

@@ -3,6 +3,34 @@
  */
 
 /**
+ * 한국 시간(KST)을 고려한 날짜 필터 생성 유틸리티
+ * @param startDate - 시작일 (YYYY-MM-DD 형식)
+ * @param endDate - 종료일 (YYYY-MM-DD 형식)
+ * @returns MongoDB 쿼리용 날짜 필터 객체
+ */
+export function createKSTDateFilter(startDate?: string, endDate?: string) {
+  const dateFilter: any = {};
+
+  if (startDate) {
+    // 시작일의 00:00:00 KST를 UTC로 변환 (09:00:00 UTC)
+    const startDateKST = new Date(startDate);
+    startDateKST.setHours(0, 0, 0, 0);
+    const startDateUTC = new Date(startDateKST.getTime() - 9 * 60 * 60 * 1000);
+    dateFilter.$gte = startDateUTC;
+  }
+
+  if (endDate) {
+    // 종료일의 23:59:59 KST를 UTC로 변환 (14:59:59 UTC 다음날)
+    const endDateKST = new Date(endDate);
+    endDateKST.setHours(23, 59, 59, 999);
+    const endDateUTC = new Date(endDateKST.getTime() - 9 * 60 * 60 * 1000);
+    dateFilter.$lte = endDateUTC;
+  }
+
+  return dateFilter;
+}
+
+/**
  * 텍스트에서 쿠팡 URL을 추출합니다.
  * @param text - URL이 포함된 텍스트
  * @returns 추출된 쿠팡 URL 또는 null

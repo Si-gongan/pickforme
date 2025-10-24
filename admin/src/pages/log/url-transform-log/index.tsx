@@ -62,7 +62,7 @@ export default function UrlTransformLogListPage() {
     setLoading(true);
     try {
       const { data } = await axios.get<{ success: boolean; data: ListRespRaw }>(
-        "/url-transform-logs/list",
+        "/coupang/url-transform-logs/list",
         {
           params: { page, limit, ...filterParams },
         }
