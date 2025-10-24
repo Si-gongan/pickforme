@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import coupangCrawlerService from './crawler.service';
 import { log } from 'utils/logger';
 import { extractAndValidateCoupangUrl } from './utils';
-import { searchProducts, getDeeplinks } from './api.service';
+import { searchProducts, getDeeplinks, getOrders, getCommissions } from './api.service';
 
 const router = new Router({
   prefix: '/coupang',
@@ -294,6 +294,198 @@ router.post('/cleanup', async (ctx) => {
       success: false,
       message: '크롤러 정리 중 오류가 발생했습니다.',
     };
+  }
+});
+
+// 주문 정보 조회
+router.get('/reports/orders', async (ctx) => {
+  try {
+    const { startDate, endDate, subId, page = '0' } = ctx.query;
+
+    // 필수 파라미터 검증
+    if (!startDate || !endDate) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'startDate와 endDate는 필수 파라미터입니다.',
+      };
+      return;
+    }
+
+    // 날짜 형식 검증 (yyyyMMdd)
+    const dateRegex = /^\d{8}$/;
+    if (!dateRegex.test(startDate as string) || !dateRegex.test(endDate as string)) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '날짜는 yyyyMMdd 형식이어야 합니다.',
+      };
+      return;
+    }
+
+    // 날짜 범위 검증 (30일 이내)
+    const start = new Date(
+      (startDate as string).substring(0, 4) +
+        '-' +
+        (startDate as string).substring(4, 6) +
+        '-' +
+        (startDate as string).substring(6, 8)
+    );
+    const end = new Date(
+      (endDate as string).substring(0, 4) +
+        '-' +
+        (endDate as string).substring(4, 6) +
+        '-' +
+        (endDate as string).substring(6, 8)
+    );
+
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '시작일과 종료일의 차이는 30일 이하여야 합니다.',
+      };
+      return;
+    }
+
+    const pageNum = parseInt(page as string, 10);
+    if (isNaN(pageNum) || pageNum < 0) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'page는 0 이상의 정수여야 합니다.',
+      };
+      return;
+    }
+
+    const result = await getOrders(
+      startDate as string,
+      endDate as string,
+      pageNum,
+      subId as string
+    );
+
+    ctx.body = {
+      success: true,
+      data: result,
+    };
+
+    void log.info('쿠팡 주문 정보 조회 성공', 'COUPANG', 'LOW', {
+      startDate,
+      endDate,
+      subId,
+      page: pageNum,
+    });
+  } catch (error) {
+    console.error('❌ 쿠팡 주문 정보 조회 실패:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: error instanceof Error ? error.message : '주문 정보 조회 중 오류가 발생했습니다.',
+    };
+    void log.error('쿠팡 주문 정보 조회 실패', 'COUPANG', 'MEDIUM', {
+      query: ctx.query,
+      error: error instanceof Error ? error.stack : error,
+    });
+  }
+});
+
+// 수수료 정보 조회
+router.get('/reports/commissions', async (ctx) => {
+  try {
+    const { startDate, endDate, subId, page = '0' } = ctx.query;
+
+    // 필수 파라미터 검증
+    if (!startDate || !endDate) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'startDate와 endDate는 필수 파라미터입니다.',
+      };
+      return;
+    }
+
+    // 날짜 형식 검증 (yyyyMMdd)
+    const dateRegex = /^\d{8}$/;
+    if (!dateRegex.test(startDate as string) || !dateRegex.test(endDate as string)) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '날짜는 yyyyMMdd 형식이어야 합니다.',
+      };
+      return;
+    }
+
+    // 날짜 범위 검증 (30일 이내)
+    const start = new Date(
+      (startDate as string).substring(0, 4) +
+        '-' +
+        (startDate as string).substring(4, 6) +
+        '-' +
+        (startDate as string).substring(6, 8)
+    );
+    const end = new Date(
+      (endDate as string).substring(0, 4) +
+        '-' +
+        (endDate as string).substring(4, 6) +
+        '-' +
+        (endDate as string).substring(6, 8)
+    );
+
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: '시작일과 종료일의 차이는 30일 이하여야 합니다.',
+      };
+      return;
+    }
+
+    const pageNum = parseInt(page as string, 10);
+    if (isNaN(pageNum) || pageNum < 0) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        message: 'page는 0 이상의 정수여야 합니다.',
+      };
+      return;
+    }
+
+    const result = await getCommissions(
+      startDate as string,
+      endDate as string,
+      pageNum,
+      subId as string
+    );
+
+    ctx.body = {
+      success: true,
+      data: result,
+    };
+
+    void log.info('쿠팡 수수료 정보 조회 성공', 'COUPANG', 'LOW', {
+      startDate,
+      endDate,
+      subId,
+      page: pageNum,
+    });
+  } catch (error) {
+    console.error('❌ 쿠팡 수수료 정보 조회 실패:', error);
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: error instanceof Error ? error.message : '수수료 정보 조회 중 오류가 발생했습니다.',
+    };
+    void log.error('쿠팡 수수료 정보 조회 실패', 'COUPANG', 'MEDIUM', {
+      query: ctx.query,
+      error: error instanceof Error ? error.stack : error,
+    });
   }
 });
 
