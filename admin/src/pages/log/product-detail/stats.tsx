@@ -263,7 +263,9 @@ export default function CrawlLogStatsPage() {
           <Button type="primary" onClick={fetchStats} loading={loading}>
             새로고침
           </Button>
-          <Button onClick={() => router.push("/crawl-log")}>← 리스트로</Button>
+          <Button onClick={() => router.push("/log/product-detail")}>
+            ← 리스트로
+          </Button>
         </Space>
       </TopBar>
 

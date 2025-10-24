@@ -145,7 +145,7 @@ export default function SearchLogListPage() {
       key: "requestId",
       width: 280,
       render: (v: string) => (
-        <a onClick={() => router.push(`/crawl-log/search/${v}`)}>{v}</a>
+        <a onClick={() => router.push(`/log/search/${v}`)}>{v}</a>
       ),
     },
     { title: "키워드", dataIndex: "keyword", key: "keyword", ellipsis: true },
@@ -187,9 +187,7 @@ export default function SearchLogListPage() {
       key: "action",
       width: 120,
       render: (_: any, record: GroupedRow) => (
-        <Button
-          onClick={() => router.push(`/crawl-log/search/${record.requestId}`)}
-        >
+        <Button onClick={() => router.push(`/log/search/${record.requestId}`)}>
           상세 보기
         </Button>
       ),
@@ -221,7 +219,7 @@ export default function SearchLogListPage() {
           </Button>
           <Button
             type="primary"
-            onClick={() => router.push("/crawl-log/search/stats")}
+            onClick={() => router.push("/log/search/stats")}
           >
             통계 바로가기
           </Button>

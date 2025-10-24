@@ -173,9 +173,7 @@ export default function CrawlLogListPage() {
       width: 120,
       render: (_: any, record: GroupedLog) => (
         <Button
-          onClick={() =>
-            router.push(`/crawl-log/product-detail/${record.requestId}`)
-          }
+          onClick={() => router.push(`/log/product-detail/${record.requestId}`)}
         >
           상세 보기
         </Button>
@@ -196,9 +194,7 @@ export default function CrawlLogListPage() {
           >
             🔄 새로고침
           </Button>
-          <Button
-            onClick={() => router.push("/crawl-log/product-detail/stats")}
-          >
+          <Button onClick={() => router.push("/log/product-detail/stats")}>
             통계
           </Button>
         </ButtonGroup>
