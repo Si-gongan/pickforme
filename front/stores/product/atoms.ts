@@ -28,6 +28,7 @@ import { Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { resolveRedirectUrl, sanitizeUrl, normalizeUrl, parseCoupangIdsFromUrl } from '../../utils/url';
 import { logEvent } from '@/services/firebase';
+import { mergeProductData } from '../../utils/product';
 
 export const mainProductsAtom = atom<MainProductsState>({
     special: [],
@@ -106,10 +107,9 @@ export const setProductAtom = atom(null, async (get, set, product: Product) => {
         set(productDetailAtom, {
             ...productDetail,
             url: product.url,
-            product: {
-                ...productDetail?.product, // 기존 product의 정보 유지 (caption 등)
-                ...product // 새로운 정보로 업데이트
-            }
+            product: productDetail?.product
+                ? mergeProductData(productDetail.product, product) // 유효한 값만 업데이트
+                : product
         });
 
         // 백엔드 db 업데이트 요청
@@ -177,6 +177,11 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
         } as ProductDetailState);
     }
 
+    if (!product) {
+        console.error('상품 정보가 없습니다.');
+        return;
+    }
+
     const result = await attempt(() => GetProductReviewAPI({ product, reviews }));
 
     if (!result.ok) {
@@ -191,7 +196,7 @@ export const getProductReviewAtom = atom(null, async (get, set) => {
     if (
         response &&
         response.data &&
-        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url).productId ===
+        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url || '').productId ===
             parseCoupangIdsFromUrl(product.url).productId
     ) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
@@ -222,7 +227,7 @@ export const getProductReportAtom = atom(null, async (get, set) => {
     if (
         response &&
         response.data &&
-        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url).productId ===
+        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url || '').productId ===
             parseCoupangIdsFromUrl(product.url).productId
     ) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });
@@ -255,7 +260,7 @@ export const getProductCaptionAtom = atom(null, async (get, set) => {
     if (
         response &&
         response.data &&
-        parseCoupangIdsFromUrl(get(productDetailAtom).product?.url).productId ===
+        parseCoupangIdsFromUrl(get(productDetailAtom)?.product?.url || '').productId ===
             parseCoupangIdsFromUrl(product.url).productId
     ) {
         set(productDetailAtom, { ...get(productDetailAtom), ...response.data, url: product.url as string });

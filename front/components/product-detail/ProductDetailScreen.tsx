@@ -42,6 +42,7 @@ import { TABS } from '@/utils/common';
 import { v4 as uuidv4 } from 'uuid';
 import { logCrawlProcessResult } from '@/utils/crawlLog';
 import { logEvent, logViewItemDetail } from '@/services/firebase';
+import { mergeProductData } from '@/utils/product';
 
 interface ProductDetailScreenProps {}
 
@@ -129,13 +130,15 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 report?: LoadingStatus;
             } = {};
 
+            const updatedProducts = mergeProductData(product, data);
+
             // caption 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!checkRequiredData(TABS.CAPTION, data, [])) {
+            if (!checkRequiredData(TABS.CAPTION, updatedProducts, [])) {
                 updates.caption = LoadingStatus.NO_DATA;
             }
 
             // report 탭에 필요한 데이터가 없으면 NO_DATA로 설정
-            if (!checkRequiredData(TABS.REPORT, data, [])) {
+            if (!checkRequiredData(TABS.REPORT, updatedProducts, [])) {
                 updates.report = LoadingStatus.NO_DATA;
             }
 
@@ -171,7 +174,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                 // 있다면 상품 리뷰 데이터 설정. 이후 useTabData에서 LoadingStatus.LOADING으로 변경됨.
                 setProductReview(data);
                 // 빈 배열이면 NO_DATA로 설정.
-                if (data.length == 0) {
+
+                if (!checkRequiredData(TABS.REVIEW, product, data)) {
                     setProductLoadingStatus({
                         review: LoadingStatus.NO_DATA
                     });

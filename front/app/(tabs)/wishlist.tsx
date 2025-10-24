@@ -20,6 +20,7 @@ import { useRef } from 'react';
 import { Text as TextBase, AccessibilityInfo, findNodeHandle } from 'react-native';
 
 import { useWebViewDetail } from '../../components/Webview/detail/webview-detail';
+import { mergeProductData } from '@/utils/product';
 // import { mainProductsAtom } from '../../stores/product/atoms';
 
 enum TABS {
@@ -291,17 +292,8 @@ export default function WishListScreen() {
                             ? JSON.parse(JSON.stringify(request.product.name))
                             : updatedProduct.name;
 
-                    // 새로운 product 객체 생성
-                    const updatedProductItem = {
-                        ...request.product!,
-                        // 기존 이름 유지
-                        name: originalName || updatedProduct.name,
-                        // 새로 업데이트된 정보 반영
-                        reviews: updatedProduct.reviews || request.product!.reviews || null,
-                        ratings: updatedProduct.ratings || request.product!.ratings || null,
-                        discount_rate: updatedProduct.discount_rate || request.product!.discount_rate || null,
-                        price: updatedProduct.price || request.product!.price || 0
-                    };
+                    // 새로운 product 객체 생성 (유효한 값만 업데이트)
+                    const updatedProductItem = mergeProductData(request.product!, updatedProduct);
 
                     // 새 요청 객체 생성
                     const updatedRequest = {
