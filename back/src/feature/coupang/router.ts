@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 import coupangCrawlerService from './crawler.service';
 import { log } from 'utils/logger';
-import { extractAndValidateCoupangUrl } from './utils';
+import { extractAndValidateCoupangUrl, createKSTDateFilter } from './utils';
 import { searchProducts, getDeeplinks, getOrders, getCommissions } from './api.service';
 import { default as UrlTransformLog } from './models';
 
@@ -570,14 +570,16 @@ router.get('/url-transform-logs/list', async (ctx) => {
   }
 });
 
+// 예를 들어 23일부터 24일까지 조회하고 싶다.
+// 그러면 날짜 필터는 10월 22일 15시 ~ 10월 23일 15시로 되어야 함.
+
 // URL 변환 통계 조회
 router.get('/url-transform-logs/stats', async (ctx) => {
   try {
     const { startDate, endDate } = ctx.query;
 
-    const dateFilter: any = {};
-    if (startDate) dateFilter.$gte = new Date(startDate as string);
-    if (endDate) dateFilter.$lte = new Date(endDate as string);
+    // 한국 시간을 고려한 날짜 필터 생성
+    const dateFilter = createKSTDateFilter(startDate as string, endDate as string);
 
     const matchFilter: any = {};
     if (Object.keys(dateFilter).length > 0) {
