@@ -12,7 +12,7 @@ const API_DOMAIN = 'https://api-gateway.coupang.com';
 const API_BASE_PATH = '/v2/providers/affiliate_open_api/apis/openapi';
 const ACCESS_KEY = process.env.COUPANG_ACCESS_KEY;
 const SECRET_KEY = process.env.COUPANG_SECRET_KEY;
-const SUB_ID = process.env.COUPANG_CHANNEL_ID;
+const SUB_ID = process.env.COUPANG_CHANNEL_ID || '';
 
 if (!ACCESS_KEY || !SECRET_KEY || !SUB_ID) {
   throw new Error('Coupang Access Key, Secret Key, Channel ID가 .env 파일에 설정되지 않았습니다.');
