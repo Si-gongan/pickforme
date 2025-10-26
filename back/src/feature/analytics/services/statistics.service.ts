@@ -308,7 +308,8 @@ export class StatisticsService {
           google_login_attempt_count,
           apple_login_attempt_count,
           signup_page_pv,
-          register_success_count
+          register_success_count,
+          total_auth_success_count
         FROM \`${this.DATASET_ID}.daily_login_metrics\`
         WHERE summary_date BETWEEN @start_date AND @end_date
         ORDER BY summary_date
@@ -333,6 +334,7 @@ export class StatisticsService {
           apple_login_attempt_count: row.apple_login_attempt_count || 0,
           signup_page_pv: row.signup_page_pv || 0,
           register_success_count: row.register_success_count || 0,
+          total_auth_success_count: row.total_auth_success_count || 0,
         });
       });
 
@@ -401,6 +403,7 @@ export class StatisticsService {
           apple_login_attempt_count: 0,
           signup_page_pv: 0,
           register_success_count: 0,
+          total_auth_success_count: 0,
         };
         const ttfa = ttfaMap.get(date) || {
           total_sessions_with_first_action: 0,
@@ -413,12 +416,15 @@ export class StatisticsService {
 
         // 전환율 계산
         const signupConversionRate =
-          login.signup_page_pv > 0 ? login.register_success_count / login.signup_page_pv : 0;
+          login.signup_page_pv > 0 ? login.total_auth_success_count / login.signup_page_pv : 0;
         const loginSuccessRate =
-          login.login_attempt_count > 0 ? login.login_success_count / login.login_attempt_count : 0;
+          login.login_attempt_count > 0
+            ? login.total_auth_success_count / login.login_attempt_count
+            : 0;
         const loginFailureRate =
           login.login_attempt_count > 0
-            ? (login.login_attempt_count - login.login_success_count) / login.login_attempt_count
+            ? (login.login_attempt_count - login.total_auth_success_count) /
+              login.login_attempt_count
             : 0;
         const firstVisitorConversionRate =
           firstVisitor.new_users_count > 0
