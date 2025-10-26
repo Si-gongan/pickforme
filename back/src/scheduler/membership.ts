@@ -1,6 +1,8 @@
 import cron from 'node-cron';
 import db from 'models';
 import { log } from 'utils/logger/logger';
+import { ProductType } from 'models/product';
+import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
 
 const SCHEDULER_NAME = 'membership';
 
@@ -18,7 +20,31 @@ const checkMembershipExpirations = async () => {
   });
   try {
     for (const user of expiredUsers) {
-      await user.processExpiredMembership();
+      const activePurchases = await db.Purchase.find({
+        userId: user._id,
+        isExpired: false,
+        'product.type': ProductType.SUBSCRIPTION,
+      });
+
+      // 비정상적인 케이스
+      if (activePurchases.length > 1) {
+        await log.error(
+          '멤버십 만료 처리 중 활성 구독이 여러 개 존재합니다. 만료 처리를 건너뜁니다.',
+          'SCHEDULER',
+          'HIGH',
+          {
+            scheduler: SCHEDULER_NAME,
+            userId: user._id,
+          }
+        );
+      } else if (activePurchases.length === 1) {
+        //이 경우 멤버쉽을 구매한 유저.
+        await subscriptionManagementService.expireSubscription(activePurchases[0]);
+      } else {
+        // 이 경우 멤버쉽 구매는 아니고 이벤트로 멤버쉽이 적용된 유저.
+        await user.processExpiredMembership();
+      }
+
       await log.info('멤버십 만료 처리 완료', 'SCHEDULER', 'LOW', {
         scheduler: SCHEDULER_NAME,
         userId: user._id,

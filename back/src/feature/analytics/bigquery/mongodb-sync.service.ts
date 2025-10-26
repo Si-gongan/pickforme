@@ -228,6 +228,7 @@ export class MongodbSyncService {
           lastLoginAt: user.lastLoginAt?.toISOString() || null,
           MembershipAt: user.MembershipAt?.toISOString() || null,
           lastMembershipAt: user.lastMembershipAt?.toISOString() || null,
+          MembershipExpiresAt: user.MembershipExpiresAt?.toISOString() || null,
           event: user.event || null,
           createdAt: user.createdAt?.toISOString() || null,
           updatedAt: user.updatedAt?.toISOString() || null,
