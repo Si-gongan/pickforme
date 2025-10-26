@@ -213,6 +213,71 @@ export async function searchProducts(keyword: string, limit: number = 10) {
 }
 
 /**
+ * 주문 정보를 가져옵니다.
+ * @param startDate 시작일 (yyyyMMdd 형식)
+ * @param endDate 종료일 (yyyyMMdd 형식)
+ * @param page 페이지 번호 (기본값: 0)
+ * @param subId 채널 아이디 (기본값: SUB_ID)
+ */
+export async function getOrders(
+  startDate: string,
+  endDate: string,
+  page: number = 0,
+  subId: string = SUB_ID
+) {
+  const METHOD = 'GET';
+  const PATH = `${API_BASE_PATH}/reports/orders`;
+  const QUERY = `startDate=${startDate}&endDate=${endDate}&subId=${subId}&page=${page}`;
+
+  try {
+    const authorization = generateAuthorizationHeader(METHOD, PATH, QUERY);
+    const response = await axios.get(`${API_DOMAIN}${PATH}?${QUERY}`, {
+      headers: { Authorization: authorization },
+    });
+
+    return response.data;
+  } catch (error) {
+    void log.error(`Coupang Orders API 호출 실패 (${startDate}~${endDate})`, 'API', 'HIGH', {
+      error,
+    });
+    throw error;
+  }
+}
+
+/**
+ * 수수료 정보를 가져옵니다.
+ * @param startDate 시작일 (yyyyMMdd 형식)
+ * @param endDate 종료일 (yyyyMMdd 형식)
+ * @param page 페이지 번호 (기본값: 0)
+ * @param subId 채널 아이디 (기본값: SUB_ID)
+ */
+export async function getCommissions(
+  startDate: string,
+  endDate: string,
+  page: number = 0,
+  subId: string = SUB_ID
+) {
+  const METHOD = 'GET';
+  const PATH = `${API_BASE_PATH}/reports/commission`;
+  const QUERY = `startDate=${startDate}&endDate=${endDate}&subId=${subId}&page=${page}`;
+  console.log('🚀 ~ getCommissions ~ QUERY:', QUERY);
+
+  try {
+    const authorization = generateAuthorizationHeader(METHOD, PATH, QUERY);
+    const response = await axios.get(`${API_DOMAIN}${PATH}?${QUERY}`, {
+      headers: { Authorization: authorization },
+    });
+
+    return response.data;
+  } catch (error) {
+    void log.error(`Coupang Commissions API 호출 실패 (${startDate}~${endDate})`, 'API', 'HIGH', {
+      error,
+    });
+    throw error;
+  }
+}
+
+/**
  * API 데이터를 미리 로드하고 캐싱합니다. (변경 없음)
  */
 export async function preloadCoupangAPI() {

@@ -56,7 +56,7 @@ export default function UrlTransformLogStatsPage() {
       if (endDate) params.endDate = endDate;
 
       const { data } = await axios.get<{ success: boolean; data: StatsData }>(
-        "/url-transform-logs/stats",
+        "/coupang/url-transform-logs/stats",
         {
           params,
         }

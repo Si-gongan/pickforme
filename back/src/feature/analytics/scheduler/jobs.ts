@@ -11,7 +11,7 @@ const getTargetDate = () => {
 export const foundationJobs: MetricJob[] = [
   {
     name: '활성 유저 지표',
-    sqlFile: 'summary/foundation/getDailyActiveUniqueIds.sql',
+    sqlFile: 'foundation/getDailyActiveUniqueIds.sql',
     destinationTable: 'daily_active_unique_ids',
     writeDisposition: 'MERGE',
     getQueryParams: () => ({
