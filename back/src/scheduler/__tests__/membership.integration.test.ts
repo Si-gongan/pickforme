@@ -2,6 +2,8 @@ import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
 import db from 'models';
 import { handleMembershipScheduler } from '../membership';
 import { POINTS } from '../../constants/points';
+import { subscriptionCreationService } from 'feature/subscription/service/subscription-creation.service';
+import { createTestUser, createTestProduct } from '../../__tests__/testUtils';
 
 const RealDate = Date;
 const testDate = '2023-02-01T00:00:00+09:00';
@@ -90,6 +92,74 @@ describe('Membership Scheduler Integration Tests', () => {
       expect(updatedUser?.lastMembershipAt).toBeNull();
       expect(updatedUser?.MembershipExpiresAt).toBeNull();
       expect(updatedUser?.currentMembershipProductId).toBeNull();
+    });
+
+    it('일반 구매 멤버쉽의 경우 Purchase와 User 모두 만료 처리된다', async () => {
+      // 테스트용 상품 먼저 생성
+      const product = await createTestProduct({
+        productId: 'test_membership',
+        type: 1,
+        displayName: '테스트 멤버십',
+        point: 30,
+        aiPoint: 100,
+        platform: 'ios',
+        periodDate: 30,
+        renewalPeriodDate: 30,
+      });
+
+      const user = await createTestUser({
+        email: 'purchase_membership@example.com',
+        point: 100,
+        aiPoint: 1000,
+        MembershipAt: new Date('2022-12-29T15:00:00.000Z'),
+        MembershipExpiresAt: new Date('2023-01-29T15:00:00.000Z'), // 만료됨
+      });
+
+      await subscriptionCreationService.createSubscriptionWithoutValidation(
+        user._id,
+        product._id.toString()
+      );
+
+      await handleMembershipScheduler();
+
+      const updatedUser = await db.User.findById(user._id);
+      const updatedPurchase = await db.Purchase.findOne({ userId: user._id });
+
+      expect(updatedUser?.point).toBe(POINTS.DEFAULT_POINT);
+      expect(updatedUser?.aiPoint).toBe(POINTS.DEFAULT_AI_POINT);
+
+      // User 모델의 메서드로 멤버십 상태 확인
+      expect(updatedUser?.getMembershipStatus().isActive).toBe(false);
+      expect(updatedUser?.getMembershipStatus().msg).toBe('멤버십이 없습니다.');
+
+      // Purchase도 만료 처리되었는지 확인
+      expect(updatedPurchase?.isExpired).toBe(true);
+    });
+
+    it('이벤트 멤버쉽의 경우 User만 만료 처리된다 (Purchase 없음)', async () => {
+      const user = await createTestUser({
+        email: 'event_membership@example.com',
+        point: 100,
+        aiPoint: 1000,
+        MembershipAt: new Date('2022-12-29T15:00:00.000Z'),
+        MembershipExpiresAt: new Date('2023-01-29T15:00:00.000Z'), // 만료됨
+        currentMembershipProductId: 'event_membership',
+      });
+
+      await handleMembershipScheduler();
+
+      const updatedUser = await db.User.findById(user._id);
+      const purchases = await db.Purchase.find({ userId: user._id });
+
+      expect(updatedUser?.point).toBe(POINTS.DEFAULT_POINT);
+      expect(updatedUser?.aiPoint).toBe(POINTS.DEFAULT_AI_POINT);
+
+      // User 모델의 메서드로 멤버십 상태 확인
+      expect(updatedUser?.getMembershipStatus().isActive).toBe(false);
+      expect(updatedUser?.getMembershipStatus().msg).toBe('멤버십이 없습니다.');
+
+      // Purchase가 없는지 확인
+      expect(purchases).toHaveLength(0);
     });
   });
 
