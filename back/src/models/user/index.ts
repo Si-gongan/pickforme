@@ -2,7 +2,12 @@ import mongoose, { ClientSession } from 'mongoose';
 import jwt from 'utils/jwt';
 
 import { UserDocument, UserModel, LocalRegisterPayload, PushService } from './types';
-import { ProductReward } from 'models/product';
+import {
+  EventMembershipProductReward,
+  IProduct,
+  MembershipProductReward,
+  ProductReward,
+} from 'models/product';
 import constants from '../../constants';
 
 const { POINTS } = constants;
@@ -54,15 +59,24 @@ const UserSchema = new mongoose.Schema<UserDocument>(
       default: null,
     },
     // 멤버쉽 갱신 시점.
-    // 지금 상품의 경우 한달뒤에 만료되고 갱신이 따로 없지만,
-    // 한시련 이벤트의 경우 6개월 지속되기 때문에 갱신 시점을 기록하는 필드를 새롭게 만들었습니다.
     lastMembershipAt: {
       type: Date,
+      default: null,
+    },
+    // 멤버쉽 만료 시점.
+    MembershipExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    currentMembershipProductId: {
+      type: String,
       default: null,
     },
     phone: {
       type: String,
     },
+    // 이벤트 멤버십을 적용한 경우 이벤트 번호를 저장.
+    // currentProductId쪽으로 migration 하는 중.
     event: {
       type: Number,
       default: null,
@@ -128,12 +142,10 @@ UserSchema.methods.useAiPoint = async function useAiPoint(payload: number) {
   return this.aiPoint;
 };
 
-UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(
+UserSchema.methods._applyProductRewards = async function _applyProductRewards(
   rewards: ProductReward,
-  session?: mongoose.ClientSession,
   isAdditional = false
 ) {
-  // 갱신인 경우 포인트를 덮어쓰기, 아닌 경우 더하기
   if (isAdditional) {
     this.point += rewards.point;
     this.aiPoint += rewards.aiPoint;
@@ -141,40 +153,195 @@ UserSchema.methods.applyPurchaseRewards = async function applyPurchaseRewards(
     this.point = rewards.point;
     this.aiPoint = rewards.aiPoint;
   }
+};
 
-  // 멤버쉽 갱신이 아닌 만료 후 첫 멤버쉽 구매인 경우, MembershipAt을 새롭게 기록.
-  // 단 기존에 MembershipAt만 있었는 경우는 (구 유저들) MembershipAt을 새롭게 기록하지 않음.
-  if (!this.lastMembershipAt && !this.MembershipAt) {
-    this.MembershipAt = new Date();
-  }
-
-  this.lastMembershipAt = new Date();
+UserSchema.methods.applyProductRewards = async function applyProductRewards(
+  rewards: ProductReward,
+  session?: mongoose.ClientSession,
+  isAdditional = false
+) {
+  await this._applyProductRewards(rewards, isAdditional);
 
   await this.save({ session });
 };
 
-UserSchema.methods.applyEventRewards = async function applyEventRewards(
-  rewards: ProductReward,
-  eventType: number,
-  session?: mongoose.ClientSession
+UserSchema.methods._applyInitialMembershipRewards = async function _applyInitialMembershipRewards(
+  rewards: MembershipProductReward,
+  isAdditional = false
 ) {
-  await this.applyPurchaseRewards(rewards, session);
-  this.event = eventType;
+  const currentStatus = this.getMembershipStatus();
+
+  if (currentStatus.isActive) {
+    await this._processExpiredMembership();
+  }
+
+  await this._applyProductRewards(rewards, isAdditional);
+
+  this.MembershipAt = new Date();
+  this.lastMembershipAt = new Date();
+
+  this.MembershipExpiresAt = new Date(
+    this.MembershipAt.getTime() + rewards.periodDate * 24 * 60 * 60 * 1000
+  );
+
+  this.currentMembershipProductId = rewards.productId;
+};
+
+// 멤버쉽 첫 구매 시 포인트 충전 메서드.
+UserSchema.methods.applyInitialMembershipRewards = async function applyInitialMembershipRewards(
+  rewards: MembershipProductReward,
+  session?: mongoose.ClientSession,
+  isAdditional = false
+) {
+  await this._applyInitialMembershipRewards(rewards, isAdditional);
+
   await this.save({ session });
+};
+
+UserSchema.methods._applyMembershipRenewalRewards = async function _applyMembershipRenewalRewards(
+  rewards: MembershipProductReward,
+  isAdditional = false
+) {
+  await this._applyProductRewards(rewards, isAdditional);
+
+  this.lastMembershipAt = new Date();
+  this.markModified('lastMembershipAt');
+};
+
+// 멤버쉽 갱신 시 포인트 충전 메서드.
+UserSchema.methods.applyMembershipRenewalRewards = async function applyMembershipRenewalRewards(
+  rewards: MembershipProductReward,
+  session?: mongoose.ClientSession,
+  isAdditional = false
+) {
+  await this._applyMembershipRenewalRewards(rewards, isAdditional);
+
+  await this.save({ session });
+};
+
+UserSchema.methods._applyEventMembershipRewards = async function _applyEventMembershipRewards(
+  rewards: EventMembershipProductReward,
+  isAdditional = false
+) {
+  this.event = rewards.event;
+  await this._applyInitialMembershipRewards(rewards, isAdditional);
+};
+
+UserSchema.methods.applyEventMembershipRewards = async function applyEventMembershipRewards(
+  rewards: EventMembershipProductReward,
+  session?: mongoose.ClientSession,
+  isAdditional = false
+) {
+  await this._applyEventMembershipRewards(rewards, isAdditional);
+  await this.save({ session });
+};
+
+UserSchema.methods._processExpiredMembership = async function _processExpiredMembership() {
+  this.point = POINTS.DEFAULT_POINT;
+  this.aiPoint = POINTS.DEFAULT_AI_POINT;
+  this.MembershipAt = null;
+  this.lastMembershipAt = null;
+  this.MembershipExpiresAt = null;
+  this.currentMembershipProductId = null;
+  this.event = null;
 };
 
 UserSchema.methods.processExpiredMembership = async function processExpiredMembership(options?: {
   session?: ClientSession;
 }) {
-  this.point = POINTS.DEFAULT_POINT;
-  this.aiPoint = POINTS.DEFAULT_AI_POINT;
-  this.MembershipAt = null;
-  this.lastMembershipAt = null;
-
-  // 멤버쉽 만료 시 이벤트도 초기화해줌.
-  // 한시련 이벤트 종료 시 이벤트 초기화 로직을 여기서 처리해줌.
-  this.event = null;
+  await this._processExpiredMembership();
   await this.save(options);
+};
+
+UserSchema.methods.getCurrentEventId = async function getCurrentEventId() {
+  return this.event || null;
+};
+
+// User 모델에 추가
+UserSchema.methods.getMembershipStatus = function getMembershipStatus() {
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+
+  // 멤버십이 없는 경우
+  if (!this.MembershipAt || !this.MembershipExpiresAt) {
+    return {
+      isActive: false,
+      leftDays: 0,
+      expiresAt: null,
+      membershipAt: null,
+      msg: '멤버십이 없습니다.',
+    };
+  }
+
+  const membershipAt = new Date(this.MembershipAt);
+  membershipAt.setHours(0, 0, 0, 0);
+
+  const expiresAt = new Date(this.MembershipExpiresAt);
+  expiresAt.setHours(0, 0, 0, 0);
+
+  const timeDifference = expiresAt.getTime() - currentDate.getTime();
+  const leftDays = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+  if (leftDays > 0) {
+    return {
+      isActive: true,
+      leftDays,
+      expiresAt: this.MembershipExpiresAt,
+      membershipAt: this.MembershipAt,
+      msg: this.event ? '이벤트 멤버십이 활성화되어 있습니다.' : '멤버십이 활성화되어 있습니다.',
+    };
+  } else {
+    return {
+      isActive: false,
+      leftDays: 0,
+      expiresAt: this.MembershipExpiresAt,
+      membershipAt: this.MembershipAt,
+      msg: '멤버십이 만료되었습니다.',
+    };
+  }
+};
+
+// 간단한 활성화 여부만 확인하는 메서드
+UserSchema.methods.isMembershipActive = function isMembershipActive() {
+  return this.getMembershipStatus().isActive;
+};
+
+UserSchema.methods.shouldRenewMembership = function shouldRenewMembership(
+  currentProduct: IProduct
+) {
+  const now = new Date();
+
+  if (!currentProduct.renewalPeriodDate) {
+    throw new Error('상품 갱신 주기 정보가 존재하지 않습니다.');
+  }
+
+  // 멤버십이 없으면 갱신할 필요 없음
+  if (!this.MembershipAt || !this.MembershipExpiresAt) {
+    return false;
+  }
+
+  // 만료되었으면 갱신할 필요 없음 (만료 처리해야 함)
+  if (now >= this.MembershipExpiresAt) {
+    return false;
+  }
+
+  // lastMembershipAt이 없으면 갱신 필요
+  if (!this.lastMembershipAt) {
+    return true;
+  }
+
+  // lastMembershipAt + renewalPeriodDate가 현재 시간보다 이전이면 갱신 필요
+  const nextRenewalDate = new Date(this.lastMembershipAt);
+  nextRenewalDate.setTime(
+    nextRenewalDate.getTime() + currentProduct.renewalPeriodDate * 24 * 60 * 60 * 1000
+  );
+
+  return now >= nextRenewalDate;
+};
+
+// 남은 일수만 확인하는 메서드
+UserSchema.methods.getMembershipLeftDays = function getMembershipLeftDays() {
+  return this.getMembershipStatus().leftDays;
 };
 
 UserSchema.methods.initMonthPoint = async function initMonthPoint() {

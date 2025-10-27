@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import db from 'models';
-import { ProductType } from 'models/product';
 import { log } from 'utils/logger/logger';
+import { ProductType } from 'models/product';
 import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
 
 const SCHEDULER_NAME = 'membership';
@@ -13,33 +13,101 @@ const SCHEDULER_NAME = 'membership';
  * 해당 유저의 멤버십 포인트를 0으로 초기화합니다.
  */
 
-const checkSubscriptionExpirations = async () => {
+const checkMembershipExpirations = async () => {
+  const expiredUsers = await db.User.find({
+    MembershipAt: { $ne: null },
+    MembershipExpiresAt: { $lt: new Date() },
+  });
   try {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    for (const user of expiredUsers) {
+      const activePurchases = await db.Purchase.find({
+        userId: user._id,
+        isExpired: false,
+        'product.type': ProductType.SUBSCRIPTION,
+      });
 
-    const cursor = db.Purchase.find({
-      isExpired: false,
-      'product.type': ProductType.SUBSCRIPTION,
-    }).cursor();
-
-    for (let purchase = await cursor.next(); purchase != null; purchase = await cursor.next()) {
-      const oneMonthLater = new Date(purchase.createdAt);
-      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-
-      if (oneMonthLater < now) {
-        const result = await subscriptionManagementService.expireSubscription(purchase);
-        if (result) {
-          void log.info(`멤버십 만료 처리 완료 - userId: ${purchase.userId}`, 'SCHEDULER', 'LOW', {
+      // 비정상적인 케이스
+      if (activePurchases.length > 1) {
+        await log.error(
+          '멤버십 만료 처리 중 활성 구독이 여러 개 존재합니다. 만료 처리를 건너뜁니다.',
+          'SCHEDULER',
+          'HIGH',
+          {
             scheduler: SCHEDULER_NAME,
-            userId: purchase.userId,
-          });
-        }
+            userId: user._id,
+          }
+        );
+      } else if (activePurchases.length === 1) {
+        //이 경우 멤버쉽을 구매한 유저.
+        await subscriptionManagementService.expireSubscription(activePurchases[0]);
+      } else {
+        // 이 경우 멤버쉽 구매는 아니고 이벤트로 멤버쉽이 적용된 유저.
+        await user.processExpiredMembership();
       }
+
+      await log.info('멤버십 만료 처리 완료', 'SCHEDULER', 'LOW', {
+        scheduler: SCHEDULER_NAME,
+        userId: user._id,
+      });
     }
   } catch (error) {
     if (error instanceof Error)
-      void log.error('멤버십 만료 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
+      await log.error('멤버십 만료 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
+        scheduler: SCHEDULER_NAME,
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+  }
+};
+
+const checkMembershipRenewals = async () => {
+  const renewedUsers = await db.User.find({
+    MembershipAt: { $ne: null },
+    MembershipExpiresAt: { $gt: new Date() },
+  });
+
+  try {
+    for (const user of renewedUsers) {
+      const product = await db.Product.findOne({ productId: user.currentMembershipProductId });
+
+      if (!product) {
+        await log.error('멤버십 갱신 처리 중 상품이 존재하지 않습니다.', 'SCHEDULER', 'HIGH', {
+          scheduler: SCHEDULER_NAME,
+          userId: user._id,
+          productId: user.currentMembershipProductId,
+        });
+        continue;
+      }
+
+      if (!product.getMembershipRewards()) {
+        await log.error('멤버십 갱신 처리 중 상품 정보가 존재하지 않습니다.', 'SCHEDULER', 'HIGH', {
+          scheduler: SCHEDULER_NAME,
+          userId: user._id,
+          productId: user.currentMembershipProductId,
+        });
+        continue;
+      }
+
+      if (!user.shouldRenewMembership(product)) {
+        await log.info('멤버십 갱신 처리 중 갱신 필요 없음', 'SCHEDULER', 'LOW', {
+          scheduler: SCHEDULER_NAME,
+          userId: user._id,
+          productId: user.currentMembershipProductId,
+        });
+        continue;
+      }
+
+      await user.applyMembershipRenewalRewards(product.getMembershipRewards());
+
+      await log.info('멤버십 갱신 처리 완료', 'SCHEDULER', 'LOW', {
+        scheduler: SCHEDULER_NAME,
+        userId: user._id,
+      });
+    }
+  } catch (error) {
+    if (error instanceof Error)
+      await log.error('멤버십 갱신 처리 중 오류 발생', 'SCHEDULER', 'HIGH', {
         scheduler: SCHEDULER_NAME,
         message: error.message,
         stack: error.stack,
@@ -52,7 +120,8 @@ export const handleMembershipScheduler = async () => {
   log.info('멤버십 만료 스케줄러 실행됨', 'SCHEDULER', 'LOW', {
     scheduler: SCHEDULER_NAME,
   });
-  await checkSubscriptionExpirations();
+  await checkMembershipExpirations();
+  await checkMembershipRenewals();
 };
 
 export function registerMembershipScheduler() {

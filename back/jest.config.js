@@ -13,6 +13,7 @@ module.exports = {
   ],
   setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
   moduleNameMapper: {
+    '^env$': '<rootDir>/src/env.ts',
     '^models$': '<rootDir>/src/models',
     '^models/(.*)$': '<rootDir>/src/models/$1',
     '^utils$': '<rootDir>/src/utils',
@@ -38,6 +39,7 @@ module.exports = {
       ],
       setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
       moduleNameMapper: {
+        '^env$': '<rootDir>/src/env.ts',
         '^models$': '<rootDir>/src/models',
         '^models/(.*)$': '<rootDir>/src/models/$1',
         '^utils$': '<rootDir>/src/utils',
@@ -63,6 +65,7 @@ module.exports = {
       ],
       setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
       moduleNameMapper: {
+        '^env$': '<rootDir>/src/env.ts',
         '^models$': '<rootDir>/src/models',
         '^models/(.*)$': '<rootDir>/src/models/$1',
         '^utils$': '<rootDir>/src/utils',

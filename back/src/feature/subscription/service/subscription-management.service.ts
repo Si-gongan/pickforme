@@ -27,18 +27,28 @@ export class SubscriptionManagementService {
       };
     }
 
+    const membershipStatus = user.getMembershipStatus();
+
+    if (!membershipStatus.isActive) {
+      return {
+        isRefundable: false,
+        msg: '활성화중인 멤버십이 없습니다.',
+      };
+    }
+
+    // Purchase가 있는 경우에만 추가 검증
     const subscription = await db.Purchase.findOne({
       userId,
       isExpired: false,
       'product.type': ProductType.SUBSCRIPTION,
-    }).sort({
-      createdAt: -1,
-    });
+    }).sort({ createdAt: -1 });
 
+    // 이벤트 멤버십인 경우 (Purchase가 없음)
     if (!subscription) {
+      // 이벤트 멤버십은 환불 불가로 처리하거나 별도 로직 적용
       return {
         isRefundable: false,
-        msg: '환불 가능한 구독 정보가 없습니다.',
+        msg: '이벤트 멤버십은 환불 대상이 아닙니다.',
       };
     }
 

@@ -18,7 +18,9 @@
     "process-pickforme-test": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/pickforme_test_user.ts",
     "query-membership-users": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/events/query_membership_users.ts",
     "manual-etl-pipeline": "NODE_ENV=production NODE_PATH=./src ts-node src/feature/analytics/analytics-manual.ts",
-    "test-backup": "NODE_PATH=./src ts-node -e \"import('./src/scheduler/backup').then(m => m.testBackupScheduler())\""
+    "test-backup": "NODE_PATH=./src ts-node -e \"import('./src/scheduler/backup').then(m => m.testBackupScheduler())\"",
+    "migration:product": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/migration/product-migration.ts",
+    "migration:membership": "NODE_ENV=production NODE_PATH=./src ts-node src/scripts/migration/membership-migration.ts"
   },
   "author": "jinsang",
   "license": "ISC",

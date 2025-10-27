@@ -1,6 +1,5 @@
 import { registerMembershipScheduler } from './membership';
 import { registerIAPScheduler } from './iap';
-import { registerEventScheduler } from './events';
 import { registerBackupScheduler } from './backup';
 import { registerCoupangAPIScheduler } from '../feature/coupang/scheduler';
 import { registerAnalyticsSchedulers } from 'feature/analytics/scheduler/analytics.scheduler';
@@ -13,7 +12,6 @@ export function registerAllSchedulers() {
   if (process.env.NODE_ENV === 'production') {
     registerMembershipScheduler();
     registerIAPScheduler();
-    registerEventScheduler();
     registerBackupScheduler();
     registerCoupangAPIScheduler();
 

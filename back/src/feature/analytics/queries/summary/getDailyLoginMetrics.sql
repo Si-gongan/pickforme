@@ -15,7 +15,9 @@ USING (
     
     -- 회원가입 관련 메트릭
     COUNTIF(event_name = 'screen_view' AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'firebase_screen') = 'LoginScreen') AS signup_page_pv,
-    COUNTIF(event_name = 'register_success') AS register_success_count
+    COUNTIF(event_name = 'register_success') AS register_success_count,
+
+    (COUNTIF(event_name = 'login_success') + COUNTIF(event_name = 'register_success')) AS total_auth_success_count
 
   FROM
     {{- GA4_EVENTS_TABLE -}}
@@ -34,7 +36,8 @@ WHEN MATCHED THEN
     google_login_attempt_count = source.google_login_attempt_count,
     apple_login_attempt_count = source.apple_login_attempt_count,
     signup_page_pv = source.signup_page_pv,
-    register_success_count = source.register_success_count
+    register_success_count = source.register_success_count,
+    total_auth_success_count = source.total_auth_success_count
 WHEN NOT MATCHED THEN
-  INSERT (summary_date, login_attempt_count, login_success_count, kakao_login_attempt_count, google_login_attempt_count, apple_login_attempt_count, signup_page_pv, register_success_count)
-  VALUES (source.summary_date, source.login_attempt_count, source.login_success_count, source.kakao_login_attempt_count, source.google_login_attempt_count, source.apple_login_attempt_count, source.signup_page_pv, source.register_success_count);
+  INSERT (summary_date, login_attempt_count, login_success_count, kakao_login_attempt_count, google_login_attempt_count, apple_login_attempt_count, signup_page_pv, register_success_count, total_auth_success_count)
+  VALUES (source.summary_date, source.login_attempt_count, source.login_success_count, source.kakao_login_attempt_count, source.google_login_attempt_count, source.apple_login_attempt_count, source.signup_page_pv, source.register_success_count, source.total_auth_success_count);

@@ -69,7 +69,7 @@ export class SubscriptionCreationService {
         { session }
       );
 
-      await user.applyPurchaseRewards(product.getRewards(), session);
+      await user.applyInitialMembershipRewards(product.getMembershipRewards(), session);
       await purchaseFailureService.resolvePurchaseFailures(userId, receipt, session);
 
       await session.commitTransaction();

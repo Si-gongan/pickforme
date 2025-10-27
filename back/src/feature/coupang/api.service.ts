@@ -12,17 +12,17 @@ const API_DOMAIN = 'https://api-gateway.coupang.com';
 const API_BASE_PATH = '/v2/providers/affiliate_open_api/apis/openapi';
 const ACCESS_KEY = process.env.COUPANG_ACCESS_KEY;
 const SECRET_KEY = process.env.COUPANG_SECRET_KEY;
-const SUB_ID = 'AF1661964'; // Python 코드와 동일한 subId 사용
+const SUB_ID = process.env.COUPANG_CHANNEL_ID || '';
 
-if (!ACCESS_KEY || !SECRET_KEY) {
-  throw new Error('Coupang Access Key 또는 Secret Key가 .env 파일에 설정되지 않았습니다.');
+if (!ACCESS_KEY || !SECRET_KEY || !SUB_ID) {
+  throw new Error('Coupang Access Key, Secret Key, Channel ID가 .env 파일에 설정되지 않았습니다.');
 }
 
 /**
  * Coupang API 요청을 위한 HMAC-SHA256 서명 헤더를 생성합니다. (변경 없음)
  */
 function generateAuthorizationHeader(method: string, path: string, query: string = ''): string {
-  if (!ACCESS_KEY || !SECRET_KEY) {
+  if (!ACCESS_KEY || !SECRET_KEY || !SUB_ID) {
     throw new Error('Coupang Access Key 또는 Secret Key가 .env 파일에 설정되지 않았습니다.');
   }
   const now = new Date();
