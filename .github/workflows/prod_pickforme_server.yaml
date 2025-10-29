@@ -33,7 +33,7 @@ jobs:
           git checkout main
           git pull origin main
 
-      - name: Set remote to SSH
+      - name: Set Git remote to SSH
         run: git remote set-url origin git@github.com:Si-gongan/pickforme.git
 
       - name: Setup Node.js
@@ -51,22 +51,88 @@ jobs:
           script: |
             set -e
 
-            source ~/.nvm/nvm.sh
-            nvm install 20.19.5
-            nvm use 20.19.5
-
             cd /home/ubuntu/pickforme
             git fetch origin
             git checkout main
             git config pull.rebase false
             git pull origin main
-            cd back
-            npm install
-            npm run build
-            if ! command -v pm2 &> /dev/null; then
-              npm install -g pm2
+
+            if ! command -v docker &> /dev/null; then
+              echo ">>> installing docker"
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sudo sh get-docker.sh
+              sudo usermod -aG docker ubuntu
             fi
-            pm2 start pm2.json
+
+            if ! command -v docker-compose &> /dev/null; then
+              echo ">>> installing docker-compose"
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
+            DOMAIN="api.sigongan-pickforme.shop"
+            EMAIL="ljo@pickforme.ai"
+            CERT_PATH="./certbot/conf/live/$DOMAIN/fullchain.pem"
+
+            docker-compose -f docker-compose.prod.yml down || true
+
+            mkdir -p ./certbot/conf ./certbot/www
+
+            if [ ! -f "$CERT_PATH" ]; then
+              echo ">>> no cert: use prod-init.ngx"
+              cp nginx/conf.d/prod-init.ngx nginx/conf.d/default.conf
+            else
+              echo ">>> cert exists: use prod.ngx"
+              cp nginx/conf.d/prod.ngx nginx/conf.d/default.conf
+            fi
+
+            docker-compose -f docker-compose.prod.yml build --no-cache
+            docker-compose -f docker-compose.prod.yml up -d
+
+            sleep 5
+
+            if [ ! -f "$CERT_PATH" ]; then
+              echo ">>> issuing initial certificate via webroot"
+              if docker run --rm \
+                -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+                -v "$(pwd)/certbot/www:/var/www/certbot" \
+                certbot/certbot certonly \
+                --webroot \
+                --webroot-path=/var/www/certbot \
+                --email "$EMAIL" \
+                --agree-tos \
+                --no-eff-email \
+                --non-interactive \
+                --keep-until-expiring \
+                -d "$DOMAIN"
+              then
+                echo ">>> issue success: switch to prod.ngx and restart nginx"
+                cp nginx/conf.d/prod.ngx nginx/conf.d/default.conf
+                docker-compose -f docker-compose.prod.yml restart nginx
+              else
+                echo "!!! issue failed: show state and exit"
+                ls -l ./certbot/conf || true
+                ls -l ./certbot/conf/live || true
+                ls -l "./certbot/conf/live/$DOMAIN" || true
+                exit 1
+              fi
+            else
+              echo ">>> try renewal (only renews if <=30 days)"
+              if docker run --rm \
+                -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+                -v "$(pwd)/certbot/www:/var/www/certbot" \
+                certbot/certbot renew -q
+              then
+                echo ">>> renewal done (if any) -> reload nginx"
+                docker-compose -f docker-compose.prod.yml exec nginx nginx -s reload || true
+              else
+                echo "!!! renewal failed: show certs and exit"
+                docker run --rm -v "$(pwd)/certbot/conf:/etc/letsencrypt" certbot/certbot certificates || true
+                exit 1
+              fi
+            fi
+
+            docker system prune
 
       - name: Create and push tags
         if: steps.deploy.outcome == 'success'

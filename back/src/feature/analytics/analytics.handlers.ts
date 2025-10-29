@@ -11,6 +11,34 @@ const SUMMARY_DATASET = process.env.GA4_DATASET_SUMMARY_ID!;
 const MAX_RETRIES = 10;
 const RETRY_DELAY = 60 * 60 * 1000; // 1시간
 
+// 각 ETL job을 독립적으로 실행하는 헬퍼 함수
+const runEtlJobsIndependently = async (jobs: any[], dataset: string, targetDate?: string) => {
+  const results: Array<{ jobName: string; success: boolean; error?: string }> = [];
+
+  for (const job of jobs) {
+    try {
+      console.log(`🔄 Running job: ${job.name}`);
+      await runEtlJob(job, dataset, targetDate);
+      results.push({ jobName: job.name, success: true });
+      console.log(`✅ Job completed: ${job.name}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      results.push({ jobName: job.name, success: false, error: errorMessage });
+      console.log(`❌ Job failed: ${job.name} - ${errorMessage}`);
+
+      // 개별 job 실패 로그
+      void log.error(`ETL Job 실패: ${job.name}`, 'SCHEDULER', 'HIGH', {
+        jobName: job.name,
+        dataset,
+        targetDate,
+        error: errorMessage,
+      });
+    }
+  }
+
+  return results;
+};
+
 // 핸들러 1: 기초 공사(Foundation) ETL
 export const handleFoundationEtlJobs = async (targetDate?: string) => {
   const SCHEDULER_NAME = 'bigquery-foundation-etl';
@@ -40,15 +68,25 @@ export const handleFoundationEtlJobs = async (targetDate?: string) => {
         }
       }
 
-      // 2. ETL 작업 실행
+      // 2. ETL 작업 실행 (각 job을 독립적으로 실행)
       console.log('[START] Starting all FOUNDATION ETL jobs...');
-      for (const job of foundationJobs) {
-        await runEtlJob(job, FOUNDATION_DATASET, targetDate);
-      }
+      const jobResults = await runEtlJobsIndependently(
+        foundationJobs,
+        FOUNDATION_DATASET,
+        targetDate
+      );
+
+      // 결과 요약 로그
+      const successCount = jobResults.filter((r) => r.success).length;
+      const failureCount = jobResults.filter((r) => !r.success).length;
 
       void log.info('✅ Foundation ETL 완료', 'SCHEDULER', 'LOW', {
         scheduler: SCHEDULER_NAME,
         attempt,
+        totalJobs: foundationJobs.length,
+        successCount,
+        failureCount,
+        failedJobs: jobResults.filter((r) => !r.success).map((r) => r.jobName),
       });
       break; // 성공 시 루프 종료
     } catch (error) {
@@ -105,15 +143,21 @@ export const handleSummaryEtlJobs = async (targetDate?: string) => {
         }
       }
 
-      // 2. ETL 작업 실행
+      // 2. ETL 작업 실행 (각 job을 독립적으로 실행)
       console.log('[START] Starting all SUMMARY ETL jobs...');
-      for (const job of summaryJobs) {
-        await runEtlJob(job, SUMMARY_DATASET, targetDate);
-      }
+      const jobResults = await runEtlJobsIndependently(summaryJobs, SUMMARY_DATASET, targetDate);
+
+      // 결과 요약 로그
+      const successCount = jobResults.filter((r) => r.success).length;
+      const failureCount = jobResults.filter((r) => !r.success).length;
 
       void log.info('✅ Summary ETL 완료', 'SCHEDULER', 'LOW', {
         scheduler: SCHEDULER_NAME,
         attempt,
+        totalJobs: summaryJobs.length,
+        successCount,
+        failureCount,
+        failedJobs: jobResults.filter((r) => !r.success).map((r) => r.jobName),
       });
       break; // 성공 시 루프 종료
     } catch (error) {

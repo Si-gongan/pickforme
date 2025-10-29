@@ -10,6 +10,7 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
     { name: 'apple_login_attempt_count', type: 'INTEGER' },
     { name: 'signup_page_pv', type: 'INTEGER' },
     { name: 'register_success_count', type: 'INTEGER' },
+    { name: 'total_auth_success_count', type: 'INTEGER' },
   ],
 
   // 홈 화면 관련 지표
@@ -141,6 +142,7 @@ export const TABLE_SCHEMAS: Record<string, any[]> = {
     { name: 'lastLoginAt', type: 'TIMESTAMP' },
     { name: 'MembershipAt', type: 'TIMESTAMP' },
     { name: 'lastMembershipAt', type: 'TIMESTAMP' },
+    { name: 'MembershipExpiresAt', type: 'TIMESTAMP' },
     { name: 'event', type: 'INTEGER' },
     { name: 'createdAt', type: 'TIMESTAMP' },
     { name: 'updatedAt', type: 'TIMESTAMP' },
