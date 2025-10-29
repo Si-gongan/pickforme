@@ -70,7 +70,7 @@ jobs:
               sudo chmod +x /usr/local/bin/docker-compose
             fi
 
-            DOMAIN="apidev.sigongan-pickforme.shop"
+            DOMAIN="api-dev.sigongan-pickforme.shop"
             EMAIL="ljo@pickforme.ai"
             CERT_PATH="./certbot/conf/live/$DOMAIN/fullchain.pem"
 

@@ -3,7 +3,7 @@ server {
     listen 80;
     listen [::]:80;
     
-    server_name apidev.sigongan-pickforme.shop; 
+    server_name api-dev.sigongan-pickforme.shop; 
 
     # Certbot ACME 챌린지 경로
     location /.well-known/acme-challenge/ {
