@@ -394,7 +394,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
                         </View>
                     )}
 
-                    <Text style={styles.titleText}>매니저에게 질문하기</Text>
+                    <Text style={styles.titleText} accessibilityRole="header">
+                        매니저에게 질문하기
+                    </Text>
                     <View style={styles.seperator} />
                     <View style={styles.buttonOuter}>
                         <Button

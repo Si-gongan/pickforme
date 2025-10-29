@@ -210,7 +210,9 @@ const TabContent: React.FC<TabContentProps> = ({
 
                 return (
                     <View key={currentTab} style={styles.sectionWrap}>
-                        <Text style={styles.titleText}>{TAB_NAME[currentTab]}</Text>
+                        <Text style={styles.titleText} accessibilityRole="header">
+                            {TAB_NAME[currentTab]}
+                        </Text>
                         <View style={styles.seperator} />
 
                         {/* 로딩 상태 */}
@@ -300,7 +302,9 @@ const TabContent: React.FC<TabContentProps> = ({
 
             {/* Question 탭은 맨 아래에 렌더링 */}
             <View style={styles.sectionWrap}>
-                <Text style={styles.titleText}>AI에게 질문하기</Text>
+                <Text style={styles.titleText} accessibilityRole="header">
+                    AI에게 질문하기
+                </Text>
                 <View style={styles.seperator} />
                 <QuestionTab
                     question={question}
