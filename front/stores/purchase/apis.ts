@@ -32,12 +32,6 @@ export const GetSubscriptionListAPI = () =>
 export const GetPurchaseListAPI = () =>
     client.get<Purchase[]>(`/purchase/purchases`).catch(error => handleApiError(error, 'GetPurchaseList'));
 
-export const GetPurchaseCheckAPI = () =>
-    client.get<Purchase[]>(`/purchase/check`).catch(error => handleApiError(error, 'GetPurchaseCheck'));
-
-export const GetPurchaseSubCheckAPI = () =>
-    client.get<PurchaseSubCheck>(`/purchase/subCheck`).catch(error => handleApiError(error, 'GetPurchaseSubCheck'));
-
 export const CheckPurchaseFailureAPI = () =>
     client
         .get<{ canPurchase: boolean }>('/purchase/my-failures')
