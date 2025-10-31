@@ -13,9 +13,7 @@ import {
     GetProductsAPI,
     GetSubscriptionAPI,
     GetSubscriptionListAPI,
-    GetPurchaseListAPI,
-    GetPurchaseCheckAPI,
-    GetPurchaseSubCheckAPI
+    GetPurchaseListAPI
 } from './apis';
 import { userAtom } from '../user';
 import { atomWithStorage } from '../utils';
@@ -104,25 +102,4 @@ export const getPurchaseListAtom = atom(null, async (get, set) => {
     }
 
     set(purchaseListAtom, result.value.data);
-});
-
-export const purchasSubCheckAtom = atomWithStorage<PurchaseSubCheck | void>('purchaseSubCheck', undefined);
-
-export const purchasSubCheckAtom2 = atom<PurchaseSubCheck[] | null>(null);
-
-// export const purchasSubCheckAtom2 = atomWithStorage<PurchaseSubCheck | null>("subCheck",null);
-export const getPurchasSubCheckAtom = atom(null, async (get, set) => {
-    // const purchasSubCheck = await get(purchasSubCheckAtom);
-    // if (!purchasSubCheck) {
-    //   return;
-    // }
-    // set(purchasSubCheckAtom, { ...purchasSubCheck });
-
-    const result = await attempt(() => GetPurchaseSubCheckAPI());
-    if (!result.ok) {
-        console.error('구독 확인 API 호출 중 오류 발생:', result.error);
-        return;
-    }
-
-    set(purchasSubCheckAtom, result.value.data);
 });
