@@ -50,7 +50,7 @@ const ReviewTab: React.FC<ReviewTabProps> = ({ productDetail, isTabPressed, hand
         <View style={styles.reviewContainer}>
             {review?.pros?.length !== 0 && (
                 <View style={styles.detailWrap}>
-                    <View ref={contentRef} accessible={true}>
+                    <View ref={contentRef}>
                         <Text
                             style={styles.reviewListTitle}
                             accessible={true}

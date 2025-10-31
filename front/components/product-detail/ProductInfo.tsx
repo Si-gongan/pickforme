@@ -19,7 +19,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
     return (
         <View style={styles.inner}>
-            <Text style={styles.name}>{product.name ?? productDetail?.product?.name ?? ''}</Text>
+            <Text style={styles.name} accessibilityRole="header">
+                {product.name ?? productDetail?.product?.name ?? ''}
+            </Text>
 
             <View style={styles.priceWrap} accessible accessibilityRole="text">
                 {productDetail?.product?.name ? (
