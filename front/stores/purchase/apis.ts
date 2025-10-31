@@ -11,13 +11,15 @@ import {
 
 export const PurchaseProductAPI = (params: PurchaseProductParams) =>
     client
-        .post<Purchase | string>('/purchase', params, {
+        .post<Purchase | string>('/purchase/subscription', params, {
             timeout: 10000
         })
         .catch(error => handleApiError(error, 'PurchaseProduct'));
 
 export const GetProductsAPI = (params: GetProductsParams) =>
-    client.get<Product[]>(`/purchase/products/${params.platform}`).catch(error => handleApiError(error, 'GetProducts'));
+    client
+        .get<Product[]>(`/purchase/subscription/products/${params.platform}`)
+        .catch(error => handleApiError(error, 'GetProducts'));
 
 export const GetSubscriptionAPI = () =>
     client
@@ -25,7 +27,7 @@ export const GetSubscriptionAPI = () =>
         .catch(error => handleApiError(error, 'GetSubscription'));
 
 export const GetSubscriptionListAPI = () =>
-    client.get<Purchase[]>(`/purchase/subscriptions`).catch(error => handleApiError(error, 'GetSubscriptionList'));
+    client.get<Purchase[]>(`/purchase/subscription/list`).catch(error => handleApiError(error, 'GetSubscriptionList'));
 
 export const GetPurchaseListAPI = () =>
     client.get<Purchase[]>(`/purchase/purchases`).catch(error => handleApiError(error, 'GetPurchaseList'));
