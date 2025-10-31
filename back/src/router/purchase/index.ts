@@ -4,10 +4,10 @@ import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
 import PurchaseFailure from 'models/purchase/failure';
 import { formatError } from 'utils/error';
-import { purchaseFailureService } from 'feature/subscription/service/purchase-failure.service';
-import { subscriptionQueryService } from 'feature/subscription/service/subscription-query.service';
-import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
-import { subscriptionCreationService } from 'feature/subscription/service/subscription-creation.service';
+import { purchaseFailureService } from 'feature/purchase/subscription/service/purchase-failure.service';
+import { subscriptionQueryService } from 'feature/purchase/subscription/service/subscription-query.service';
+import { subscriptionManagementService } from 'feature/purchase/subscription/service/subscription-management.service';
+import { subscriptionCreationService } from 'feature/purchase/subscription/service/subscription-creation.service';
 
 const router = new Router({
   prefix: '/purchase',

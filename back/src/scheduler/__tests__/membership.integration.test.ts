@@ -2,7 +2,7 @@ import { setupTestDB, teardownTestDB } from '../../__tests__/setupDButils';
 import db from 'models';
 import { handleMembershipScheduler } from '../membership';
 import { POINTS } from '../../constants/points';
-import { subscriptionCreationService } from 'feature/subscription/service/subscription-creation.service';
+import { subscriptionCreationService } from 'feature/purchase/subscription/service/subscription-creation.service';
 import { createTestUser, createTestProduct } from '../../__tests__/testUtils';
 
 const RealDate = Date;

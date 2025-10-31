@@ -4,7 +4,7 @@ import db from 'models';
 import iapValidator from 'utils/iap';
 import { handleIAPScheduler } from '../iap';
 import { POINTS } from '../../constants/points';
-import { subscriptionCreationService } from 'feature/subscription/service/subscription-creation.service';
+import { subscriptionCreationService } from 'feature/purchase/subscription/service/subscription-creation.service';
 
 jest.mock('utils/iap', () => {
   const mockValidate = jest.fn();
