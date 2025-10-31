@@ -6,7 +6,8 @@ WORKDIR /app
 # 런타임 의존성 설치
 RUN apk add --no-cache \
   dumb-init \
-  ca-certificates
+  ca-certificates \
+  mongodb-tools
 
 # 패키지 파일 복사
 COPY package*.json ./
