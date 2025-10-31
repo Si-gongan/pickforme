@@ -3,9 +3,9 @@ import Router from '@koa/router';
 import * as fs from 'fs';
 import authRouter from './auth';
 import requestRouter from './request';
-import purchaseRouter from './purchase';
 import adminRouter from './admin';
 import noticeRouter from './notice';
+import purchaseRouter from '../feature/purchase/router';
 import discoverRouter from './discover';
 import userRouter from './user';
 import logRouter from './log';
@@ -26,13 +26,13 @@ const router = new Router();
   noticeRouter,
   authRouter,
   requestRouter,
-  purchaseRouter,
   discoverRouter,
   logRouter,
   productRouter,
   popupRouter,
   coupangRouter,
   crawlReportRouter,
+  purchaseRouter,
   searchLogsRouter,
   statisticsRouter,
 ].forEach((subrouter) => {
