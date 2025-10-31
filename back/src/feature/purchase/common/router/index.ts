@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
 import PurchaseFailure from 'models/purchase/failure';
-import { purchaseFailureService } from 'feature/purchase/subscription/service/purchase-failure.service';
+import { purchaseFailureService } from 'feature/purchase/common/service/purchase-failure.service';
 
 const commonRouter = new Router();
 

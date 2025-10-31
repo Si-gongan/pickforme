@@ -4,7 +4,7 @@ import requireAuth from 'middleware/jwt';
 import { log } from 'utils/logger';
 import PurchaseFailure from 'models/purchase/failure';
 import { formatError } from 'utils/error';
-import { purchaseFailureService } from '../service/purchase-failure.service';
+import { purchaseFailureService } from '../../common/service/purchase-failure.service';
 import { subscriptionQueryService } from '../service/subscription-query.service';
 import { subscriptionManagementService } from '../service/subscription-management.service';
 import { subscriptionCreationService } from '../service/subscription-creation.service';
