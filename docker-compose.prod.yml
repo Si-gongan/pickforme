@@ -28,6 +28,7 @@ services:
       - ./back/.env
     volumes:
       - ./back/logs:/app/logs
+      - ./back/backups:/app/backups
     networks:
       - pickforme-network
     expose:
