@@ -2,7 +2,7 @@
 import cron from 'node-cron';
 import db from 'models';
 import { log } from 'utils/logger/logger';
-import { receiptValidatorService } from 'services/receipt-validator.service';
+import { receiptValidatorService } from 'feature/purchase/common/service/receipt-validator.service';
 import { subscriptionManagementService } from 'feature/purchase/subscription/service/subscription-management.service';
 
 const SCHEDULER_NAME = 'iap';
