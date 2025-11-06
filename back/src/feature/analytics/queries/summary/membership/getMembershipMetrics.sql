@@ -2,8 +2,8 @@
 MERGE {{- DESTINATION_TABLE -}} AS target
 USING (
   WITH membership_users AS (
-    SELECT DISTINCT userId
-    FROM {{- FOUNDATION_DATASET -}}.users
+  SELECT DISTINCT _id AS userId
+  FROM {{- FOUNDATION_DATASET -}}.users
     WHERE MembershipAt IS NOT NULL
       AND MembershipExpiresAt IS NOT NULL
       AND MembershipExpiresAt > CURRENT_TIMESTAMP()

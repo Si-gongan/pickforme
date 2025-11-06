@@ -25,7 +25,7 @@ if (!isTest) {
   log.debug(`connecting to mongodb`);
   mongoose
     .connect(uri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000,
     })
     .then(() => {
       log.debug('MongoDB 연결 성공');
