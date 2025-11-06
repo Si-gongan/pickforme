@@ -402,6 +402,7 @@ describe('MongodbSyncService - 증분 동기화 테스트', () => {
         lastLoginAt: '2024-01-01T10:00:00.000Z',
         MembershipAt: '2024-01-01T11:00:00.000Z',
         lastMembershipAt: '2024-01-01T12:00:00.000Z',
+        MembershipExpiresAt: null,
         event: 1,
         createdAt: '2024-01-01T09:00:00.000Z',
         updatedAt: '2024-01-01T09:00:00.000Z', // MongoDB에서 자동으로 설정됨

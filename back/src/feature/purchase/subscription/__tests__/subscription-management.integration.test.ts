@@ -291,16 +291,17 @@ describe('SubscriptionManagementService Integration Tests', () => {
 
       // Then
       expect(result.isRefundable).toBe(false);
-      expect(result.msg).toBe('환불 가능한 구독 정보가 없습니다.');
+      expect(result.msg).toBe('활성화중인 멤버십이 없습니다.');
     });
 
-    it('서비스를 이용한 경우 환불 불가능하다', async () => {
+    it('서비스를 일정 기준 이상 이용한 경우 환불 불가능하다', async () => {
       // Given
       const user = await db.User.create({
         email: 'test@example.com',
         point: 0,
         aiPoint: 0,
       });
+
       const product = await db.Product.create({
         productId: 'test_subscription',
         type: ProductType.SUBSCRIPTION,
@@ -310,17 +311,31 @@ describe('SubscriptionManagementService Integration Tests', () => {
         platform: 'ios',
       });
 
-      await db.Purchase.create({
-        userId: user._id,
-        productId: product._id,
-        isExpired: false,
-        createdAt: new Date(),
-        product: { ...product.toObject() },
+      (iapValidator.validate as jest.Mock).mockResolvedValue({
+        purchase: {
+          productId: product._id.toString(),
+          price: 100,
+          currency: 'USD',
+        },
       });
+
+      await subscriptionCreationService.createSubscription(
+        user._id.toString(),
+        product._id.toString(),
+        mockIosReceipt
+      );
+
+      const updatedUser = await db.User.findById(user._id);
+      if (!updatedUser) {
+        throw new Error('유저 정보가 없습니다.');
+      }
+
+      await updatedUser.usePoint(100);
+      await updatedUser.useAiPoint(1000);
 
       // When
       const result = await subscriptionManagementService.checkRefundEligibility(
-        user._id.toString()
+        updatedUser._id.toString()
       );
 
       // Then
