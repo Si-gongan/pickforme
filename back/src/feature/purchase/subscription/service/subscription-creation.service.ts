@@ -5,8 +5,8 @@ import { IUnifiedPurchaseData } from 'models/purchase/types';
 import mongoose from 'mongoose';
 import { log } from 'utils/logger';
 import { sendPushs } from 'utils/push';
-import { receiptValidatorService } from '../../../services/receipt-validator.service';
-import { purchaseFailureService } from './purchase-failure.service';
+import { receiptValidatorService } from '../../common/service/receipt-validator.service';
+import { purchaseFailureService } from '../../common/service/purchase-failure.service';
 
 export type ReceiptValidationResult =
   | { status: 'valid'; data: IUnifiedPurchaseData }

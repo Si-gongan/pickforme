@@ -2,9 +2,9 @@ import db from 'models';
 import { ProductType } from 'models/product';
 import mongoose from 'mongoose';
 import iapValidator from 'utils/iap';
-import { setupTestDB, teardownTestDB } from '../../../__tests__/setupDButils';
+import { setupTestDB, teardownTestDB } from '../../../../__tests__/setupDButils';
 import { subscriptionCreationService } from '../service/subscription-creation.service';
-import constants from '../../../constants';
+import constants from '../../../../constants';
 import { google } from 'googleapis';
 import { subscriptionQueryService } from '../service/subscription-query.service';
 

@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { IProduct, Platform, ProductType } from 'models/product';
-import { receiptValidatorService } from 'services/receipt-validator.service';
+import { receiptValidatorService } from 'feature/purchase/common/service/receipt-validator.service';
 import iapValidator from 'utils/iap';
 
 let mockValidate: jest.Mock;

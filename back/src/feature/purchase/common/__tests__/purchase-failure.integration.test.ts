@@ -1,10 +1,10 @@
 import db from 'models';
 import { ProductType } from 'models/product';
 import iapValidator from 'utils/iap';
-import { setupTestDB, teardownTestDB } from '../../../__tests__/setupDButils';
-import { purchaseFailureService } from '../service/purchase-failure.service';
-import { subscriptionCreationService } from '../service/subscription-creation.service';
-import constants from '../../../constants';
+import { setupTestDB, teardownTestDB } from '../../../../__tests__/setupDButils';
+import { purchaseFailureService } from '../../common/service/purchase-failure.service';
+import { subscriptionCreationService } from '../../subscription/service/subscription-creation.service';
+import constants from '../../../../constants';
 import { google } from 'googleapis';
 
 const { POINTS } = constants;
