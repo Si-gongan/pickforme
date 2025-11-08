@@ -44,12 +44,89 @@ const UserAnalytics: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (
     trendData: UserStatistics[]
   ): UserStatistics | null => {
     if (trendData.length === 0) return null;
-    return trendData[trendData.length - 1];
+
+    // 전체 기간 합산
+    const aggregated = trendData.reduce(
+      (acc, curr) => {
+        // 숫자 값들은 합산
+        acc.signupPageViews += curr.signupPageViews || 0;
+        acc.signupCompletions += curr.signupCompletions || 0;
+        acc.loginAttempts += curr.loginAttempts || 0;
+        acc.loginSuccesses += curr.loginSuccesses || 0;
+        acc.loginFailures += curr.loginFailures || 0;
+        acc.firstVisitors += curr.firstVisitors || 0;
+        acc.firstVisitorDetailViews += curr.firstVisitorDetailViews || 0;
+        acc.socialLoginStats.google += curr.socialLoginStats?.google || 0;
+        acc.socialLoginStats.apple += curr.socialLoginStats?.apple || 0;
+        acc.socialLoginStats.kakao += curr.socialLoginStats?.kakao || 0;
+
+        // TTFA는 평균 계산을 위해 합산
+        acc.ttfaSum += curr.ttfa?.averageTime || 0;
+        acc.ttfaCount += 1;
+
+        return acc;
+      },
+      {
+        signupPageViews: 0,
+        signupCompletions: 0,
+        loginAttempts: 0,
+        loginSuccesses: 0,
+        loginFailures: 0,
+        socialLoginStats: { google: 0, apple: 0, kakao: 0 },
+        ttfaSum: 0,
+        ttfaCount: 0,
+        firstVisitors: 0,
+        firstVisitorDetailViews: 0,
+      } as any
+    );
+
+    // 비율 값들은 합산된 값으로 계산
+    const signupConversionRate =
+      aggregated.signupPageViews > 0
+        ? (aggregated.signupCompletions / aggregated.signupPageViews) * 100
+        : 0;
+    const loginSuccessRate =
+      aggregated.loginAttempts > 0
+        ? (aggregated.loginSuccesses / aggregated.loginAttempts) * 100
+        : 0;
+    const loginFailureRate =
+      aggregated.loginAttempts > 0
+        ? (aggregated.loginFailures / aggregated.loginAttempts) * 100
+        : 0;
+    const firstVisitorConversionRate =
+      aggregated.firstVisitors > 0
+        ? (aggregated.firstVisitorDetailViews / aggregated.firstVisitors) * 100
+        : 0;
+
+    return {
+      date: `${trendData[0]?.date || ""} ~ ${
+        trendData[trendData.length - 1]?.date || ""
+      }`,
+      signupConversionRate,
+      signupPageViews: aggregated.signupPageViews,
+      signupCompletions: aggregated.signupCompletions,
+      loginSuccessRate,
+      loginFailureRate,
+      loginAttempts: aggregated.loginAttempts,
+      loginSuccesses: aggregated.loginSuccesses,
+      loginFailures: aggregated.loginFailures,
+      socialLoginStats: aggregated.socialLoginStats,
+      ttfa: {
+        averageTime:
+          aggregated.ttfaCount > 0
+            ? aggregated.ttfaSum / aggregated.ttfaCount
+            : 0,
+        medianTime: 0,
+      },
+      firstVisitorConversionRate,
+      firstVisitors: aggregated.firstVisitors,
+      firstVisitorDetailViews: aggregated.firstVisitorDetailViews,
+    };
   };
 
   const { loading, error, todayStats, trendData } = useAnalyticsData({

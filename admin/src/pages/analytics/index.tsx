@@ -34,10 +34,168 @@ const AnalyticsIndex: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (trendData: TrendData[]): StatisticsData | null => {
     if (trendData.length === 0) return null;
-    return trendData[trendData.length - 1].data;
+
+    // 각 섹션별로 합산
+    const aggregated = trendData.reduce(
+      (acc, item) => {
+        const data = item.data || {};
+
+        // User 통계 합산
+        if (data.user) {
+          acc.user.signupPageViews += data.user.signupPageViews || 0;
+          acc.user.signupCompletions += data.user.signupCompletions || 0;
+          acc.user.loginAttempts += data.user.loginAttempts || 0;
+          acc.user.loginSuccesses += data.user.loginSuccesses || 0;
+        }
+
+        // Home 통계 합산
+        if (data.home) {
+          acc.home.homePageViews += data.home.homePageViews || 0;
+          acc.home.recommendedProductClicks +=
+            data.home.recommendedProductClicks || 0;
+        }
+
+        // Search 통계 합산
+        if (data.search) {
+          acc.search.searchAttempts += data.search.searchAttempts || 0;
+          acc.search.searchSuccesses += data.search.searchSuccesses || 0;
+        }
+
+        // LinkSearch 통계 합산
+        if (data.linkSearch) {
+          acc.linkSearch.linkSearchAttempts +=
+            data.linkSearch.linkSearchAttempts || 0;
+          acc.linkSearch.linkSearchSuccesses +=
+            data.linkSearch.linkSearchSuccesses || 0;
+        }
+
+        // ProductDetail 통계 합산
+        if (data.productDetail) {
+          acc.productDetail.productDetailPageViews +=
+            data.productDetail.productDetailPageViews || 0;
+          acc.productDetail.purchaseButtonClicks +=
+            data.productDetail.purchaseButtonClicks || 0;
+        }
+
+        // Membership 통계 합산
+        if (data.membership) {
+          acc.membership.totalUsers += data.membership.totalUsers || 0;
+          acc.membership.membershipUsers +=
+            data.membership.membershipUsers || 0;
+        }
+
+        // ManagerQA 통계 합산
+        if (data.managerQA) {
+          acc.managerQA.managerResponses +=
+            data.managerQA.managerResponses || 0;
+          acc.managerQA.responseConfirmationPageViews +=
+            data.managerQA.responseConfirmationPageViews || 0;
+        }
+
+        return acc;
+      },
+      {
+        user: {
+          signupPageViews: 0,
+          signupCompletions: 0,
+          loginAttempts: 0,
+          loginSuccesses: 0,
+        },
+        home: {
+          homePageViews: 0,
+          recommendedProductClicks: 0,
+        },
+        search: {
+          searchAttempts: 0,
+          searchSuccesses: 0,
+        },
+        linkSearch: {
+          linkSearchAttempts: 0,
+          linkSearchSuccesses: 0,
+        },
+        productDetail: {
+          productDetailPageViews: 0,
+          purchaseButtonClicks: 0,
+        },
+        membership: {
+          totalUsers: 0,
+          membershipUsers: 0,
+        },
+        managerQA: {
+          managerResponses: 0,
+          responseConfirmationPageViews: 0,
+        },
+      } as any
+    );
+
+    // 비율 값들은 합산된 값으로 계산
+    return {
+      user: {
+        signupConversionRate:
+          aggregated.user.signupPageViews > 0
+            ? (aggregated.user.signupCompletions /
+                aggregated.user.signupPageViews) *
+              100
+            : 0,
+        loginSuccessRate:
+          aggregated.user.loginAttempts > 0
+            ? (aggregated.user.loginSuccesses / aggregated.user.loginAttempts) *
+              100
+            : 0,
+      },
+      home: {
+        recommendedProductClickRate:
+          aggregated.home.homePageViews > 0
+            ? (aggregated.home.recommendedProductClicks /
+                aggregated.home.homePageViews) *
+              100
+            : 0,
+      },
+      search: {
+        searchSuccessRate:
+          aggregated.search.searchAttempts > 0
+            ? (aggregated.search.searchSuccesses /
+                aggregated.search.searchAttempts) *
+              100
+            : 0,
+      },
+      linkSearch: {
+        linkSearchSuccessRate:
+          aggregated.linkSearch.linkSearchAttempts > 0
+            ? (aggregated.linkSearch.linkSearchSuccesses /
+                aggregated.linkSearch.linkSearchAttempts) *
+              100
+            : 0,
+      },
+      productDetail: {
+        purchaseButtonClickRate:
+          aggregated.productDetail.productDetailPageViews > 0
+            ? (aggregated.productDetail.purchaseButtonClicks /
+                aggregated.productDetail.productDetailPageViews) *
+              100
+            : 0,
+        productDetailPageViews: aggregated.productDetail.productDetailPageViews,
+      },
+      membership: {
+        membershipUserRatio:
+          aggregated.membership.totalUsers > 0
+            ? (aggregated.membership.membershipUsers /
+                aggregated.membership.totalUsers) *
+              100
+            : 0,
+      },
+      managerQA: {
+        managerResponseConfirmationRate:
+          aggregated.managerQA.managerResponses > 0
+            ? (aggregated.managerQA.responseConfirmationPageViews /
+                aggregated.managerQA.managerResponses) *
+              100
+            : 0,
+      },
+    };
   };
 
   const { loading, error, todayStats, trendData } = useAnalyticsData({

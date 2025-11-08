@@ -34,12 +34,72 @@ const HomeAnalytics: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (
     trendData: HomeStatistics[]
   ): HomeStatistics | null => {
     if (trendData.length === 0) return null;
-    return trendData[trendData.length - 1];
+
+    // 전체 기간 합산
+    const aggregated = trendData.reduce(
+      (acc, curr) => {
+        acc.homePageViews += curr.homePageViews || 0;
+        acc.recommendedProductClicks += curr.recommendedProductClicks || 0;
+
+        // 카테고리별 클릭률 합산
+        if (curr.categoryClickRates) {
+          Object.entries(curr.categoryClickRates).forEach(
+            ([category, data]: [string, any]) => {
+              if (!acc.categoryClickRates[category]) {
+                acc.categoryClickRates[category] = { clicks: 0, pageViews: 0 };
+              }
+              acc.categoryClickRates[category].clicks += data.clicks || 0;
+              acc.categoryClickRates[category].pageViews += data.pageViews || 0;
+            }
+          );
+        }
+
+        return acc;
+      },
+      {
+        homePageViews: 0,
+        recommendedProductClicks: 0,
+        categoryClickRates: {} as {
+          [key: string]: { clicks: number; pageViews: number };
+        },
+      }
+    );
+
+    // 클릭률 계산
+    const recommendedProductClickRate =
+      aggregated.homePageViews > 0
+        ? (aggregated.recommendedProductClicks / aggregated.homePageViews) * 100
+        : 0;
+
+    // 카테고리별 클릭률 계산
+    const categoryClickRates: {
+      [key: string]: { clickRate: number; clicks: number; pageViews: number };
+    } = {};
+    Object.entries(aggregated.categoryClickRates).forEach(
+      ([category, data]) => {
+        categoryClickRates[category] = {
+          clickRate:
+            data.pageViews > 0 ? (data.clicks / data.pageViews) * 100 : 0,
+          clicks: data.clicks,
+          pageViews: data.pageViews,
+        };
+      }
+    );
+
+    return {
+      date: `${trendData[0]?.date || ""} ~ ${
+        trendData[trendData.length - 1]?.date || ""
+      }`,
+      recommendedProductClickRate,
+      homePageViews: aggregated.homePageViews,
+      recommendedProductClicks: aggregated.recommendedProductClicks,
+      categoryClickRates,
+    };
   };
 
   const { loading, error, todayStats, trendData } = useAnalyticsData({
