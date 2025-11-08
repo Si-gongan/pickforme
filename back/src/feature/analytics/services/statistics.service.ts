@@ -431,6 +431,9 @@ export class StatisticsService {
             ? firstVisitor.converted_within_24h_count / firstVisitor.new_users_count
             : 0;
 
+        // 로그인 성공수 = 로그인 성공 + 회원가입 성공 (total_auth_success_count 사용)
+        const totalLoginSuccesses = login.total_auth_success_count;
+
         return {
           date,
           signupConversionRate,
@@ -439,8 +442,8 @@ export class StatisticsService {
           loginSuccessRate,
           loginFailureRate,
           loginAttempts: login.login_attempt_count,
-          loginSuccesses: login.login_success_count,
-          loginFailures: login.login_attempt_count - login.login_success_count,
+          loginSuccesses: totalLoginSuccesses,
+          loginFailures: login.login_attempt_count - totalLoginSuccesses,
           socialLoginStats: {
             google: login.google_login_attempt_count,
             apple: login.apple_login_attempt_count,
