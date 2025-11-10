@@ -16,6 +16,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
   InfoCircleOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import axios from "@/utils/axios";
@@ -26,6 +27,7 @@ export default function PurchaseFailures() {
   const [failures, setFailures] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [retryingIds, setRetryingIds] = useState<string[]>([]);
+  const [resolvingIds, setResolvingIds] = useState<string[]>([]);
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -102,6 +104,23 @@ export default function PurchaseFailures() {
       setRetryingIds((prev) =>
         prev.filter((id) => id !== `${record._id}_admin`)
       );
+    }
+  };
+
+  const handleResolve = async (record: any) => {
+    try {
+      setResolvingIds((prev) => [...prev, record._id]);
+      await axios.patch(`/purchase/failures/${record._id}/resolve`);
+      messageApi.success("상태가 RESOLVED로 변경되었습니다.");
+      const filters = form.getFieldsValue();
+      onSearch(filters);
+    } catch (error: any) {
+      console.error(error);
+      messageApi.error(
+        `상태 변경 실패: ${error.response?.data?.msg || error.response?.data?.error || "Unknown error"}`
+      );
+    } finally {
+      setResolvingIds((prev) => prev.filter((id) => id !== record._id));
     }
   };
 
@@ -204,7 +223,7 @@ export default function PurchaseFailures() {
         </Space>
       ),
       key: "action",
-      width: 260,
+      width: 320,
       render: (_: any, record: any) => (
         <Space wrap>
           <Button
@@ -230,6 +249,17 @@ export default function PurchaseFailures() {
             {retryingIds.includes(`${record._id}_admin`)
               ? "멤버쉽 부여 중..."
               : "어드민 권한으로 멤버쉽 부여"}
+          </Button>
+          <Button
+            type="link"
+            icon={<CheckCircleOutlined />}
+            disabled={
+              record.status === "RESOLVED" || resolvingIds.includes(record._id)
+            }
+            onClick={() => handleResolve(record)}
+            style={{ color: "#52c41a" }}
+          >
+            {resolvingIds.includes(record._id) ? "처리 중..." : "해결 처리"}
           </Button>
         </Space>
       ),
