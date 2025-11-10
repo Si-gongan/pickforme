@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import db from 'models';
 import { log } from 'utils/logger/logger';
 import { ProductType } from 'models/product';
-import { subscriptionManagementService } from 'feature/subscription/service/subscription-management.service';
+import { subscriptionManagementService } from 'feature/purchase/subscription/service/subscription-management.service';
 
 const SCHEDULER_NAME = 'membership';
 

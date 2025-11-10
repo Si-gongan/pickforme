@@ -57,6 +57,7 @@
     "node-schedule": "^2.1.1",
     "open-graph-scraper": "^6.1.0",
     "openai": "^5.20.1",
+    "redis": "^4.6.12",
     "playwright": "^1.54.0",
     "playwright-extra": "^4.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",

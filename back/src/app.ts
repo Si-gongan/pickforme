@@ -9,6 +9,7 @@ import socket from './socket';
 import { registerAllSchedulers } from 'scheduler';
 import { log } from './utils/logger';
 import * as Sentry from '@sentry/node';
+import { redisClient } from './cache/RedisClient';
 
 const PORT = process.env.PORT || 3000;
 const app = new Koa();
@@ -50,10 +51,32 @@ app.use(cors(corsOptions)).use(bodyParser()).use(router.routes()).use(router.all
 const server = http.createServer(app.callback());
 socket.setServer(server);
 
-server.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`server listen in port ${PORT}`);
-});
+// Redis 연결 초기화 (비동기)
+const initRedis = async () => {
+  const useRedis = !!process.env.REDIS_URL || process.env.USE_REDIS === 'true';
+  if (useRedis) {
+    try {
+      await redisClient.connect();
+      void log.info('Redis 연결 완료', 'SYSTEM', 'MEDIUM');
+    } catch (error) {
+      console.error('Redis 연결 실패:', error);
+      void log.error('Redis 연결 실패', 'SYSTEM', 'HIGH', { error });
+      throw error;
+    }
+  }
+};
+
+// 서버 시작
+const startServer = async () => {
+  await initRedis();
+
+  server.listen(PORT, () => {
+    // eslint-disable-next-line no-console
+    console.log(`server listen in port ${PORT}`);
+  });
+};
+
+void startServer();
 
 if (process.env.NODE_ENV === 'production') {
   registerAllSchedulers();

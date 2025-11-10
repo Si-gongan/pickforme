@@ -1,4 +1,20 @@
 services:
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: pickforme-redis-prod
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - pickforme-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Nginx
   nginx:
     image: nginx:alpine
@@ -29,10 +45,16 @@ services:
     volumes:
       - ./back/logs:/app/logs
       - ./back/backups:/app/backups
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - pickforme-network
     expose:
       - "3001"
+
+volumes:
+  redis_data:
 
 networks:
   pickforme-network:
