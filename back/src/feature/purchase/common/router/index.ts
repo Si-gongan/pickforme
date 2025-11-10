@@ -80,4 +80,51 @@ commonRouter.get('/my-failures', requireAuth, async (ctx) => {
   }
 });
 
+// 공통: 결제 실패 이력 상태를 RESOLVED로 변경 -> PATCH /purchase/failures/:id/resolve
+commonRouter.patch('/failures/:id/resolve', requireAuth, async (ctx) => {
+  const { id } = ctx.params;
+
+  if (!id) {
+    ctx.status = 400;
+    ctx.body = { msg: '실패 이력 ID가 필요합니다.' };
+    return;
+  }
+
+  try {
+    const failure = await PurchaseFailure.findById(id);
+
+    if (!failure) {
+      ctx.status = 404;
+      ctx.body = { msg: '결제 실패 이력을 찾을 수 없습니다.' };
+      return;
+    }
+
+    if (failure.status === 'RESOLVED') {
+      ctx.status = 400;
+      ctx.body = { msg: '이미 해결된 이력입니다.' };
+      return;
+    }
+
+    failure.status = 'RESOLVED';
+    await failure.save();
+
+    ctx.status = 200;
+    ctx.body = { msg: '상태가 RESOLVED로 변경되었습니다.', failure };
+  } catch (error) {
+    void log.error('결제 실패 이력 상태 변경 중 에러:', 'PURCHASE', 'HIGH', {
+      error: {
+        name: error instanceof Error ? error.name : 'UnknownError',
+        message: error instanceof Error ? error.message : 'UnknownError',
+        stack: error instanceof Error ? error.stack : 'UnknownError',
+      },
+      endPoint: '/purchase/failures/:id/resolve',
+      method: 'PATCH',
+      failureId: id,
+    });
+
+    ctx.status = 500;
+    ctx.body = { msg: '상태 변경 중 서버 오류가 발생했습니다.' };
+  }
+});
+
 export default commonRouter;
