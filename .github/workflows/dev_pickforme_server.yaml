@@ -132,7 +132,7 @@ jobs:
               fi
             fi
 
-            docker system prune
+            docker system prune -a -f
 
       - name: Create and push tags
         if: steps.deploy.outcome == 'success'
