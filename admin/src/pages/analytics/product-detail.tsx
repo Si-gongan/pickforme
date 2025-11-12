@@ -82,18 +82,20 @@ const ProductDetailAnalytics: React.FC = () => {
 
         // 버튼별 클릭률 합산
         if (curr.buttonClickRates) {
-          Object.entries(curr.buttonClickRates).forEach(([button, data]: [string, any]) => {
-            if (!acc.buttonClickRates[button]) {
-              acc.buttonClickRates[button] = { clicks: 0, pageViews: 0 };
+          Object.entries(curr.buttonClickRates).forEach(
+            ([button, data]: [string, any]) => {
+              if (!acc.buttonClickRates[button]) {
+                acc.buttonClickRates[button] = { clicks: 0, pageViews: 0 };
+              }
+              acc.buttonClickRates[button].clicks += data.clicks || 0;
+              acc.buttonClickRates[button].pageViews += data.pageViews || 0;
             }
-            acc.buttonClickRates[button].clicks += data.clicks || 0;
-            acc.buttonClickRates[button].pageViews += data.pageViews || 0;
-          });
+          );
         }
 
         // 탭 콘텐츠 프로세스 합산
         if (curr.tabContentProcess) {
-          ['caption', 'report', 'review'].forEach((tab) => {
+          ["caption", "report", "review"].forEach((tab) => {
             const tabData = curr.tabContentProcess[tab];
             if (tabData) {
               if (!acc.tabContentProcess[tab]) {
@@ -104,9 +106,12 @@ const ProductDetailAnalytics: React.FC = () => {
                   count: 0,
                 };
               }
-              acc.tabContentProcess[tab].successCount += tabData.successCount || 0;
-              acc.tabContentProcess[tab].failedCount += tabData.failedCount || 0;
-              acc.tabContentProcess[tab].totalDurationMs += tabData.avgDurationMs || 0;
+              acc.tabContentProcess[tab].successCount +=
+                tabData.successCount || 0;
+              acc.tabContentProcess[tab].failedCount +=
+                tabData.failedCount || 0;
+              acc.tabContentProcess[tab].totalDurationMs +=
+                tabData.avgDurationMs || 0;
               acc.tabContentProcess[tab].count += 1;
             }
           });
@@ -120,11 +125,28 @@ const ProductDetailAnalytics: React.FC = () => {
         purchaseCompletions: 0,
         linkSearchAttempts: 0,
         linkSearchSuccesses: 0,
-        buttonClickRates: {} as { [key: string]: { clicks: number; pageViews: number } },
+        buttonClickRates: {} as {
+          [key: string]: { clicks: number; pageViews: number };
+        },
         tabContentProcess: {
-          caption: { successCount: 0, failedCount: 0, totalDurationMs: 0, count: 0 },
-          report: { successCount: 0, failedCount: 0, totalDurationMs: 0, count: 0 },
-          review: { successCount: 0, failedCount: 0, totalDurationMs: 0, count: 0 },
+          caption: {
+            successCount: 0,
+            failedCount: 0,
+            totalDurationMs: 0,
+            count: 0,
+          },
+          report: {
+            successCount: 0,
+            failedCount: 0,
+            totalDurationMs: 0,
+            count: 0,
+          },
+          review: {
+            successCount: 0,
+            failedCount: 0,
+            totalDurationMs: 0,
+            count: 0,
+          },
         },
       } as any
     );
@@ -132,11 +154,14 @@ const ProductDetailAnalytics: React.FC = () => {
     // 비율 값들은 합산된 값으로 계산
     const purchaseButtonClickRate =
       aggregated.productDetailPageViews > 0
-        ? (aggregated.purchaseButtonClicks / aggregated.productDetailPageViews) * 100
+        ? (aggregated.purchaseButtonClicks /
+            aggregated.productDetailPageViews) *
+          100
         : 0;
     const purchaseCompletionRate =
       aggregated.purchaseButtonClicks > 0
-        ? (aggregated.purchaseCompletions / aggregated.purchaseButtonClicks) * 100
+        ? (aggregated.purchaseCompletions / aggregated.purchaseButtonClicks) *
+          100
         : 0;
     const linkSearchSuccessRate =
       aggregated.linkSearchAttempts > 0
@@ -144,30 +169,39 @@ const ProductDetailAnalytics: React.FC = () => {
         : 0;
 
     // 버튼별 클릭률 계산
-    const buttonClickRates: { [key: string]: { clickRate: number; clicks: number; pageViews: number } } = {};
+    const buttonClickRates: {
+      [key: string]: { clickRate: number; clicks: number; pageViews: number };
+    } = {};
     Object.entries(aggregated.buttonClickRates).forEach(([button, data]) => {
+      const buttonData = data as { clicks: number; pageViews: number };
       buttonClickRates[button] = {
-        clickRate: data.pageViews > 0 ? (data.clicks / data.pageViews) * 100 : 0,
-        clicks: data.clicks,
-        pageViews: data.pageViews,
+        clickRate:
+          buttonData.pageViews > 0
+            ? (buttonData.clicks / buttonData.pageViews) * 100
+            : 0,
+        clicks: buttonData.clicks,
+        pageViews: buttonData.pageViews,
       };
     });
 
     // 탭 콘텐츠 프로세스 통계 계산
     const tabContentProcess: any = {};
-    ['caption', 'report', 'review'].forEach((tab) => {
+    ["caption", "report", "review"].forEach((tab) => {
       const tabData = aggregated.tabContentProcess[tab];
       const total = tabData.successCount + tabData.failedCount;
       tabContentProcess[tab] = {
         successCount: tabData.successCount,
         failedCount: tabData.failedCount,
         successRate: total > 0 ? (tabData.successCount / total) * 100 : 0,
-        avgDurationMs: tabData.count > 0 ? tabData.totalDurationMs / tabData.count : 0,
+        avgDurationMs:
+          tabData.count > 0 ? tabData.totalDurationMs / tabData.count : 0,
       };
     });
 
     return {
-      date: `${trendData[0]?.date || ""} ~ ${trendData[trendData.length - 1]?.date || ""}`,
+      date: `${trendData[0]?.date || ""} ~ ${
+        trendData[trendData.length - 1]?.date || ""
+      }`,
       buttonClickRates,
       purchaseButtonClickRate,
       purchaseButtonClicks: aggregated.purchaseButtonClicks,
