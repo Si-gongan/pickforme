@@ -44,19 +44,95 @@ const UserAnalytics: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (
     trendData: UserStatistics[]
   ): UserStatistics | null => {
     if (trendData.length === 0) return null;
-    return trendData[trendData.length - 1];
+
+    // 전체 기간 합산
+    const aggregated = trendData.reduce(
+      (acc, curr) => {
+        // 숫자 값들은 합산
+        acc.signupPageViews += curr.signupPageViews || 0;
+        acc.signupCompletions += curr.signupCompletions || 0;
+        acc.loginAttempts += curr.loginAttempts || 0;
+        acc.loginSuccesses += curr.loginSuccesses || 0;
+        acc.loginFailures += curr.loginFailures || 0;
+        acc.firstVisitors += curr.firstVisitors || 0;
+        acc.firstVisitorDetailViews += curr.firstVisitorDetailViews || 0;
+        acc.socialLoginStats.google += curr.socialLoginStats?.google || 0;
+        acc.socialLoginStats.apple += curr.socialLoginStats?.apple || 0;
+        acc.socialLoginStats.kakao += curr.socialLoginStats?.kakao || 0;
+
+        // TTFA는 평균 계산을 위해 합산
+        acc.ttfaSum += curr.ttfa?.averageTime || 0;
+        acc.ttfaCount += 1;
+
+        return acc;
+      },
+      {
+        signupPageViews: 0,
+        signupCompletions: 0,
+        loginAttempts: 0,
+        loginSuccesses: 0,
+        loginFailures: 0,
+        socialLoginStats: { google: 0, apple: 0, kakao: 0 },
+        ttfaSum: 0,
+        ttfaCount: 0,
+        firstVisitors: 0,
+        firstVisitorDetailViews: 0,
+      } as any
+    );
+
+    // 비율 값들은 합산된 값으로 계산
+    const signupConversionRate =
+      aggregated.signupPageViews > 0
+        ? (aggregated.signupCompletions / aggregated.signupPageViews) * 100
+        : 0;
+    const loginSuccessRate =
+      aggregated.loginAttempts > 0
+        ? (aggregated.loginSuccesses / aggregated.loginAttempts) * 100
+        : 0;
+    const loginFailureRate =
+      aggregated.loginAttempts > 0
+        ? (aggregated.loginFailures / aggregated.loginAttempts) * 100
+        : 0;
+    const firstVisitorConversionRate =
+      aggregated.firstVisitors > 0
+        ? (aggregated.firstVisitorDetailViews / aggregated.firstVisitors) * 100
+        : 0;
+
+    return {
+      date: `${trendData[0]?.date || ""} ~ ${
+        trendData[trendData.length - 1]?.date || ""
+      }`,
+      signupConversionRate,
+      signupPageViews: aggregated.signupPageViews,
+      signupCompletions: aggregated.signupCompletions,
+      loginSuccessRate,
+      loginFailureRate,
+      loginAttempts: aggregated.loginAttempts,
+      loginSuccesses: aggregated.loginSuccesses,
+      loginFailures: aggregated.loginFailures,
+      socialLoginStats: aggregated.socialLoginStats,
+      ttfa: {
+        averageTime:
+          aggregated.ttfaCount > 0
+            ? aggregated.ttfaSum / aggregated.ttfaCount
+            : 0,
+        medianTime: 0,
+      },
+      firstVisitorConversionRate,
+      firstVisitors: aggregated.firstVisitors,
+      firstVisitorDetailViews: aggregated.firstVisitorDetailViews,
+    };
   };
 
-  const { loading, error, todayStats, trendData } =
-    useAnalyticsData({
-      endpoint: "/analytics/statistics/user",
-      extractTodayData,
-    });
+  const { loading, error, todayStats, trendData } = useAnalyticsData({
+    endpoint: "/analytics/statistics/user",
+    extractTodayData,
+  });
 
   return (
     <AnalyticsLayout
@@ -65,31 +141,10 @@ const UserAnalytics: React.FC = () => {
       loading={loading}
       error={error}
     >
-
       {todayStats && (
         <>
-          {/* 주요 지표 카드들 */}
+          {/* 첫번째 row: 첫방문자전환율 + 평균TTFA + 회원가입페이지조회수 + 회원가입완료수 */}
           <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="회원가입 전환율"
-                  value={todayStats.signupConversionRate}
-                  formatter={(value) => formatPercentage(value as number)}
-                  precision={2}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="로그인 성공률"
-                  value={todayStats.loginSuccessRate}
-                  formatter={(value) => formatPercentage(value as number)}
-                  precision={2}
-                />
-              </Card>
-            </Col>
             <Col xs={24} sm={12} md={6}>
               <Card>
                 <Statistic
@@ -109,10 +164,6 @@ const UserAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-          </Row>
-
-          {/* 수치 카드들 */}
-          <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
             <Col xs={24} sm={12} md={6}>
               <Card>
                 <Statistic
@@ -129,7 +180,11 @@ const UserAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+          </Row>
+
+          {/* 세번째 row: 로그인 시도수, 로그인 성공수, 로그인 성공률 */}
+          <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+            <Col xs={24} sm={8} md={8}>
               <Card>
                 <Statistic
                   title="로그인 시도 수"
@@ -137,7 +192,7 @@ const UserAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={8} md={8}>
               <Card>
                 <Statistic
                   title="로그인 성공 수"
@@ -145,11 +200,21 @@ const UserAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
+            <Col xs={24} sm={8} md={8}>
+              <Card>
+                <Statistic
+                  title="로그인 성공률"
+                  value={todayStats.loginSuccessRate}
+                  formatter={(value) => formatPercentage(value as number)}
+                  precision={2}
+                />
+              </Card>
+            </Col>
           </Row>
 
-          {/* 소셜 로그인 통계 */}
+          {/* 네번째 row: 각 소셜로그인별 성공수 */}
           <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-            <Col xs={24} sm={8}>
+            <Col xs={24} sm={8} md={8}>
               <Card>
                 <Statistic
                   title="Google 로그인"
@@ -157,7 +222,7 @@ const UserAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={8}>
+            <Col xs={24} sm={8} md={8}>
               <Card>
                 <Statistic
                   title="Apple 로그인"
@@ -165,7 +230,7 @@ const UserAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={8}>
+            <Col xs={24} sm={8} md={8}>
               <Card>
                 <Statistic
                   title="Kakao 로그인"
@@ -178,7 +243,7 @@ const UserAnalytics: React.FC = () => {
           {/* 일주일 추이 차트들 */}
           <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
-              <Card title="회원가입 전환율 추이 (7일)">
+              <Card title="첫 방문자 전환율 추이 (7일)">
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={trendData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -189,7 +254,7 @@ const UserAnalytics: React.FC = () => {
                     />
                     <Line
                       type="monotone"
-                      dataKey="signupConversionRate"
+                      dataKey="firstVisitorConversionRate"
                       stroke="#8884d8"
                       strokeWidth={2}
                     />

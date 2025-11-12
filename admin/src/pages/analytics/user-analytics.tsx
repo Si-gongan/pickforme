@@ -252,6 +252,7 @@ const UserAnalyticsPage: React.FC = () => {
       selectedKey="user-analytics"
       title="유저 분석"
       loading={loading}
+      showDateRangePicker={false}
     >
       <Row gutter={[16, 16]} style={{ height: "calc(100vh - 200px)" }}>
         {/* 왼쪽 사이드바 - 유저 목록 */}
