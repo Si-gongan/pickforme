@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Row, Col, Statistic } from "antd";
+import { Card, Row, Col, Statistic, Segmented } from "antd";
 import {
   LineChart,
   Line,
@@ -13,6 +13,8 @@ import {
 } from "recharts";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
 import AnalyticsLayout from "@/components/analytics/AnalyticsLayout";
+import { useAnalyticsDate } from "@/contexts/AnalyticsDateContext";
+import client from "@/utils/axios";
 
 interface MembershipStatistics {
   date: string;
@@ -50,11 +52,48 @@ const MembershipAnalytics: React.FC = () => {
     return trendData[trendData.length - 1];
   };
 
-  const { loading, error, todayStats, trendData } =
-    useAnalyticsData({
-      endpoint: "/analytics/statistics/membership",
-      extractTodayData,
-    });
+  const { loading, error, todayStats, trendData } = useAnalyticsData({
+    endpoint: "/analytics/statistics/membership",
+    extractTodayData,
+  });
+
+  // 새 요약 지표: 재구매/해지/보류 및 개편 유지율
+  const { dateRange } = useAnalyticsDate();
+  const [windowDays, setWindowDays] = React.useState<number>(30);
+  const [summaryLoading, setSummaryLoading] = React.useState<boolean>(false);
+  const [summary, setSummary] = React.useState<{
+    renewedUsers: number;
+    churnedUsers: number;
+    pendingUsers: number;
+    renewalRate: number;
+    churnRate: number;
+    retentionUsers: number;
+    retentionRate: number;
+    purchasersInWindow: number;
+  } | null>(null);
+
+  const fetchSummary = React.useCallback(async () => {
+    try {
+      setSummaryLoading(true);
+      const { startDate, endDate } = dateRange;
+      const { data } = await client.get("/analytics/statistics/membership", {
+        params: {
+          startDate,
+          endDate,
+          windowDays,
+        },
+      });
+      if (data?.success !== false) {
+        setSummary(data.summary);
+      }
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, [dateRange, windowDays]);
+
+  React.useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   return (
     <AnalyticsLayout
@@ -63,12 +102,27 @@ const MembershipAnalytics: React.FC = () => {
       loading={loading}
       error={error}
     >
-
       {todayStats && (
         <>
-          {/* 주요 지표 카드들 */}
+          {/* 1행: 전체 사용자 수, 멤버십 사용자 수, 멤버십 사용자 비율, 멤버십 유지율 */}
           <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
+              <Card>
+                <Statistic
+                  title="전체 사용자 수"
+                  value={todayStats.totalUsers}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Card>
+                <Statistic
+                  title="멤버십 사용자 수"
+                  value={todayStats.membershipUsers}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
               <Card>
                 <Statistic
                   title="멤버십 사용자 비율"
@@ -78,27 +132,7 @@ const MembershipAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="멤버십 구독 클릭률"
-                  value={todayStats.membershipSubscribeClickRate}
-                  formatter={(value) => formatPercentage(value as number)}
-                  precision={2}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="결제 성공률"
-                  value={todayStats.membershipPaymentSuccessRate}
-                  formatter={(value) => formatPercentage(value as number)}
-                  precision={2}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Card>
                 <Statistic
                   title="멤버십 유지율"
@@ -110,47 +144,29 @@ const MembershipAnalytics: React.FC = () => {
             </Col>
           </Row>
 
-          {/* 수치 카드들 */}
+          {/* 2행: 구독 클릭률, 결제 성공률, 결제 오류율, 결제 중단율, 성공적인 구매 수 */}
           <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={6} lg={4}>
               <Card>
                 <Statistic
-                  title="전체 사용자 수"
-                  value={todayStats.totalUsers}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="멤버십 사용자 수"
-                  value={todayStats.membershipUsers}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="재구독 사용자 비율"
-                  value={todayStats.repeatMembershipUserRatio}
+                  title="구독 클릭률"
+                  value={todayStats.membershipSubscribeClickRate}
                   formatter={(value) => formatPercentage(value as number)}
                   precision={2}
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={6} lg={4}>
               <Card>
                 <Statistic
-                  title="재구독 사용자 수"
-                  value={todayStats.repeatMembershipUsers}
+                  title="결제 성공률"
+                  value={todayStats.membershipPaymentSuccessRate}
+                  formatter={(value) => formatPercentage(value as number)}
+                  precision={2}
                 />
               </Card>
             </Col>
-          </Row>
-
-          {/* 결제 관련 지표 */}
-          <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={6} lg={4}>
               <Card>
                 <Statistic
                   title="결제 오류율"
@@ -160,7 +176,7 @@ const MembershipAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={6} lg={4}>
               <Card>
                 <Statistic
                   title="결제 중단율"
@@ -170,17 +186,7 @@ const MembershipAnalytics: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="구독 해지율"
-                  value={todayStats.membershipUnsubscribeRate}
-                  formatter={(value) => formatPercentage(value as number)}
-                  precision={2}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={6} lg={4}>
               <Card>
                 <Statistic
                   title="성공적인 구매 수"
@@ -189,6 +195,90 @@ const MembershipAnalytics: React.FC = () => {
               </Card>
             </Col>
           </Row>
+
+          {/* 재구매/해지 요약 (기간 만료자 기준, X일 윈도우) */}
+          <Row gutter={[16, 16]} style={{ marginBottom: "8px" }}>
+            <Col span={24}>
+              <Segmented
+                options={[
+                  { label: "X=7일", value: 7 },
+                  { label: "X=30일", value: 30 },
+                  { label: "X=60일", value: 60 },
+                ]}
+                value={windowDays}
+                onChange={(v) => setWindowDays(v as number)}
+              />
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+            <Col xs={24} sm={12} md={6}>
+              <Card loading={summaryLoading}>
+                <Statistic
+                  title="재구매 사용자 수"
+                  value={summary?.renewedUsers ?? 0}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card loading={summaryLoading}>
+                <Statistic
+                  title="해지 사용자 수"
+                  value={summary?.churnedUsers ?? 0}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card loading={summaryLoading}>
+                <Statistic
+                  title="재구매율"
+                  value={(summary?.renewalRate ?? 0) * 100}
+                  formatter={(value) => formatPercentage(value as number)}
+                  precision={2}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card loading={summaryLoading}>
+                <Statistic
+                  title="해지율"
+                  value={(summary?.churnRate ?? 0) * 100}
+                  formatter={(value) => formatPercentage(value as number)}
+                  precision={2}
+                />
+              </Card>
+            </Col>
+          </Row>
+          {/* 판단 보류 사용자 수/율 */}
+          <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+            <Col xs={24} sm={12} md={12}>
+              <Card loading={summaryLoading}>
+                <Statistic
+                  title="판단 보류 사용자 수"
+                  value={summary?.pendingUsers ?? 0}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={12}>
+              <Card loading={summaryLoading}>
+                <Statistic
+                  title="판단 보류율"
+                  value={(() => {
+                    const total =
+                      (summary?.renewedUsers ?? 0) +
+                      (summary?.churnedUsers ?? 0) +
+                      (summary?.pendingUsers ?? 0);
+                    return total > 0
+                      ? ((summary?.pendingUsers ?? 0) / total) * 100
+                      : 0;
+                  })()}
+                  formatter={(value) => formatPercentage(value as number)}
+                  precision={2}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          {/* 기존 '구독 해지율' 카드는 제거됨 */}
 
           {/* 일주일 추이 차트들 */}
           <Row gutter={[16, 16]}>

@@ -32,12 +32,56 @@ const SearchAnalytics: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (
     trendData: SearchStatistics[]
   ): SearchStatistics | null => {
     if (trendData.length === 0) return null;
-    return trendData[trendData.length - 1];
+
+    // 전체 기간 합산
+    const aggregated = trendData.reduce(
+      (acc, curr) => {
+        acc.searchAttempts += curr.searchAttempts || 0;
+        acc.searchSuccesses += curr.searchSuccesses || 0;
+        acc.searchFailures += curr.searchFailures || 0;
+        acc.searchResultPageViews += curr.searchResultPageViews || 0;
+        acc.searchRecommendationClicks += curr.searchRecommendationClicks || 0;
+        return acc;
+      },
+      {
+        searchAttempts: 0,
+        searchSuccesses: 0,
+        searchFailures: 0,
+        searchResultPageViews: 0,
+        searchRecommendationClicks: 0,
+      }
+    );
+
+    // 비율 값들은 합산된 값으로 계산
+    const searchSuccessRate =
+      aggregated.searchAttempts > 0
+        ? (aggregated.searchSuccesses / aggregated.searchAttempts) * 100
+        : 0;
+    const searchFailureRate =
+      aggregated.searchAttempts > 0
+        ? (aggregated.searchFailures / aggregated.searchAttempts) * 100
+        : 0;
+    const searchRecommendationClickRate =
+      aggregated.searchResultPageViews > 0
+        ? (aggregated.searchRecommendationClicks / aggregated.searchResultPageViews) * 100
+        : 0;
+
+    return {
+      date: `${trendData[0]?.date || ""} ~ ${trendData[trendData.length - 1]?.date || ""}`,
+      searchSuccessRate,
+      searchFailureRate,
+      searchAttempts: aggregated.searchAttempts,
+      searchSuccesses: aggregated.searchSuccesses,
+      searchFailures: aggregated.searchFailures,
+      searchRecommendationClickRate,
+      searchResultPageViews: aggregated.searchResultPageViews,
+      searchRecommendationClicks: aggregated.searchRecommendationClicks,
+    };
   };
 
   const { loading, error, todayStats, trendData } =

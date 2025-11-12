@@ -65,62 +65,122 @@ const ProductDetailAnalytics: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (
     trendData: any[]
   ): ProductDetailStatistics | null => {
     if (trendData.length === 0) return null;
-    const lastItem = trendData[trendData.length - 1];
 
-    // 탭 콘텐츠 통계 계산 함수
-    const calculateTabStats = (
-      successCount: number,
-      failedCount: number,
-      avgDurationMs: number
-    ) => {
-      const total = successCount + failedCount;
-      return {
-        successCount,
-        failedCount,
-        successRate: total > 0 ? (successCount / total) * 100 : 0,
-        avgDurationMs: avgDurationMs || 0,
+    // 전체 기간 합산
+    const aggregated = trendData.reduce(
+      (acc, curr) => {
+        acc.purchaseButtonClicks += curr.purchaseButtonClicks || 0;
+        acc.productDetailPageViews += curr.productDetailPageViews || 0;
+        acc.purchaseCompletions += curr.purchaseCompletions || 0;
+        acc.linkSearchAttempts += curr.linkSearchAttempts || 0;
+        acc.linkSearchSuccesses += curr.linkSearchSuccesses || 0;
+
+        // 버튼별 클릭률 합산
+        if (curr.buttonClickRates) {
+          Object.entries(curr.buttonClickRates).forEach(([button, data]: [string, any]) => {
+            if (!acc.buttonClickRates[button]) {
+              acc.buttonClickRates[button] = { clicks: 0, pageViews: 0 };
+            }
+            acc.buttonClickRates[button].clicks += data.clicks || 0;
+            acc.buttonClickRates[button].pageViews += data.pageViews || 0;
+          });
+        }
+
+        // 탭 콘텐츠 프로세스 합산
+        if (curr.tabContentProcess) {
+          ['caption', 'report', 'review'].forEach((tab) => {
+            const tabData = curr.tabContentProcess[tab];
+            if (tabData) {
+              if (!acc.tabContentProcess[tab]) {
+                acc.tabContentProcess[tab] = {
+                  successCount: 0,
+                  failedCount: 0,
+                  totalDurationMs: 0,
+                  count: 0,
+                };
+              }
+              acc.tabContentProcess[tab].successCount += tabData.successCount || 0;
+              acc.tabContentProcess[tab].failedCount += tabData.failedCount || 0;
+              acc.tabContentProcess[tab].totalDurationMs += tabData.avgDurationMs || 0;
+              acc.tabContentProcess[tab].count += 1;
+            }
+          });
+        }
+
+        return acc;
+      },
+      {
+        purchaseButtonClicks: 0,
+        productDetailPageViews: 0,
+        purchaseCompletions: 0,
+        linkSearchAttempts: 0,
+        linkSearchSuccesses: 0,
+        buttonClickRates: {} as { [key: string]: { clicks: number; pageViews: number } },
+        tabContentProcess: {
+          caption: { successCount: 0, failedCount: 0, totalDurationMs: 0, count: 0 },
+          report: { successCount: 0, failedCount: 0, totalDurationMs: 0, count: 0 },
+          review: { successCount: 0, failedCount: 0, totalDurationMs: 0, count: 0 },
+        },
+      } as any
+    );
+
+    // 비율 값들은 합산된 값으로 계산
+    const purchaseButtonClickRate =
+      aggregated.productDetailPageViews > 0
+        ? (aggregated.purchaseButtonClicks / aggregated.productDetailPageViews) * 100
+        : 0;
+    const purchaseCompletionRate =
+      aggregated.purchaseButtonClicks > 0
+        ? (aggregated.purchaseCompletions / aggregated.purchaseButtonClicks) * 100
+        : 0;
+    const linkSearchSuccessRate =
+      aggregated.linkSearchAttempts > 0
+        ? (aggregated.linkSearchSuccesses / aggregated.linkSearchAttempts) * 100
+        : 0;
+
+    // 버튼별 클릭률 계산
+    const buttonClickRates: { [key: string]: { clickRate: number; clicks: number; pageViews: number } } = {};
+    Object.entries(aggregated.buttonClickRates).forEach(([button, data]) => {
+      buttonClickRates[button] = {
+        clickRate: data.pageViews > 0 ? (data.clicks / data.pageViews) * 100 : 0,
+        clicks: data.clicks,
+        pageViews: data.pageViews,
       };
-    };
+    });
+
+    // 탭 콘텐츠 프로세스 통계 계산
+    const tabContentProcess: any = {};
+    ['caption', 'report', 'review'].forEach((tab) => {
+      const tabData = aggregated.tabContentProcess[tab];
+      const total = tabData.successCount + tabData.failedCount;
+      tabContentProcess[tab] = {
+        successCount: tabData.successCount,
+        failedCount: tabData.failedCount,
+        successRate: total > 0 ? (tabData.successCount / total) * 100 : 0,
+        avgDurationMs: tabData.count > 0 ? tabData.totalDurationMs / tabData.count : 0,
+      };
+    });
 
     return {
-      date: lastItem.date,
-      buttonClickRates: lastItem.buttonClickRates || {},
-      purchaseButtonClickRate: lastItem.purchaseButtonClickRate || 0,
-      purchaseButtonClicks: lastItem.purchaseButtonClicks || 0,
-      productDetailPageViews: lastItem.productDetailPageViews || 0,
-      purchaseCompletionRate: lastItem.purchaseCompletionRate || 0,
-      dailyActiveUsers: lastItem.dailyActiveUsers || 0,
-      weeklyActiveUsers: lastItem.weeklyActiveUsers || 0,
-      monthlyActiveUsers: lastItem.monthlyActiveUsers || 0,
-      purchaseCompletions: lastItem.purchaseCompletions || 0,
-      // 링크 검색 관련 데이터 추가
-      linkSearchSuccessRate: lastItem.linkSearchSuccessRate || 0,
-      linkSearchAttempts: lastItem.linkSearchAttempts || 0,
-      linkSearchSuccesses: lastItem.linkSearchSuccesses || 0,
-      // 탭 콘텐츠 프로세스 통계 추가 (question 제거)
-      tabContentProcess: {
-        caption: calculateTabStats(
-          lastItem.tabContentProcess?.caption?.successCount || 0,
-          lastItem.tabContentProcess?.caption?.failedCount || 0,
-          lastItem.tabContentProcess?.caption?.avgDurationMs || 0
-        ),
-        report: calculateTabStats(
-          lastItem.tabContentProcess?.report?.successCount || 0,
-          lastItem.tabContentProcess?.report?.failedCount || 0,
-          lastItem.tabContentProcess?.report?.avgDurationMs || 0
-        ),
-        review: calculateTabStats(
-          lastItem.tabContentProcess?.review?.successCount || 0,
-          lastItem.tabContentProcess?.review?.failedCount || 0,
-          lastItem.tabContentProcess?.review?.avgDurationMs || 0
-        ),
-        // question 제거
-      },
+      date: `${trendData[0]?.date || ""} ~ ${trendData[trendData.length - 1]?.date || ""}`,
+      buttonClickRates,
+      purchaseButtonClickRate,
+      purchaseButtonClicks: aggregated.purchaseButtonClicks,
+      productDetailPageViews: aggregated.productDetailPageViews,
+      purchaseCompletionRate,
+      dailyActiveUsers: 0, // TODO: DAU는 별도 계산 필요
+      weeklyActiveUsers: 0, // TODO: WAU는 별도 계산 필요
+      monthlyActiveUsers: 0, // TODO: MAU는 별도 계산 필요
+      purchaseCompletions: aggregated.purchaseCompletions,
+      linkSearchSuccessRate,
+      linkSearchAttempts: aggregated.linkSearchAttempts,
+      linkSearchSuccesses: aggregated.linkSearchSuccesses,
+      tabContentProcess,
     };
   };
 

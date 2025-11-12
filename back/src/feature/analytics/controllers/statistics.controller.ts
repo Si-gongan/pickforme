@@ -262,7 +262,7 @@ export class StatisticsController {
    */
   async getMembershipStatistics(ctx: Context) {
     try {
-      const { startDate, endDate } = ctx.query;
+      const { startDate, endDate, windowDays } = ctx.query;
 
       if (!startDate || !endDate) {
         ctx.status = 400;
@@ -278,17 +278,82 @@ export class StatisticsController {
         endDate as string
       );
 
+      // windowDays가 주어지면 요약 지표도 함께 반환
+      let summary: any = undefined;
+      if (typeof windowDays !== 'undefined') {
+        const wd = Number(windowDays);
+        const result = await statisticsService.getMembershipSummary(
+          startDate as string,
+          endDate as string,
+          wd
+        );
+        if (result.success) {
+          summary = result.data;
+        }
+      }
+
       ctx.status = 200;
       ctx.body = {
         success: true,
         data,
+        summary,
         queryParams: {
           startDate: startDate as string,
           endDate: endDate as string,
+          windowDays: typeof windowDays !== 'undefined' ? Number(windowDays) : undefined,
         },
       };
     } catch (error) {
       void log.error('멤버십 통계 조회 API 오류', 'API', 'HIGH', { error });
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        message: '서버 오류가 발생했습니다.',
+      };
+    }
+  }
+
+  /**
+   * 멤버십 요약(재구매/해지/보류/유지율) 조회
+   * GET /analytics/statistics/membership/summary?startDate=...&endDate=...&windowDays=30
+   */
+  async getMembershipSummary(ctx: Context) {
+    try {
+      const { startDate, endDate, windowDays } = ctx.query;
+      if (!startDate || !endDate) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          message: 'startDate와 endDate가 필요합니다.',
+        };
+        return;
+      }
+      const wd = Number(windowDays ?? 30);
+      const result = await statisticsService.getMembershipSummary(
+        startDate as string,
+        endDate as string,
+        wd
+      );
+      if (result.success) {
+        ctx.status = 200;
+        ctx.body = {
+          success: true,
+          data: result.data,
+          queryParams: {
+            startDate,
+            endDate,
+            windowDays: wd,
+          },
+        };
+      } else {
+        ctx.status = 500;
+        ctx.body = {
+          success: false,
+          message: result.message || '멤버십 요약 통계 조회 실패',
+        };
+      }
+    } catch (error) {
+      void log.error('멤버십 요약 통계 조회 API 오류', 'API', 'HIGH', { error });
       ctx.status = 500;
       ctx.body = {
         success: false,

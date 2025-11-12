@@ -17,6 +17,10 @@ router.get(
   statisticsController.getProductDetailStatistics.bind(statisticsController)
 );
 router.get('/membership', statisticsController.getMembershipStatistics.bind(statisticsController));
+router.get(
+  '/membership/summary',
+  statisticsController.getMembershipSummary.bind(statisticsController)
+);
 
 // 유저 관련 새로운 엔드포인트들
 router.get('/active-users', statisticsController.getActiveUsers.bind(statisticsController));

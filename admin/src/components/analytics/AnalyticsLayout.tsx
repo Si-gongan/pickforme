@@ -10,6 +10,7 @@ interface AnalyticsLayoutProps {
   title: string;
   loading?: boolean;
   error?: string | null;
+  showDateRangePicker?: boolean;
   children: React.ReactNode;
 }
 
@@ -18,6 +19,7 @@ const AnalyticsLayout: React.FC<AnalyticsLayoutProps> = ({
   title,
   loading = false,
   error = null,
+  showDateRangePicker = true,
   children,
 }) => {
   if (loading) {
@@ -55,7 +57,7 @@ const AnalyticsLayout: React.FC<AnalyticsLayoutProps> = ({
       <Layout>
         <Content style={{ padding: "24px", background: "#f5f5f5" }}>
           <h1 style={{ marginBottom: "24px" }}>{title}</h1>
-          <DateRangePicker />
+          {showDateRangePicker && <DateRangePicker />}
           {children}
         </Content>
       </Layout>

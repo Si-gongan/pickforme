@@ -272,6 +272,157 @@ export class StatisticsService {
   }
 
   /**
+   * 멤버십 요약(재구매/해지/보류) 및 유지율(개편 정의) 계산
+   * windowDays: 만료일 기준 재구매 판정 유예일 (예: 7/30/60)
+   */
+  async getMembershipSummary(
+    startDate: string,
+    endDate: string,
+    windowDays: number
+  ): Promise<{
+    success: boolean;
+    data: {
+      renewedUsers: number;
+      churnedUsers: number;
+      pendingUsers: number;
+      renewalRate: number;
+      churnRate: number;
+      retentionUsers: number;
+      retentionRate: number;
+      purchasersInWindow: number;
+    };
+    message?: string;
+  }> {
+    try {
+      const query = `
+        DECLARE window_days INT64 DEFAULT @window_days;
+        DECLARE start_date DATE DEFAULT DATE(@start_date);
+        DECLARE end_date DATE DEFAULT DATE(@end_date);
+        DECLARE today DATE DEFAULT CURRENT_DATE();
+
+        WITH expiring AS (
+          SELECT
+            _id AS userId,
+            DATE(MembershipExpiresAt) AS expires_date
+          FROM \`${this.FOUNDATION_DATASET_ID}.users\`
+          WHERE MembershipExpiresAt IS NOT NULL
+            AND DATE(MembershipExpiresAt) BETWEEN start_date AND end_date
+        ),
+        first_purchase_after_expiry AS (
+          SELECT
+            e.userId,
+            MIN(DATE(p.createdAt)) AS first_purchase_after_expiry
+          FROM expiring e
+          LEFT JOIN \`${this.FOUNDATION_DATASET_ID}.purchases\` p
+            ON p.userId = e.userId
+            AND p.type = 1
+            AND DATE(p.createdAt) >= e.expires_date
+            AND DATE(p.createdAt) <= DATE_ADD(e.expires_date, INTERVAL window_days DAY)
+          GROUP BY e.userId
+        ),
+        classified AS (
+          SELECT
+            e.userId,
+            e.expires_date,
+            CASE
+              WHEN f.first_purchase_after_expiry IS NOT NULL THEN 'renewed'
+              WHEN DATE_ADD(e.expires_date, INTERVAL window_days DAY) > today THEN 'pending'
+              ELSE 'churned'
+            END AS status
+          FROM expiring e
+          LEFT JOIN first_purchase_after_expiry f
+          ON f.userId = e.userId
+        ),
+        counts AS (
+          SELECT
+            SUM(CASE WHEN status = 'renewed' THEN 1 ELSE 0 END) AS renewedUsers,
+            SUM(CASE WHEN status = 'churned' THEN 1 ELSE 0 END) AS churnedUsers,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pendingUsers
+          FROM classified
+        ),
+        -- 멤버쉽 유지율: 기간 내 각 구매 내역을 기준으로, 그 구매 내역의 60일 이전에 구매 이력이 있는 구매 내역의 비율
+        purchases_in_window AS (
+          SELECT
+            p1._id AS purchaseId,
+            p1.userId,
+            DATE(p1.createdAt) AS purchaseDate
+          FROM \`${this.FOUNDATION_DATASET_ID}.purchases\` p1
+          WHERE p1.type = 1
+            AND DATE(p1.createdAt) BETWEEN start_date AND end_date
+        ),
+        purchases_with_prior AS (
+          SELECT DISTINCT
+            pw.purchaseId,
+            pw.userId,
+            pw.purchaseDate
+          FROM purchases_in_window pw
+          INNER JOIN \`${this.FOUNDATION_DATASET_ID}.purchases\` p2
+            ON p2.userId = pw.userId
+            AND p2.type = 1
+            AND DATE(p2.createdAt) >= DATE_SUB(pw.purchaseDate, INTERVAL 60 DAY)
+            AND DATE(p2.createdAt) < pw.purchaseDate
+        )
+        SELECT
+          renewedUsers,
+          churnedUsers,
+          pendingUsers,
+          SAFE_DIVIDE(renewedUsers, NULLIF(renewedUsers + churnedUsers, 0)) AS renewalRate,
+          SAFE_DIVIDE(churnedUsers, NULLIF(renewedUsers + churnedUsers, 0)) AS churnRate,
+          -- retention: 기간 내 구매 내역 중 60일 이전에 구매 이력이 있는 구매 내역의 비율
+          (SELECT COUNT(DISTINCT purchaseId) FROM purchases_in_window) AS purchasersInWindow,
+          (SELECT COUNT(DISTINCT purchaseId) FROM purchases_with_prior) AS retentionUsers,
+          SAFE_DIVIDE(
+            (SELECT COUNT(DISTINCT purchaseId) FROM purchases_with_prior),
+            NULLIF((SELECT COUNT(DISTINCT purchaseId) FROM purchases_in_window), 0)
+          ) AS retentionRate
+        FROM counts;
+      `;
+
+      const rows = await this.executeQuery(query, {
+        start_date: startDate,
+        end_date: endDate,
+        window_days: windowDays,
+      });
+
+      const row = rows?.[0] || {};
+      return {
+        success: true,
+        data: {
+          renewedUsers: Number(row.renewedUsers || 0),
+          churnedUsers: Number(row.churnedUsers || 0),
+          pendingUsers: Number(row.pendingUsers || 0),
+          renewalRate: Number(row.renewalRate || 0),
+          churnRate: Number(row.churnRate || 0),
+          retentionUsers: Number(row.retentionUsers || 0),
+          retentionRate: Number(row.retentionRate || 0),
+          purchasersInWindow: Number(row.purchasersInWindow || 0),
+        },
+      };
+    } catch (error) {
+      void log.error('멤버십 요약 통계 조회 실패', 'ANALYTICS', 'HIGH', {
+        error,
+        startDate,
+        endDate,
+        windowDays,
+      });
+      return {
+        success: false,
+        data: {
+          renewedUsers: 0,
+          churnedUsers: 0,
+          pendingUsers: 0,
+          renewalRate: 0,
+          churnRate: 0,
+          retentionUsers: 0,
+          retentionRate: 0,
+          purchasersInWindow: 0,
+        },
+        message: '멤버십 요약 통계 조회 실패',
+      };
+    }
+  }
+
+  /**
    * 사용자 관련 통계 조회 (공개 메서드)
    */
   async getUserStatistics(startDate: string, endDate: string) {
@@ -431,6 +582,9 @@ export class StatisticsService {
             ? firstVisitor.converted_within_24h_count / firstVisitor.new_users_count
             : 0;
 
+        // 로그인 성공수 = 로그인 성공 + 회원가입 성공 (total_auth_success_count 사용)
+        const totalLoginSuccesses = login.total_auth_success_count;
+
         return {
           date,
           signupConversionRate,
@@ -439,8 +593,8 @@ export class StatisticsService {
           loginSuccessRate,
           loginFailureRate,
           loginAttempts: login.login_attempt_count,
-          loginSuccesses: login.login_success_count,
-          loginFailures: login.login_attempt_count - login.login_success_count,
+          loginSuccesses: totalLoginSuccesses,
+          loginFailures: login.login_attempt_count - totalLoginSuccesses,
           socialLoginStats: {
             google: login.google_login_attempt_count,
             apple: login.apple_login_attempt_count,

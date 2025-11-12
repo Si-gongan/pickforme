@@ -27,17 +27,35 @@ const ManagerQAAnalytics: React.FC = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // 오늘 데이터 추출 함수
+  // 선택한 기간의 전체 합산 데이터 추출 함수
   const extractTodayData = (trendData: any[]): ManagerQAStatistics | null => {
     if (trendData.length === 0) return null;
-    const lastItem = trendData[trendData.length - 1];
+
+    // 전체 기간 합산
+    const aggregated = trendData.reduce(
+      (acc, item) => {
+        const managerQA = item.data.managerQA || {};
+        acc.managerResponses += managerQA.managerResponses || 0;
+        acc.responseConfirmationPageViews += managerQA.responseConfirmationPageViews || 0;
+        return acc;
+      },
+      {
+        managerResponses: 0,
+        responseConfirmationPageViews: 0,
+      }
+    );
+
+    // 비율 값은 합산된 값으로 계산
+    const managerResponseConfirmationRate =
+      aggregated.managerResponses > 0
+        ? (aggregated.responseConfirmationPageViews / aggregated.managerResponses) * 100
+        : 0;
+
     return {
-      date: lastItem.period,
-      managerResponseConfirmationRate:
-        lastItem.data.managerQA?.managerResponseConfirmationRate || 0,
-      managerResponses: lastItem.data.managerQA?.managerResponses || 0,
-      responseConfirmationPageViews:
-        lastItem.data.managerQA?.responseConfirmationPageViews || 0,
+      date: `${trendData[0]?.period || ""} ~ ${trendData[trendData.length - 1]?.period || ""}`,
+      managerResponseConfirmationRate,
+      managerResponses: aggregated.managerResponses,
+      responseConfirmationPageViews: aggregated.responseConfirmationPageViews,
     };
   };
 
