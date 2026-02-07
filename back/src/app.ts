@@ -14,8 +14,16 @@ import { redisClient } from './cache/RedisClient';
 const PORT = process.env.PORT || 3000;
 const app = new Koa();
 
+const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',').map((o) => o.trim()) || [];
+
 const corsOptions = {
-  origin: process.env.CLIENT_ORIGIN,
+  origin: (ctx: Koa.Context) => {
+    const requestOrigin = ctx.request.header.origin || '';
+    if (allowedOrigins.includes(requestOrigin)) {
+      return requestOrigin;
+    }
+    return allowedOrigins[0] || '';
+  },
   credentials: true,
 };
 
