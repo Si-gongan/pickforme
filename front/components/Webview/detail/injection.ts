@@ -77,8 +77,14 @@ export const DESKTOP_QUERY = `
     const reviewText = document.querySelector('.rating-count-txt')?.innerText || '';
     const reviews = getInt(reviewText);
 
-    const thumb = document.querySelector('.twc-relative.twc-overflow-visible img');
-    const thumbnail = (getImageSrc(thumb) || '').replace(/^\\/\\//, 'https://');
+    const ogImage = document.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
+    const thumb =
+      document.querySelector('.prod-image__detail img') ||
+      document.querySelector('[class*="ProductImage"] img') ||
+      document.querySelector('.twc-relative.twc-overflow-visible img') ||
+      document.querySelector('img[src*="thumbnails"]');
+    const rawThumb = ogImage || getImageSrc(thumb) || '';
+    const thumbnail = rawThumb.replace(/^\\/\\//, 'https://');
 
     const detail_images = Array.from(
       document.querySelectorAll('.subType-IMAGE img, .subType-TEXT img')

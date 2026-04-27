@@ -3,11 +3,20 @@ FROM node:20-alpine
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 런타임 의존성 설치
+# 런타임 의존성 설치 (Playwright Chromium 실행을 위한 시스템 라이브러리 포함)
 RUN apk add --no-cache \
   dumb-init \
   ca-certificates \
-  mongodb-tools
+  mongodb-tools \
+  chromium \
+  nss \
+  freetype \
+  harfbuzz \
+  ttf-freefont
+
+# Playwright 브라우저 다운로드 스킵, Alpine 의 chromium 바이너리 사용
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # 패키지 파일 복사
 COPY package*.json ./

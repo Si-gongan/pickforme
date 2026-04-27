@@ -81,6 +81,7 @@ class CoupangCrawlerService extends EventEmitter {
       this.browser = await chromium.launch({
         headless: true,
         proxy: proxyConfig,
+        executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
         args: [
           '--disable-blink-features=AutomationControlled',
           '--no-sandbox',

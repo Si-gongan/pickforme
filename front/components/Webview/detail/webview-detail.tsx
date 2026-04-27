@@ -33,11 +33,17 @@ type Attempt = {
     url: string; // 이 시도에서 열 주소
     getInjection: (ids: Ids) => string; // 이 시도에서 주입할 JS
     maxRetries?: number; // 개별 오버라이드 (기본값 사용 가능)
+    userAgent?: string; // attempt 별 User-Agent (데스크톱/모바일 분기)
 };
 
 const DEFAULT_MAX_RETRIES = 2; // 통일된 기본 재시도 횟수
 const FIRST_INJECT_DELAY_MS = 800; // 최초 주입 딜레이(로딩 안정화)
 const RETRY_DELAY_MS = 1000; // 재시도 간격
+
+const DESKTOP_UA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const MOBILE_UA =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1';
 
 /** ===== 메인 훅 ===== */
 export const useWebViewDetail = ({
@@ -105,19 +111,22 @@ export const useWebViewDetail = ({
                         label: 'desktop-1',
                         url: extracted.canonicalDesktop,
                         getInjection: () => getDesktopInjectionCode(),
-                        maxRetries: 1
+                        maxRetries: 1,
+                        userAgent: DESKTOP_UA
                     },
                     {
                         label: 'mobile-mlp',
                         url: extracted.mobileMLP,
                         getInjection: (ids: Ids) => getMobileInjectionCode2(ids),
-                        maxRetries: 3
+                        maxRetries: 3,
+                        userAgent: MOBILE_UA
                     },
                     {
                         label: 'mobile-vm',
                         url: extracted.mobileVM,
                         getInjection: (ids: Ids) => getMobileInjectionCode(),
-                        maxRetries: 2
+                        maxRetries: 2,
+                        userAgent: MOBILE_UA
                     }
                 ].filter(a => !!a.url);
                 setAttempts(queue);
@@ -252,7 +261,9 @@ export const useWebViewDetail = ({
         <View style={{ width: '100%', height: 0 }}>
             <WebView
                 ref={webViewRef}
+                key={currentAttempt.label}
                 source={{ uri: currentAttempt.url }}
+                userAgent={currentAttempt.userAgent}
                 onMessage={handleMessage}
                 onLoadStart={() => {
                     // ReactNativeWebView 객체 보장
