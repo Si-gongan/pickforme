@@ -15,6 +15,7 @@ import SubscriptionBottomSheet from '@/components/BottomSheet/Membership/Subscri
 import UnsubscribeBottomSheet from '@/components/BottomSheet/Membership/Unsubscribe';
 import usePushToken from '@/hooks/usePushToken';
 import { ensureInstallTime, startNewSession } from '@/services/firebase';
+import UpdateNoticeModal from '@/components/UpdateNoticeModal';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -107,6 +108,7 @@ export default function RootLayout() {
                     <LoginBottomSheet />
                     <SubscriptionBottomSheet />
                     <UnsubscribeBottomSheet />
+                    <UpdateNoticeModal />
                 </JotaiProvider>
             </QueryClientProvider>
         </Suspense>

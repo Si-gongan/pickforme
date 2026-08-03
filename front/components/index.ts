@@ -14,6 +14,7 @@ export { default as PushForm } from './PushForm';
 export { default as SelectButton } from './SelectButton';
 export { default as View } from './View';
 export { default as Text } from './Text';
+export { default as UpdateNoticeModal } from './UpdateNoticeModal';
 export { default as How } from './BottomSheet/How';
 export { default as CheckBox } from './CheckBox';
 export { default as Button_old } from './Button_old';
