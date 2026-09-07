@@ -5,6 +5,7 @@ import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 import http from 'http';
 import router from './router';
+import blockLegacyIos from './middleware/blockLegacyIos';
 import socket from './socket';
 import { registerAllSchedulers } from 'scheduler';
 import { log } from './utils/logger';
@@ -54,6 +55,8 @@ app.use(async (ctx, next) => {
   }
 });
 
+// 픽포미 4.0 강제 이관 백스톱 — 레거시 iOS 앱 요청 410 (env BLOCK_LEGACY_IOS=true 일 때만).
+app.use(blockLegacyIos);
 app.use(cors(corsOptions)).use(bodyParser()).use(router.routes()).use(router.allowedMethods());
 
 const server = http.createServer(app.callback());
